@@ -12,6 +12,7 @@ const teams = [
 const navItems = [
   { label: "Home", path: "/" },
   { label: "Teams", path: "/teams", hasDropdown: true },
+  { label: "PAFC TV", path: "https://www.youtube.com/@PeterboroughAthleticFC", external: true },
   { label: "What's On", path: "/whats-on" },
   { label: "News", path: "/news" },
   { label: "Events", path: "/events" },
