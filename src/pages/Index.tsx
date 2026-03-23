@@ -11,8 +11,8 @@ const Index = () => {
     <div className="min-h-screen flex flex-col">
       <Navbar />
       <HeroSection />
-      <FixturesSection />
       <YouTubeSection />
+      <FixturesSection />
       <AboutSection />
       <SponsorsSection />
       <Footer />
