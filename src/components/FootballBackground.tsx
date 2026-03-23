@@ -1,56 +1,43 @@
 import { useEffect, useRef, useCallback } from "react";
 
-interface Confetti {
+interface Ember {
   x: number;
   y: number;
-  width: number;
-  height: number;
+  size: number;
   speedY: number;
   speedX: number;
-  rotation: number;
-  rotationSpeed: number;
-  flip: number;
-  flipSpeed: number;
+  life: number;
+  maxLife: number;
   opacity: number;
-  color: string;
+  hue: number;
+  lightness: number;
+  wobblePhase: number;
+  wobbleSpeed: number;
+  wobbleAmp: number;
 }
-
-const COLORS = [
-  "hsla(38, 45%, 47%, ALPHA)",   // gold
-  "hsla(38, 40%, 58%, ALPHA)",   // light gold
-  "hsla(38, 50%, 34%, ALPHA)",   // dark gold
-  "hsla(0, 0%, 20%, ALPHA)",     // dark grey
-  "hsla(0, 0%, 30%, ALPHA)",     // mid grey
-  "hsla(38, 60%, 65%, ALPHA)",   // bright gold
-];
 
 export const FootballBackground = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const mouseRef = useRef({ x: -1000, y: -1000 });
-  const confettiRef = useRef<Confetti[]>([]);
+  const embersRef = useRef<Ember[]>([]);
   const animationRef = useRef<number>(0);
 
-  const createConfetti = useCallback((width: number, height: number) => {
-    const pieces: Confetti[] = [];
-    const count = Math.floor((width * height) / 12000);
-
-    for (let i = 0; i < count; i++) {
-      pieces.push({
-        x: Math.random() * width,
-        y: Math.random() * height,
-        width: Math.random() * 6 + 3,
-        height: Math.random() * 4 + 2,
-        speedY: Math.random() * 0.4 + 0.15,
-        speedX: (Math.random() - 0.5) * 0.3,
-        rotation: Math.random() * Math.PI * 2,
-        rotationSpeed: (Math.random() - 0.5) * 0.03,
-        flip: Math.random() * Math.PI * 2,
-        flipSpeed: Math.random() * 0.02 + 0.01,
-        opacity: Math.random() * 0.12 + 0.04,
-        color: COLORS[Math.floor(Math.random() * COLORS.length)],
-      });
-    }
-    return pieces;
+  const spawnEmber = useCallback((width: number, height: number, fromBottom = true): Ember => {
+    return {
+      x: Math.random() * width,
+      y: fromBottom ? height + Math.random() * 40 : Math.random() * height,
+      size: Math.random() * 3 + 1,
+      speedY: -(Math.random() * 0.8 + 0.3),
+      speedX: (Math.random() - 0.5) * 0.2,
+      life: 0,
+      maxLife: Math.random() * 400 + 200,
+      opacity: 0,
+      hue: 38 + (Math.random() - 0.5) * 10,
+      lightness: 45 + Math.random() * 20,
+      wobblePhase: Math.random() * Math.PI * 2,
+      wobbleSpeed: Math.random() * 0.03 + 0.01,
+      wobbleAmp: Math.random() * 1.5 + 0.5,
+    };
   }, []);
 
   useEffect(() => {
@@ -62,7 +49,14 @@ export const FootballBackground = () => {
     const resize = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
-      confettiRef.current = createConfetti(canvas.width, canvas.height);
+      const count = Math.floor((canvas.width * canvas.height) / 8000);
+      embersRef.current = Array.from({ length: count }, () =>
+        spawnEmber(canvas.width, canvas.height, false)
+      );
+      // Randomize initial life so they don't all appear at once
+      embersRef.current.forEach((e) => {
+        e.life = Math.random() * e.maxLife;
+      });
     };
 
     resize();
@@ -76,67 +70,56 @@ export const FootballBackground = () => {
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       const mouse = mouseRef.current;
-      const swirl = 80;
+      const mouseRadius = 150;
 
-      confettiRef.current.forEach((c) => {
-        // Mouse swirl effect
-        const dx = c.x - mouse.x;
-        const dy = c.y - mouse.y;
+      embersRef.current.forEach((e, i) => {
+        e.life++;
+
+        // Fade in, sustain, fade out
+        const fadeIn = Math.min(e.life / 60, 1);
+        const fadeOut = Math.max(1 - (e.life - e.maxLife + 80) / 80, 0);
+        e.opacity = fadeIn * fadeOut * 0.35;
+
+        // Float upward with wobble
+        e.y += e.speedY;
+        e.x += e.speedX + Math.sin(e.wobblePhase + e.life * e.wobbleSpeed) * e.wobbleAmp * 0.3;
+
+        // Mouse interaction — scatter embers
+        const dx = e.x - mouse.x;
+        const dy = e.y - mouse.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
 
-        if (dist < swirl && dist > 0) {
-          const force = (swirl - dist) / swirl;
-          // Push away + add spin
-          c.x += (dx / dist) * force * 3;
-          c.y += (dy / dist) * force * 2;
-          c.rotationSpeed += force * 0.01;
-          c.opacity = Math.min(c.opacity + 0.01, 0.3);
-        } else {
-          c.opacity += (Math.random() * 0.12 + 0.04 - c.opacity) * 0.005;
+        if (dist < mouseRadius && dist > 0) {
+          const force = (mouseRadius - dist) / mouseRadius;
+          e.x += (dx / dist) * force * 4;
+          e.y += (dy / dist) * force * 3;
+          e.opacity = Math.min(e.opacity + force * 0.3, 0.7);
+          e.size = Math.min(e.size + force * 0.5, 5);
         }
 
-        // Fall & drift
-        c.y += c.speedY;
-        c.x += c.speedX + Math.sin(c.rotation) * 0.15;
-        c.rotation += c.rotationSpeed;
-        c.flip += c.flipSpeed;
-
-        // Wrap
-        if (c.y > canvas.height + 10) {
-          c.y = -10;
-          c.x = Math.random() * canvas.width;
+        // Respawn if dead or off screen
+        if (e.life >= e.maxLife || e.y < -20) {
+          embersRef.current[i] = spawnEmber(canvas.width, canvas.height, true);
+          return;
         }
-        if (c.x < -10) c.x = canvas.width + 10;
-        if (c.x > canvas.width + 10) c.x = -10;
 
-        // Draw confetti piece
-        ctx.save();
-        ctx.translate(c.x, c.y);
-        ctx.rotate(c.rotation);
+        // Draw glow
+        if (e.opacity > 0.05) {
+          const glowSize = e.size * 4;
+          const glow = ctx.createRadialGradient(e.x, e.y, 0, e.x, e.y, glowSize);
+          glow.addColorStop(0, `hsla(${e.hue}, 50%, ${e.lightness}%, ${e.opacity * 0.4})`);
+          glow.addColorStop(1, `hsla(${e.hue}, 50%, ${e.lightness}%, 0)`);
+          ctx.beginPath();
+          ctx.arc(e.x, e.y, glowSize, 0, Math.PI * 2);
+          ctx.fillStyle = glow;
+          ctx.fill();
 
-        const scaleX = Math.cos(c.flip);
-        ctx.scale(scaleX, 1);
-
-        ctx.globalAlpha = c.opacity;
-        ctx.fillStyle = c.color.replace("ALPHA", String(c.opacity));
-        
-        // Rounded rectangle confetti
-        const w = c.width;
-        const h = c.height;
-        const r = 1;
-        ctx.beginPath();
-        ctx.moveTo(-w / 2 + r, -h / 2);
-        ctx.lineTo(w / 2 - r, -h / 2);
-        ctx.quadraticCurveTo(w / 2, -h / 2, w / 2, -h / 2 + r);
-        ctx.lineTo(w / 2, h / 2 - r);
-        ctx.quadraticCurveTo(w / 2, h / 2, w / 2 - r, h / 2);
-        ctx.lineTo(-w / 2 + r, h / 2);
-        ctx.quadraticCurveTo(-w / 2, h / 2, -w / 2, h / 2 - r);
-        ctx.lineTo(-w / 2, -h / 2 + r);
-        ctx.quadraticCurveTo(-w / 2, -h / 2, -w / 2 + r, -h / 2);
-        ctx.fill();
-
-        ctx.restore();
+          // Draw core
+          ctx.beginPath();
+          ctx.arc(e.x, e.y, e.size, 0, Math.PI * 2);
+          ctx.fillStyle = `hsla(${e.hue}, 55%, ${e.lightness + 15}%, ${e.opacity})`;
+          ctx.fill();
+        }
       });
 
       animationRef.current = requestAnimationFrame(animate);
@@ -149,13 +132,13 @@ export const FootballBackground = () => {
       window.removeEventListener("mousemove", handleMouseMove);
       cancelAnimationFrame(animationRef.current);
     };
-  }, [createConfetti]);
+  }, [spawnEmber]);
 
   return (
     <canvas
       ref={canvasRef}
       className="fixed inset-0 pointer-events-none z-0"
-      style={{ opacity: 0.8 }}
+      style={{ opacity: 0.9 }}
     />
   );
 };
