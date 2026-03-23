@@ -126,6 +126,17 @@ export function Navbar() {
                     </div>
                   )}
                 </div>
+              ) : (item as any).external ? (
+                <a
+                  key={item.label}
+                  href={item.path}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setIsOpen(false)}
+                  className="font-display text-sm tracking-wider text-muted-foreground hover:text-primary transition-colors py-2"
+                >
+                  {item.label}
+                </a>
               ) : (
                 <Link
                   key={item.label}
