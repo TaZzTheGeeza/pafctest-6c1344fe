@@ -17,11 +17,6 @@ const mainSponsors: Sponsor[] = [
   { name: "Preim", logo: "https://mcp-cdn-fja5bvhth4eqercf.z01.azurefd.net/images/Sponsors/1611/109951/sponsor.jpg", url: "https://www.preim.co.uk/" },
 ];
 
-const teamSponsors: Sponsor[] = [
-  { name: "New Theatre Peterborough", logo: "https://mcp-cdn-fja5bvhth4eqercf.z01.azurefd.net/images/TeamSponsors/1611/84852/81588/teamsponsorlogo.jpg", url: "https://newtheatre-peterborough.com/" },
-  { name: "Dyno-Rod", logo: "https://mcp-cdn-fja5bvhth4eqercf.z01.azurefd.net/images/TeamSponsors/1611/84849/81584/teamsponsorlogo.jpg", url: "https://www.dyno.com/" },
-  { name: "Preim", logo: "https://mcp-cdn-fja5bvhth4eqercf.z01.azurefd.net/images/TeamSponsors/1611/84850/81581/teamsponsorlogo.jpg", url: "https://www.preim.co.uk/" },
-];
 
 export default function SponsorsPage() {
   return (
@@ -59,25 +54,7 @@ export default function SponsorsPage() {
               ))}
             </div>
 
-            <h2 className="font-display text-xl font-bold text-center mb-6">
-              <span className="text-gold-gradient">Team</span> Sponsors
-            </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-16">
-              {teamSponsors.map((sponsor, i) => (
-                <motion.a
-                  key={`team-${i}`}
-                  href={sponsor.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: i * 0.05 }}
-                  className="bg-card border border-border rounded-lg p-4 flex items-center justify-center hover:border-primary transition-colors"
-                >
-                  <img src={sponsor.logo} alt={sponsor.name} className="h-14 w-auto object-contain" loading="lazy" />
-                </motion.a>
-              ))}
-            </div>
+
 
             <motion.div
               initial={{ opacity: 0, y: 20 }}
