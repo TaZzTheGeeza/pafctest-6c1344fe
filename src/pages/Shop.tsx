@@ -116,7 +116,7 @@ export default function ShopPage() {
                     className="bg-card border border-border rounded-lg overflow-hidden group"
                   >
                     <Link to={`/product/${product.node.handle}`}>
-                      <div className="aspect-square bg-gold border-b border-gold-dark overflow-hidden flex items-center justify-center p-4">
+                      <div className="aspect-square bg-white border-b border-border overflow-hidden flex items-center justify-center p-4">
                         {image ? (
                           <img
                             src={image.url}
