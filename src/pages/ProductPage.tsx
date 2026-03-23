@@ -98,7 +98,7 @@ export default function ProductPage() {
             className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12"
           >
             <div>
-              <div className="aspect-square bg-gradient-to-br from-gold-dark/10 to-gold/5 border border-border rounded-lg overflow-hidden mb-4 flex items-center justify-center p-4">
+              <div className="aspect-square bg-gold border border-gold-dark rounded-lg overflow-hidden mb-4 flex items-center justify-center p-4">
                 {images[selectedImage] ? (
                   <img
                     src={images[selectedImage].node.url}
