@@ -18,14 +18,9 @@ const mainSponsors: Sponsor[] = [
 ];
 
 const teamSponsors: Sponsor[] = [
-  { name: "Sponsor 1", logo: "https://mcp-cdn-fja5bvhth4eqercf.z01.azurefd.net/images/TeamSponsors/1611/84852/81588/teamsponsorlogo.jpg", url: "https://newtheatre-peterborough.com/" },
-  { name: "Sponsor 2", logo: "https://mcp-cdn-fja5bvhth4eqercf.z01.azurefd.net/images/TeamSponsors/1611/84853/81589/teamsponsorlogo.jpg", url: "https://newtheatre-peterborough.com/" },
-  { name: "Sponsor 3", logo: "https://mcp-cdn-fja5bvhth4eqercf.z01.azurefd.net/images/TeamSponsors/1611/84854/81587/teamsponsorlogo.jpg", url: "https://newtheatre-peterborough.com/" },
-  { name: "Sponsor 4", logo: "https://mcp-cdn-fja5bvhth4eqercf.z01.azurefd.net/images/TeamSponsors/1611/84855/81586/teamsponsorlogo.jpg", url: "https://newtheatre-peterborough.com/" },
-  { name: "Sponsor 5", logo: "https://mcp-cdn-fja5bvhth4eqercf.z01.azurefd.net/images/TeamSponsors/1611/84856/81585/teamsponsorlogo.jpg", url: "https://newtheatre-peterborough.com/" },
-  { name: "Sponsor 6", logo: "https://mcp-cdn-fja5bvhth4eqercf.z01.azurefd.net/images/TeamSponsors/1611/84849/81584/teamsponsorlogo.jpg", url: "https://www.dyno.com/" },
-  { name: "Sponsor 7", logo: "https://mcp-cdn-fja5bvhth4eqercf.z01.azurefd.net/images/TeamSponsors/1611/84848/81583/teamsponsorlogo.jpg", url: "https://www.dyno.com/" },
-  { name: "Sponsor 8", logo: "https://mcp-cdn-fja5bvhth4eqercf.z01.azurefd.net/images/TeamSponsors/1611/84850/81581/teamsponsorlogo.jpg", url: "https://www.preim.co.uk/" },
+  { name: "New Theatre Peterborough", logo: "https://mcp-cdn-fja5bvhth4eqercf.z01.azurefd.net/images/TeamSponsors/1611/84852/81588/teamsponsorlogo.jpg", url: "https://newtheatre-peterborough.com/" },
+  { name: "Dyno-Rod", logo: "https://mcp-cdn-fja5bvhth4eqercf.z01.azurefd.net/images/TeamSponsors/1611/84849/81584/teamsponsorlogo.jpg", url: "https://www.dyno.com/" },
+  { name: "Preim", logo: "https://mcp-cdn-fja5bvhth4eqercf.z01.azurefd.net/images/TeamSponsors/1611/84850/81581/teamsponsorlogo.jpg", url: "https://www.preim.co.uk/" },
 ];
 
 export default function SponsorsPage() {
