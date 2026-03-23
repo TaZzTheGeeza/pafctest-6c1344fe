@@ -9,16 +9,25 @@ import { toast } from "sonner";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 
+const CATEGORIES = [
+  { label: "All", tag: null },
+  { label: "Players", tag: "players" },
+  { label: "Supporters", tag: "supporters" },
+  { label: "Coaches", tag: "coaches" },
+] as const;
+
 export default function ShopPage() {
   const [products, setProducts] = useState<ShopifyProduct[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const addItem = useCartStore(state => state.addItem);
   const isCartLoading = useCartStore(state => state.isLoading);
 
   useEffect(() => {
     async function fetchProducts() {
       try {
-        const data = await storefrontApiRequest(STOREFRONT_PRODUCTS_QUERY, { first: 20 });
+        const queryVar = activeCategory ? `tag:${activeCategory}` : undefined;
+        const data = await storefrontApiRequest(STOREFRONT_PRODUCTS_QUERY, { first: 50, query: queryVar });
         if (data?.data?.products?.edges) {
           setProducts(data.data.products.edges);
         }
@@ -28,8 +37,9 @@ export default function ShopPage() {
         setLoading(false);
       }
     }
+    setLoading(true);
     fetchProducts();
-  }, []);
+  }, [activeCategory]);
 
   const handleAddToCart = async (product: ShopifyProduct) => {
     const variant = product.node.variants.edges[0]?.node;
@@ -58,10 +68,27 @@ export default function ShopPage() {
             <h1 className="text-4xl md:text-5xl font-bold font-display text-center mb-2">
               <span className="text-gold-gradient">Club</span> Shop
             </h1>
-            <p className="text-muted-foreground text-center mb-12">
+            <p className="text-muted-foreground text-center mb-8">
               Official Peterborough Athletic FC merchandise
             </p>
           </motion.div>
+
+          {/* Category Tabs */}
+          <div className="flex justify-center gap-2 mb-10 flex-wrap">
+            {CATEGORIES.map((cat) => (
+              <button
+                key={cat.label}
+                onClick={() => setActiveCategory(cat.tag)}
+                className={`px-5 py-2 rounded-full font-display text-sm tracking-wider transition-all duration-200 border ${
+                  activeCategory === cat.tag
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-card text-foreground border-border hover:border-primary"
+                }`}
+              >
+                {cat.label}
+              </button>
+            ))}
+          </div>
 
           {loading ? (
             <div className="flex justify-center py-20">
@@ -72,7 +99,7 @@ export default function ShopPage() {
               <ShoppingBag className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
               <h3 className="font-display text-xl mb-2 text-foreground">No products found</h3>
               <p className="text-muted-foreground">
-                Merchandise coming soon! Check back later for kits, training wear, and more.
+                No merchandise in this category yet. Check back soon!
               </p>
             </div>
           ) : (
@@ -85,7 +112,7 @@ export default function ShopPage() {
                     key={product.node.id}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, delay: i * 0.1 }}
+                    transition={{ duration: 0.4, delay: i * 0.05 }}
                     className="bg-card border border-border rounded-lg overflow-hidden group"
                   >
                     <Link to={`/product/${product.node.handle}`}>
@@ -111,7 +138,7 @@ export default function ShopPage() {
                         </h3>
                       </Link>
                       <p className="text-primary font-bold mt-1">
-                        {price.currencyCode} {parseFloat(price.amount).toFixed(2)}
+                        £{parseFloat(price.amount).toFixed(2)}
                       </p>
                       <Button
                         onClick={() => handleAddToCart(product)}
