@@ -14,7 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      player_registrations: {
+        Row: {
+          additional_info: string | null
+          child_dob: string
+          child_name: string
+          created_at: string
+          email: string
+          id: string
+          medical_conditions: string | null
+          parent_name: string
+          phone: string
+          preferred_age_group: string
+          previous_club: string | null
+        }
+        Insert: {
+          additional_info?: string | null
+          child_dob: string
+          child_name: string
+          created_at?: string
+          email: string
+          id?: string
+          medical_conditions?: string | null
+          parent_name: string
+          phone: string
+          preferred_age_group: string
+          previous_club?: string | null
+        }
+        Update: {
+          additional_info?: string | null
+          child_dob?: string
+          child_name?: string
+          created_at?: string
+          email?: string
+          id?: string
+          medical_conditions?: string | null
+          parent_name?: string
+          phone?: string
+          preferred_age_group?: string
+          previous_club?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
