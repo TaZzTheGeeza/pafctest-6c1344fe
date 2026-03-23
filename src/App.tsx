@@ -16,6 +16,8 @@ import ClubDocumentsPage from "./pages/ClubDocumentsPage.tsx";
 import SponsorsPage from "./pages/SponsorsPage.tsx";
 import ClubInfoPage from "./pages/ClubInfoPage.tsx";
 import ContactPage from "./pages/ContactPage.tsx";
+import SafeguardingPage from "./pages/SafeguardingPage.tsx";
+import PlayerRegistrationPage from "./pages/PlayerRegistrationPage.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -38,6 +40,8 @@ function AppContent() {
         <Route path="/sponsors" element={<SponsorsPage />} />
         <Route path="/club-info" element={<ClubInfoPage />} />
         <Route path="/contact" element={<ContactPage />} />
+        <Route path="/safeguarding" element={<SafeguardingPage />} />
+        <Route path="/register" element={<PlayerRegistrationPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>

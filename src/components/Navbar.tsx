@@ -19,6 +19,8 @@ const navItems = [
   { label: "Club Documents", path: "/club-documents" },
   { label: "Sponsors", path: "/sponsors" },
   { label: "Club Info", path: "/club-info" },
+  { label: "Safeguarding", path: "/safeguarding" },
+  { label: "Register", path: "/register" },
   { label: "Contact", path: "/contact" },
   { label: "Shop", path: "/shop" },
 ];
