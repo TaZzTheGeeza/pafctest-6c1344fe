@@ -121,7 +121,7 @@ export default function ShopPage() {
                           <img
                             src={image.url}
                             alt={image.altText || product.node.title}
-                            className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                            className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-300 mix-blend-multiply"
                             loading="lazy"
                           />
                         ) : (

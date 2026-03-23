@@ -103,7 +103,7 @@ export default function ProductPage() {
                   <img
                     src={images[selectedImage].node.url}
                     alt={images[selectedImage].node.altText || product.title}
-                    className="max-w-full max-h-full object-contain"
+                    className="max-w-full max-h-full object-contain mix-blend-multiply"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
