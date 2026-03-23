@@ -12,6 +12,7 @@ const teams = [
 const navItems = [
   { label: "Home", path: "/" },
   { label: "Teams", path: "/teams", hasDropdown: true },
+  { label: "PAFC TV", path: "https://www.youtube.com/@PeterboroughAthleticFC", external: true },
   { label: "What's On", path: "/whats-on" },
   { label: "News", path: "/news" },
   { label: "Events", path: "/events" },
@@ -66,6 +67,16 @@ export function Navbar() {
                   </div>
                 </div>
               </div>
+            ) : (item as any).external ? (
+              <a
+                key={item.label}
+                href={item.path}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-display text-xs tracking-wider px-3 py-2 rounded-md transition-colors text-muted-foreground hover:text-primary"
+              >
+                {item.label}
+              </a>
             ) : (
               <Link
                 key={item.label}
@@ -115,6 +126,17 @@ export function Navbar() {
                     </div>
                   )}
                 </div>
+              ) : (item as any).external ? (
+                <a
+                  key={item.label}
+                  href={item.path}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setIsOpen(false)}
+                  className="font-display text-sm tracking-wider text-muted-foreground hover:text-primary transition-colors py-2"
+                >
+                  {item.label}
+                </a>
               ) : (
                 <Link
                   key={item.label}
