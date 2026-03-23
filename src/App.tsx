@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useCartSync } from "@/hooks/useCartSync";
+import { FootballBackground } from "@/components/FootballBackground";
 import Index from "./pages/Index.tsx";
 import ShopPage from "./pages/Shop.tsx";
 import ProductPage from "./pages/ProductPage.tsx";
