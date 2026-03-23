@@ -41,12 +41,12 @@ export function SponsorsSection() {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: i * 0.1 }}
-              className="bg-card border border-border rounded-lg p-4 hover:border-primary transition-colors"
+              className="p-4 hover:opacity-80 transition-opacity"
             >
               <img
                 src={sponsor.logo}
                 alt={sponsor.name}
-                className="h-16 w-auto object-contain"
+                className="h-16 w-auto object-contain brightness-0 invert opacity-70 hover:opacity-100 transition-opacity"
                 loading="lazy"
               />
             </motion.a>
