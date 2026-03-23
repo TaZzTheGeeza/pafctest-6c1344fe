@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import { CartDrawer } from "@/components/CartDrawer";
+import clubLogo from "@/assets/club-logo.jpg";
 
 const navItems = [
   { label: "Home", path: "/" },
@@ -28,8 +29,9 @@ export function Navbar() {
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-md border-b border-border">
       <div className="container mx-auto px-4 flex items-center justify-between h-16">
         <Link to="/" className="flex items-center gap-3">
-          <span className="font-display text-xl font-bold text-gold-gradient">
-            Peterborough Athletic FC
+          <img src={clubLogo} alt="PAFC Crest" className="h-10 w-10 rounded-full object-cover" />
+          <span className="font-display text-lg font-bold text-gold-gradient hidden sm:inline">
+            Athletic FC
           </span>
         </Link>
 

@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import clubLogo from "@/assets/club-logo.jpg";
 
 export function Footer() {
   return (
@@ -6,9 +7,12 @@ export function Footer() {
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>
-            <h3 className="font-display text-lg font-bold text-gold-gradient mb-4">Peterborough Athletic FC</h3>
+            <div className="flex items-center gap-3 mb-4">
+              <img src={clubLogo} alt="PAFC Crest" className="h-10 w-10 rounded-full object-cover" />
+              <h3 className="font-display text-lg font-bold text-gold-gradient">Athletic FC</h3>
+            </div>
             <p className="text-muted-foreground text-sm">
-              Black & Gold. Passion. Pride.
+              Est. 2020 · Black & Gold. Passion. Pride.
             </p>
           </div>
           <div>
