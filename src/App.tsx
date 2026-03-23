@@ -52,6 +52,7 @@ function AppContent() {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
+      <FootballBackground />
       <Toaster />
       <Sonner />
       <AppContent />
