@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { UserPlus, Clock, Send, CheckCircle, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import clubLogo from "@/assets/club-logo.jpg";
 
 const ageGroups = [
@@ -37,14 +38,31 @@ export default function PlayerRegistrationPage() {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Simulate submission for now — will be wired to email later
-    await new Promise((r) => setTimeout(r, 1000));
+    try {
+      const { error } = await supabase.from('player_registrations').insert({
+        child_name: form.childName,
+        child_dob: form.childDob,
+        parent_name: form.parentName,
+        email: form.email,
+        phone: form.phone,
+        preferred_age_group: form.preferredAgeGroup,
+        previous_club: form.previousClub || null,
+        medical_conditions: form.medicalConditions || null,
+        additional_info: form.additionalInfo || null,
+      });
 
-    toast.success("Registration of interest submitted!", {
-      description: "We'll be in touch when registration opens for the 2026/27 season.",
-    });
-    setSubmitted(true);
-    setIsSubmitting(false);
+      if (error) throw error;
+
+      toast.success("Registration of interest submitted!", {
+        description: "We'll be in touch when registration opens for the 2026/27 season.",
+      });
+      setSubmitted(true);
+    } catch (err) {
+      toast.error("Something went wrong. Please try again.");
+      console.error(err);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
