@@ -116,12 +116,12 @@ export default function ShopPage() {
                     className="bg-card border border-border rounded-lg overflow-hidden group"
                   >
                     <Link to={`/product/${product.node.handle}`}>
-                      <div className="aspect-square bg-secondary overflow-hidden">
+                      <div className="aspect-square bg-secondary overflow-hidden flex items-center justify-center p-4">
                         {image ? (
                           <img
                             src={image.url}
                             alt={image.altText || product.node.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-300"
                             loading="lazy"
                           />
                         ) : (

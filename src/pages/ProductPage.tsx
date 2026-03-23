@@ -98,12 +98,12 @@ export default function ProductPage() {
             className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12"
           >
             <div>
-              <div className="aspect-square bg-secondary rounded-lg overflow-hidden mb-4">
+              <div className="aspect-square bg-secondary rounded-lg overflow-hidden mb-4 flex items-center justify-center p-4">
                 {images[selectedImage] ? (
                   <img
                     src={images[selectedImage].node.url}
                     alt={images[selectedImage].node.altText || product.title}
-                    className="w-full h-full object-cover"
+                    className="max-w-full max-h-full object-contain"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
