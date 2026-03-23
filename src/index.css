@@ -15,8 +15,8 @@
     --popover: 0 0% 8%;
     --popover-foreground: 45 10% 92%;
 
-    --primary: 43 90% 50%;
-    --primary-foreground: 0 0% 5%;
+    --primary: 38 45% 47%;
+    --primary-foreground: 0 0% 100%;
 
     --secondary: 0 0% 14%;
     --secondary-foreground: 45 10% 92%;
@@ -24,21 +24,21 @@
     --muted: 0 0% 14%;
     --muted-foreground: 0 0% 55%;
 
-    --accent: 43 90% 50%;
-    --accent-foreground: 0 0% 5%;
+    --accent: 38 45% 47%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
     --border: 0 0% 18%;
     --input: 0 0% 18%;
-    --ring: 43 90% 50%;
+    --ring: 38 45% 47%;
 
     --radius: 0.5rem;
 
-    --gold: 43 90% 50%;
-    --gold-light: 43 80% 65%;
-    --gold-dark: 43 100% 35%;
+    --gold: 38 45% 47%;
+    --gold-light: 38 40% 58%;
+    --gold-dark: 38 50% 34%;
     --surface-elevated: 0 0% 10%;
 
     --font-display: 'Oswald', sans-serif;
@@ -46,12 +46,12 @@
 
     --sidebar-background: 0 0% 8%;
     --sidebar-foreground: 45 10% 92%;
-    --sidebar-primary: 43 90% 50%;
-    --sidebar-primary-foreground: 0 0% 5%;
+    --sidebar-primary: 38 45% 47%;
+    --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 0 0% 14%;
     --sidebar-accent-foreground: 45 10% 92%;
     --sidebar-border: 0 0% 18%;
-    --sidebar-ring: 43 90% 50%;
+    --sidebar-ring: 38 45% 47%;
   }
 }
 
@@ -74,14 +74,14 @@
 
 @layer utilities {
   .text-gold-gradient {
-    background: linear-gradient(135deg, hsl(43 90% 50%), hsl(43 80% 65%));
+    background: linear-gradient(135deg, hsl(38 45% 47%), hsl(38 40% 58%));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
   .bg-gold-gradient {
-    background: linear-gradient(135deg, hsl(43 90% 50%), hsl(43 100% 35%));
+    background: linear-gradient(135deg, hsl(38 45% 47%), hsl(38 50% 34%));
   }
 
   .bg-surface-elevated {
