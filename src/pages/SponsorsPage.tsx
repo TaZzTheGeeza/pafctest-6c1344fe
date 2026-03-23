@@ -17,11 +17,6 @@ const mainSponsors: Sponsor[] = [
   { name: "Preim", logo: "https://mcp-cdn-fja5bvhth4eqercf.z01.azurefd.net/images/Sponsors/1611/109951/sponsor.jpg", url: "https://www.preim.co.uk/" },
 ];
 
-const teamSponsors: Sponsor[] = [
-  { name: "New Theatre Peterborough", logo: "https://mcp-cdn-fja5bvhth4eqercf.z01.azurefd.net/images/TeamSponsors/1611/84852/81588/teamsponsorlogo.jpg", url: "https://newtheatre-peterborough.com/" },
-  { name: "Dyno-Rod", logo: "https://mcp-cdn-fja5bvhth4eqercf.z01.azurefd.net/images/TeamSponsors/1611/84849/81584/teamsponsorlogo.jpg", url: "https://www.dyno.com/" },
-  { name: "Preim", logo: "https://mcp-cdn-fja5bvhth4eqercf.z01.azurefd.net/images/TeamSponsors/1611/84850/81581/teamsponsorlogo.jpg", url: "https://www.preim.co.uk/" },
-];
 
 export default function SponsorsPage() {
   return (
