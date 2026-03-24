@@ -227,33 +227,27 @@ const TournamentPage = () => {
       <main className="flex-1 pt-20 pb-12">
         <div className="container mx-auto px-4">
           {/* Hero */}
-          <div className="relative mb-10 overflow-hidden rounded-2xl bg-gradient-to-br from-primary via-primary/90 to-primary/70 text-primary-foreground p-8 md:p-12">
-            <div className="absolute inset-0 opacity-10">
-              <div className="absolute top-4 right-4 w-64 h-64 rounded-full border-[3px] border-current" />
-              <div className="absolute bottom-4 left-4 w-48 h-48 rounded-full border-[3px] border-current" />
+          <div className="mb-10 text-center">
+            <h1 className="font-display text-3xl md:text-5xl font-bold tracking-tight text-foreground">
+              Peterborough Athletic <span className="text-primary">Tournament 2026</span>
+            </h1>
+            <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 mt-4 text-sm text-muted-foreground">
+              <span className="flex items-center gap-1.5">
+                <Calendar className="h-4 w-4 text-primary" />
+                13th – 21st June 2026
+              </span>
+              <span className="flex items-center gap-1.5">
+                <MapPin className="h-4 w-4 text-primary" />
+                Itter Park
+              </span>
+              <span className="flex items-center gap-1.5">
+                <PoundSterling className="h-4 w-4 text-primary" />
+                £40 per team
+              </span>
             </div>
-            <div className="relative z-10 text-center max-w-3xl mx-auto">
-              <Trophy className="h-12 w-12 mx-auto mb-4 opacity-90" />
-              <h1 className="font-display text-3xl md:text-5xl font-bold tracking-tight">
-                Peterborough Athletic
-              </h1>
-              <p className="text-xl md:text-2xl font-semibold mt-1 opacity-90">Tournament 2026</p>
-              
-              <div className="flex flex-wrap justify-center gap-6 mt-6 text-sm md:text-base">
-                <span className="flex items-center gap-2">
-                  <Calendar className="h-5 w-5" />
-                  13th – 21st June 2026
-                </span>
-                <span className="flex items-center gap-2">
-                  <MapPin className="h-5 w-5" />
-                  Itter Park
-                </span>
-                <span className="flex items-center gap-2">
-                  <PoundSterling className="h-5 w-5" />
-                  £40 per team
-                </span>
-              </div>
-            </div>
+            {activeTournament?.description && (
+              <p className="mt-3 text-muted-foreground max-w-2xl mx-auto text-sm">{activeTournament.description}</p>
+            )}
           </div>
 
           {/* Payment verification overlay */}
