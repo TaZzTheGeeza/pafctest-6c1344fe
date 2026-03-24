@@ -11,6 +11,7 @@ import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus, Trophy, Ticket, Loader2, Shuffle, Eye, Trash2, ImagePlus, X, Pencil } from "lucide-react";
+import RichTextEditor from "@/components/RichTextEditor";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -384,7 +385,7 @@ const RaffleAdminPage = () => {
                   </div>
                   <div>
                     <Label>Description</Label>
-                    <Textarea placeholder="Optional description..." value={newRaffle.description} onChange={(e) => setNewRaffle(p => ({ ...p, description: e.target.value }))} />
+                    <RichTextEditor placeholder="Optional description..." value={newRaffle.description} onChange={(val) => setNewRaffle(p => ({ ...p, description: val }))} />
                   </div>
                   <div>
                     <Label>Prize Description *</Label>
@@ -604,7 +605,7 @@ const RaffleAdminPage = () => {
             </div>
             <div>
               <Label>Description</Label>
-              <Textarea value={editForm.description} onChange={(e) => setEditForm(p => ({ ...p, description: e.target.value }))} />
+              <RichTextEditor value={editForm.description} onChange={(val) => setEditForm(p => ({ ...p, description: val }))} />
             </div>
             <div>
               <Label>Prize Description *</Label>
