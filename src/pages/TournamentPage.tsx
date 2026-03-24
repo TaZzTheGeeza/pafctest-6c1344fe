@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -207,6 +207,16 @@ const TournamentPage = () => {
   };
 
   const getTeamName = (id: string) => teams?.find(t => t.id === id)?.team_name || "TBC";
+
+  const TeamLink = ({ id }: { id: string }) => {
+    const name = getTeamName(id);
+    if (name === "TBC") return <span>{name}</span>;
+    return (
+      <Link to={`/tournament/team/${id}`} className="hover:text-primary hover:underline transition-colors">
+        {name}
+      </Link>
+    );
+  };
 
   const knockoutMatches = matches?.filter(m => m.stage !== "group") || [];
   const groupMatches = matches?.filter(m => m.stage === "group") || [];
