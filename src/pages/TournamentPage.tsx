@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import tournamentPoster from "@/assets/tournament-2026.jpg";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Users, Calendar, MapPin, ClipboardList, Megaphone, Shield } from "lucide-react";
+import { Trophy, Users, Calendar, MapPin, ClipboardList, Megaphone, Shield, Clock, PoundSterling } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -125,7 +124,6 @@ const TournamentPage = () => {
     setRegForm({ team_name: "", manager_name: "", manager_email: "", manager_phone: "", player_count: "", age_group_id: "" });
   };
 
-  // Calculate group standings
   const getStandings = (groupId: string) => {
     const groupTeams = teams?.filter(t => t.group_id === groupId) || [];
     const groupMatches = matches?.filter(m => m.group_id === groupId && m.status === "completed") || [];
@@ -149,28 +147,51 @@ const TournamentPage = () => {
   const knockoutMatches = matches?.filter(m => m.stage !== "group") || [];
   const groupMatches = matches?.filter(m => m.stage === "group") || [];
 
+  // Age group schedule details
+  const ageGroupDetails: Record<string, { date: string; format: string }> = {
+    "U7s": { date: "Saturday 13th June", format: "5v5" },
+    "U8s": { date: "Saturday 13th June", format: "5v5" },
+    "U9s": { date: "Sunday 14th June", format: "7v7" },
+    "U10s": { date: "Sunday 14th June", format: "7v7" },
+    "U11s": { date: "Saturday 20th June", format: "7v7" },
+    "U12s": { date: "Saturday 20th June", format: "7v7" },
+    "U13s": { date: "Sunday 21st June", format: "7v7" },
+    "U14s": { date: "Sunday 21st June", format: "7v7" },
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
       <main className="flex-1 pt-20 pb-12">
         <div className="container mx-auto px-4">
-          {/* Hero with poster */}
-          <div className="text-center mb-10">
-            <div className="max-w-md mx-auto mb-6 rounded-xl overflow-hidden shadow-xl border border-primary/20">
-              <img src={tournamentPoster} alt="Peterborough Athletic Tournament 2026" className="w-full h-auto" />
+          {/* Hero */}
+          <div className="relative mb-10 overflow-hidden rounded-2xl bg-gradient-to-br from-primary via-primary/90 to-primary/70 text-primary-foreground p-8 md:p-12">
+            <div className="absolute inset-0 opacity-10">
+              <div className="absolute top-4 right-4 w-64 h-64 rounded-full border-[3px] border-current" />
+              <div className="absolute bottom-4 left-4 w-48 h-48 rounded-full border-[3px] border-current" />
             </div>
-            <h1 className="font-display text-3xl md:text-4xl font-bold text-primary">Tournament Hub</h1>
-            {activeTournament && (
-              <div className="flex flex-wrap justify-center gap-4 mt-4 text-sm text-muted-foreground">
-                {activeTournament.tournament_date && (
-                  <span className="flex items-center gap-1"><Calendar className="h-4 w-4" />13th - 21st June 2026</span>
-                )}
-                {activeTournament.venue && (
-                  <span className="flex items-center gap-1"><MapPin className="h-4 w-4" />{activeTournament.venue}</span>
-                )}
+            <div className="relative z-10 text-center max-w-3xl mx-auto">
+              <Trophy className="h-12 w-12 mx-auto mb-4 opacity-90" />
+              <h1 className="font-display text-3xl md:text-5xl font-bold tracking-tight">
+                Peterborough Athletic
+              </h1>
+              <p className="text-xl md:text-2xl font-semibold mt-1 opacity-90">Tournament 2026</p>
+              
+              <div className="flex flex-wrap justify-center gap-6 mt-6 text-sm md:text-base">
+                <span className="flex items-center gap-2">
+                  <Calendar className="h-5 w-5" />
+                  13th – 21st June 2026
+                </span>
+                <span className="flex items-center gap-2">
+                  <MapPin className="h-5 w-5" />
+                  Itter Park
+                </span>
+                <span className="flex items-center gap-2">
+                  <PoundSterling className="h-5 w-5" />
+                  £40 per team
+                </span>
               </div>
-            )}
-            {activeTournament?.description && <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">{activeTournament.description}</p>}
+            </div>
           </div>
 
           {!activeTournament ? (
@@ -206,25 +227,68 @@ const TournamentPage = () => {
                   </Card>
                 )}
 
+                {/* Schedule by age group */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Clock className="h-5 w-5 text-primary" />Schedule & Age Groups
+                    </CardTitle>
+                    <CardDescription>Two weekends of football across all age groups</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid sm:grid-cols-2 gap-3">
+                      {ageGroups?.map(ag => {
+                        const details = ageGroupDetails[ag.age_group];
+                        return (
+                          <div key={ag.id} className="flex items-center justify-between rounded-lg border border-border p-3">
+                            <div>
+                              <p className="font-semibold text-sm">{ag.age_group}</p>
+                              {details && (
+                                <p className="text-xs text-muted-foreground">{details.date} · {details.format}</p>
+                              )}
+                            </div>
+                            {ag.max_teams && (
+                              <Badge variant="secondary" className="text-xs">Max {ag.max_teams}</Badge>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                    {(!ageGroups || ageGroups.length === 0) && <p className="text-sm text-muted-foreground">Age groups coming soon</p>}
+                  </CardContent>
+                </Card>
+
                 <div className="grid md:grid-cols-2 gap-6">
                   <Card>
-                    <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Users className="h-5 w-5 text-primary" />Age Groups</CardTitle></CardHeader>
-                    <CardContent>
-                      <div className="flex flex-wrap gap-2">
-                        {ageGroups?.map(ag => (
-                          <Badge key={ag.id} variant="secondary" className="text-sm">{ag.age_group}{ag.max_teams ? ` (max ${ag.max_teams} teams)` : ""}</Badge>
-                        ))}
-                      </div>
-                      {(!ageGroups || ageGroups.length === 0) && <p className="text-sm text-muted-foreground">Age groups coming soon</p>}
+                    <CardHeader><CardTitle className="text-lg flex items-center gap-2"><ClipboardList className="h-5 w-5 text-primary" />Tournament Info</CardTitle></CardHeader>
+                    <CardContent className="space-y-2 text-sm">
+                      {activeTournament.entry_fee_cents && activeTournament.entry_fee_cents > 0 && <p><strong>Entry Fee:</strong> £{(activeTournament.entry_fee_cents / 100).toFixed(2)} per team</p>}
+                      <p><strong>Registered Teams:</strong> {teams?.length || 0}</p>
+                      {activeTournament.rules && <div><strong>Rules:</strong><p className="mt-1 text-muted-foreground whitespace-pre-wrap">{activeTournament.rules}</p></div>}
                     </CardContent>
                   </Card>
 
                   <Card>
-                    <CardHeader><CardTitle className="text-lg flex items-center gap-2"><ClipboardList className="h-5 w-5 text-primary" />Tournament Info</CardTitle></CardHeader>
-                    <CardContent className="space-y-2 text-sm">
-                      {activeTournament.entry_fee_cents > 0 && <p><strong>Entry Fee:</strong> £{(activeTournament.entry_fee_cents / 100).toFixed(2)} per team</p>}
-                      <p><strong>Registered Teams:</strong> {teams?.length || 0}</p>
-                      {activeTournament.rules && <div><strong>Rules:</strong><p className="mt-1 text-muted-foreground whitespace-pre-wrap">{activeTournament.rules}</p></div>}
+                    <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Users className="h-5 w-5 text-primary" />Quick Stats</CardTitle></CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="text-center rounded-lg bg-muted p-3">
+                          <p className="text-2xl font-bold text-primary">{ageGroups?.length || 0}</p>
+                          <p className="text-xs text-muted-foreground">Age Groups</p>
+                        </div>
+                        <div className="text-center rounded-lg bg-muted p-3">
+                          <p className="text-2xl font-bold text-primary">{teams?.length || 0}</p>
+                          <p className="text-xs text-muted-foreground">Teams</p>
+                        </div>
+                        <div className="text-center rounded-lg bg-muted p-3">
+                          <p className="text-2xl font-bold text-primary">{matches?.length || 0}</p>
+                          <p className="text-xs text-muted-foreground">Matches</p>
+                        </div>
+                        <div className="text-center rounded-lg bg-muted p-3">
+                          <p className="text-2xl font-bold text-primary">4</p>
+                          <p className="text-xs text-muted-foreground">Days</p>
+                        </div>
+                      </div>
                     </CardContent>
                   </Card>
                 </div>
