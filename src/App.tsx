@@ -19,6 +19,8 @@ import ClubInfoPage from "./pages/ClubInfoPage.tsx";
 import ContactPage from "./pages/ContactPage.tsx";
 import SafeguardingPage from "./pages/SafeguardingPage.tsx";
 import PlayerRegistrationPage from "./pages/PlayerRegistrationPage.tsx";
+import RafflePage from "./pages/RafflePage.tsx";
+import RaffleAdminPage from "./pages/RaffleAdminPage.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -43,6 +45,8 @@ function AppContent() {
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/safeguarding" element={<SafeguardingPage />} />
         <Route path="/register" element={<PlayerRegistrationPage />} />
+        <Route path="/raffle" element={<RafflePage />} />
+        <Route path="/raffle-admin" element={<RaffleAdminPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>

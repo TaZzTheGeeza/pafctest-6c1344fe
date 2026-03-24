@@ -35,6 +35,7 @@ const navItems: NavItem[] = [
   { label: "PAFC TV", path: "https://www.youtube.com/@PeterboroughAthleticFC", external: true },
   { label: "Community", path: "/news", dropdown: communityItems },
   { label: "About", path: "/club-info", dropdown: aboutItems },
+  { label: "Raffle", path: "/raffle" },
   { label: "Register", path: "/register" },
   { label: "Contact", path: "/contact" },
   { label: "Shop", path: "/shop" },
