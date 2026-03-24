@@ -51,7 +51,7 @@ export function Navbar() {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border">
-      <div className="container mx-auto px-4 flex items-center justify-between h-16">
+      <div className="container mx-auto px-4 flex items-center justify-center h-16 gap-8">
         <Link to="/" className="flex items-center gap-3 shrink-0">
           <img src={clubLogo} alt="PAFC Crest" className="h-10 w-10 rounded-full object-cover" />
           <div className="hidden sm:block">
