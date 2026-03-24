@@ -21,6 +21,8 @@ import SafeguardingPage from "./pages/SafeguardingPage.tsx";
 import PlayerRegistrationPage from "./pages/PlayerRegistrationPage.tsx";
 import RafflePage from "./pages/RafflePage.tsx";
 import RaffleAdminPage from "./pages/RaffleAdminPage.tsx";
+import TournamentPage from "./pages/TournamentPage.tsx";
+import TournamentAdminPage from "./pages/TournamentAdminPage.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -47,6 +49,8 @@ function AppContent() {
         <Route path="/register" element={<PlayerRegistrationPage />} />
         <Route path="/raffle" element={<RafflePage />} />
         <Route path="/raffle-admin" element={<RaffleAdminPage />} />
+        <Route path="/tournament" element={<TournamentPage />} />
+        <Route path="/tournament-admin" element={<TournamentAdminPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
