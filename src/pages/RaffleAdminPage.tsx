@@ -530,6 +530,11 @@ const RaffleAdminPage = () => {
                             </Button>
                           </>
                         )}
+                        {raffle.status !== "drawn" && (
+                          <Button size="sm" variant="outline" onClick={() => openEditDialog(raffle)}>
+                            <Pencil className="h-4 w-4 mr-1" /> Edit
+                          </Button>
+                        )}
                         <Button size="sm" variant="outline" onClick={() => setViewingRaffle(isViewing ? null : raffle.id)}>
                           <Eye className="h-4 w-4 mr-1" /> {isViewing ? "Hide" : "View"} Tickets
                         </Button>
