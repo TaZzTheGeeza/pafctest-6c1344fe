@@ -161,6 +161,11 @@ const RafflePage = () => {
 
                 return (
                   <Card key={raffle.id} className="bg-card border-border overflow-hidden">
+                    {raffle.image_url && (
+                      <div className="w-full h-48 sm:h-64 overflow-hidden">
+                        <img src={raffle.image_url} alt={raffle.title} className="w-full h-full object-cover" />
+                      </div>
+                    )}
                     <CardHeader className="bg-secondary/50">
                       <div className="flex items-start justify-between">
                         <div>
