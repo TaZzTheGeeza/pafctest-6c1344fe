@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -11,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Users, Calendar, MapPin, ClipboardList, Megaphone, Shield, Clock, PoundSterling } from "lucide-react";
+import { Trophy, Users, Calendar, MapPin, ClipboardList, Megaphone, Shield, Clock, PoundSterling, CheckCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -24,10 +25,13 @@ const registrationSchema = z.object({
 });
 
 const TournamentPage = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [regForm, setRegForm] = useState({
     team_name: "", manager_name: "", manager_email: "", manager_phone: "", player_count: "", age_group_id: ""
   });
   const [submitting, setSubmitting] = useState(false);
+  const [verifying, setVerifying] = useState(false);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
 
   const { data: tournaments } = useQuery({
     queryKey: ["tournaments"],
@@ -51,7 +55,7 @@ const TournamentPage = () => {
     enabled: !!activeTournament,
   });
 
-  const { data: teams } = useQuery({
+  const { data: teams, refetch: refetchTeams } = useQuery({
     queryKey: ["tournament-teams", activeTournament?.id],
     queryFn: async () => {
       if (!ageGroups?.length) return [];
@@ -98,6 +102,44 @@ const TournamentPage = () => {
     enabled: !!activeTournament,
   });
 
+  // Handle payment return
+  useEffect(() => {
+    const payment = searchParams.get("payment");
+    const sessionId = searchParams.get("session_id");
+    const teamId = searchParams.get("team_id");
+
+    if (payment === "success" && sessionId && teamId && !verifying) {
+      setVerifying(true);
+      verifyPayment(sessionId, teamId);
+    } else if (payment === "cancelled") {
+      toast.error("Payment was cancelled. Your registration is still pending.");
+      setSearchParams({});
+    }
+  }, [searchParams]);
+
+  const verifyPayment = async (sessionId: string, teamId: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke("verify-tournament-payment", {
+        body: { session_id: sessionId, team_id: teamId },
+      });
+
+      if (error) throw error;
+
+      if (data.success) {
+        setPaymentSuccess(true);
+        refetchTeams();
+        toast.success("Payment confirmed! Your team has been registered and assigned to a group.");
+      } else {
+        toast.error(data.error || "Payment verification failed");
+      }
+    } catch (err) {
+      toast.error("Failed to verify payment. Please contact us.");
+    } finally {
+      setVerifying(false);
+      setSearchParams({});
+    }
+  };
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!regForm.age_group_id) { toast.error("Please select an age group"); return; }
@@ -109,19 +151,40 @@ const TournamentPage = () => {
     if (!parsed.success) { toast.error(parsed.error.errors[0].message); return; }
 
     setSubmitting(true);
-    const { error } = await supabase.from("tournament_teams").insert({
+
+    // Insert team as pending
+    const { data: newTeam, error } = await supabase.from("tournament_teams").insert({
       age_group_id: regForm.age_group_id,
       team_name: parsed.data.team_name,
       manager_name: parsed.data.manager_name,
       manager_email: parsed.data.manager_email,
       manager_phone: parsed.data.manager_phone || null,
       player_count: parsed.data.player_count || null,
-    });
-    setSubmitting(false);
+      status: "pending",
+    }).select().single();
 
-    if (error) { toast.error("Registration failed"); return; }
-    toast.success("Team registered! We'll confirm your place shortly.");
-    setRegForm({ team_name: "", manager_name: "", manager_email: "", manager_phone: "", player_count: "", age_group_id: "" });
+    if (error || !newTeam) {
+      setSubmitting(false);
+      toast.error("Registration failed");
+      return;
+    }
+
+    // Create Stripe checkout session
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke("create-tournament-checkout", {
+        body: { team_id: newTeam.id },
+      });
+
+      if (fnError) throw fnError;
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error("No checkout URL received");
+      }
+    } catch (err) {
+      toast.error("Failed to start payment. Please try again.");
+      setSubmitting(false);
+    }
   };
 
   const getStandings = (groupId: string) => {
@@ -147,7 +210,6 @@ const TournamentPage = () => {
   const knockoutMatches = matches?.filter(m => m.stage !== "group") || [];
   const groupMatches = matches?.filter(m => m.stage === "group") || [];
 
-  // Age group schedule details
   const ageGroupDetails: Record<string, { date: string; format: string }> = {
     "U7s": { date: "Saturday 13th June", format: "5v5" },
     "U8s": { date: "Saturday 13th June", format: "5v5" },
@@ -194,6 +256,28 @@ const TournamentPage = () => {
             </div>
           </div>
 
+          {/* Payment verification overlay */}
+          {verifying && (
+            <Card className="max-w-md mx-auto mb-6 border-primary">
+              <CardContent className="pt-6 text-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-3" />
+                <p className="font-medium">Verifying your payment...</p>
+                <p className="text-sm text-muted-foreground mt-1">Please wait while we confirm your registration.</p>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Payment success message */}
+          {paymentSuccess && (
+            <Card className="max-w-md mx-auto mb-6 border-green-500 bg-green-50 dark:bg-green-950/20">
+              <CardContent className="pt-6 text-center">
+                <CheckCircle className="h-10 w-10 text-green-600 mx-auto mb-3" />
+                <p className="font-bold text-lg text-green-700 dark:text-green-400">Registration Complete!</p>
+                <p className="text-sm text-muted-foreground mt-1">Your team has been confirmed and assigned to a group. Check the Groups tab!</p>
+              </CardContent>
+            </Card>
+          )}
+
           {!activeTournament ? (
             <Card className="max-w-lg mx-auto text-center">
               <CardContent className="pt-8 pb-8">
@@ -227,7 +311,6 @@ const TournamentPage = () => {
                   </Card>
                 )}
 
-                {/* Schedule by age group */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2">
@@ -438,7 +521,9 @@ const TournamentPage = () => {
                 <Card className="max-w-lg mx-auto">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2"><Shield className="h-5 w-5 text-primary" />Register Your Team</CardTitle>
-                    <CardDescription>Enter your team details below. We'll confirm your place via email.</CardDescription>
+                    <CardDescription>
+                      Fill in your details and pay the £40 entry fee to secure your place. Once payment is confirmed, your team will be automatically assigned to a group.
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <form onSubmit={handleRegister} className="space-y-4">
@@ -472,8 +557,13 @@ const TournamentPage = () => {
                         <Input type="number" min={1} max={30} value={regForm.player_count} onChange={e => setRegForm(f => ({ ...f, player_count: e.target.value }))} />
                       </div>
                       <Button type="submit" className="w-full" disabled={submitting}>
-                        {submitting ? "Registering..." : "Register Team"}
+                        {submitting ? (
+                          <><Loader2 className="h-4 w-4 animate-spin mr-2" />Processing...</>
+                        ) : (
+                          <>Register & Pay £40</>
+                        )}
                       </Button>
+                      <p className="text-xs text-muted-foreground text-center">You'll be redirected to Stripe to complete payment securely.</p>
                     </form>
                   </CardContent>
                 </Card>
