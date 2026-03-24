@@ -154,16 +154,16 @@ const TournamentPage = () => {
       <Navbar />
       <main className="flex-1 pt-20 pb-12">
         <div className="container mx-auto px-4">
-          {/* Hero */}
+          {/* Hero with poster */}
           <div className="text-center mb-10">
-            <div className="inline-flex items-center gap-2 mb-4">
-              <Trophy className="h-8 w-8 text-primary" />
-              <h1 className="font-display text-3xl md:text-4xl font-bold text-primary">Tournament Hub</h1>
+            <div className="max-w-md mx-auto mb-6 rounded-xl overflow-hidden shadow-xl border border-primary/20">
+              <img src={tournamentPoster} alt="Peterborough Athletic Tournament 2026" className="w-full h-auto" />
             </div>
+            <h1 className="font-display text-3xl md:text-4xl font-bold text-primary">Tournament Hub</h1>
             {activeTournament && (
               <div className="flex flex-wrap justify-center gap-4 mt-4 text-sm text-muted-foreground">
                 {activeTournament.tournament_date && (
-                  <span className="flex items-center gap-1"><Calendar className="h-4 w-4" />{new Date(activeTournament.tournament_date).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}</span>
+                  <span className="flex items-center gap-1"><Calendar className="h-4 w-4" />13th - 21st June 2026</span>
                 )}
                 {activeTournament.venue && (
                   <span className="flex items-center gap-1"><MapPin className="h-4 w-4" />{activeTournament.venue}</span>
