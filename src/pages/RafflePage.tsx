@@ -172,8 +172,8 @@ const RafflePage = () => {
                         <div>
                           <CardTitle className="font-display text-2xl">{raffle.title}</CardTitle>
                           {raffle.description && (
-                            <CardDescription className="mt-2 text-sm">{raffle.description}</CardDescription>
-                          )}
+                             <CardDescription className="mt-2 text-sm" dangerouslySetInnerHTML={{ __html: raffle.description }} />
+                           )}
                         </div>
                         <Badge variant={isDrawn ? "secondary" : "default"} className={isDrawn ? "" : "bg-green-600"}>
                           {isDrawn ? "Drawn" : "Active"}
