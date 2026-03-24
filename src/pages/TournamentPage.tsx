@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -208,6 +208,16 @@ const TournamentPage = () => {
 
   const getTeamName = (id: string) => teams?.find(t => t.id === id)?.team_name || "TBC";
 
+  const TeamLink = ({ id }: { id: string }) => {
+    const name = getTeamName(id);
+    if (name === "TBC") return <span>{name}</span>;
+    return (
+      <Link to={`/tournament/team/${id}`} className="hover:text-primary hover:underline transition-colors">
+        {name}
+      </Link>
+    );
+  };
+
   const knockoutMatches = matches?.filter(m => m.stage !== "group") || [];
   const groupMatches = matches?.filter(m => m.stage === "group") || [];
 
@@ -404,7 +414,7 @@ const TournamentPage = () => {
                                   <TableBody>
                                     {standings.map((s, i) => (
                                       <TableRow key={s.team.id} className={i === 0 ? "bg-primary/5" : ""}>
-                                        <TableCell className="font-medium text-xs">{s.team.team_name}</TableCell>
+                                        <TableCell className="font-medium text-xs"><TeamLink id={s.team.id} /></TableCell>
                                         <TableCell className="text-center text-xs">{s.p}</TableCell>
                                         <TableCell className="text-center text-xs">{s.w}</TableCell>
                                         <TableCell className="text-center text-xs">{s.d}</TableCell>
@@ -443,7 +453,7 @@ const TournamentPage = () => {
                         {agMatches.map(m => (
                           <Card key={m.id} className="p-3">
                             <div className="flex items-center justify-between text-sm">
-                              <span className="font-medium flex-1 text-right">{getTeamName(m.home_team_id)}</span>
+                              <span className="font-medium flex-1 text-right"><TeamLink id={m.home_team_id} /></span>
                               <div className="mx-4 text-center min-w-[60px]">
                                 {m.status === "completed" ? (
                                   <span className="font-bold text-lg">{m.home_score} - {m.away_score}</span>
@@ -451,7 +461,7 @@ const TournamentPage = () => {
                                   <span className="text-muted-foreground text-xs">{m.match_time ? new Date(m.match_time).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }) : "TBC"}</span>
                                 )}
                               </div>
-                              <span className="font-medium flex-1">{getTeamName(m.away_team_id)}</span>
+                              <span className="font-medium flex-1"><TeamLink id={m.away_team_id} /></span>
                             </div>
                             {m.pitch && <p className="text-xs text-muted-foreground text-center mt-1">Pitch: {m.pitch}</p>}
                           </Card>
