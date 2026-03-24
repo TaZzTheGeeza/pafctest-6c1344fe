@@ -590,6 +590,80 @@ const RaffleAdminPage = () => {
           )}
         </div>
       </main>
+      {/* Edit Dialog */}
+      <Dialog open={!!editingRaffle} onOpenChange={(open) => !open && setEditingRaffle(null)}>
+        <DialogContent className="bg-card border-border max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-display">Edit Raffle</DialogTitle>
+            <DialogDescription>Update raffle details</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            <div>
+              <Label>Raffle Title *</Label>
+              <Input value={editForm.title} onChange={(e) => setEditForm(p => ({ ...p, title: e.target.value }))} />
+            </div>
+            <div>
+              <Label>Description</Label>
+              <Textarea value={editForm.description} onChange={(e) => setEditForm(p => ({ ...p, description: e.target.value }))} />
+            </div>
+            <div>
+              <Label>Prize Description *</Label>
+              <Input value={editForm.prize_description} onChange={(e) => setEditForm(p => ({ ...p, prize_description: e.target.value }))} />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Ticket Price (£) *</Label>
+                <Input type="number" step="0.01" min="0.50" value={editForm.ticket_price} onChange={(e) => setEditForm(p => ({ ...p, ticket_price: e.target.value }))} />
+              </div>
+              <div>
+                <Label>Max Tickets (optional)</Label>
+                <Input type="number" min="1" placeholder="Unlimited" value={editForm.max_tickets} onChange={(e) => setEditForm(p => ({ ...p, max_tickets: e.target.value }))} />
+              </div>
+            </div>
+            <div>
+              <Label>Draw Date (optional)</Label>
+              <Input type="date" value={editForm.draw_date} onChange={(e) => setEditForm(p => ({ ...p, draw_date: e.target.value }))} />
+            </div>
+            <div>
+              <Label>Raffle Image</Label>
+              <input
+                ref={editFileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleEditImageSelect}
+                className="hidden"
+              />
+              {editImagePreview ? (
+                <div className="relative mt-2">
+                  <img src={editImagePreview} alt="Preview" className="w-full h-40 object-cover rounded-lg border border-border" />
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="icon"
+                    className="absolute top-2 right-2 h-6 w-6"
+                    onClick={removeEditImage}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full mt-1 border-dashed border-border"
+                  onClick={() => editFileInputRef.current?.click()}
+                >
+                  <ImagePlus className="h-4 w-4 mr-2" />
+                  Upload Image
+                </Button>
+              )}
+            </div>
+            <Button onClick={saveEdit} disabled={saving} className="w-full bg-gold-gradient text-primary-foreground font-display">
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Changes"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
       <Footer />
     </div>
   );
