@@ -157,6 +157,266 @@ export type Database = {
         }
         Relationships: []
       }
+      tournament_age_groups: {
+        Row: {
+          age_group: string
+          created_at: string
+          group_count: number | null
+          id: string
+          max_teams: number | null
+          tournament_id: string
+        }
+        Insert: {
+          age_group: string
+          created_at?: string
+          group_count?: number | null
+          id?: string
+          max_teams?: number | null
+          tournament_id: string
+        }
+        Update: {
+          age_group?: string
+          created_at?: string
+          group_count?: number | null
+          id?: string
+          max_teams?: number | null
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_age_groups_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tournament_announcements: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          tournament_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          tournament_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_announcements_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tournament_groups: {
+        Row: {
+          age_group_id: string
+          created_at: string
+          group_name: string
+          id: string
+        }
+        Insert: {
+          age_group_id: string
+          created_at?: string
+          group_name: string
+          id?: string
+        }
+        Update: {
+          age_group_id?: string
+          created_at?: string
+          group_name?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_groups_age_group_id_fkey"
+            columns: ["age_group_id"]
+            isOneToOne: false
+            referencedRelation: "tournament_age_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tournament_matches: {
+        Row: {
+          age_group_id: string
+          away_score: number | null
+          away_team_id: string
+          created_at: string
+          group_id: string | null
+          home_score: number | null
+          home_team_id: string
+          id: string
+          match_time: string | null
+          pitch: string | null
+          stage: string
+          status: string
+        }
+        Insert: {
+          age_group_id: string
+          away_score?: number | null
+          away_team_id: string
+          created_at?: string
+          group_id?: string | null
+          home_score?: number | null
+          home_team_id: string
+          id?: string
+          match_time?: string | null
+          pitch?: string | null
+          stage?: string
+          status?: string
+        }
+        Update: {
+          age_group_id?: string
+          away_score?: number | null
+          away_team_id?: string
+          created_at?: string
+          group_id?: string | null
+          home_score?: number | null
+          home_team_id?: string
+          id?: string
+          match_time?: string | null
+          pitch?: string | null
+          stage?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_matches_age_group_id_fkey"
+            columns: ["age_group_id"]
+            isOneToOne: false
+            referencedRelation: "tournament_age_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tournament_matches_away_team_id_fkey"
+            columns: ["away_team_id"]
+            isOneToOne: false
+            referencedRelation: "tournament_teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tournament_matches_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "tournament_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tournament_matches_home_team_id_fkey"
+            columns: ["home_team_id"]
+            isOneToOne: false
+            referencedRelation: "tournament_teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tournament_teams: {
+        Row: {
+          age_group_id: string
+          created_at: string
+          group_id: string | null
+          id: string
+          manager_email: string
+          manager_name: string
+          manager_phone: string | null
+          player_count: number | null
+          status: string
+          team_name: string
+        }
+        Insert: {
+          age_group_id: string
+          created_at?: string
+          group_id?: string | null
+          id?: string
+          manager_email: string
+          manager_name: string
+          manager_phone?: string | null
+          player_count?: number | null
+          status?: string
+          team_name: string
+        }
+        Update: {
+          age_group_id?: string
+          created_at?: string
+          group_id?: string | null
+          id?: string
+          manager_email?: string
+          manager_name?: string
+          manager_phone?: string | null
+          player_count?: number | null
+          status?: string
+          team_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_teams_age_group_id_fkey"
+            columns: ["age_group_id"]
+            isOneToOne: false
+            referencedRelation: "tournament_age_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tournament_teams_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "tournament_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tournaments: {
+        Row: {
+          created_at: string
+          description: string | null
+          entry_fee_cents: number | null
+          id: string
+          name: string
+          rules: string | null
+          status: string
+          tournament_date: string | null
+          updated_at: string
+          venue: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          entry_fee_cents?: number | null
+          id?: string
+          name: string
+          rules?: string | null
+          status?: string
+          tournament_date?: string | null
+          updated_at?: string
+          venue?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          entry_fee_cents?: number | null
+          id?: string
+          name?: string
+          rules?: string | null
+          status?: string
+          tournament_date?: string | null
+          updated_at?: string
+          venue?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
