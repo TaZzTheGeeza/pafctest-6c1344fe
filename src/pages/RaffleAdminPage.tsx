@@ -192,6 +192,91 @@ const RaffleAdminPage = () => {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
+  const openEditDialog = (raffle: Raffle) => {
+    setEditingRaffle(raffle);
+    setEditForm({
+      title: raffle.title,
+      description: raffle.description || "",
+      prize_description: raffle.prize_description,
+      ticket_price: (raffle.ticket_price_cents / 100).toFixed(2),
+      max_tickets: raffle.max_tickets?.toString() || "",
+      draw_date: raffle.draw_date ? raffle.draw_date.split("T")[0] : "",
+    });
+    setEditImagePreview(raffle.image_url);
+    setEditImageFile(null);
+  };
+
+  const handleEditImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setEditImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => setEditImagePreview(reader.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeEditImage = () => {
+    setEditImageFile(null);
+    setEditImagePreview(null);
+    if (editFileInputRef.current) editFileInputRef.current.value = "";
+  };
+
+  const saveEdit = async () => {
+    if (!editingRaffle) return;
+    if (!editForm.title || !editForm.prize_description || !editForm.ticket_price) {
+      toast.error("Please fill in title, prize, and ticket price");
+      return;
+    }
+
+    setSaving(true);
+
+    let imageUrl = editingRaffle.image_url;
+
+    if (editImageFile) {
+      const fileExt = editImageFile.name.split(".").pop();
+      const fileName = `${Date.now()}.${fileExt}`;
+      const { error: uploadError } = await supabase.storage
+        .from("raffle-images")
+        .upload(fileName, editImageFile);
+
+      if (uploadError) {
+        toast.error("Failed to upload image: " + uploadError.message);
+        setSaving(false);
+        return;
+      }
+
+      const { data: urlData } = supabase.storage
+        .from("raffle-images")
+        .getPublicUrl(fileName);
+      imageUrl = urlData.publicUrl;
+    } else if (!editImagePreview) {
+      imageUrl = null;
+    }
+
+    const { error } = await supabase
+      .from("raffles")
+      .update({
+        title: editForm.title,
+        description: editForm.description || null,
+        prize_description: editForm.prize_description,
+        ticket_price_cents: Math.round(parseFloat(editForm.ticket_price) * 100),
+        max_tickets: editForm.max_tickets ? parseInt(editForm.max_tickets) : null,
+        draw_date: editForm.draw_date || null,
+        image_url: imageUrl,
+      })
+      .eq("id", editingRaffle.id);
+
+    if (error) {
+      toast.error("Failed to update raffle: " + error.message);
+    } else {
+      toast.success("Raffle updated!");
+      setEditingRaffle(null);
+      fetchRaffles();
+    }
+    setSaving(false);
+  };
+
   const updateStatus = async (raffleId: string, status: string) => {
     const { error } = await supabase.from("raffles").update({ status }).eq("id", raffleId);
     if (error) {
