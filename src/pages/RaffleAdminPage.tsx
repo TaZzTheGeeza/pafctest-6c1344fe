@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Trophy, Ticket, Loader2, Shuffle, Eye, Trash2 } from "lucide-react";
+import { Plus, Trophy, Ticket, Loader2, Shuffle, Eye, Trash2, ImagePlus, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -25,7 +25,7 @@ interface Raffle {
   draw_date: string | null;
   status: string;
   winner_name: string | null;
-  winner_ticket_id: string | null;
+  image_url: string | null;
   created_at: string;
 }
 
@@ -50,6 +50,9 @@ const RaffleAdminPage = () => {
   const [drawing, setDrawing] = useState<string | null>(null);
   const [adminKey, setAdminKey] = useState("");
   const [authenticated, setAuthenticated] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [newRaffle, setNewRaffle] = useState({
     title: "",
@@ -110,6 +113,29 @@ const RaffleAdminPage = () => {
     }
 
     setCreating(true);
+
+    let imageUrl: string | null = null;
+
+    // Upload image if selected
+    if (imageFile) {
+      const fileExt = imageFile.name.split(".").pop();
+      const fileName = `${Date.now()}.${fileExt}`;
+      const { error: uploadError } = await supabase.storage
+        .from("raffle-images")
+        .upload(fileName, imageFile);
+
+      if (uploadError) {
+        toast.error("Failed to upload image: " + uploadError.message);
+        setCreating(false);
+        return;
+      }
+
+      const { data: urlData } = supabase.storage
+        .from("raffle-images")
+        .getPublicUrl(fileName);
+      imageUrl = urlData.publicUrl;
+    }
+
     const { error } = await supabase.from("raffles").insert({
       title: newRaffle.title,
       description: newRaffle.description || null,
@@ -118,6 +144,7 @@ const RaffleAdminPage = () => {
       max_tickets: newRaffle.max_tickets ? parseInt(newRaffle.max_tickets) : null,
       draw_date: newRaffle.draw_date || null,
       status: "draft",
+      image_url: imageUrl,
     });
 
     if (error) {
@@ -126,9 +153,27 @@ const RaffleAdminPage = () => {
       toast.success("Raffle created! Set it to 'Active' when ready.");
       setShowCreate(false);
       setNewRaffle({ title: "", description: "", prize_description: "", ticket_price: "", max_tickets: "", draw_date: "" });
+      setImageFile(null);
+      setImagePreview(null);
       fetchRaffles();
     }
     setCreating(false);
+  };
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => setImagePreview(reader.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const updateStatus = async (raffleId: string, status: string) => {
@@ -257,6 +302,40 @@ const RaffleAdminPage = () => {
                   <div>
                     <Label>Draw Date (optional)</Label>
                     <Input type="date" value={newRaffle.draw_date} onChange={(e) => setNewRaffle(p => ({ ...p, draw_date: e.target.value }))} />
+                  </div>
+                  <div>
+                    <Label>Raffle Image (optional)</Label>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageSelect}
+                      className="hidden"
+                    />
+                    {imagePreview ? (
+                      <div className="relative mt-2">
+                        <img src={imagePreview} alt="Preview" className="w-full h-40 object-cover rounded-lg border border-border" />
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="icon"
+                          className="absolute top-2 right-2 h-6 w-6"
+                          onClick={removeImage}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full mt-1 border-dashed border-border"
+                        onClick={() => fileInputRef.current?.click()}
+                      >
+                        <ImagePlus className="h-4 w-4 mr-2" />
+                        Upload Image
+                      </Button>
+                    )}
                   </div>
                   <Button onClick={createRaffle} disabled={creating} className="w-full bg-gold-gradient text-primary-foreground font-display">
                     {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : "Create Raffle"}
