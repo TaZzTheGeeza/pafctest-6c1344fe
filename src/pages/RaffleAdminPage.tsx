@@ -385,7 +385,7 @@ const RaffleAdminPage = () => {
                   </div>
                   <div>
                     <Label>Description</Label>
-                    <Textarea placeholder="Optional description..." value={newRaffle.description} onChange={(e) => setNewRaffle(p => ({ ...p, description: e.target.value }))} />
+                    <RichTextEditor placeholder="Optional description..." value={newRaffle.description} onChange={(val) => setNewRaffle(p => ({ ...p, description: val }))} />
                   </div>
                   <div>
                     <Label>Prize Description *</Label>
@@ -605,7 +605,7 @@ const RaffleAdminPage = () => {
             </div>
             <div>
               <Label>Description</Label>
-              <Textarea value={editForm.description} onChange={(e) => setEditForm(p => ({ ...p, description: e.target.value }))} />
+              <RichTextEditor value={editForm.description} onChange={(val) => setEditForm(p => ({ ...p, description: val }))} />
             </div>
             <div>
               <Label>Prize Description *</Label>
