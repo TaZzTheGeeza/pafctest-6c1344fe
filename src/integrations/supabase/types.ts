@@ -107,6 +107,7 @@ export type Database = {
           description: string | null
           draw_date: string | null
           id: string
+          image_url: string | null
           max_tickets: number | null
           prize_description: string
           status: string
@@ -124,6 +125,7 @@ export type Database = {
           description?: string | null
           draw_date?: string | null
           id?: string
+          image_url?: string | null
           max_tickets?: number | null
           prize_description: string
           status?: string
@@ -141,6 +143,7 @@ export type Database = {
           description?: string | null
           draw_date?: string | null
           id?: string
+          image_url?: string | null
           max_tickets?: number | null
           prize_description?: string
           status?: string
