@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Trophy, Users, Calendar, MapPin, ClipboardList, Megaphone, Shield, Clock, PoundSterling, CheckCircle, Loader2 } from "lucide-react";
+import { TournamentBracket } from "@/components/TournamentBracket";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -465,48 +466,25 @@ const TournamentPage = () => {
               </TabsContent>
 
               {/* KNOCKOUT */}
-              <TabsContent value="knockout" className="space-y-4">
+              <TabsContent value="knockout" className="space-y-6">
                 {knockoutMatches.length === 0 ? (
                   <Card><CardContent className="pt-6 text-center text-muted-foreground">Knockout stages not started yet</CardContent></Card>
                 ) : (
-                  <>
-                    {["semi", "final", "3rd-place"].map(stage => {
-                      const stageMatches = knockoutMatches.filter(m => m.stage === stage);
-                      if (stageMatches.length === 0) return null;
+                  <div className="space-y-8">
+                    {ageGroups?.map(ag => {
+                      const agKnockout = knockoutMatches.filter(m => m.age_group_id === ag.id);
+                      if (agKnockout.length === 0) return null;
                       return (
-                        <div key={stage} className="space-y-3">
-                          <h3 className="font-display text-xl font-bold text-primary capitalize">
-                            {stage === "semi" ? "Semi Finals" : stage === "final" ? "Final" : "3rd Place Play-off"}
-                          </h3>
-                          {ageGroups?.map(ag => {
-                            const agStageMatches = stageMatches.filter(m => m.age_group_id === ag.id);
-                            if (agStageMatches.length === 0) return null;
-                            return (
-                              <div key={ag.id} className="space-y-2">
-                                <p className="text-sm font-medium text-muted-foreground">{ag.age_group}</p>
-                                {agStageMatches.map(m => (
-                                  <Card key={m.id} className="p-4">
-                                    <div className="flex items-center justify-between text-sm">
-                                      <span className="font-medium flex-1 text-right">{getTeamName(m.home_team_id)}</span>
-                                      <div className="mx-4 text-center min-w-[60px]">
-                                        {m.status === "completed" ? (
-                                          <span className="font-bold text-xl">{m.home_score} - {m.away_score}</span>
-                                        ) : (
-                                          <Badge variant="outline">Upcoming</Badge>
-                                        )}
-                                      </div>
-                                      <span className="font-medium flex-1">{getTeamName(m.away_team_id)}</span>
-                                    </div>
-                                    {m.pitch && <p className="text-xs text-muted-foreground text-center mt-2">Pitch: {m.pitch}</p>}
-                                  </Card>
-                                ))}
-                              </div>
-                            );
-                          })}
-                        </div>
+                        <Card key={ag.id} className="p-4 md:p-6">
+                          <TournamentBracket
+                            matches={agKnockout}
+                            getTeamName={getTeamName}
+                            ageGroupLabel={ag.age_group}
+                          />
+                        </Card>
                       );
                     })}
-                  </>
+                  </div>
                 )}
               </TabsContent>
 
