@@ -56,6 +56,104 @@ export type Database = {
         }
         Relationships: []
       }
+      raffle_tickets: {
+        Row: {
+          buyer_email: string
+          buyer_name: string
+          buyer_phone: string | null
+          created_at: string
+          id: string
+          payment_status: string
+          raffle_id: string
+          stripe_payment_intent_id: string | null
+          ticket_number: number
+        }
+        Insert: {
+          buyer_email: string
+          buyer_name: string
+          buyer_phone?: string | null
+          created_at?: string
+          id?: string
+          payment_status?: string
+          raffle_id: string
+          stripe_payment_intent_id?: string | null
+          ticket_number: number
+        }
+        Update: {
+          buyer_email?: string
+          buyer_name?: string
+          buyer_phone?: string | null
+          created_at?: string
+          id?: string
+          payment_status?: string
+          raffle_id?: string
+          stripe_payment_intent_id?: string | null
+          ticket_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "raffle_tickets_raffle_id_fkey"
+            columns: ["raffle_id"]
+            isOneToOne: false
+            referencedRelation: "raffles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      raffles: {
+        Row: {
+          created_at: string
+          currency: string
+          description: string | null
+          draw_date: string | null
+          id: string
+          max_tickets: number | null
+          prize_description: string
+          status: string
+          stripe_price_id: string | null
+          stripe_product_id: string | null
+          ticket_price_cents: number
+          title: string
+          updated_at: string
+          winner_name: string | null
+          winner_ticket_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          description?: string | null
+          draw_date?: string | null
+          id?: string
+          max_tickets?: number | null
+          prize_description: string
+          status?: string
+          stripe_price_id?: string | null
+          stripe_product_id?: string | null
+          ticket_price_cents: number
+          title: string
+          updated_at?: string
+          winner_name?: string | null
+          winner_ticket_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          description?: string | null
+          draw_date?: string | null
+          id?: string
+          max_tickets?: number | null
+          prize_description?: string
+          status?: string
+          stripe_price_id?: string | null
+          stripe_product_id?: string | null
+          ticket_price_cents?: number
+          title?: string
+          updated_at?: string
+          winner_name?: string | null
+          winner_ticket_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
