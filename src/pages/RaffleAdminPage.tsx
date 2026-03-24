@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Trophy, Ticket, Loader2, Shuffle, Eye, Trash2, ImagePlus, X } from "lucide-react";
+import { Plus, Trophy, Ticket, Loader2, Shuffle, Eye, Trash2, ImagePlus, X, Pencil } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -54,6 +54,21 @@ const RaffleAdminPage = () => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Edit state
+  const [editingRaffle, setEditingRaffle] = useState<Raffle | null>(null);
+  const [editForm, setEditForm] = useState({
+    title: "",
+    description: "",
+    prize_description: "",
+    ticket_price: "",
+    max_tickets: "",
+    draw_date: "",
+  });
+  const [editImageFile, setEditImageFile] = useState<File | null>(null);
+  const [editImagePreview, setEditImagePreview] = useState<string | null>(null);
+  const editFileInputRef = useRef<HTMLInputElement>(null);
+  const [saving, setSaving] = useState(false);
 
   const [newRaffle, setNewRaffle] = useState({
     title: "",
@@ -175,6 +190,91 @@ const RaffleAdminPage = () => {
     setImageFile(null);
     setImagePreview(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const openEditDialog = (raffle: Raffle) => {
+    setEditingRaffle(raffle);
+    setEditForm({
+      title: raffle.title,
+      description: raffle.description || "",
+      prize_description: raffle.prize_description,
+      ticket_price: (raffle.ticket_price_cents / 100).toFixed(2),
+      max_tickets: raffle.max_tickets?.toString() || "",
+      draw_date: raffle.draw_date ? raffle.draw_date.split("T")[0] : "",
+    });
+    setEditImagePreview(raffle.image_url);
+    setEditImageFile(null);
+  };
+
+  const handleEditImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setEditImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => setEditImagePreview(reader.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeEditImage = () => {
+    setEditImageFile(null);
+    setEditImagePreview(null);
+    if (editFileInputRef.current) editFileInputRef.current.value = "";
+  };
+
+  const saveEdit = async () => {
+    if (!editingRaffle) return;
+    if (!editForm.title || !editForm.prize_description || !editForm.ticket_price) {
+      toast.error("Please fill in title, prize, and ticket price");
+      return;
+    }
+
+    setSaving(true);
+
+    let imageUrl = editingRaffle.image_url;
+
+    if (editImageFile) {
+      const fileExt = editImageFile.name.split(".").pop();
+      const fileName = `${Date.now()}.${fileExt}`;
+      const { error: uploadError } = await supabase.storage
+        .from("raffle-images")
+        .upload(fileName, editImageFile);
+
+      if (uploadError) {
+        toast.error("Failed to upload image: " + uploadError.message);
+        setSaving(false);
+        return;
+      }
+
+      const { data: urlData } = supabase.storage
+        .from("raffle-images")
+        .getPublicUrl(fileName);
+      imageUrl = urlData.publicUrl;
+    } else if (!editImagePreview) {
+      imageUrl = null;
+    }
+
+    const { error } = await supabase
+      .from("raffles")
+      .update({
+        title: editForm.title,
+        description: editForm.description || null,
+        prize_description: editForm.prize_description,
+        ticket_price_cents: Math.round(parseFloat(editForm.ticket_price) * 100),
+        max_tickets: editForm.max_tickets ? parseInt(editForm.max_tickets) : null,
+        draw_date: editForm.draw_date || null,
+        image_url: imageUrl,
+      })
+      .eq("id", editingRaffle.id);
+
+    if (error) {
+      toast.error("Failed to update raffle: " + error.message);
+    } else {
+      toast.success("Raffle updated!");
+      setEditingRaffle(null);
+      fetchRaffles();
+    }
+    setSaving(false);
   };
 
   const updateStatus = async (raffleId: string, status: string) => {
@@ -430,6 +530,11 @@ const RaffleAdminPage = () => {
                             </Button>
                           </>
                         )}
+                        {raffle.status !== "drawn" && (
+                          <Button size="sm" variant="outline" onClick={() => openEditDialog(raffle)}>
+                            <Pencil className="h-4 w-4 mr-1" /> Edit
+                          </Button>
+                        )}
                         <Button size="sm" variant="outline" onClick={() => setViewingRaffle(isViewing ? null : raffle.id)}>
                           <Eye className="h-4 w-4 mr-1" /> {isViewing ? "Hide" : "View"} Tickets
                         </Button>
@@ -485,6 +590,80 @@ const RaffleAdminPage = () => {
           )}
         </div>
       </main>
+      {/* Edit Dialog */}
+      <Dialog open={!!editingRaffle} onOpenChange={(open) => !open && setEditingRaffle(null)}>
+        <DialogContent className="bg-card border-border max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-display">Edit Raffle</DialogTitle>
+            <DialogDescription>Update raffle details</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            <div>
+              <Label>Raffle Title *</Label>
+              <Input value={editForm.title} onChange={(e) => setEditForm(p => ({ ...p, title: e.target.value }))} />
+            </div>
+            <div>
+              <Label>Description</Label>
+              <Textarea value={editForm.description} onChange={(e) => setEditForm(p => ({ ...p, description: e.target.value }))} />
+            </div>
+            <div>
+              <Label>Prize Description *</Label>
+              <Input value={editForm.prize_description} onChange={(e) => setEditForm(p => ({ ...p, prize_description: e.target.value }))} />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Ticket Price (£) *</Label>
+                <Input type="number" step="0.01" min="0.50" value={editForm.ticket_price} onChange={(e) => setEditForm(p => ({ ...p, ticket_price: e.target.value }))} />
+              </div>
+              <div>
+                <Label>Max Tickets (optional)</Label>
+                <Input type="number" min="1" placeholder="Unlimited" value={editForm.max_tickets} onChange={(e) => setEditForm(p => ({ ...p, max_tickets: e.target.value }))} />
+              </div>
+            </div>
+            <div>
+              <Label>Draw Date (optional)</Label>
+              <Input type="date" value={editForm.draw_date} onChange={(e) => setEditForm(p => ({ ...p, draw_date: e.target.value }))} />
+            </div>
+            <div>
+              <Label>Raffle Image</Label>
+              <input
+                ref={editFileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleEditImageSelect}
+                className="hidden"
+              />
+              {editImagePreview ? (
+                <div className="relative mt-2">
+                  <img src={editImagePreview} alt="Preview" className="w-full h-40 object-cover rounded-lg border border-border" />
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="icon"
+                    className="absolute top-2 right-2 h-6 w-6"
+                    onClick={removeEditImage}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full mt-1 border-dashed border-border"
+                  onClick={() => editFileInputRef.current?.click()}
+                >
+                  <ImagePlus className="h-4 w-4 mr-2" />
+                  Upload Image
+                </Button>
+              )}
+            </div>
+            <Button onClick={saveEdit} disabled={saving} className="w-full bg-gold-gradient text-primary-foreground font-display">
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Changes"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
       <Footer />
     </div>
   );

@@ -23,6 +23,7 @@ interface Raffle {
   draw_date: string | null;
   status: string;
   winner_name: string | null;
+  winner_ticket_id: string | null;
   image_url: string | null;
   created_at: string;
 }
