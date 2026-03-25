@@ -10,11 +10,90 @@ import { toast } from "sonner";
 import { ManageSubmissionsForm } from "@/components/ManageSubmissionsForm";
 import { PlayerStatsForm } from "@/components/PlayerStatsForm";
 import { useUserAgeGroups } from "@/hooks/useUserAgeGroups";
+import { useTeamFixtures, type FAFixture } from "@/hooks/useTeamFixtures";
+import { faTeamConfigs } from "@/lib/faFixtureConfig";
 
 const ALL_AGE_GROUPS = [
   "U7", "U8 Black", "U8 Gold", "U9", "U10",
   "U11 Black", "U11 Gold", "U13 Black", "U13 Gold", "U14",
 ];
+
+const AGE_GROUP_TO_SLUG: Record<string, string> = {};
+faTeamConfigs.forEach((c) => { AGE_GROUP_TO_SLUG[c.team] = c.slug; });
+
+function FixtureSelect({ ageGroup, value, onChange, label = "Match (Opponent)" }: {
+  ageGroup: string;
+  value: string;
+  onChange: (opponent: string, date: string) => void;
+  label?: string;
+}) {
+  const slug = AGE_GROUP_TO_SLUG[ageGroup];
+  const { data, isLoading } = useTeamFixtures(slug);
+
+  const allFixtures = [...(data?.results || []), ...(data?.fixtures || [])];
+  
+  const getOpponent = (f: FAFixture) => {
+    const isHome = f.homeTeam.includes("Peterborough Ath");
+    return isHome ? f.awayTeam : f.homeTeam;
+  };
+
+  if (!ageGroup) {
+    return (
+      <div>
+        <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">{label}</label>
+        <select disabled className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-muted-foreground">
+          <option>Select an age group first</option>
+        </select>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">{label}</label>
+      <select
+        value={value}
+        onChange={(e) => {
+          const selected = allFixtures.find((f) => `${f.date}|${getOpponent(f)}` === e.target.value);
+          if (selected) {
+            onChange(getOpponent(selected), selected.date);
+          } else {
+            onChange("", "");
+          }
+        }}
+        className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground"
+      >
+        <option value="">{isLoading ? "Loading fixtures..." : "Select a fixture"}</option>
+        {data?.results && data.results.length > 0 && (
+          <optgroup label="Results">
+            {data.results.map((f, i) => {
+              const opp = getOpponent(f);
+              const key = `${f.date}|${opp}`;
+              return (
+                <option key={`r-${i}`} value={key}>
+                  {f.date} — vs {opp} ({f.homeScore}-{f.awayScore})
+                </option>
+              );
+            })}
+          </optgroup>
+        )}
+        {data?.fixtures && data.fixtures.length > 0 && (
+          <optgroup label="Upcoming Fixtures">
+            {data.fixtures.map((f, i) => {
+              const opp = getOpponent(f);
+              const key = `${f.date}|${opp}`;
+              return (
+                <option key={`f-${i}`} value={key}>
+                  {f.date} — vs {opp}
+                </option>
+              );
+            })}
+          </optgroup>
+        )}
+      </select>
+    </div>
+  );
+}
 
 function NoAgeGroupsWarning() {
   return (
@@ -33,6 +112,7 @@ function POTMForm({ ageGroups }: { ageGroups: string[] }) {
   const [submitted, setSubmitted] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [fixtureKey, setFixtureKey] = useState("");
   const [form, setForm] = useState({
     player_name: "",
     shirt_number: "",
@@ -104,7 +184,7 @@ function POTMForm({ ageGroups }: { ageGroups: string[] }) {
         <h3 className="font-display text-xl font-bold text-foreground mb-2">POTM Submitted!</h3>
         <p className="text-muted-foreground mb-4">The award will appear on the Player of the Match wall.</p>
         <button
-          onClick={() => { setSubmitted(false); setForm({ player_name: "", shirt_number: "", team_name: "", age_group: ageGroups.length === 1 ? ageGroups[0] : "", match_description: "", reason: "" }); setPhotoFile(null); setPhotoPreview(null); }}
+          onClick={() => { setSubmitted(false); setFixtureKey(""); setForm({ player_name: "", shirt_number: "", team_name: "", age_group: ageGroups.length === 1 ? ageGroups[0] : "", match_description: "", reason: "" }); setPhotoFile(null); setPhotoPreview(null); }}
           className="text-sm font-display text-primary hover:text-gold-light transition-colors"
         >
           Submit another
@@ -145,10 +225,14 @@ function POTMForm({ ageGroups }: { ageGroups: string[] }) {
         </div>
       </div>
 
-      <div>
-        <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Match (Opponent)</label>
-        <input value={form.match_description} onChange={(e) => setForm({ ...form, match_description: e.target.value })} placeholder="e.g. Thurlby Tigers U7 Yellow" className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground" />
-      </div>
+      <FixtureSelect
+        ageGroup={form.age_group}
+        value={fixtureKey}
+        onChange={(opponent, date) => {
+          setFixtureKey(`${date}|${opponent}`);
+          setForm({ ...form, match_description: opponent });
+        }}
+      />
 
       <div>
         <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Reason for Award</label>
@@ -182,6 +266,8 @@ function POTMForm({ ageGroups }: { ageGroups: string[] }) {
 function MatchReportForm({ ageGroups }: { ageGroups: string[] }) {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [fixtureKey, setFixtureKey] = useState("");
+  const [matchDate, setMatchDate] = useState("");
   const [form, setForm] = useState({
     team_name: "",
     age_group: ageGroups.length === 1 ? ageGroups[0] : "",
@@ -210,7 +296,7 @@ function MatchReportForm({ ageGroups }: { ageGroups: string[] }) {
       goal_scorers: form.goal_scorers.trim() || null,
       assists: form.assists.trim() || null,
       notes: form.notes.trim() || null,
-      match_date: new Date().toISOString().split("T")[0],
+      match_date: matchDate || new Date().toISOString().split("T")[0],
     });
 
     setSubmitting(false);
@@ -229,7 +315,7 @@ function MatchReportForm({ ageGroups }: { ageGroups: string[] }) {
         <h3 className="font-display text-xl font-bold text-foreground mb-2">Match Report Submitted!</h3>
         <p className="text-muted-foreground mb-4">Thank you for reporting the result.</p>
         <button
-          onClick={() => { setSubmitted(false); setForm({ team_name: "", age_group: ageGroups.length === 1 ? ageGroups[0] : "", opponent: "", home_score: "", away_score: "", goal_scorers: "", assists: "", notes: "" }); }}
+          onClick={() => { setSubmitted(false); setFixtureKey(""); setMatchDate(""); setForm({ team_name: "", age_group: ageGroups.length === 1 ? ageGroups[0] : "", opponent: "", home_score: "", away_score: "", goal_scorers: "", assists: "", notes: "" }); }}
           className="text-sm font-display text-primary hover:text-gold-light transition-colors"
         >
           Submit another
@@ -259,10 +345,16 @@ function MatchReportForm({ ageGroups }: { ageGroups: string[] }) {
         </div>
       </div>
 
-      <div>
-        <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Opponent *</label>
-        <input value={form.opponent} onChange={(e) => setForm({ ...form, opponent: e.target.value })} placeholder="e.g. Thurlby Tigers U7 Yellow" className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground" />
-      </div>
+      <FixtureSelect
+        ageGroup={form.age_group}
+        value={fixtureKey}
+        onChange={(opponent, date) => {
+          setFixtureKey(`${date}|${opponent}`);
+          setMatchDate(date);
+          setForm({ ...form, opponent });
+        }}
+        label="Opponent *"
+      />
 
       <div className="grid grid-cols-2 gap-4">
         <div>
