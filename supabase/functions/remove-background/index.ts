@@ -44,14 +44,14 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-pro-image-preview",
+        model: "google/gemini-3.1-flash-image-preview",
         messages: [
           {
             role: "user",
             content: [
               {
                 type: "text",
-                text: "Remove the background from this photo and replace it with PURE TRANSPARENCY (alpha channel = 0). Do NOT render a checkerboard pattern — that is only a visual representation of transparency, not real transparency. The output MUST be a PNG with a genuine transparent alpha channel. Preserve the person's full silhouette exactly, especially the head, hair, ears, shoulders, hands, and kit edges. Do not trim, shrink, or clip any part of the subject; if uncertain, keep more of the subject rather than removing it. Output as a PNG with transparent background.",
+                text: "Remove the background from this photo. Replace the background with solid bright green (#00FF00) color. Keep the entire person fully intact — preserve their complete head, hair, ears, face, body, clothing, limbs, hands, and all accessories. Do not crop, shrink, or clip any part of the person. Output the result as a PNG image.",
               },
               {
                 type: "image_url",
