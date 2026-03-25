@@ -1,10 +1,14 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { Pencil, Trash2, FileText, Star, Loader2, Save, X, ChevronDown, ChevronUp, Camera, Upload } from "lucide-react";
+import { Pencil, Trash2, FileText, Star, Loader2, Save, X, ChevronDown, ChevronUp, Camera, Upload, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,11 +20,23 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { useTeamRoster, type RosterPlayer } from "@/hooks/useTeamRoster";
 
 const ageGroups = [
   "U7", "U8 Black", "U8 Gold", "U9", "U10",
   "U11 Black", "U11 Gold", "U13 Black", "U13 Gold", "U14",
 ];
+
+// Reverse map age group to team slug for roster lookup
+const ageGroupToSlug: Record<string, string> = {
+  "U7": "u7s", "U8 Black": "u8s-black", "U8 Gold": "u8s-gold",
+  "U9": "u9s", "U10": "u10s", "U11 Black": "u11s-black",
+  "U11 Gold": "u11s-gold", "U13 Black": "u13s-black", "U13 Gold": "u13s-gold",
+  "U14": "u14s",
+};
+
+interface GoalEntry { playerId: string; playerName: string; count: number; }
+interface AssistEntry { playerId: string; playerName: string; count: number; }
 
 // ─── Match Reports Section ───
 
