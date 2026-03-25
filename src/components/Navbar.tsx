@@ -197,6 +197,26 @@ export function Navbar() {
                 </Link>
               )
             )}
+
+            {/* Featured mobile CTAs */}
+            <div className="flex gap-2 mt-3 pt-3 border-t border-border">
+              <Link
+                to="/tournament"
+                onClick={() => setIsOpen(false)}
+                className="flex-1 flex items-center justify-center gap-2 font-display text-sm tracking-wider py-2.5 rounded-md border border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground transition-all"
+              >
+                <Trophy className="h-4 w-4" />
+                Tournament
+              </Link>
+              <Link
+                to="/shop"
+                onClick={() => setIsOpen(false)}
+                className="flex-1 flex items-center justify-center gap-2 font-display text-sm tracking-wider py-2.5 rounded-md border border-accent/50 text-accent hover:bg-accent hover:text-accent-foreground transition-all"
+              >
+                <ShoppingBag className="h-4 w-4" />
+                Shop
+              </Link>
+            </div>
           </div>
         </div>
       )}
