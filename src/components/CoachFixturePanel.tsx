@@ -46,7 +46,7 @@ export function CoachFixturePanel({ open, onClose, fixture, teamSlug, teamName }
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="report">
+          <TabsContent value="report" forceMount className="data-[state=inactive]:hidden">
             <MatchReportTab
               teamSlug={teamSlug}
               teamName={teamName}
@@ -56,7 +56,7 @@ export function CoachFixturePanel({ open, onClose, fixture, teamSlug, teamName }
             />
           </TabsContent>
 
-          <TabsContent value="potm">
+          <TabsContent value="potm" forceMount className="data-[state=inactive]:hidden">
             <POTMTab
               teamSlug={teamSlug}
               teamName={teamName}
@@ -65,7 +65,7 @@ export function CoachFixturePanel({ open, onClose, fixture, teamSlug, teamName }
             />
           </TabsContent>
 
-          <TabsContent value="selection">
+          <TabsContent value="selection" forceMount className="data-[state=inactive]:hidden">
             <TeamSelectionTab
               teamSlug={teamSlug}
               opponent={opponent}
@@ -73,7 +73,7 @@ export function CoachFixturePanel({ open, onClose, fixture, teamSlug, teamName }
             />
           </TabsContent>
 
-          <TabsContent value="notes">
+          <TabsContent value="notes" forceMount className="data-[state=inactive]:hidden">
             <TrainingNotesTab
               teamSlug={teamSlug}
               opponent={opponent}
