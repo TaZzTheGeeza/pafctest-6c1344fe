@@ -311,6 +311,12 @@ function POTMEditTab({ potmAwards, roster, teamSlug, onSaved }: { potmAwards: an
         <p className="text-xs text-muted-foreground italic py-4 text-center">No POTM awards for this match yet.</p>
       )}
 
+      <div className="flex justify-end">
+        <Button size="sm" variant="outline" onClick={addEntry} className="text-xs gap-1">
+          <Plus className="h-3 w-3" /> Add POTM
+        </Button>
+      </div>
+
       {entries.map((entry, i) => (
         <div key={entry.id || i} className="border border-border rounded-lg p-3 space-y-3 relative">
           {entries.length > 0 && (
