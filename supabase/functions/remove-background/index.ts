@@ -51,7 +51,7 @@ serve(async (req) => {
             content: [
               {
                 type: "text",
-                text: "Remove ONLY the background from this photo. Keep the entire person fully intact — their body, hair, clothing, skin, limbs, and all accessories must be completely preserved with no parts removed or clipped. Make the background fully transparent. Output as a PNG with transparent background.",
+                text: "Remove the background from this photo and replace it with PURE TRANSPARENCY (alpha channel = 0). Do NOT render a checkerboard pattern — that is a visual representation of transparency, not actual transparency. The output MUST be a PNG with a genuine transparent alpha channel. Keep the entire person fully intact — their body, hair, clothing, skin, limbs, and all accessories must be completely preserved with no parts removed or clipped. Output as a PNG with transparent background.",
               },
               {
                 type: "image_url",
