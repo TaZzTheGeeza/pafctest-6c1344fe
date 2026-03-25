@@ -10,10 +10,10 @@ export interface RosterPlayer {
 }
 
 const ageGroupMap: Record<string, string> = {
-  "u7s": "U7s", "u8s-black": "U8s Black", "u8s-gold": "U8s Gold",
-  "u9s": "U9s", "u10s": "U10s", "u11s-black": "U11s Black",
-  "u11s-gold": "U11s Gold", "u13s-black": "U13s Black", "u13s-gold": "U13s Gold",
-  "u14s": "U14s",
+  "u7s": "U7", "u8s-black": "U8 Black", "u8s-gold": "U8 Gold",
+  "u9s": "U9", "u10s": "U10", "u11s-black": "U11 Black",
+  "u11s-gold": "U11 Gold", "u13s-black": "U13 Black", "u13s-gold": "U13 Gold",
+  "u14s": "U14",
 };
 
 export function getAgeGroup(teamSlug: string): string {
