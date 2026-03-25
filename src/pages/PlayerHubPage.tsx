@@ -78,6 +78,7 @@ const hubItems = [
 ];
 
 export default function PlayerHubPage() {
+  const { isPlayer } = useAuth();
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
