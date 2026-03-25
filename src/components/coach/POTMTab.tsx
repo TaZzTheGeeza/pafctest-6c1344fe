@@ -76,7 +76,7 @@ export function POTMTab({
     setSaving(true);
     try {
       const [d, m, y] = fixture.date.split("/");
-      const awardDate = `20${y}-${m}-${d}`;
+      const awardDate = y.length === 4 ? `${y}-${m}-${d}` : `20${y}-${m}-${d}`;
       const ageGroup = getAgeGroup(teamSlug);
 
       for (const entry of validEntries) {
