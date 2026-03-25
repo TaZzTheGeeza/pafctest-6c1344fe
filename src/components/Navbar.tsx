@@ -36,10 +36,9 @@ const navItems: NavItem[] = [
   { label: "Community", path: "/news", dropdown: communityItems },
   { label: "About", path: "/club-info", dropdown: aboutItems },
   { label: "Raffle", path: "/raffle" },
-  { label: "Tournament", path: "/tournament" },
   { label: "Register", path: "/register" },
   { label: "Contact", path: "/contact" },
-  { label: "Shop", path: "/shop" },
+];
 ];
 
 export function Navbar() {
