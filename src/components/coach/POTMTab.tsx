@@ -10,12 +10,33 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useTeamRoster, getAgeGroup } from "@/hooks/useTeamRoster";
 import type { FAFixture } from "@/hooks/useTeamFixtures";
 
-function fileToBase64(file: File): Promise<string> {
+/** Resize image to max dimension and return as base64 data URI (PNG) */
+function resizeImageToBase64(file: File, maxDim = 1024): Promise<string> {
   return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      let { width, height } = img;
+      if (width > maxDim || height > maxDim) {
+        const scale = maxDim / Math.max(width, height);
+        width = Math.round(width * scale);
+        height = Math.round(height * scale);
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d")!;
+      ctx.drawImage(img, 0, 0, width, height);
+      const dataUrl = canvas.toDataURL("image/png");
+      console.log("[POTM] Resized image to", width, "x", height, "base64 length:", dataUrl.length);
+      resolve(dataUrl);
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("Failed to load image for resizing"));
+    };
+    img.src = url;
   });
 }
 
@@ -102,8 +123,10 @@ export function POTMTab({
 
         let photoUrl: string | null = null;
         if (entry.photoFile) {
-          // Convert to base64 and remove background via AI
-          const base64 = await fileToBase64(entry.photoFile);
+          // Resize image and convert to base64 (keeps payload under edge function limits)
+          const base64 = await resizeImageToBase64(entry.photoFile, 1024);
+          console.log("[POTM] Base64 data URI length being sent:", base64.length);
+          
           let finalBase64 = base64;
           try {
             toast.info("Removing background — this may take a moment...");
@@ -111,20 +134,24 @@ export function POTMTab({
               "remove-background",
               { body: { imageBase64: base64 } }
             );
+            
+            console.log("[POTM] Background removal response:", { error: bgError, hasData: !!bgData, keys: bgData ? Object.keys(bgData) : null });
+            
             if (bgError) {
-              console.error("Background removal error:", bgError);
+              console.error("[POTM] Background removal error:", bgError);
               toast.warning("Background removal failed, using original photo");
             } else if (bgData?.imageBase64) {
               finalBase64 = bgData.imageBase64.startsWith("data:")
                 ? bgData.imageBase64
                 : `data:image/png;base64,${bgData.imageBase64}`;
+              console.log("[POTM] Background removed successfully, result length:", finalBase64.length);
               toast.success("Background removed!");
             } else {
-              console.warn("No image in response:", bgData);
-              toast.warning("Background removal returned no image, using original");
+              console.warn("[POTM] No image in response:", JSON.stringify(bgData).substring(0, 300));
+              toast.warning(bgData?.textResponse || "Background removal returned no image, using original");
             }
           } catch (bgErr) {
-            console.error("Background removal exception:", bgErr);
+            console.error("[POTM] Background removal exception:", bgErr);
             toast.warning("Background removal failed, using original photo");
           }
 
