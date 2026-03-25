@@ -266,6 +266,8 @@ function POTMForm({ ageGroups }: { ageGroups: string[] }) {
 function MatchReportForm({ ageGroups }: { ageGroups: string[] }) {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [fixtureKey, setFixtureKey] = useState("");
+  const [matchDate, setMatchDate] = useState("");
   const [form, setForm] = useState({
     team_name: "",
     age_group: ageGroups.length === 1 ? ageGroups[0] : "",
