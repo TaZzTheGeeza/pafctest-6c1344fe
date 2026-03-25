@@ -88,13 +88,13 @@ export function POTMCard({
                 </div>
               </div>
 
-              {/* Player image – positioned inside the gold frame area */}
+              {/* Player image – centred and large */}
               {photoUrl ? (
                 <img
                   src={photoUrl}
                   alt={playerName}
-                  className="absolute z-10 object-contain object-bottom"
-                  style={{ top: "38%", left: "18%", width: "64%", height: "60%" }}
+                  className="absolute z-10 object-contain object-bottom left-1/2 -translate-x-1/2"
+                  style={{ top: "10%", width: "90%", height: "85%" }}
                   loading="lazy"
                 />
               ) : (
