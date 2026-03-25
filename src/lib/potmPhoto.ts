@@ -199,21 +199,18 @@ async function normalizePotmImage(base64: string, size = 1024) {
     throw new Error("Failed to create square image");
   }
 
-  const horizontalPadding = size * 0.12;
-  const topPadding = size * 0.12;
-  const bottomPadding = size * 0.06;
+  const hPad = size * 0.02;
+  const tPad = size * 0.02;
+  const bPad = 0;
   const scale = Math.min(
-    (size - horizontalPadding * 2) / subjectWidth,
-    (size - topPadding - bottomPadding) / subjectHeight,
+    (size - hPad * 2) / subjectWidth,
+    (size - tPad - bPad) / subjectHeight,
   );
-  const horizontalPadding = size * 0.02;
-  const topPadding = size * 0.02;
-  const bottomPadding = 0;
 
   const drawWidth = subjectWidth * scale;
   const drawHeight = subjectHeight * scale;
   const dx = (size - drawWidth) / 2;
-  const dy = size - bottomPadding - drawHeight;
+  const dy = size - bPad - drawHeight;
 
   targetContext.clearRect(0, 0, size, size);
   targetContext.drawImage(
