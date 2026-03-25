@@ -10,6 +10,7 @@ const communityItems = [
   { label: "Events", path: "/events", icon: CalendarDays, desc: "Upcoming events" },
   { label: "Gallery", path: "/gallery", icon: Image, desc: "Photos & media" },
   { label: "Match Day Hub", path: "/match-day", icon: Radio, desc: "Live match info" },
+  { label: "Results", path: "/results", icon: ClipboardList, desc: "Match reports & POTM" },
   { label: "Player of the Match", path: "/player-of-the-match", icon: Award, desc: "Weekly awards" },
   { label: "Calendar", path: "/calendar", icon: Clock, desc: "Full schedule" },
 ];

@@ -33,6 +33,7 @@ import CalendarPage from "./pages/CalendarPage.tsx";
 import PlayerHubPage from "./pages/PlayerHubPage.tsx";
 import CoachPanelPage from "./pages/CoachPanelPage.tsx";
 import AuthPage from "./pages/AuthPage.tsx";
+import ResultsPage from "./pages/ResultsPage.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -68,6 +69,7 @@ function AppContent() {
         <Route path="/player-of-the-match" element={<RoleGate requiredRole="player"><POTMPage /></RoleGate>} />
         <Route path="/calendar" element={<CalendarPage />} />
         <Route path="/coach-panel" element={<CoachPanelPage />} />
+        <Route path="/results" element={<ResultsPage />} />
         <Route path="/auth" element={<AuthPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
