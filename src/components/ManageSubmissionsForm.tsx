@@ -287,6 +287,45 @@ function POTMRow({ potm, onDeleted }: { potm: any; onDeleted: () => void }) {
           <label className="block text-[10px] font-display tracking-wider text-muted-foreground mb-1">Reason</label>
           <textarea value={form.reason} onChange={(e) => setForm({ ...form, reason: e.target.value })} rows={2} className="w-full bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground resize-none" />
         </div>
+
+        {/* Photo section */}
+        <div>
+          <label className="block text-[10px] font-display tracking-wider text-muted-foreground mb-1">Player Photo</label>
+          {(photoPreview || (!removePhoto && potm.photo_url)) ? (
+            <div className="flex items-center gap-3">
+              <div className="relative w-16 h-16 rounded-lg overflow-hidden border border-border shrink-0">
+                <img
+                  src={photoPreview || potm.photo_url}
+                  alt={form.player_name}
+                  className="w-full h-full object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (photoPreview) URL.revokeObjectURL(photoPreview);
+                    setNewPhoto(null);
+                    setPhotoPreview(null);
+                    setRemovePhoto(true);
+                  }}
+                  className="absolute top-0.5 right-0.5 bg-destructive text-destructive-foreground rounded-full p-0.5"
+                >
+                  <X className="h-2.5 w-2.5" />
+                </button>
+              </div>
+              <label className="cursor-pointer text-xs text-primary hover:underline flex items-center gap-1">
+                <Camera className="h-3 w-3" /> Replace
+                <input type="file" accept="image/*" onChange={handlePhotoChange} className="hidden" />
+              </label>
+            </div>
+          ) : (
+            <label className="flex items-center gap-2 cursor-pointer bg-secondary border border-dashed border-border rounded-lg px-3 py-3 hover:border-primary/50 transition-colors">
+              <Upload className="h-4 w-4 text-muted-foreground" />
+              <span className="text-xs text-muted-foreground">Upload a photo</span>
+              <input type="file" accept="image/*" onChange={handlePhotoChange} className="hidden" />
+            </label>
+          )}
+        </div>
+
         <Button onClick={handleSave} disabled={saving} size="sm" className="w-full gap-1">
           {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
           Save Changes
