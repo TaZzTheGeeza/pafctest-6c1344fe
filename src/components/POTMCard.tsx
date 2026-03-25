@@ -62,6 +62,8 @@ export function POTMCard({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5, delay: index * 0.06 }}
+      whileHover={{ scale: 1.05, y: -8 }}
+      whileTap={{ scale: 0.98 }}
     >
       <div
         ref={cardRef}
