@@ -34,6 +34,7 @@ import PlayerHubPage from "./pages/PlayerHubPage.tsx";
 import CoachPanelPage from "./pages/CoachPanelPage.tsx";
 import AuthPage from "./pages/AuthPage.tsx";
 import ResultsPage from "./pages/ResultsPage.tsx";
+import POTMDemoPage from "./pages/POTMDemoPage.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -70,6 +71,7 @@ function AppContent() {
         <Route path="/calendar" element={<CalendarPage />} />
         <Route path="/coach-panel" element={<CoachPanelPage />} />
         <Route path="/results" element={<ResultsPage />} />
+        <Route path="/potm-demo" element={<POTMDemoPage />} />
         <Route path="/auth" element={<AuthPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
