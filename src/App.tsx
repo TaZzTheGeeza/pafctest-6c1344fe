@@ -28,6 +28,7 @@ import TeamProfilePage from "./pages/TeamProfilePage.tsx";
 import MatchDayPage from "./pages/MatchDayPage.tsx";
 import POTMPage from "./pages/POTMPage.tsx";
 import CalendarPage from "./pages/CalendarPage.tsx";
+import CoachPanelPage from "./pages/CoachPanelPage.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -61,6 +62,7 @@ function AppContent() {
         <Route path="/match-day" element={<MatchDayPage />} />
         <Route path="/player-of-the-match" element={<POTMPage />} />
         <Route path="/calendar" element={<CalendarPage />} />
+        <Route path="/coach-panel" element={<CoachPanelPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
