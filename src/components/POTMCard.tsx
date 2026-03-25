@@ -1,4 +1,4 @@
-import { Trophy, Star, Calendar, Users } from "lucide-react";
+import { Trophy, Calendar, Users } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import potmCardBg from "@/assets/potm-card-bg.jpg";
