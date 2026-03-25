@@ -5,8 +5,9 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Trophy, FileText, Upload, Star, CheckCircle, Loader2, ShieldX, BarChart3 } from "lucide-react";
+import { Trophy, FileText, Upload, Star, CheckCircle, Loader2, ShieldX, BarChart3, Settings } from "lucide-react";
 import { toast } from "sonner";
+import { ManageSubmissionsForm } from "@/components/ManageSubmissionsForm";
 import { PlayerStatsForm } from "@/components/PlayerStatsForm";
 
 const ageGroups = [
@@ -286,7 +287,7 @@ function MatchReportForm() {
 
 export default function CoachPanelPage() {
   const { user, loading, isCoach, rolesLoading } = useAuth();
-  const [activeTab, setActiveTab] = useState<"potm" | "report" | "stats">("potm");
+  const [activeTab, setActiveTab] = useState<"potm" | "report" | "stats" | "manage">("potm");
 
   if (loading || rolesLoading) {
     return (
@@ -363,9 +364,18 @@ export default function CoachPanelPage() {
                 <BarChart3 className="h-4 w-4" />
                 Player Stats
               </button>
+              <button
+                onClick={() => setActiveTab("manage")}
+                className={`flex-1 flex items-center justify-center gap-2 font-display text-sm tracking-wider py-3 rounded-lg border transition-all ${
+                  activeTab === "manage" ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:text-foreground hover:border-primary/50"
+                }`}
+              >
+                <Settings className="h-4 w-4" />
+                Manage
+              </button>
             </div>
 
-            {activeTab === "potm" ? <POTMForm /> : activeTab === "report" ? <MatchReportForm /> : <PlayerStatsForm />}
+            {activeTab === "potm" ? <POTMForm /> : activeTab === "report" ? <MatchReportForm /> : activeTab === "stats" ? <PlayerStatsForm /> : <ManageSubmissionsForm />}
           </div>
         </div>
       </main>
