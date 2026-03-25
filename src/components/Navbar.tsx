@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, ChevronDown } from "lucide-react";
+import { Menu, X, ChevronDown, Trophy, ShoppingBag } from "lucide-react";
 import { CartDrawer } from "@/components/CartDrawer";
 import clubLogo from "@/assets/club-logo.jpg";
 
@@ -36,10 +36,8 @@ const navItems: NavItem[] = [
   { label: "Community", path: "/news", dropdown: communityItems },
   { label: "About", path: "/club-info", dropdown: aboutItems },
   { label: "Raffle", path: "/raffle" },
-  { label: "Tournament", path: "/tournament" },
   { label: "Register", path: "/register" },
   { label: "Contact", path: "/contact" },
-  { label: "Shop", path: "/shop" },
 ];
 
 export function Navbar() {
@@ -112,6 +110,30 @@ export function Navbar() {
               </Link>
             )
           )}
+
+          {/* Featured CTA buttons */}
+          <Link
+            to="/tournament"
+            className={`font-display text-xs tracking-wider px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5 border ${
+              location.pathname.startsWith("/tournament")
+                ? "bg-primary text-primary-foreground border-primary"
+                : "border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground"
+            }`}
+          >
+            <Trophy className="h-3.5 w-3.5" />
+            Tournament
+          </Link>
+          <Link
+            to="/shop"
+            className={`font-display text-xs tracking-wider px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5 border ${
+              location.pathname === "/shop"
+                ? "bg-accent text-accent-foreground border-accent"
+                : "border-accent/50 text-accent hover:bg-accent hover:text-accent-foreground"
+            }`}
+          >
+            <ShoppingBag className="h-3.5 w-3.5" />
+            Shop
+          </Link>
           <CartDrawer />
         </div>
 
@@ -175,6 +197,26 @@ export function Navbar() {
                 </Link>
               )
             )}
+
+            {/* Featured mobile CTAs */}
+            <div className="flex gap-2 mt-3 pt-3 border-t border-border">
+              <Link
+                to="/tournament"
+                onClick={() => setIsOpen(false)}
+                className="flex-1 flex items-center justify-center gap-2 font-display text-sm tracking-wider py-2.5 rounded-md border border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground transition-all"
+              >
+                <Trophy className="h-4 w-4" />
+                Tournament
+              </Link>
+              <Link
+                to="/shop"
+                onClick={() => setIsOpen(false)}
+                className="flex-1 flex items-center justify-center gap-2 font-display text-sm tracking-wider py-2.5 rounded-md border border-accent/50 text-accent hover:bg-accent hover:text-accent-foreground transition-all"
+              >
+                <ShoppingBag className="h-4 w-4" />
+                Shop
+              </Link>
+            </div>
           </div>
         </div>
       )}
