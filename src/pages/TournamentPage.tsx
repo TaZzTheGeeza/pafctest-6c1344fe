@@ -222,14 +222,14 @@ const TournamentPage = () => {
   const groupMatches = matches?.filter(m => m.stage === "group") || [];
 
   const ageGroupDetails: Record<string, { date: string; format: string }> = {
-    "U7s": { date: "Saturday 13th June", format: "5v5" },
-    "U8s": { date: "Saturday 13th June", format: "5v5" },
-    "U9s": { date: "Sunday 14th June", format: "7v7" },
-    "U10s": { date: "Sunday 14th June", format: "7v7" },
-    "U11s": { date: "Saturday 20th June", format: "7v7" },
-    "U12s": { date: "Saturday 20th June", format: "7v7" },
-    "U13s": { date: "Sunday 21st June", format: "7v7" },
-    "U14s": { date: "Sunday 21st June", format: "7v7" },
+    "U7": { date: "Saturday 13th June", format: "5v5" },
+    "U8": { date: "Saturday 13th June", format: "5v5" },
+    "U9": { date: "Sunday 14th June", format: "7v7" },
+    "U10": { date: "Sunday 14th June", format: "7v7" },
+    "U11": { date: "Saturday 20th June", format: "7v7" },
+    "U12": { date: "Saturday 20th June", format: "7v7" },
+    "U13": { date: "Sunday 21st June", format: "7v7" },
+    "U14": { date: "Sunday 21st June", format: "7v7" },
   };
 
   return (

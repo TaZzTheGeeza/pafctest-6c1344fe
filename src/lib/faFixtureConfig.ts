@@ -26,7 +26,7 @@ function buildUrl(page: "fixtures" | "results", params: Record<string, string>):
 
 export const faTeamConfigs: FAFixtureConfig[] = [
   {
-    team: "U7s",
+    team: "U7",
     slug: "u7s",
     fixtureUrl: buildUrl("fixtures", {
       selectedFixtureGroupAgeGroup: "0",
@@ -39,7 +39,7 @@ export const faTeamConfigs: FAFixtureConfig[] = [
     }),
   },
   {
-    team: "U8s Black",
+    team: "U8 Black",
     slug: "u8s-black",
     fixtureUrl: buildUrl("fixtures", {
       selectedFixtureGroupAgeGroup: "15",
@@ -52,7 +52,7 @@ export const faTeamConfigs: FAFixtureConfig[] = [
     }),
   },
   {
-    team: "U8s Gold",
+    team: "U8 Gold",
     slug: "u8s-gold",
     fixtureUrl: buildUrl("fixtures", {
       selectedFixtureGroupAgeGroup: "15",
@@ -65,7 +65,7 @@ export const faTeamConfigs: FAFixtureConfig[] = [
     }),
   },
   {
-    team: "U9s",
+    team: "U9",
     slug: "u9s",
     fixtureUrl: buildUrl("fixtures", {
       selectedFixtureGroupAgeGroup: "14",
@@ -78,7 +78,7 @@ export const faTeamConfigs: FAFixtureConfig[] = [
     }),
   },
   {
-    team: "U10s",
+    team: "U10",
     slug: "u10s",
     fixtureUrl: buildUrl("fixtures", {
       selectedFixtureGroupAgeGroup: "13",
@@ -91,7 +91,7 @@ export const faTeamConfigs: FAFixtureConfig[] = [
     }),
   },
   {
-    team: "U11s Gold",
+    team: "U11 Gold",
     slug: "u11s-gold",
     fixtureUrl: buildUrl("fixtures", {
       selectedFixtureGroupAgeGroup: "12",
@@ -104,7 +104,7 @@ export const faTeamConfigs: FAFixtureConfig[] = [
     }),
   },
   {
-    team: "U11s Black",
+    team: "U11 Black",
     slug: "u11s-black",
     fixtureUrl: buildUrl("fixtures", {
       selectedFixtureGroupAgeGroup: "12",
@@ -117,7 +117,7 @@ export const faTeamConfigs: FAFixtureConfig[] = [
     }),
   },
   {
-    team: "U13s Gold",
+    team: "U13 Gold",
     slug: "u13s-gold",
     fixtureUrl: buildUrl("fixtures", {
       selectedFixtureGroupAgeGroup: "10",
@@ -139,7 +139,7 @@ export const faTeamConfigs: FAFixtureConfig[] = [
     }),
   },
   {
-    team: "U13s Black",
+    team: "U13 Black",
     slug: "u13s-black",
     fixtureUrl: buildUrl("fixtures", {
       selectedFixtureGroupAgeGroup: "10",
@@ -161,7 +161,7 @@ export const faTeamConfigs: FAFixtureConfig[] = [
     }),
   },
   {
-    team: "U14s",
+    team: "U14",
     slug: "u14s",
     fixtureUrl: buildUrl("fixtures", {
       selectedFixtureGroupAgeGroup: "9",

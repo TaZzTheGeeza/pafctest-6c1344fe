@@ -43,16 +43,16 @@ interface TeamData {
 }
 
 const allTeams: TeamData[] = [
-  { slug: "u7s", name: "U7s", ageGroup: "Under 7", training: "Tues & Thurs 5:30pm", nextFixture: { opponent: "Thurlby Tigers U7 Yellow", venue: "Home", date: "Sat 28 March", kickoff: "09:30" } },
-  { slug: "u8s-black", name: "U8s Black", ageGroup: "Under 8", training: "Mon & Wed 5:30pm", nextFixture: { opponent: "One Touch Football U8 Red", venue: "Home", date: "Sat 28 March", kickoff: "10:30" } },
-  { slug: "u8s-gold", name: "U8s Gold", ageGroup: "Under 8", training: "Tues & Thurs 5:30pm", nextFixture: { opponent: "Whittlesey Jnr U8 Blue", venue: "Home", date: "Sat 28 March", kickoff: "09:30" } },
-  { slug: "u9s", name: "U9s", ageGroup: "Under 9", training: "Mon & Wed 6:00pm", nextFixture: { opponent: "Deeping Rangers U9 Claret", venue: "Home", date: "Sat 28 March", kickoff: "09:30" } },
-  { slug: "u10s", name: "U10s", ageGroup: "Under 10", training: "Tues & Thurs 6:00pm", nextFixture: { opponent: "Netherton Utd U10 Red", venue: "Home", date: "Sat 28 March", kickoff: "10:30" } },
-  { slug: "u11s-black", name: "U11s Black", ageGroup: "Under 11", training: "Mon & Wed 6:00pm", nextFixture: { opponent: "Gladstone Knights U11", venue: "Away", date: "Sun 29 March", kickoff: "12:00" } },
-  { slug: "u11s-gold", name: "U11s Gold", ageGroup: "Under 11", training: "Tues & Thurs 6:00pm", nextFixture: { opponent: "Yaxley FC U11 Blues", venue: "Home", date: "Sun 29 March", kickoff: "10:00" } },
-  { slug: "u13s-black", name: "U13s Black", ageGroup: "Under 13", training: "Mon & Wed 6:30pm", nextFixture: { opponent: "Nene Valley U13", venue: "Home", date: "Sun 29 March", kickoff: "12:00" } },
-  { slug: "u13s-gold", name: "U13s Gold", ageGroup: "Under 13", training: "Tues & Thurs 6:30pm", nextFixture: { opponent: "Moulton Chapel U13", venue: "Home", date: "Sun 03 May", kickoff: "10:00" } },
-  { slug: "u14s", name: "U14s", ageGroup: "Under 14", training: "Mon & Wed 7:00pm", nextFixture: { opponent: "Park Farm Pumas U14 Black", venue: "Home", date: "Sun 12 April", kickoff: "14:00" } },
+  { slug: "u7s", name: "U7", ageGroup: "Under 7", training: "Tues & Thurs 5:30pm", nextFixture: { opponent: "Thurlby Tigers U7 Yellow", venue: "Home", date: "Sat 28 March", kickoff: "09:30" } },
+  { slug: "u8s-black", name: "U8 Black", ageGroup: "Under 8", training: "Mon & Wed 5:30pm", nextFixture: { opponent: "One Touch Football U8 Red", venue: "Home", date: "Sat 28 March", kickoff: "10:30" } },
+  { slug: "u8s-gold", name: "U8 Gold", ageGroup: "Under 8", training: "Tues & Thurs 5:30pm", nextFixture: { opponent: "Whittlesey Jnr U8 Blue", venue: "Home", date: "Sat 28 March", kickoff: "09:30" } },
+  { slug: "u9s", name: "U9", ageGroup: "Under 9", training: "Mon & Wed 6:00pm", nextFixture: { opponent: "Deeping Rangers U9 Claret", venue: "Home", date: "Sat 28 March", kickoff: "09:30" } },
+  { slug: "u10s", name: "U10", ageGroup: "Under 10", training: "Tues & Thurs 6:00pm", nextFixture: { opponent: "Netherton Utd U10 Red", venue: "Home", date: "Sat 28 March", kickoff: "10:30" } },
+  { slug: "u11s-black", name: "U11 Black", ageGroup: "Under 11", training: "Mon & Wed 6:00pm", nextFixture: { opponent: "Gladstone Knights U11", venue: "Away", date: "Sun 29 March", kickoff: "12:00" } },
+  { slug: "u11s-gold", name: "U11 Gold", ageGroup: "Under 11", training: "Tues & Thurs 6:00pm", nextFixture: { opponent: "Yaxley FC U11 Blues", venue: "Home", date: "Sun 29 March", kickoff: "10:00" } },
+  { slug: "u13s-black", name: "U13 Black", ageGroup: "Under 13", training: "Mon & Wed 6:30pm", nextFixture: { opponent: "Nene Valley U13", venue: "Home", date: "Sun 29 March", kickoff: "12:00" } },
+  { slug: "u13s-gold", name: "U13 Gold", ageGroup: "Under 13", training: "Tues & Thurs 6:30pm", nextFixture: { opponent: "Moulton Chapel U13", venue: "Home", date: "Sun 03 May", kickoff: "10:00" } },
+  { slug: "u14s", name: "U14", ageGroup: "Under 14", training: "Mon & Wed 7:00pm", nextFixture: { opponent: "Park Farm Pumas U14 Black", venue: "Home", date: "Sun 12 April", kickoff: "14:00" } },
 ];
 
 function formatFADate(dateStr: string): string {

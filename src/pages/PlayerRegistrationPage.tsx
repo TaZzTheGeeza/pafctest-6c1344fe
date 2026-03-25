@@ -11,8 +11,8 @@ import { supabase } from "@/integrations/supabase/client";
 import clubLogo from "@/assets/club-logo.jpg";
 
 const ageGroups = [
-  "U7s", "U8s Black", "U8s Gold", "U9s", "U10s",
-  "U11s Black", "U11s Gold", "U13s Black", "U13s Gold", "U14s",
+  "U7", "U8 Black", "U8 Gold", "U9", "U10",
+  "U11 Black", "U11 Gold", "U13 Black", "U13 Gold", "U14",
 ];
 
 export default function PlayerRegistrationPage() {
