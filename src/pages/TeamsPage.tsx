@@ -178,15 +178,6 @@ function TeamDetail({ team }: { team: TeamData }) {
                             </span>
                             <span>{formatFADate(fix.date)}</span>
                             <span className="font-mono">{fix.time}</span>
-                            {canManage && (
-                              <button
-                                onClick={() => setCoachFixture(fix)}
-                                className="ml-1 p-1 rounded hover:bg-primary/10 text-primary transition-colors"
-                                title="Coach panel"
-                              >
-                                <ClipboardEdit className="w-3.5 h-3.5" />
-                              </button>
-                            )}
                           </div>
                         </div>
                       );
@@ -226,15 +217,6 @@ function TeamDetail({ team }: { team: TeamData }) {
                               <p className="text-[10px] text-muted-foreground">{formatFADate(res.date)}</p>
                             </div>
                             <span className="font-mono font-bold text-sm">{res.homeScore} - {res.awayScore}</span>
-                            {canManage && (
-                              <button
-                                onClick={(e) => { e.stopPropagation(); setCoachFixture(res); }}
-                                className="p-1 rounded hover:bg-primary/10 text-primary transition-colors"
-                                title="Coach panel"
-                              >
-                                <ClipboardEdit className="w-3.5 h-3.5" />
-                              </button>
-                            )}
                             <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground transition-transform ${isExpanded ? "rotate-180" : ""}`} />
                           </div>
                           <AnimatePresence>
