@@ -67,8 +67,8 @@ export function POTMCard({
     >
       <div
         ref={cardRef}
-        className="potm-card-v2 relative w-[280px] rounded-2xl overflow-hidden cursor-default"
-        style={{ transition: "transform 0.15s ease-out" }}
+        className="potm-card-v2 relative w-[280px] rounded-2xl overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl hover:shadow-primary/20"
+        style={{ transition: "transform 0.15s ease-out, box-shadow 0.3s ease" }}
       >
         {/* Gold accent border */}
         <div className="absolute inset-0 rounded-2xl p-[1px] bg-gradient-to-br from-primary via-primary/30 to-primary/60">
