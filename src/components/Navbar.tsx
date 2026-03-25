@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, ChevronDown, Trophy, ShoppingBag, Users } from "lucide-react";
+import { Menu, X, ChevronDown, Trophy, ShoppingBag, LogIn } from "lucide-react";
 import { CartDrawer } from "@/components/CartDrawer";
+import { useAuth } from "@/contexts/AuthContext";
 import clubLogo from "@/assets/club-logo.jpg";
 
 const teams = [
@@ -53,6 +54,7 @@ export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const location = useLocation();
+  const { user, signOut } = useAuth();
 
   const toggleDropdown = (label: string) => {
     setOpenDropdown(openDropdown === label ? null : label);
@@ -144,6 +146,22 @@ export function Navbar() {
             Shop
           </Link>
           <CartDrawer />
+          {user ? (
+            <button
+              onClick={() => signOut()}
+              className="font-display text-xs tracking-wider px-3 py-1.5 rounded-md transition-colors text-muted-foreground hover:text-primary"
+            >
+              Sign Out
+            </button>
+          ) : (
+            <Link
+              to="/auth"
+              className="font-display text-xs tracking-wider px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5 border border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground"
+            >
+              <LogIn className="h-3.5 w-3.5" />
+              Sign In
+            </Link>
+          )}
         </div>
 
         {/* Mobile toggle */}
@@ -226,6 +244,23 @@ export function Navbar() {
                 Shop
               </Link>
             </div>
+            {user ? (
+              <button
+                onClick={() => { signOut(); setIsOpen(false); }}
+                className="w-full font-display text-sm tracking-wider py-2.5 rounded-md border border-border text-muted-foreground hover:text-primary transition-colors mt-2"
+              >
+                Sign Out
+              </button>
+            ) : (
+              <Link
+                to="/auth"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center justify-center gap-2 w-full font-display text-sm tracking-wider py-2.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors mt-2"
+              >
+                <LogIn className="h-4 w-4" />
+                Sign In / Sign Up
+              </Link>
+            )}
           </div>
         </div>
       )}
