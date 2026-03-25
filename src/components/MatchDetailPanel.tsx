@@ -34,15 +34,14 @@ export function MatchDetailPanel({ teamSlug, teamName, opponent, matchDate }: Ma
     },
   });
 
-  const { data: potm } = useQuery({
+  const { data: potmList } = useQuery({
     queryKey: ["potm-detail", teamName, dbDate],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("player_of_the_match")
         .select("*")
         .eq("team_name", teamName)
-        .eq("award_date", dbDate)
-        .maybeSingle();
+        .eq("award_date", dbDate);
       if (error) throw error;
       return data;
     },
