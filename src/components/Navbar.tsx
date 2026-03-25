@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, ChevronDown, Trophy, ShoppingBag, LogIn, Newspaper, CalendarDays, Image, Radio, Award, Clock, UserPlus, FileText, Shield, Info, Heart, ClipboardList } from "lucide-react";
+import { Menu, X, ChevronDown, Trophy, ShoppingBag, LogIn, Newspaper, CalendarDays, Image, Award, Clock, UserPlus, FileText, Shield, Info, Heart, ClipboardList } from "lucide-react";
 import { CartDrawer } from "@/components/CartDrawer";
 import { useAuth } from "@/contexts/AuthContext";
 import clubLogo from "@/assets/club-logo.jpg";
@@ -9,7 +9,7 @@ const communityItems = [
   { label: "News", path: "/news", icon: Newspaper, desc: "Latest club updates" },
   { label: "Events", path: "/events", icon: CalendarDays, desc: "Upcoming events" },
   { label: "Gallery", path: "/gallery", icon: Image, desc: "Photos & media" },
-  { label: "Match Day Hub", path: "/match-day", icon: Radio, desc: "Live match info" },
+  
   { label: "Results", path: "/results", icon: ClipboardList, desc: "Match reports & POTM" },
   { label: "Player of the Match", path: "/player-of-the-match", icon: Award, desc: "Weekly awards" },
   { label: "Calendar", path: "/calendar", icon: Clock, desc: "Full schedule" },
