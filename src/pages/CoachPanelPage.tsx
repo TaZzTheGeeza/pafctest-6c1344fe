@@ -112,6 +112,7 @@ function POTMForm({ ageGroups }: { ageGroups: string[] }) {
   const [submitted, setSubmitted] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [fixtureKey, setFixtureKey] = useState("");
   const [form, setForm] = useState({
     player_name: "",
     shirt_number: "",
