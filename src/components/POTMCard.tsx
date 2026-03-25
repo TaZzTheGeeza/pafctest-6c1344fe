@@ -82,7 +82,7 @@ export function POTMCard({
                   src={photoUrl}
                   alt={playerName}
                   className="absolute z-10 object-contain object-bottom left-1/2 -translate-x-1/2"
-                  style={{ top: "10%", width: "90%", height: "85%" }}
+                  style={{ top: "5%", width: "88%", height: "90%" }}
                   loading="lazy"
                 />
               ) : (

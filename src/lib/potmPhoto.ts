@@ -119,6 +119,34 @@ function getPixelIndex(x: number, y: number, width: number) {
   return (y * width + x) * 4;
 }
 
+function getOpaqueBounds(
+  data: Uint8ClampedArray,
+  width: number,
+  height: number,
+  alphaThreshold = 10,
+) {
+  let minX = width;
+  let minY = height;
+  let maxX = -1;
+  let maxY = -1;
+
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      const index = getPixelIndex(x, y, width);
+      if (data[index + 3] > alphaThreshold) {
+        minX = Math.min(minX, x);
+        minY = Math.min(minY, y);
+        maxX = Math.max(maxX, x);
+        maxY = Math.max(maxY, y);
+      }
+    }
+  }
+
+  if (maxX === -1 || maxY === -1) return null;
+
+  return { minX, minY, maxX, maxY };
+}
+
 function keepLargestAlphaRegion(
   data: Uint8ClampedArray,
   width: number,
@@ -400,26 +428,31 @@ async function normalizePotmImage(base64: string, size = 1024) {
 
   sourceContext.putImageData(imageData, 0, 0);
 
-  let minX = width;
-  let minY = height;
-  let maxX = -1;
-  let maxY = -1;
+  const bounds = getOpaqueBounds(data, width, height);
 
-  for (let y = 0; y < height; y += 1) {
-    for (let x = 0; x < width; x += 1) {
-      const index = getPixelIndex(x, y, width);
-      if (data[index + 3] > 10) {
-        minX = Math.min(minX, x);
-        minY = Math.min(minY, y);
-        maxX = Math.max(maxX, x);
-        maxY = Math.max(maxY, y);
-      }
-    }
-  }
-
-  if (maxX === -1 || maxY === -1) {
+  if (!bounds) {
     return base64;
   }
+
+  let { minX, minY, maxX, maxY } = bounds;
+
+  const initialWidth = maxX - minX + 1;
+  const initialHeight = maxY - minY + 1;
+  const edgeThreshold = Math.max(8, Math.floor(Math.min(width, height) * 0.015));
+  const touchesEdge =
+    minX <= edgeThreshold ||
+    minY <= edgeThreshold ||
+    maxX >= width - 1 - edgeThreshold ||
+    maxY >= height - 1 - edgeThreshold;
+
+  const expandX = Math.max(18, Math.round(initialWidth * (touchesEdge ? 0.12 : 0.06)));
+  const expandTop = Math.max(16, Math.round(initialHeight * (touchesEdge ? 0.1 : 0.05)));
+  const expandBottom = Math.max(32, Math.round(initialHeight * (touchesEdge ? 0.18 : 0.1)));
+
+  minX = Math.max(0, minX - expandX);
+  maxX = Math.min(width - 1, maxX + expandX);
+  minY = Math.max(0, minY - expandTop);
+  maxY = Math.min(height - 1, maxY + expandBottom);
 
   const subjectWidth = maxX - minX + 1;
   const subjectHeight = maxY - minY + 1;
@@ -432,9 +465,9 @@ async function normalizePotmImage(base64: string, size = 1024) {
     throw new Error("Failed to create square image");
   }
 
-  const hPad = size * 0.02;
-  const tPad = size * 0.02;
-  const bPad = 0;
+  const hPad = size * 0.1;
+  const tPad = size * 0.08;
+  const bPad = size * 0.14;
   const scale = Math.min(
     (size - hPad * 2) / subjectWidth,
     (size - tPad - bPad) / subjectHeight,
@@ -443,7 +476,7 @@ async function normalizePotmImage(base64: string, size = 1024) {
   const drawWidth = subjectWidth * scale;
   const drawHeight = subjectHeight * scale;
   const dx = (size - drawWidth) / 2;
-  const dy = (size - drawHeight) / 2;
+  const dy = tPad + (size - tPad - bPad - drawHeight) / 2;
 
   targetContext.clearRect(0, 0, size, size);
   targetContext.drawImage(

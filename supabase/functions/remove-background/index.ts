@@ -59,7 +59,7 @@ serve(async (req) => {
               content: [
                 {
                   type: "text",
-                  text: "Remove the background from this player photo. Replace the background with a solid bright green (#00FF00) backdrop only. Keep the player fully intact, including the full head, hair, ears, face, neck, body, arms, hands, clothing, boots, and all accessories. Do not crop, trim, or clip any part of the player. Return a single PNG image.",
+                  text: "Remove the background from this football player photo and replace only the background with a solid bright green (#00FF00). Keep the subject at the exact same framing and scale as the source image. Do not zoom in, crop tighter, trim, or recompose the shot. Preserve the entire visible player from head to feet, including hair, ears, face, neck, torso, arms, hands, shorts, socks, legs, boots, and all accessories. If the full body is visible in the source, the full body must remain visible in the result. Return a single PNG image.",
                 },
                 {
                   type: "image_url",
