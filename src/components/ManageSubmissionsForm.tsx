@@ -1,10 +1,14 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { Pencil, Trash2, FileText, Star, Loader2, Save, X, ChevronDown, ChevronUp, Camera, Upload } from "lucide-react";
+import { Pencil, Trash2, FileText, Star, Loader2, Save, X, ChevronDown, ChevronUp, Camera, Upload, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,27 +20,106 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { useTeamRoster, type RosterPlayer } from "@/hooks/useTeamRoster";
 
 const ageGroups = [
   "U7", "U8 Black", "U8 Gold", "U9", "U10",
   "U11 Black", "U11 Gold", "U13 Black", "U13 Gold", "U14",
 ];
 
+// Reverse map age group to team slug for roster lookup
+const ageGroupToSlug: Record<string, string> = {
+  "U7": "u7s", "U8 Black": "u8s-black", "U8 Gold": "u8s-gold",
+  "U9": "u9s", "U10": "u10s", "U11 Black": "u11s-black",
+  "U11 Gold": "u11s-gold", "U13 Black": "u13s-black", "U13 Gold": "u13s-gold",
+  "U14": "u14s",
+};
+
+interface GoalEntry { playerId: string; playerName: string; count: number; }
+interface AssistEntry { playerId: string; playerName: string; count: number; }
+
 // ─── Match Reports Section ───
+
+// Parse "Player x2, Player2" text into entries
+function parseTextToEntries(text: string, roster: RosterPlayer[]): GoalEntry[] | AssistEntry[] {
+  if (!text?.trim()) return [];
+  return text.split(",").map(s => s.trim()).filter(Boolean).map(part => {
+    const match = part.match(/^(.+?)(?:\s*x(\d+))?$/);
+    if (!match) return { playerId: "", playerName: part, count: 1 };
+    const name = match[1].trim();
+    const count = match[2] ? parseInt(match[2]) : 1;
+    const player = roster.find(r => r.first_name.toLowerCase() === name.toLowerCase());
+    return { playerId: player?.id || "", playerName: name, count };
+  });
+}
+
+function entriesToText(entries: (GoalEntry | AssistEntry)[], roster: RosterPlayer[]): string {
+  return entries
+    .filter(e => e.playerId || e.playerName)
+    .map(e => {
+      const p = roster.find(r => r.id === e.playerId);
+      const name = p ? p.first_name : e.playerName;
+      return `${name}${e.count > 1 ? ` x${e.count}` : ""}`;
+    })
+    .join(", ");
+}
 
 function MatchReportRow({ report, onDeleted }: { report: any; onDeleted: () => void }) {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const teamSlug = ageGroupToSlug[report.age_group] || "";
+  const { data: roster = [] } = useTeamRoster(teamSlug);
+
   const [form, setForm] = useState({
     team_name: report.team_name,
     age_group: report.age_group,
     opponent: report.opponent,
     home_score: String(report.home_score),
     away_score: String(report.away_score),
-    goal_scorers: report.goal_scorers || "",
-    assists: report.assists || "",
     notes: report.notes || "",
   });
+
+  const [goalEntries, setGoalEntries] = useState<GoalEntry[]>(() =>
+    parseTextToEntries(report.goal_scorers || "", roster) as GoalEntry[]
+  );
+  const [assistEntries, setAssistEntries] = useState<AssistEntry[]>(() =>
+    parseTextToEntries(report.assists || "", roster) as AssistEntry[]
+  );
+
+  // Re-parse when roster loads
+  const [rosterLoaded, setRosterLoaded] = useState(false);
+  if (roster.length > 0 && !rosterLoaded) {
+    setRosterLoaded(true);
+    setGoalEntries(parseTextToEntries(report.goal_scorers || "", roster) as GoalEntry[]);
+    setAssistEntries(parseTextToEntries(report.assists || "", roster) as AssistEntry[]);
+  }
+
+  const addGoalEntry = () => setGoalEntries([...goalEntries, { playerId: "", playerName: "", count: 1 }]);
+  const addAssistEntry = () => setAssistEntries([...assistEntries, { playerId: "", playerName: "", count: 1 }]);
+  const removeGoalEntry = (i: number) => setGoalEntries(goalEntries.filter((_, idx) => idx !== i));
+  const removeAssistEntry = (i: number) => setAssistEntries(assistEntries.filter((_, idx) => idx !== i));
+
+  const updateGoalEntry = (i: number, field: string, val: string | number) => {
+    const next = [...goalEntries];
+    if (field === "playerId") {
+      const p = roster.find(r => r.id === val);
+      next[i] = { ...next[i], playerId: val as string, playerName: p?.first_name || "" };
+    } else {
+      next[i] = { ...next[i], [field]: val };
+    }
+    setGoalEntries(next);
+  };
+
+  const updateAssistEntry = (i: number, field: string, val: string | number) => {
+    const next = [...assistEntries];
+    if (field === "playerId") {
+      const p = roster.find(r => r.id === val);
+      next[i] = { ...next[i], playerId: val as string, playerName: p?.first_name || "" };
+    } else {
+      next[i] = { ...next[i], [field]: val };
+    }
+    setAssistEntries(next);
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -48,8 +131,8 @@ function MatchReportRow({ report, onDeleted }: { report: any; onDeleted: () => v
         opponent: form.opponent.trim(),
         home_score: parseInt(form.home_score) || 0,
         away_score: parseInt(form.away_score) || 0,
-        goal_scorers: form.goal_scorers.trim() || null,
-        assists: form.assists.trim() || null,
+        goal_scorers: entriesToText(goalEntries, roster) || null,
+        assists: entriesToText(assistEntries, roster) || null,
         notes: form.notes.trim() || null,
       })
       .eq("id", report.id);
@@ -75,53 +158,135 @@ function MatchReportRow({ report, onDeleted }: { report: any; onDeleted: () => v
 
   if (editing) {
     return (
-      <div className="bg-card border border-primary/30 rounded-lg p-4 space-y-3">
+      <div className="bg-card border border-primary/30 rounded-lg p-4 space-y-4">
         <div className="flex items-center justify-between">
           <span className="font-display text-sm text-primary">Editing Report</span>
           <Button variant="ghost" size="sm" onClick={() => setEditing(false)} className="h-7 w-7 p-0">
             <X className="h-3.5 w-3.5" />
           </Button>
         </div>
+
+        {/* Score inputs */}
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Team Name</label>
-            <input value={form.team_name} onChange={(e) => setForm({ ...form, team_name: e.target.value })} className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground" />
+            <Label className="text-xs">{report.opponent} (Home)</Label>
+            <Input type="number" min="0" value={form.home_score} onChange={(e) => setForm({ ...form, home_score: e.target.value })} />
           </div>
           <div>
-            <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Age Group</label>
-            <select value={form.age_group} onChange={(e) => setForm({ ...form, age_group: e.target.value })} className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground">
-              {ageGroups.map((g) => <option key={g} value={g}>{g}</option>)}
-            </select>
+            <Label className="text-xs">{report.team_name} (Away)</Label>
+            <Input type="number" min="0" value={form.away_score} onChange={(e) => setForm({ ...form, away_score: e.target.value })} />
           </div>
         </div>
+
+        {/* Goal Scorers */}
         <div>
-          <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Opponent</label>
-          <input value={form.opponent} onChange={(e) => setForm({ ...form, opponent: e.target.value })} className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground" />
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Our Score</label>
-            <input type="number" min="0" value={form.home_score} onChange={(e) => setForm({ ...form, home_score: e.target.value })} className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground" />
+          <div className="flex items-center justify-between mb-2">
+            <Label className="text-xs">Goal Scorers</Label>
+            <Button size="sm" variant="ghost" onClick={addGoalEntry} className="h-7 text-xs gap-1">
+              <Plus className="h-3 w-3" />Add
+            </Button>
           </div>
-          <div>
-            <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Their Score</label>
-            <input type="number" min="0" value={form.away_score} onChange={(e) => setForm({ ...form, away_score: e.target.value })} className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground" />
+          {goalEntries.length === 0 && (
+            <p className="text-xs text-muted-foreground italic">No goals scored — click Add to log scorers</p>
+          )}
+          <div className="space-y-2">
+            {goalEntries.map((entry, i) => (
+              <div key={i} className="flex items-center gap-2">
+                {roster.length > 0 ? (
+                  <Select value={entry.playerId} onValueChange={(v) => updateGoalEntry(i, "playerId", v)}>
+                    <SelectTrigger className="h-8 text-sm flex-1">
+                      <SelectValue placeholder="Select player" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {roster.map((p) => (
+                        <SelectItem key={p.id} value={p.id}>
+                          {p.shirt_number ? `#${p.shirt_number} ` : ""}{p.first_name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Input
+                    value={entry.playerName}
+                    onChange={(e) => { const next = [...goalEntries]; next[i] = { ...next[i], playerName: e.target.value }; setGoalEntries(next); }}
+                    placeholder="Player name"
+                    className="h-8 text-sm flex-1"
+                  />
+                )}
+                <Input
+                  type="number" min="1" value={entry.count}
+                  onChange={(e) => updateGoalEntry(i, "count", parseInt(e.target.value) || 1)}
+                  className="h-8 w-16 text-sm text-center"
+                />
+                <Button size="sm" variant="ghost" onClick={() => removeGoalEntry(i)} className="h-8 w-8 p-0">
+                  <Trash2 className="h-3 w-3 text-destructive" />
+                </Button>
+              </div>
+            ))}
           </div>
         </div>
+
+        {/* Assists */}
         <div>
-          <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Goal Scorers</label>
-          <input value={form.goal_scorers} onChange={(e) => setForm({ ...form, goal_scorers: e.target.value })} className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground" />
+          <div className="flex items-center justify-between mb-2">
+            <Label className="text-xs">Assists</Label>
+            <Button size="sm" variant="ghost" onClick={addAssistEntry} className="h-7 text-xs gap-1">
+              <Plus className="h-3 w-3" />Add
+            </Button>
+          </div>
+          {assistEntries.length === 0 && (
+            <p className="text-xs text-muted-foreground italic">No assists — click Add to log</p>
+          )}
+          <div className="space-y-2">
+            {assistEntries.map((entry, i) => (
+              <div key={i} className="flex items-center gap-2">
+                {roster.length > 0 ? (
+                  <Select value={entry.playerId} onValueChange={(v) => updateAssistEntry(i, "playerId", v)}>
+                    <SelectTrigger className="h-8 text-sm flex-1">
+                      <SelectValue placeholder="Select player" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {roster.map((p) => (
+                        <SelectItem key={p.id} value={p.id}>
+                          {p.shirt_number ? `#${p.shirt_number} ` : ""}{p.first_name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Input
+                    value={entry.playerName}
+                    onChange={(e) => { const next = [...assistEntries]; next[i] = { ...next[i], playerName: e.target.value }; setAssistEntries(next); }}
+                    placeholder="Player name"
+                    className="h-8 text-sm flex-1"
+                  />
+                )}
+                <Input
+                  type="number" min="1" value={entry.count}
+                  onChange={(e) => updateAssistEntry(i, "count", parseInt(e.target.value) || 1)}
+                  className="h-8 w-16 text-sm text-center"
+                />
+                <Button size="sm" variant="ghost" onClick={() => removeAssistEntry(i)} className="h-8 w-8 p-0">
+                  <Trash2 className="h-3 w-3 text-destructive" />
+                </Button>
+              </div>
+            ))}
+          </div>
         </div>
+
+        {/* Notes */}
         <div>
-          <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Assists</label>
-          <input value={form.assists} onChange={(e) => setForm({ ...form, assists: e.target.value })} className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground" />
+          <Label className="text-xs">Match Notes</Label>
+          <Textarea
+            placeholder="How did the team play? Key moments..."
+            value={form.notes}
+            onChange={(e) => setForm({ ...form, notes: e.target.value })}
+            rows={3}
+          />
         </div>
-        <div>
-          <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Notes</label>
-          <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={2} className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground resize-none" />
-        </div>
-        <Button onClick={handleSave} disabled={saving} size="sm" className="w-full gap-1">
-          {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+
+        <Button onClick={handleSave} disabled={saving} className="w-full">
+          {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
           Save Changes
         </Button>
       </div>
