@@ -111,16 +111,16 @@ export function TeamStatsTable({ ageGroup }: { ageGroup: string }) {
               <th className="text-left px-4 py-3 w-8">#</th>
               <th className="text-left px-2 py-3">Player</th>
               <th className="text-center px-2 py-3">
-                <Target className="h-3 w-3 mx-auto" title="Goals" />
+                <Target className="h-3 w-3 mx-auto" />
               </th>
               <th className="text-center px-2 py-3">
-                <Users className="h-3 w-3 mx-auto" title="Assists" />
+                <Users className="h-3 w-3 mx-auto" />
               </th>
               <th className="text-center px-2 py-3">
-                <BarChart3 className="h-3 w-3 mx-auto" title="Appearances" />
+                <BarChart3 className="h-3 w-3 mx-auto" />
               </th>
               <th className="text-center px-2 py-3">
-                <Award className="h-3 w-3 mx-auto" title="POTM" />
+                <Award className="h-3 w-3 mx-auto" />
               </th>
             </tr>
           </thead>
