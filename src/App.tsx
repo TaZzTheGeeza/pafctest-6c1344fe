@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useCartSync } from "@/hooks/useCartSync";
 import { FootballBackground } from "@/components/FootballBackground";
 import { AnnouncementBanner } from "@/components/AnnouncementBanner";
+import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index.tsx";
 import ShopPage from "./pages/Shop.tsx";
 import ProductPage from "./pages/ProductPage.tsx";
@@ -29,6 +30,7 @@ import MatchDayPage from "./pages/MatchDayPage.tsx";
 import POTMPage from "./pages/POTMPage.tsx";
 import CalendarPage from "./pages/CalendarPage.tsx";
 import CoachPanelPage from "./pages/CoachPanelPage.tsx";
+import AuthPage from "./pages/AuthPage.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -63,6 +65,7 @@ function AppContent() {
         <Route path="/player-of-the-match" element={<POTMPage />} />
         <Route path="/calendar" element={<CalendarPage />} />
         <Route path="/coach-panel" element={<CoachPanelPage />} />
+        <Route path="/auth" element={<AuthPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
@@ -72,10 +75,12 @@ function AppContent() {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <FootballBackground />
-      <Toaster />
-      <Sonner />
-      <AppContent />
+      <AuthProvider>
+        <FootballBackground />
+        <Toaster />
+        <Sonner />
+        <AppContent />
+      </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
