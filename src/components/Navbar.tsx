@@ -42,12 +42,11 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   { label: "Home", path: "/" },
-  { label: "Teams", path: "/teams", dropdown: teams.map(t => ({ label: t, path: `/teams/${t.toLowerCase().replace(/\s+/g, "-")}` })) },
+  { label: "Players", path: "/player-hub", dropdown: playerItems },
   { label: "PAFC TV", path: "https://www.youtube.com/@PeterboroughAthleticFC", external: true },
   { label: "Community", path: "/news", dropdown: communityItems },
   { label: "About", path: "/club-info", dropdown: aboutItems },
   { label: "Raffle", path: "/raffle" },
-  { label: "Register", path: "/register" },
   { label: "Contact", path: "/contact" },
 ];
 
