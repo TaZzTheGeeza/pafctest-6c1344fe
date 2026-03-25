@@ -16,6 +16,17 @@ interface POTM {
   award_date: string;
   reason: string | null;
   shirt_number: number | null;
+  created_at?: string;
+}
+
+function getPotmDedupKey(player: POTM) {
+  return [
+    player.player_name.trim().toLowerCase(),
+    player.team_name.trim().toLowerCase(),
+    player.age_group.trim().toLowerCase(),
+    player.award_date,
+    player.match_description?.trim().toLowerCase() || "",
+  ].join("::");
 }
 
 export default function POTMPage() {
@@ -27,9 +38,20 @@ export default function POTMPage() {
     supabase
       .from("player_of_the_match")
       .select("*")
-      .order("award_date", { ascending: false })
+      .order("created_at", { ascending: false })
       .then(({ data }) => {
-        if (data) setPlayers(data);
+        if (data) {
+          const latestByAward = new Map<string, POTM>();
+
+          for (const player of data) {
+            const key = getPotmDedupKey(player);
+            if (!latestByAward.has(key)) {
+              latestByAward.set(key, player);
+            }
+          }
+
+          setPlayers([...latestByAward.values()]);
+        }
         setLoading(false);
       });
   }, []);
