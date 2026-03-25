@@ -69,7 +69,7 @@ function isNearBackgroundColor(
   b: number,
   backgroundSamples: [number, number, number][],
 ) {
-  return backgroundSamples.some((sample) => colorDistance([r, g, b], sample) <= 42);
+  return backgroundSamples.some((sample) => colorDistance([r, g, b], sample) <= 56);
 }
 
 function getPixelIndex(x: number, y: number, width: number) {
@@ -101,28 +101,51 @@ async function normalizePotmImage(base64: string, size = 1024) {
   const { data, width, height } = imageData;
   const visited = new Uint8Array(width * height);
 
-  const samplePoints: Array<[number, number]> = [
-    [0, 0],
-    [width - 1, 0],
-    [0, height - 1],
-    [width - 1, height - 1],
-    [Math.floor(width / 2), 0],
-    [Math.floor(width / 2), height - 1],
-    [0, Math.floor(height / 2)],
-    [width - 1, Math.floor(height / 2)],
-  ];
+  const backgroundSampleMap = new Map<string, { color: [number, number, number]; count: number }>();
+  const sampleBand = Math.max(12, Math.floor(Math.min(width, height) * 0.08));
+  const sampleStep = Math.max(2, Math.floor(Math.min(width, height) / 96));
 
-  const backgroundSamples: [number, number, number][] = [];
-
-  samplePoints.forEach(([x, y]) => {
+  const addBackgroundSample = (x: number, y: number) => {
     const index = getPixelIndex(x, y, width);
     const alpha = data[index + 3];
-    if (alpha === 0) return;
-    const sample: [number, number, number] = [data[index], data[index + 1], data[index + 2]];
-    if (!backgroundSamples.some((existing) => colorDistance(existing, sample) <= 12)) {
-      backgroundSamples.push(sample);
+    if (alpha < 16) return;
+
+    const color: [number, number, number] = [data[index], data[index + 1], data[index + 2]];
+    const key = color.map((value) => Math.round(value / 24) * 24).join(",");
+    const existing = backgroundSampleMap.get(key);
+
+    if (existing) {
+      existing.count += 1;
+      return;
     }
-  });
+
+    backgroundSampleMap.set(key, { color, count: 1 });
+  };
+
+  for (let x = 0; x < width; x += sampleStep) {
+    for (let offset = 0; offset < sampleBand; offset += sampleStep) {
+      addBackgroundSample(x, offset);
+      addBackgroundSample(x, height - 1 - offset);
+    }
+  }
+
+  for (let y = 0; y < height; y += sampleStep) {
+    for (let offset = 0; offset < sampleBand; offset += sampleStep) {
+      addBackgroundSample(offset, y);
+      addBackgroundSample(width - 1 - offset, y);
+    }
+  }
+
+  const backgroundSamples = [...backgroundSampleMap.values()]
+    .sort((a, b) => b.count - a.count)
+    .map(({ color }) => color)
+    .reduce<[number, number, number][]>((samples, color) => {
+      if (!samples.some((existing) => colorDistance(existing, color) <= 18)) {
+        samples.push(color);
+      }
+      return samples;
+    }, [])
+    .slice(0, 12);
 
   const queue: Array<[number, number]> = [];
 
