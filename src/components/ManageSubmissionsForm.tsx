@@ -464,39 +464,47 @@ interface MatchGroup {
   potmAwards: any[];
 }
 
-export function ManageSubmissionsForm() {
+export function ManageSubmissionsForm({ allowedAgeGroups }: { allowedAgeGroups?: string[] }) {
   const queryClient = useQueryClient();
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const { data: reports = [], isLoading: reportsLoading } = useQuery({
-    queryKey: ["all-match-reports"],
+    queryKey: ["all-match-reports", allowedAgeGroups],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("match_reports")
         .select("*")
         .order("match_date", { ascending: false })
         .limit(50);
+      if (allowedAgeGroups && allowedAgeGroups.length > 0) {
+        query = query.in("age_group", allowedAgeGroups);
+      }
+      const { data, error } = await query;
       if (error) throw error;
       return data;
     },
   });
 
   const { data: potmAwards = [], isLoading: potmLoading } = useQuery({
-    queryKey: ["all-potm-awards"],
+    queryKey: ["all-potm-awards", allowedAgeGroups],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("player_of_the_match")
         .select("*")
         .order("award_date", { ascending: false })
         .limit(50);
+      if (allowedAgeGroups && allowedAgeGroups.length > 0) {
+        query = query.in("age_group", allowedAgeGroups);
+      }
+      const { data, error } = await query;
       if (error) throw error;
       return data;
     },
   });
 
   const refresh = () => {
-    queryClient.invalidateQueries({ queryKey: ["all-match-reports"] });
-    queryClient.invalidateQueries({ queryKey: ["all-potm-awards"] });
+    queryClient.invalidateQueries({ queryKey: ["all-match-reports", allowedAgeGroups] });
+    queryClient.invalidateQueries({ queryKey: ["all-potm-awards", allowedAgeGroups] });
   };
 
   const matchGroups: MatchGroup[] = reports.map((r: any) => {

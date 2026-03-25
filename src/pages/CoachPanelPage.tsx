@@ -5,17 +5,30 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Trophy, FileText, Upload, Star, CheckCircle, Loader2, ShieldX, BarChart3, Settings } from "lucide-react";
+import { Trophy, FileText, Upload, Star, CheckCircle, Loader2, ShieldX, BarChart3, Settings, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { ManageSubmissionsForm } from "@/components/ManageSubmissionsForm";
 import { PlayerStatsForm } from "@/components/PlayerStatsForm";
+import { useUserAgeGroups } from "@/hooks/useUserAgeGroups";
 
-const ageGroups = [
+const ALL_AGE_GROUPS = [
   "U7", "U8 Black", "U8 Gold", "U9", "U10",
   "U11 Black", "U11 Gold", "U13 Black", "U13 Gold", "U14",
 ];
 
-function POTMForm() {
+function NoAgeGroupsWarning() {
+  return (
+    <div className="bg-card border border-border rounded-xl p-8 text-center">
+      <AlertTriangle className="h-12 w-12 text-amber-500 mx-auto mb-4" />
+      <h3 className="font-display text-xl font-bold text-foreground mb-2">No Age Groups Assigned</h3>
+      <p className="text-muted-foreground max-w-md mx-auto">
+        You haven't been assigned to any age groups yet. Please contact a club admin to assign you to your team's age group.
+      </p>
+    </div>
+  );
+}
+
+function POTMForm({ ageGroups }: { ageGroups: string[] }) {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
@@ -24,7 +37,7 @@ function POTMForm() {
     player_name: "",
     shirt_number: "",
     team_name: "",
-    age_group: "",
+    age_group: ageGroups.length === 1 ? ageGroups[0] : "",
     match_description: "",
     reason: "",
   });
@@ -91,7 +104,7 @@ function POTMForm() {
         <h3 className="font-display text-xl font-bold text-foreground mb-2">POTM Submitted!</h3>
         <p className="text-muted-foreground mb-4">The award will appear on the Player of the Match wall.</p>
         <button
-          onClick={() => { setSubmitted(false); setForm({ player_name: "", shirt_number: "", team_name: "", age_group: "", match_description: "", reason: "" }); setPhotoFile(null); setPhotoPreview(null); }}
+          onClick={() => { setSubmitted(false); setForm({ player_name: "", shirt_number: "", team_name: "", age_group: ageGroups.length === 1 ? ageGroups[0] : "", match_description: "", reason: "" }); setPhotoFile(null); setPhotoPreview(null); }}
           className="text-sm font-display text-primary hover:text-gold-light transition-colors"
         >
           Submit another
@@ -166,12 +179,12 @@ function POTMForm() {
   );
 }
 
-function MatchReportForm() {
+function MatchReportForm({ ageGroups }: { ageGroups: string[] }) {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [form, setForm] = useState({
     team_name: "",
-    age_group: "",
+    age_group: ageGroups.length === 1 ? ageGroups[0] : "",
     opponent: "",
     home_score: "",
     away_score: "",
@@ -216,7 +229,7 @@ function MatchReportForm() {
         <h3 className="font-display text-xl font-bold text-foreground mb-2">Match Report Submitted!</h3>
         <p className="text-muted-foreground mb-4">Thank you for reporting the result.</p>
         <button
-          onClick={() => { setSubmitted(false); setForm({ team_name: "", age_group: "", opponent: "", home_score: "", away_score: "", goal_scorers: "", assists: "", notes: "" }); }}
+          onClick={() => { setSubmitted(false); setForm({ team_name: "", age_group: ageGroups.length === 1 ? ageGroups[0] : "", opponent: "", home_score: "", away_score: "", goal_scorers: "", assists: "", notes: "" }); }}
           className="text-sm font-display text-primary hover:text-gold-light transition-colors"
         >
           Submit another
@@ -286,10 +299,14 @@ function MatchReportForm() {
 }
 
 export default function CoachPanelPage() {
-  const { user, loading, isCoach, rolesLoading } = useAuth();
+  const { user, loading, isCoach, isAdmin, rolesLoading } = useAuth();
+  const { assignedGroups, isLoading: ageGroupsLoading } = useUserAgeGroups();
   const [activeTab, setActiveTab] = useState<"potm" | "report" | "stats" | "manage">("potm");
 
-  if (loading || rolesLoading) {
+  // Admins see all age groups, coaches see only their assigned ones
+  const effectiveAgeGroups = isAdmin ? ALL_AGE_GROUPS : assignedGroups;
+
+  if (loading || rolesLoading || ageGroupsLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -319,6 +336,8 @@ export default function CoachPanelPage() {
     );
   }
 
+  const hasAgeGroups = effectiveAgeGroups.length > 0;
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -331,7 +350,17 @@ export default function CoachPanelPage() {
                 <span className="text-gold-gradient">Coach</span> Panel
               </h1>
             </div>
-            <p className="text-muted-foreground text-center mb-8">Submit match reports & Player of the Match awards</p>
+            <p className="text-muted-foreground text-center mb-2">Submit match reports & Player of the Match awards</p>
+            {hasAgeGroups && !isAdmin && (
+              <p className="text-xs text-center text-primary/80 mb-6">
+                Managing: {effectiveAgeGroups.join(", ")}
+              </p>
+            )}
+            {isAdmin && (
+              <p className="text-xs text-center text-primary/80 mb-6">
+                Admin — All age groups
+              </p>
+            )}
           </motion.div>
 
           <div className="max-w-2xl mx-auto">
@@ -375,7 +404,21 @@ export default function CoachPanelPage() {
               </button>
             </div>
 
-            {activeTab === "potm" ? <POTMForm /> : activeTab === "report" ? <MatchReportForm /> : activeTab === "stats" ? <PlayerStatsForm /> : <ManageSubmissionsForm />}
+            {!hasAgeGroups ? (
+              <NoAgeGroupsWarning />
+            ) : (
+              <>
+                {activeTab === "potm" ? (
+                  <POTMForm ageGroups={effectiveAgeGroups} />
+                ) : activeTab === "report" ? (
+                  <MatchReportForm ageGroups={effectiveAgeGroups} />
+                ) : activeTab === "stats" ? (
+                  <PlayerStatsForm allowedAgeGroups={effectiveAgeGroups} />
+                ) : (
+                  <ManageSubmissionsForm allowedAgeGroups={effectiveAgeGroups} />
+                )}
+              </>
+            )}
           </div>
         </div>
       </main>

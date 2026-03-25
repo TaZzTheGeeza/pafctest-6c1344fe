@@ -850,6 +850,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_age_groups: {
+        Row: {
+          age_group: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          age_group: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          age_group?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
