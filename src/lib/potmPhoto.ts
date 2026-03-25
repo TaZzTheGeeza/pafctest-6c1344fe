@@ -198,6 +198,49 @@ async function normalizePotmImage(base64: string, size = 1024) {
     enqueue(x, y - 1);
   }
 
+  // ── Remove green fringe from edges ──
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const idx = getPixelIndex(x, y, width);
+      const a = data[idx + 3];
+      if (a === 0) continue;
+
+      const r = data[idx];
+      const g = data[idx + 1];
+      const b = data[idx + 2];
+
+      // Fully transparent green-screen leftovers
+      if (isGreenScreenPixel(r, g, b)) {
+        data[idx + 3] = 0;
+        continue;
+      }
+
+      // De-fringe: if pixel is semi-transparent and greenish, fade it out
+      if (a < 220 && g > r && g > b) {
+        data[idx + 3] = 0;
+        continue;
+      }
+
+      // Check if this is an edge pixel (has a transparent neighbour)
+      let isEdge = false;
+      for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]]) {
+        const nx = x + dx, ny = y + dy;
+        if (nx >= 0 && ny >= 0 && nx < width && ny < height) {
+          if (data[getPixelIndex(nx, ny, width) + 3] === 0) { isEdge = true; break; }
+        }
+      }
+
+      if (isEdge && g > Math.max(r, b) + 20) {
+        // Desaturate green cast on edge pixels
+        const avg = Math.round((r + g + b) / 3);
+        data[idx] = Math.round(r * 0.4 + avg * 0.6);
+        data[idx + 1] = Math.round(g * 0.3 + avg * 0.7);
+        data[idx + 2] = Math.round(b * 0.4 + avg * 0.6);
+        data[idx + 3] = Math.min(a, 180);
+      }
+    }
+  }
+
   sourceContext.putImageData(imageData, 0, 0);
 
   let minX = width;
