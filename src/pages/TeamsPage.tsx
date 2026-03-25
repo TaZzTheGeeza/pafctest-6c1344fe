@@ -208,27 +208,45 @@ function TeamDetail({ team }: { team: TeamData }) {
                       const conceded = isHome ? (res.awayScore ?? 0) : (res.homeScore ?? 0);
                       const result = scored > conceded ? "W" : scored < conceded ? "L" : "D";
                       const resultColor = result === "W" ? "bg-green-600" : result === "L" ? "bg-red-600" : "bg-yellow-600";
+                      const isExpanded = expandedResult === i;
+                      const opponent = isHome ? res.awayTeam : res.homeTeam;
                       return (
-                        <div key={i} className="px-6 py-3 flex items-center gap-3">
-                          <span className={`${resultColor} text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded`}>
-                            {result}
-                          </span>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium truncate">
-                              {isHome ? "vs" : "@"} {isHome ? res.awayTeam : res.homeTeam}
-                            </p>
-                            <p className="text-[10px] text-muted-foreground">{formatFADate(res.date)}</p>
+                        <div key={i}>
+                          <div
+                            className="px-6 py-3 flex items-center gap-3 cursor-pointer hover:bg-muted/30 transition-colors"
+                            onClick={() => setExpandedResult(isExpanded ? null : i)}
+                          >
+                            <span className={`${resultColor} text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded`}>
+                              {result}
+                            </span>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium truncate">
+                                {isHome ? "vs" : "@"} {opponent}
+                              </p>
+                              <p className="text-[10px] text-muted-foreground">{formatFADate(res.date)}</p>
+                            </div>
+                            <span className="font-mono font-bold text-sm">{res.homeScore} - {res.awayScore}</span>
+                            {canManage && (
+                              <button
+                                onClick={(e) => { e.stopPropagation(); setCoachFixture(res); }}
+                                className="p-1 rounded hover:bg-primary/10 text-primary transition-colors"
+                                title="Coach panel"
+                              >
+                                <ClipboardEdit className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                            <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground transition-transform ${isExpanded ? "rotate-180" : ""}`} />
                           </div>
-                          <span className="font-mono font-bold text-sm">{res.homeScore} - {res.awayScore}</span>
-                          {canManage && (
-                            <button
-                              onClick={() => setCoachFixture(res)}
-                              className="p-1 rounded hover:bg-primary/10 text-primary transition-colors"
-                              title="Coach panel"
-                            >
-                              <ClipboardEdit className="w-3.5 h-3.5" />
-                            </button>
-                          )}
+                          <AnimatePresence>
+                            {isExpanded && (
+                              <MatchDetailPanel
+                                teamSlug={team.slug}
+                                teamName={team.name}
+                                opponent={opponent}
+                                matchDate={res.date}
+                              />
+                            )}
+                          </AnimatePresence>
                         </div>
                       );
                     })}
