@@ -17,7 +17,7 @@ const DEV_BYPASS = true;
 export function RoleGate({ children, requiredRole, redirectTo = "/auth" }: Props) {
   const { user, loading, isPlayer, isCoach, isAdmin, rolesLoading } = useAuth();
 
-  const isLocalhost = window.location.hostname === "localhost" || window.location.hostname.includes("lovable.app");
+  const isLocalhost = window.location.hostname === "localhost" || window.location.hostname.includes("lovable.app") || window.location.hostname.includes("lovableproject.com");
 
   if (DEV_BYPASS && isLocalhost) {
     return <>{children}</>;
