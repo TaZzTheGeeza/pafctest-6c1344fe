@@ -95,7 +95,7 @@ export function POTMCard({
                 <img
                   src={photoUrl}
                   alt={playerName}
-                  className="absolute inset-0 w-full h-full object-contain object-bottom z-10"
+                  className="absolute inset-0 w-full h-full object-contain object-center z-10"
                   loading="lazy"
                 />
               ) : (
