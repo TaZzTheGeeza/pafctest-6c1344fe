@@ -8,7 +8,12 @@ function sanitizePathSegment(value: string) {
     .replace(/^-+|-+$/g, "") || "player";
 }
 
-export function resizeImageToBase64(file: File, maxDim = 1024): Promise<string> {
+export function resizeImageToBase64(
+  file: File,
+  maxDim = 1024,
+  outputType: "image/png" | "image/jpeg" = "image/png",
+  quality = 0.92,
+): Promise<string> {
   return new Promise((resolve, reject) => {
     const img = new Image();
     const url = URL.createObjectURL(file);
@@ -34,7 +39,7 @@ export function resizeImageToBase64(file: File, maxDim = 1024): Promise<string> 
       }
 
       ctx.drawImage(img, 0, 0, width, height);
-      resolve(canvas.toDataURL("image/png"));
+      resolve(canvas.toDataURL(outputType, quality));
     };
 
     img.onerror = () => {
@@ -265,18 +270,22 @@ export async function uploadPotmPhoto(
     onStatus?: (status: "processing" | "processed" | "fallback") => void;
   },
 ) {
-  const base64 = await resizeImageToBase64(file, 512);
-  let finalBase64 = base64;
+  const fallbackBase64 = await resizeImageToBase64(file, 1024);
+  const aiBase64 = await resizeImageToBase64(file, 384, "image/jpeg", 0.82);
+  let finalBase64 = fallbackBase64;
 
   options.onStatus?.("processing");
 
   try {
     const { data, error } = await supabase.functions.invoke("remove-background", {
-      body: { imageBase64: base64 },
+      body: { imageBase64: aiBase64 },
     });
 
     if (error) {
       console.error("[POTM] Background removal error:", error);
+      options.onStatus?.("fallback");
+    } else if (data?.fallback) {
+      console.warn("[POTM] Background removal fallback:", data?.warning || "Unknown AI fallback");
       options.onStatus?.("fallback");
     } else if (data?.imageBase64) {
       finalBase64 = data.imageBase64.startsWith("data:")
