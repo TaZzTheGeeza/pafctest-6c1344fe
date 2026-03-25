@@ -89,7 +89,7 @@ export function TeamSelectionTab({
 
       // Save appearances to match_player_stats
       const [d, m, y] = fixture.date.split("/");
-      const matchDate = `20${y}-${m}-${d}`;
+      const matchDate = y.length === 4 ? `${y}-${m}-${d}` : `20${y}-${m}-${d}`;
 
       const appearanceStats = Array.from(selectedIds).map(playerId => ({
         player_stat_id: playerId,

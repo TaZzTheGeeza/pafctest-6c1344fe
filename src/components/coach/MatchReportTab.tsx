@@ -50,7 +50,7 @@ export function MatchReportTab({
 
   const parseMatchDate = () => {
     const [d, m, y] = fixture.date.split("/");
-    return `20${y}-${m}-${d}`;
+    return y.length === 4 ? `${y}-${m}-${d}` : `20${y}-${m}-${d}`;
   };
 
   const handleSave = async () => {
