@@ -1,19 +1,22 @@
-import { useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { FileText, Star, Loader2, ChevronDown, ChevronUp, Trophy, Target, Users } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 
 // ─── Main Component ───
 
-interface MatchGroup {
+interface FixtureGroup {
+  key: string;
+  teamName: string;
+  opponent: string;
+  ageGroup: string;
+  date: string;
   report: any;
   potmAwards: any[];
 }
 
 export function ManageSubmissionsForm({ allowedAgeGroups }: { allowedAgeGroups?: string[] }) {
-  const queryClient = useQueryClient();
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const { data: reports = [], isLoading: reportsLoading } = useQuery({
@@ -50,104 +53,118 @@ export function ManageSubmissionsForm({ allowedAgeGroups }: { allowedAgeGroups?:
     },
   });
 
-  const matchGroups: MatchGroup[] = reports.map((r: any) => {
-    const linked = potmAwards.filter(
-      (p: any) => p.team_name === r.team_name && p.award_date === r.match_date
-    );
-    return { report: r, potmAwards: linked };
-  });
+  const fixtureGroups = useMemo(() => {
+    const groupMap = new Map<string, FixtureGroup>();
 
-  const linkedPotmIds = new Set(matchGroups.flatMap((g) => g.potmAwards.map((p: any) => p.id)));
-  const orphanedPotm = potmAwards.filter((p: any) => !linkedPotmIds.has(p.id));
+    // Add match reports
+    for (const r of reports) {
+      const key = `${r.team_name}::${r.opponent}::${r.match_date}`;
+      groupMap.set(key, {
+        key,
+        teamName: r.team_name,
+        opponent: r.opponent,
+        ageGroup: r.age_group,
+        date: r.match_date,
+        report: r,
+        potmAwards: [],
+      });
+    }
+
+    // Add POTM awards — match to existing groups or create new fixture groups
+    for (const p of potmAwards) {
+      const opponent = (p.match_description || "").replace(/^vs\s+/i, "").trim();
+      // Try matching by team + date (with or without opponent)
+      let matched = false;
+      for (const [, group] of groupMap) {
+        if (group.teamName === p.team_name && group.date === p.award_date) {
+          group.potmAwards.push(p);
+          matched = true;
+          break;
+        }
+      }
+      if (!matched) {
+        const key = `${p.team_name}::${opponent}::${p.award_date}`;
+        const existing = groupMap.get(key);
+        if (existing) {
+          existing.potmAwards.push(p);
+        } else {
+          groupMap.set(key, {
+            key,
+            teamName: p.team_name,
+            opponent: opponent || "Unknown",
+            ageGroup: p.age_group,
+            date: p.award_date,
+            report: null,
+            potmAwards: [p],
+          });
+        }
+      }
+    }
+
+    return [...groupMap.values()].sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+  }, [reports, potmAwards]);
+
   const isLoading = reportsLoading || potmLoading;
 
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2 mb-2">
         <FileText className="h-5 w-5 text-primary" />
-        <h3 className="font-display text-lg font-bold text-foreground">Submitted Matches</h3>
-        <span className="text-xs text-muted-foreground">({reports.length} reports, {potmAwards.length} POTM awards)</span>
+        <h3 className="font-display text-lg font-bold text-foreground">Submissions</h3>
+        <span className="text-xs text-muted-foreground">({fixtureGroups.length} fixtures)</span>
       </div>
 
       {isLoading ? (
         <div className="text-center py-8"><Loader2 className="h-5 w-5 animate-spin mx-auto text-primary" /></div>
-      ) : matchGroups.length === 0 && orphanedPotm.length === 0 ? (
+      ) : fixtureGroups.length === 0 ? (
         <p className="text-sm text-muted-foreground text-center py-8 bg-card border border-border rounded-xl">No submissions yet.</p>
       ) : (
-        <>
-          {matchGroups.map((group) => {
-            const r = group.report;
-            const isExpanded = expandedId === r.id;
-
+        <div className="space-y-3">
+          {fixtureGroups.map((group) => {
+            const isExpanded = expandedId === group.key;
             return (
-              <MatchGroupCard
-                key={r.id}
+              <FixtureGroupCard
+                key={group.key}
                 group={group}
                 isExpanded={isExpanded}
-                onToggle={() => setExpandedId(isExpanded ? null : r.id)}
+                onToggle={() => setExpandedId(isExpanded ? null : group.key)}
               />
             );
           })}
-
-          {orphanedPotm.length > 0 && (
-            <div className="bg-card border border-border rounded-xl overflow-hidden">
-              <div className="p-3 border-b border-border">
-                <p className="text-sm font-display text-foreground flex items-center gap-2">
-                  <Star className="h-4 w-4 text-primary" />
-                  Unlinked POTM Awards
-                  <span className="text-xs text-muted-foreground font-body">({orphanedPotm.length})</span>
-                </p>
-                <p className="text-[10px] text-muted-foreground mt-0.5">These awards aren't matched to a report — submit a match report for the same team &amp; date to link them.</p>
-              </div>
-              <div className="px-3 py-2 space-y-2">
-                {orphanedPotm.map((p: any) => (
-                  <div key={p.id} className="bg-card border border-border rounded-lg p-3 flex items-center gap-3">
-                    {p.photo_url ? (
-                      <img src={p.photo_url} alt={p.player_name} className="h-8 w-8 rounded-full object-cover border border-primary/30 shrink-0" />
-                    ) : (
-                      <Star className="h-4 w-4 text-primary shrink-0" />
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-display text-foreground truncate">
-                        {p.shirt_number ? `#${p.shirt_number} ` : ""}{p.player_name}
-                      </p>
-                      <p className="text-[10px] text-muted-foreground">
-                        {p.team_name} · {p.age_group} · {p.match_description || "No match"} · {format(new Date(p.award_date), "dd MMM yyyy")}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </>
+        </div>
       )}
     </div>
   );
 }
 
-// ─── Match Group Card with Tabs ───
+// ─── Fixture Group Card (read-only) ───
 
-function MatchGroupCard({ group, isExpanded, onToggle }: {
-  group: MatchGroup; isExpanded: boolean;
+function FixtureGroupCard({ group, isExpanded, onToggle }: {
+  group: FixtureGroup; isExpanded: boolean;
   onToggle: () => void;
 }) {
   const r = group.report;
+  const hasReport = !!r;
 
   return (
     <div className="bg-card border border-border rounded-xl overflow-hidden">
-      {/* Match header row */}
       <button
         onClick={onToggle}
         className="w-full flex items-center gap-3 p-3 hover:bg-secondary/50 transition-colors text-left"
       >
-        <FileText className="h-4 w-4 text-primary shrink-0" />
+        {hasReport ? (
+          <FileText className="h-4 w-4 text-primary shrink-0" />
+        ) : (
+          <Trophy className="h-4 w-4 text-yellow-500 shrink-0" />
+        )}
         <div className="flex-1 min-w-0">
           <p className="text-sm font-display text-foreground truncate">
-            {r.team_name} <span className="text-muted-foreground font-body font-normal">vs</span> {r.opponent}
+            {group.teamName} <span className="text-muted-foreground font-body font-normal">vs</span> {group.opponent}
           </p>
           <p className="text-[10px] text-muted-foreground">
-            {r.home_score}-{r.away_score} · {r.age_group} · {format(new Date(r.match_date), "dd MMM yyyy")}
+            {hasReport ? `${r.home_score}-${r.away_score} · ` : ""}{group.ageGroup} · {format(new Date(group.date), "dd MMM yyyy")}
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
@@ -160,48 +177,46 @@ function MatchGroupCard({ group, isExpanded, onToggle }: {
         </div>
       </button>
 
-      {/* Expanded tabbed content */}
       {isExpanded && (
         <div className="border-t border-border px-4 py-3 space-y-3">
-          {/* Score */}
-          <div className="flex items-center gap-2 text-sm">
-            <span className="font-display font-bold text-foreground">{r.home_score} - {r.away_score}</span>
-          </div>
-
-          {/* Goal Scorers */}
-          {r.goal_scorers && (
-            <div className="flex items-start gap-2">
-              <Target className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
-              <div>
-                <p className="text-[10px] font-display uppercase tracking-wider text-muted-foreground mb-0.5">Goals</p>
-                <p className="text-sm text-foreground">{r.goal_scorers}</p>
+          {hasReport && (
+            <>
+              <div className="flex items-center gap-2 text-sm">
+                <span className="font-display font-bold text-foreground">{r.home_score} - {r.away_score}</span>
               </div>
-            </div>
+
+              {r.goal_scorers && (
+                <div className="flex items-start gap-2">
+                  <Target className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-[10px] font-display uppercase tracking-wider text-muted-foreground mb-0.5">Goals</p>
+                    <p className="text-sm text-foreground">{r.goal_scorers}</p>
+                  </div>
+                </div>
+              )}
+
+              {r.assists && (
+                <div className="flex items-start gap-2">
+                  <Users className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-[10px] font-display uppercase tracking-wider text-muted-foreground mb-0.5">Assists</p>
+                    <p className="text-sm text-foreground">{r.assists}</p>
+                  </div>
+                </div>
+              )}
+
+              {r.notes && (
+                <div className="flex items-start gap-2">
+                  <FileText className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-[10px] font-display uppercase tracking-wider text-muted-foreground mb-0.5">Coach's Report</p>
+                    <p className="text-sm text-foreground whitespace-pre-line">{r.notes}</p>
+                  </div>
+                </div>
+              )}
+            </>
           )}
 
-          {/* Assists */}
-          {r.assists && (
-            <div className="flex items-start gap-2">
-              <Users className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
-              <div>
-                <p className="text-[10px] font-display uppercase tracking-wider text-muted-foreground mb-0.5">Assists</p>
-                <p className="text-sm text-foreground">{r.assists}</p>
-              </div>
-            </div>
-          )}
-
-          {/* Match Notes */}
-          {r.notes && (
-            <div className="flex items-start gap-2">
-              <FileText className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
-              <div>
-                <p className="text-[10px] font-display uppercase tracking-wider text-muted-foreground mb-0.5">Coach's Report</p>
-                <p className="text-sm text-foreground whitespace-pre-line">{r.notes}</p>
-              </div>
-            </div>
-          )}
-
-          {/* Linked POTM awards */}
           {group.potmAwards.length > 0 && (
             <div className="flex items-start gap-2">
               <Trophy className="h-3.5 w-3.5 text-yellow-500 mt-0.5 shrink-0" />
