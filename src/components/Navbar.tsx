@@ -244,6 +244,23 @@ export function Navbar() {
                 Shop
               </Link>
             </div>
+            {user ? (
+              <button
+                onClick={() => { signOut(); setIsOpen(false); }}
+                className="w-full font-display text-sm tracking-wider py-2.5 rounded-md border border-border text-muted-foreground hover:text-primary transition-colors mt-2"
+              >
+                Sign Out
+              </button>
+            ) : (
+              <Link
+                to="/auth"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center justify-center gap-2 w-full font-display text-sm tracking-wider py-2.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors mt-2"
+              >
+                <LogIn className="h-4 w-4" />
+                Sign In / Sign Up
+              </Link>
+            )}
           </div>
         </div>
       )}
