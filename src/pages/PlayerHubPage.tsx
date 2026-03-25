@@ -112,8 +112,14 @@ export default function PlayerHubPage() {
               >
                 <Link
                   to={item.path}
-                  className={`group flex flex-col h-full bg-card border ${item.borderColor} rounded-xl p-6 hover:border-primary/40 transition-all hover:shadow-lg hover:shadow-primary/5`}
+                  className={`group relative flex flex-col h-full bg-card border ${item.borderColor} rounded-xl p-6 hover:border-primary/40 transition-all hover:shadow-lg hover:shadow-primary/5`}
                 >
+                  {item.restricted && !isPlayer && (
+                    <div className="absolute top-3 right-3 flex items-center gap-1 bg-muted/80 rounded-full px-2 py-0.5">
+                      <Lock className="h-3 w-3 text-muted-foreground" />
+                      <span className="text-[10px] font-display tracking-wider text-muted-foreground">MEMBERS</span>
+                    </div>
+                  )}
                   <div className={`${item.bgColor} w-12 h-12 rounded-lg flex items-center justify-center mb-4`}>
                     <item.icon className={`h-6 w-6 ${item.color}`} />
                   </div>
@@ -124,7 +130,7 @@ export default function PlayerHubPage() {
                     {item.description}
                   </p>
                   <div className="flex items-center gap-1 text-xs text-muted-foreground group-hover:text-primary transition-colors mt-4 font-display tracking-wider">
-                    View
+                    {item.restricted && !isPlayer ? "Sign in" : "View"}
                     <ChevronRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
                   </div>
                 </Link>
