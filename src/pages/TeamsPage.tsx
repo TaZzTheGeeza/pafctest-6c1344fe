@@ -105,6 +105,7 @@ function TeamDetail({ team }: { team: TeamData }) {
               {leagueTableConfig[team.slug] && (
                 <LeagueTable
                   divisionSeason={leagueTableConfig[team.slug].divisionSeason}
+                  tableUrl={leagueTableConfig[team.slug].tableUrl}
                   highlightTeams={leagueTableConfig[team.slug].highlightTeams}
                   faUrl={leagueTableConfig[team.slug].faUrl}
                 />
