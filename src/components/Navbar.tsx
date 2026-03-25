@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, ChevronDown, Trophy, ShoppingBag, LogIn } from "lucide-react";
+import { Menu, X, ChevronDown, Trophy, ShoppingBag, LogIn, Phone, Mail } from "lucide-react";
 import { CartDrawer } from "@/components/CartDrawer";
 import { useAuth } from "@/contexts/AuthContext";
 import clubLogo from "@/assets/club-logo.jpg";
@@ -41,6 +41,7 @@ const navItems: NavItem[] = [
   { label: "PAFC TV", path: "https://www.youtube.com/@PeterboroughAthleticFC", external: true },
   { label: "Community", path: "/news", dropdown: communityItems },
   { label: "About", path: "/club-info", dropdown: aboutItems },
+  { label: "Tournament", path: "/tournament" },
   { label: "Raffle", path: "/raffle" },
   { label: "Contact", path: "/contact" },
 ];
@@ -53,7 +54,7 @@ export function Navbar() {
   const { user, signOut } = useAuth();
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40);
+    const onScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
@@ -63,151 +64,140 @@ export function Navbar() {
   };
 
   return (
-    <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-out ${
-        scrolled
-          ? "h-12 bg-background/70 backdrop-blur-2xl shadow-xl shadow-black/25 border-b border-primary/10"
-          : "h-16 bg-background/90 backdrop-blur-md border-b border-border"
-      }`}
-    >
-      <div className="container mx-auto px-4 flex items-center justify-between h-full">
-        {/* Logo — shrinks on scroll */}
-        <Link to="/" className="flex items-center gap-2.5 shrink-0 transition-all duration-500">
-          <img
-            src={clubLogo}
-            alt="PAFC Crest"
-            className={`rounded-full object-cover transition-all duration-500 ring-2 ring-primary/20 ${
-              scrolled ? "h-7 w-7" : "h-10 w-10"
-            }`}
-          />
-          <div className={`transition-all duration-500 overflow-hidden ${scrolled ? "w-0 opacity-0" : "w-auto opacity-100"}`}>
-            <span className="font-display text-sm font-bold text-primary leading-tight block whitespace-nowrap">Peterborough Athletic</span>
-            <span className="font-display text-[10px] text-muted-foreground tracking-[0.25em] uppercase">The Lions</span>
+    <nav className="fixed top-0 left-0 right-0 z-50">
+      {/* Top utility bar */}
+      <div className={`bg-primary transition-all duration-300 ${scrolled ? "h-0 overflow-hidden opacity-0" : "h-8 opacity-100"}`}>
+        <div className="container mx-auto px-4 flex items-center justify-between h-8">
+          <div className="flex items-center gap-4">
+            <a href="mailto:info@pafcjuniors.com" className="flex items-center gap-1.5 text-[10px] font-display tracking-wider text-primary-foreground/80 hover:text-primary-foreground transition-colors">
+              <Mail className="h-3 w-3" />
+              info@pafcjuniors.com
+            </a>
           </div>
-          {/* Compact name on scroll */}
-          <span className={`font-display text-xs font-bold text-primary tracking-wider transition-all duration-500 ${scrolled ? "opacity-100" : "opacity-0 w-0"}`}>
-            PAFC
-          </span>
-        </Link>
+          <div className="flex items-center gap-4">
+            <Link to="/shop" className="flex items-center gap-1.5 text-[10px] font-display tracking-[0.15em] uppercase text-primary-foreground/80 hover:text-primary-foreground transition-colors">
+              <ShoppingBag className="h-3 w-3" /> Shop
+            </Link>
+            <CartDrawer />
+            {user ? (
+              <button onClick={() => signOut()} className="text-[10px] font-display tracking-[0.15em] uppercase text-primary-foreground/80 hover:text-primary-foreground transition-colors">
+                Sign Out
+              </button>
+            ) : (
+              <Link to="/auth" className="flex items-center gap-1.5 text-[10px] font-display tracking-[0.15em] uppercase text-primary-foreground/80 hover:text-primary-foreground transition-colors">
+                <LogIn className="h-3 w-3" /> Sign In / Register
+              </Link>
+            )}
+          </div>
+        </div>
+      </div>
 
-        {/* Desktop nav */}
-        <div className="hidden lg:flex items-center gap-0.5">
-          {navItems.map((item) =>
-            item.dropdown ? (
-              <div key={item.label} className="relative group">
+      {/* Main navigation bar */}
+      <div className={`transition-all duration-300 border-b border-border ${
+        scrolled
+          ? "bg-background/95 backdrop-blur-xl shadow-lg shadow-black/20"
+          : "bg-background"
+      }`}>
+        <div className="container mx-auto px-4 hidden lg:flex items-center h-14">
+          {/* Logo */}
+          <Link to="/" className="flex items-center gap-3 shrink-0 mr-8">
+            <img src={clubLogo} alt="PAFC Crest" className="h-9 w-9 rounded-full object-cover ring-2 ring-primary/30" />
+            <div>
+              <span className="font-display text-sm font-bold text-primary leading-tight block">Peterborough Athletic</span>
+              <span className="font-display text-[9px] text-muted-foreground tracking-[0.3em] uppercase">Football Club</span>
+            </div>
+          </Link>
+
+          {/* Nav links */}
+          <div className="flex items-center gap-0.5 flex-1">
+            {navItems.map((item) =>
+              item.dropdown ? (
+                <div key={item.label} className="relative group">
+                  <Link
+                    to={item.path}
+                    className={`font-display text-[11px] tracking-[0.12em] uppercase px-3 py-2 rounded-md transition-colors flex items-center gap-1 ${
+                      item.dropdown.some(d => location.pathname === d.path) ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {item.label}
+                    <ChevronDown className="h-3 w-3 transition-transform group-hover:rotate-180" />
+                  </Link>
+                  <div className="absolute top-full left-0 pt-2 hidden group-hover:block">
+                    <div className="bg-card border border-border rounded-lg shadow-2xl shadow-black/30 py-1.5 min-w-[190px]">
+                      {item.dropdown.map((sub) => (
+                        <Link
+                          key={sub.path}
+                          to={sub.path}
+                          className="block px-4 py-2 text-[11px] font-display tracking-wider text-muted-foreground hover:text-primary hover:bg-secondary/50 transition-colors"
+                        >
+                          {sub.label}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ) : item.external ? (
+                <a
+                  key={item.label}
+                  href={item.path}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-display text-[11px] tracking-[0.12em] uppercase px-3 py-2 rounded-md transition-colors text-muted-foreground hover:text-foreground"
+                >
+                  {item.label}
+                </a>
+              ) : (
                 <Link
+                  key={item.label}
                   to={item.path}
-                  className={`font-display tracking-wider px-2.5 py-1.5 rounded-md transition-all flex items-center gap-1 ${
-                    scrolled ? "text-[10px]" : "text-xs"
-                  } ${
-                    item.dropdown.some(d => location.pathname === d.path)
+                  className={`font-display text-[11px] tracking-[0.12em] uppercase px-3 py-2 rounded-md transition-colors ${
+                    location.pathname === item.path || (item.path === "/tournament" && location.pathname.startsWith("/tournament"))
                       ? "text-primary"
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   {item.label}
-                  <ChevronDown className={`transition-all group-hover:rotate-180 ${scrolled ? "h-2.5 w-2.5" : "h-3 w-3"}`} />
                 </Link>
-                <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 hidden group-hover:block">
-                  <div className="bg-card/90 backdrop-blur-2xl border border-border/80 rounded-xl shadow-2xl shadow-black/40 py-2 min-w-[180px]">
-                    {item.dropdown.map((sub) => (
-                      <Link
-                        key={sub.path}
-                        to={sub.path}
-                        className="block px-4 py-2 text-[11px] font-display tracking-wider text-muted-foreground hover:text-primary hover:bg-primary/5 transition-colors"
-                      >
-                        {sub.label}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            ) : item.external ? (
-              <a
-                key={item.label}
-                href={item.path}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`font-display tracking-wider px-2.5 py-1.5 rounded-md transition-all text-muted-foreground hover:text-foreground ${scrolled ? "text-[10px]" : "text-xs"}`}
-              >
-                {item.label}
-              </a>
+              )
+            )}
+          </div>
+
+          {/* Scrolled-only actions (appear when utility bar hides) */}
+          <div className={`flex items-center gap-2 transition-all duration-300 ${scrolled ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
+            <CartDrawer />
+            {user ? (
+              <button onClick={() => signOut()} className="font-display text-[10px] tracking-wider px-2.5 py-1.5 rounded-md text-muted-foreground hover:text-primary transition-colors">
+                Sign Out
+              </button>
             ) : (
-              <Link
-                key={item.label}
-                to={item.path}
-                className={`font-display tracking-wider px-2.5 py-1.5 rounded-md transition-all ${scrolled ? "text-[10px]" : "text-xs"} ${
-                  location.pathname === item.path ? "text-primary" : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {item.label}
+              <Link to="/auth" className="font-display text-[10px] tracking-wider px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-all flex items-center gap-1.5">
+                <LogIn className="h-3 w-3" /> Sign In
               </Link>
-            )
-          )}
-
-          {/* Divider */}
-          <div className={`mx-1 bg-border transition-all ${scrolled ? "w-px h-4" : "w-px h-5"}`} />
-
-          {/* CTA buttons */}
-          <Link
-            to="/tournament"
-            className={`font-display tracking-wider rounded-md transition-all flex items-center gap-1 border ${
-              scrolled ? "text-[10px] px-2 py-1" : "text-xs px-2.5 py-1.5"
-            } ${
-              location.pathname.startsWith("/tournament")
-                ? "bg-primary text-primary-foreground border-primary"
-                : "border-primary/30 text-primary hover:bg-primary/10"
-            }`}
-          >
-            <Trophy className={scrolled ? "h-3 w-3" : "h-3.5 w-3.5"} />
-            {!scrolled && "Tournament"}
-          </Link>
-          <Link
-            to="/shop"
-            className={`font-display tracking-wider rounded-md transition-all flex items-center gap-1 border ${
-              scrolled ? "text-[10px] px-2 py-1" : "text-xs px-2.5 py-1.5"
-            } ${
-              location.pathname === "/shop"
-                ? "bg-primary text-primary-foreground border-primary"
-                : "border-primary/30 text-primary hover:bg-primary/10"
-            }`}
-          >
-            <ShoppingBag className={scrolled ? "h-3 w-3" : "h-3.5 w-3.5"} />
-            {!scrolled && "Shop"}
-          </Link>
-          <CartDrawer />
-          {user ? (
-            <button
-              onClick={() => signOut()}
-              className={`font-display tracking-wider px-2 py-1 rounded-md transition-all text-muted-foreground hover:text-primary ${scrolled ? "text-[10px]" : "text-xs"}`}
-            >
-              Sign Out
-            </button>
-          ) : (
-            <Link
-              to="/auth"
-              className={`font-display tracking-wider rounded-md transition-all flex items-center gap-1 bg-primary text-primary-foreground hover:bg-primary/90 ${
-                scrolled ? "text-[10px] px-2 py-1" : "text-xs px-2.5 py-1.5"
-              }`}
-            >
-              <LogIn className={scrolled ? "h-3 w-3" : "h-3.5 w-3.5"} />
-              {!scrolled && "Sign In"}
-            </Link>
-          )}
+            )}
+          </div>
         </div>
 
-        {/* Mobile toggle */}
-        <div className="flex items-center gap-3 lg:hidden">
-          <CartDrawer />
-          <button onClick={() => setIsOpen(!isOpen)} className="text-foreground p-1">
-            {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </button>
+        {/* Mobile header */}
+        <div className="flex items-center justify-between h-14 px-4 lg:hidden">
+          <Link to="/" className="flex items-center gap-2.5">
+            <img src={clubLogo} alt="PAFC Crest" className="h-9 w-9 rounded-full object-cover ring-2 ring-primary/30" />
+            <div>
+              <span className="font-display text-sm font-bold text-primary leading-tight block">PAFC</span>
+              <span className="font-display text-[9px] text-muted-foreground tracking-[0.2em] uppercase">The Lions</span>
+            </div>
+          </Link>
+          <div className="flex items-center gap-3">
+            <CartDrawer />
+            <button onClick={() => setIsOpen(!isOpen)} className="text-foreground p-1">
+              {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Mobile nav */}
       {isOpen && (
-        <div className="lg:hidden bg-background/95 backdrop-blur-2xl border-b border-border max-h-[80vh] overflow-y-auto">
+        <div className="lg:hidden bg-background border-b border-border max-h-[75vh] overflow-y-auto">
           <div className="container mx-auto px-4 py-4 flex flex-col gap-1">
             {navItems.map((item) =>
               item.dropdown ? (
@@ -240,9 +230,6 @@ export function Navbar() {
               )
             )}
             <div className="flex gap-2 mt-3 pt-3 border-t border-border">
-              <Link to="/tournament" onClick={() => setIsOpen(false)} className="flex-1 flex items-center justify-center gap-2 font-display text-sm tracking-wider py-2.5 rounded-md border border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground transition-all">
-                <Trophy className="h-4 w-4" /> Tournament
-              </Link>
               <Link to="/shop" onClick={() => setIsOpen(false)} className="flex-1 flex items-center justify-center gap-2 font-display text-sm tracking-wider py-2.5 rounded-md border border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground transition-all">
                 <ShoppingBag className="h-4 w-4" /> Shop
               </Link>
