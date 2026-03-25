@@ -65,7 +65,7 @@ export function MatchDetailPanel({ teamSlug, teamName, opponent, matchDate }: Ma
   const assistMakers = matchStats?.filter((s) => s.assists > 0) || [];
   const appearances = matchStats?.filter((s) => s.appeared) || [];
 
-  const hasData = report || potm || (matchStats && matchStats.length > 0);
+  const hasData = report || (potmList && potmList.length > 0) || (matchStats && matchStats.length > 0);
 
   if (reportLoading) {
     return (
