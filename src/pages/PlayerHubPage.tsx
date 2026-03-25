@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   UserPlus,
   FileText,
@@ -10,6 +11,7 @@ import {
   ClipboardList,
   Shield,
   ChevronRight,
+  Lock,
 } from "lucide-react";
 
 const hubItems = [
@@ -21,6 +23,7 @@ const hubItems = [
     color: "text-green-400",
     bgColor: "bg-green-400/10",
     borderColor: "border-green-400/20",
+    restricted: false,
   },
   {
     title: "Player of the Match",
@@ -30,6 +33,7 @@ const hubItems = [
     color: "text-primary",
     bgColor: "bg-primary/10",
     borderColor: "border-primary/20",
+    restricted: true,
   },
   {
     title: "Club Documents",
@@ -39,6 +43,7 @@ const hubItems = [
     color: "text-blue-400",
     bgColor: "bg-blue-400/10",
     borderColor: "border-blue-400/20",
+    restricted: true,
   },
   {
     title: "Our Teams",
@@ -48,6 +53,7 @@ const hubItems = [
     color: "text-purple-400",
     bgColor: "bg-purple-400/10",
     borderColor: "border-purple-400/20",
+    restricted: false,
   },
   {
     title: "Match Reports",
@@ -57,6 +63,7 @@ const hubItems = [
     color: "text-orange-400",
     bgColor: "bg-orange-400/10",
     borderColor: "border-orange-400/20",
+    restricted: true,
   },
   {
     title: "Safeguarding",
@@ -66,10 +73,12 @@ const hubItems = [
     color: "text-red-400",
     bgColor: "bg-red-400/10",
     borderColor: "border-red-400/20",
+    restricted: false,
   },
 ];
 
 export default function PlayerHubPage() {
+  const { isPlayer } = useAuth();
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -103,8 +112,14 @@ export default function PlayerHubPage() {
               >
                 <Link
                   to={item.path}
-                  className={`group flex flex-col h-full bg-card border ${item.borderColor} rounded-xl p-6 hover:border-primary/40 transition-all hover:shadow-lg hover:shadow-primary/5`}
+                  className={`group relative flex flex-col h-full bg-card border ${item.borderColor} rounded-xl p-6 hover:border-primary/40 transition-all hover:shadow-lg hover:shadow-primary/5`}
                 >
+                  {item.restricted && !isPlayer && (
+                    <div className="absolute top-3 right-3 flex items-center gap-1 bg-muted/80 rounded-full px-2 py-0.5">
+                      <Lock className="h-3 w-3 text-muted-foreground" />
+                      <span className="text-[10px] font-display tracking-wider text-muted-foreground">MEMBERS</span>
+                    </div>
+                  )}
                   <div className={`${item.bgColor} w-12 h-12 rounded-lg flex items-center justify-center mb-4`}>
                     <item.icon className={`h-6 w-6 ${item.color}`} />
                   </div>
@@ -115,7 +130,7 @@ export default function PlayerHubPage() {
                     {item.description}
                   </p>
                   <div className="flex items-center gap-1 text-xs text-muted-foreground group-hover:text-primary transition-colors mt-4 font-display tracking-wider">
-                    View
+                    {item.restricted && !isPlayer ? "Sign in" : "View"}
                     <ChevronRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
                   </div>
                 </Link>

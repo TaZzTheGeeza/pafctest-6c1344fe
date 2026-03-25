@@ -7,6 +7,7 @@ import { useCartSync } from "@/hooks/useCartSync";
 import { FootballBackground } from "@/components/FootballBackground";
 import { AnnouncementBanner } from "@/components/AnnouncementBanner";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { RoleGate } from "@/components/RoleGate";
 import Index from "./pages/Index.tsx";
 import ShopPage from "./pages/Shop.tsx";
 import ProductPage from "./pages/ProductPage.tsx";
@@ -51,7 +52,7 @@ function AppContent() {
         <Route path="/news" element={<NewsPage />} />
         <Route path="/events" element={<EventsPage />} />
         <Route path="/gallery" element={<GalleryPage />} />
-        <Route path="/club-documents" element={<ClubDocumentsPage />} />
+        <Route path="/club-documents" element={<RoleGate requiredRole="player"><ClubDocumentsPage /></RoleGate>} />
         <Route path="/sponsors" element={<SponsorsPage />} />
         <Route path="/club-info" element={<ClubInfoPage />} />
         <Route path="/contact" element={<ContactPage />} />
@@ -63,8 +64,8 @@ function AppContent() {
         <Route path="/tournament" element={<TournamentPage />} />
         <Route path="/tournament-admin" element={<TournamentAdminPage />} />
         <Route path="/tournament/team/:teamId" element={<TeamProfilePage />} />
-        <Route path="/match-day" element={<MatchDayPage />} />
-        <Route path="/player-of-the-match" element={<POTMPage />} />
+        <Route path="/match-day" element={<RoleGate requiredRole="player"><MatchDayPage /></RoleGate>} />
+        <Route path="/player-of-the-match" element={<RoleGate requiredRole="player"><POTMPage /></RoleGate>} />
         <Route path="/calendar" element={<CalendarPage />} />
         <Route path="/coach-panel" element={<CoachPanelPage />} />
         <Route path="/auth" element={<AuthPage />} />
