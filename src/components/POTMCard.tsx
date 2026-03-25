@@ -74,19 +74,7 @@ export function POTMCard({
               {/* Gold radial glow */}
               <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center_60%,_hsla(38,45%,47%,0.2)_0%,_transparent_70%)]" />
 
-              {/* Age group badge */}
-              <div className="absolute top-4 left-4 z-20">
-                <span className="font-display text-[10px] font-bold uppercase tracking-[0.2em] px-2.5 py-1 rounded-full bg-primary/20 text-primary border border-primary/30 backdrop-blur-sm">
-                  {ageGroup}
-                </span>
-              </div>
-
-              {/* POTM star badge */}
-              <div className="absolute top-4 right-4 z-20">
-                <div className="w-9 h-9 rounded-full bg-primary/20 border border-primary/40 backdrop-blur-sm flex items-center justify-center">
-                  <Star className="h-4 w-4 text-primary fill-primary" />
-                </div>
-              </div>
+              {/* Age group badge – moved to bottom */}
 
               {/* Player image – centred and large */}
               {photoUrl ? (
@@ -113,11 +101,15 @@ export function POTMCard({
 
             {/* Minimal info on front */}
             <div className="relative px-5 pb-4 -mt-8 z-10">
+              <div className="flex items-center justify-center mb-2">
+                <span className="font-display text-[10px] font-bold uppercase tracking-[0.2em] px-2.5 py-1 rounded-full bg-primary/20 text-primary border border-primary/30 backdrop-blur-sm">
+                  {ageGroup}
+                </span>
+              </div>
               <h3 className="font-display text-xl font-bold uppercase tracking-wide text-foreground leading-tight">
                 {playerName}
               </h3>
               <div className="mt-2 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-primary/10 border border-primary/20">
-                <Star className="h-3 w-3 text-primary fill-primary" />
                 <span className="font-display text-[10px] font-bold uppercase tracking-[0.15em] text-primary">
                   Player of the Match
                 </span>
