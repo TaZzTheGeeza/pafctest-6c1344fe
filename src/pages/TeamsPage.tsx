@@ -3,9 +3,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useParams, Link } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { Clock, MapPin, Calendar, ChevronRight, Shield, Trophy, TrendingUp, BarChart3 } from "lucide-react";
+import { Clock, MapPin, Calendar, ChevronRight, Shield, Trophy, TrendingUp, BarChart3, Loader2 } from "lucide-react";
 import { TeamStatsTable } from "@/components/TeamStatsTable";
 import { LeagueTable } from "@/components/LeagueTable";
+import { useTeamFixtures, FAFixture } from "@/hooks/useTeamFixtures";
 import clubLogo from "@/assets/club-logo.jpg";
 
 const leagueTableConfig: Record<string, { divisionSeason?: string; tableUrl?: string; faUrl: string; highlightTeams: string[] }> = {
