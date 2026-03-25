@@ -99,7 +99,7 @@ export function POTMCard({
               <img
                 src={photoUrl}
                 alt={playerName}
-                className="absolute inset-0 w-full h-full object-contain object-center"
+                className="absolute inset-0 w-full h-full object-cover object-center"
               />
             ) : (
               <div className="absolute inset-0 flex items-center justify-center">
