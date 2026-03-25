@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Trophy, Loader2 } from "lucide-react";
+import { Trophy, Loader2, Camera, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -20,8 +20,29 @@ export function POTMTab({
   const [selectedPlayerId, setSelectedPlayerId] = useState("");
   const [reason, setReason] = useState("");
   const [saving, setSaving] = useState(false);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const selectedPlayer = roster.find(p => p.id === selectedPlayerId);
+
+  const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Photo must be under 5MB");
+      return;
+    }
+    setPhotoFile(file);
+    setPhotoPreview(URL.createObjectURL(file));
+  };
+
+  const clearPhoto = () => {
+    setPhotoFile(null);
+    if (photoPreview) URL.revokeObjectURL(photoPreview);
+    setPhotoPreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
 
   const handleSave = async () => {
     if (!selectedPlayerId) { toast.error("Select a player"); return; }
@@ -32,6 +53,20 @@ export function POTMTab({
       const awardDate = `20${y}-${m}-${d}`;
       const matchDate = awardDate;
 
+      let photoUrl: string | null = null;
+
+      // Upload photo if attached
+      if (photoFile) {
+        const ext = photoFile.name.split(".").pop() || "jpg";
+        const path = `potm/${teamSlug}/${awardDate}-${selectedPlayer.first_name}.${ext}`;
+        const { error: uploadError } = await supabase.storage
+          .from("club-photos")
+          .upload(path, photoFile, { upsert: true });
+        if (uploadError) throw uploadError;
+        const { data: urlData } = supabase.storage.from("club-photos").getPublicUrl(path);
+        photoUrl = urlData.publicUrl;
+      }
+
       // Save POTM award
       const { error } = await supabase.from("player_of_the_match").insert({
         player_name: selectedPlayer.first_name,
@@ -41,6 +76,7 @@ export function POTMTab({
         match_description: `vs ${opponent}`,
         reason: reason || null,
         award_date: awardDate,
+        photo_url: photoUrl,
       });
       if (error) throw error;
 
@@ -61,6 +97,7 @@ export function POTMTab({
       if (statsError) throw statsError;
 
       queryClient.invalidateQueries({ queryKey: ["team-roster"] });
+      clearPhoto();
       toast.success("POTM saved & stats updated!");
     } catch (err: any) {
       toast.error(err.message || "Failed to save POTM");
@@ -95,6 +132,40 @@ export function POTMTab({
           onChange={(e) => setReason(e.target.value)}
           rows={3}
         />
+      </div>
+
+      <div>
+        <Label className="text-xs">Attach Photo</Label>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handlePhotoSelect}
+          className="hidden"
+        />
+        {photoPreview ? (
+          <div className="relative inline-block mt-1">
+            <img src={photoPreview} alt="POTM preview" className="h-24 w-24 object-cover rounded-lg border border-border" />
+            <button
+              type="button"
+              onClick={clearPhoto}
+              className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-0.5"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        ) : (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="mt-1 w-full"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <Camera className="h-4 w-4 mr-2" />
+            Add Photo
+          </Button>
+        )}
       </div>
 
       {roster.length === 0 && (
