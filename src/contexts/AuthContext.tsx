@@ -7,6 +7,8 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   isCoach: boolean;
+  isPlayer: boolean;
+  isAdmin: boolean;
   rolesLoading: boolean;
   signOut: () => Promise<void>;
 }
@@ -16,6 +18,8 @@ const AuthContext = createContext<AuthContextType>({
   session: null,
   loading: true,
   isCoach: false,
+  isPlayer: false,
+  isAdmin: false,
   rolesLoading: true,
   signOut: async () => {},
 });
@@ -27,6 +31,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [isCoach, setIsCoach] = useState(false);
+  const [isPlayer, setIsPlayer] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [rolesLoading, setRolesLoading] = useState(true);
 
   useEffect(() => {
@@ -48,6 +54,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!user) {
       setIsCoach(false);
+      setIsPlayer(false);
+      setIsAdmin(false);
       setRolesLoading(false);
       return;
     }
@@ -59,7 +67,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .eq("user_id", user.id)
       .then(({ data }) => {
         const roles = data?.map((r) => r.role) ?? [];
+        setIsAdmin(roles.includes("admin"));
         setIsCoach(roles.includes("coach") || roles.includes("admin"));
+        setIsPlayer(roles.includes("player") || roles.includes("coach") || roles.includes("admin"));
         setRolesLoading(false);
       });
   }, [user]);
@@ -69,7 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, isCoach, rolesLoading, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, isCoach, isPlayer, isAdmin, rolesLoading, signOut }}>
       {children}
     </AuthContext.Provider>
   );
