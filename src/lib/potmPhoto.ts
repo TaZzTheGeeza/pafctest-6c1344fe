@@ -265,7 +265,7 @@ export async function uploadPotmPhoto(
     onStatus?: (status: "processing" | "processed" | "fallback") => void;
   },
 ) {
-  const base64 = await resizeImageToBase64(file, 1024);
+  const base64 = await resizeImageToBase64(file, 512);
   let finalBase64 = base64;
 
   options.onStatus?.("processing");
