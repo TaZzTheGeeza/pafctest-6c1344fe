@@ -69,7 +69,10 @@ function colorDistance(a: [number, number, number], b: [number, number, number])
 }
 
 function isGreenScreenPixel(r: number, g: number, b: number) {
-  return g > 180 && g > r + 60 && g > b + 60;
+  // Broad green-screen detection: catches bright greens, dark greens, and yellowish greens
+  if (g > 140 && g > r + 40 && g > b + 40) return true;
+  if (g > 100 && g > r * 1.4 && g > b * 1.4) return true;
+  return false;
 }
 
 function isNearBackgroundColor(
