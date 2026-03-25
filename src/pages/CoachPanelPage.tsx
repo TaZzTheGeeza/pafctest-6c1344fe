@@ -12,6 +12,7 @@ import { PlayerStatsForm } from "@/components/PlayerStatsForm";
 import { useUserAgeGroups } from "@/hooks/useUserAgeGroups";
 import { useTeamFixtures, type FAFixture } from "@/hooks/useTeamFixtures";
 import { faTeamConfigs } from "@/lib/faFixtureConfig";
+import { uploadPotmPhoto } from "@/lib/potmPhoto";
 
 const ALL_AGE_GROUPS = [
   "U7", "U8 Black", "U8 Gold", "U9", "U10",
@@ -172,14 +173,16 @@ function POTMForm({ ageGroups }: { ageGroups: string[] }) {
         let photo_url: string | null = null;
 
         if (entry.photoFile) {
-          const fileExt = entry.photoFile.name.split(".").pop();
-          const filePath = `potm/${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
-          const { error: uploadError } = await supabase.storage
-            .from("club-photos")
-            .upload(filePath, entry.photoFile);
-          if (uploadError) throw uploadError;
-          const { data: urlData } = supabase.storage.from("club-photos").getPublicUrl(filePath);
-          photo_url = urlData.publicUrl;
+            photo_url = await uploadPotmPhoto(entry.photoFile, {
+              playerName: entry.player_name.trim(),
+              awardDate: matchDate || new Date().toISOString().split("T")[0],
+              teamSlug: AGE_GROUP_TO_SLUG[ageGroup],
+              onStatus: (status) => {
+                if (status === "processing") toast.info("Removing photo background...");
+                if (status === "processed") toast.success("Background removed");
+                if (status === "fallback") toast.warning("Using original photo while background removal is improved");
+              },
+            });
         }
 
         const { error } = await supabase.from("player_of_the_match").insert({

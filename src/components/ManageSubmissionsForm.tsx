@@ -22,6 +22,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useTeamRoster, type RosterPlayer } from "@/hooks/useTeamRoster";
+import { uploadPotmPhoto } from "@/lib/potmPhoto";
 
 const ageGroupToSlug: Record<string, string> = {
   "U7": "u7s", "U8 Black": "u8s-black", "U8 Gold": "u8s-gold",
@@ -269,14 +270,16 @@ function POTMEditTab({ potmAwards, roster, teamSlug, report, onSaved }: { potmAw
         let photoUrl = entry.existingPhotoUrl;
 
         if (entry.photoFile) {
-          const ext = entry.photoFile.name.split(".").pop() || "jpg";
-          const path = `potm/${Date.now()}-${(player?.first_name || entry.playerName).replace(/\s+/g, "-")}.${ext}`;
-          const { error: uploadError } = await supabase.storage
-            .from("club-photos")
-            .upload(path, entry.photoFile, { upsert: true });
-          if (uploadError) throw uploadError;
-          const { data: urlData } = supabase.storage.from("club-photos").getPublicUrl(path);
-          photoUrl = urlData.publicUrl;
+          photoUrl = await uploadPotmPhoto(entry.photoFile, {
+            playerName: player?.first_name || entry.playerName,
+            awardDate: report.match_date,
+            teamSlug: ageGroupToSlug[report.age_group],
+            onStatus: (status) => {
+              if (status === "processing") toast.info("Removing photo background...");
+              if (status === "processed") toast.success("Background removed");
+              if (status === "fallback") toast.warning("Using original photo while background removal is improved");
+            },
+          });
         } else if (entry.removePhoto) {
           photoUrl = null;
         }
