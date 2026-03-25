@@ -1,8 +1,9 @@
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useParams, Link } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { Users, Clock, MapPin, Calendar, ChevronRight, Shield, Trophy, TrendingUp, BarChart3 } from "lucide-react";
+import { Clock, MapPin, Calendar, ChevronRight, Shield, Trophy, TrendingUp, BarChart3 } from "lucide-react";
 import { TeamStatsTable } from "@/components/TeamStatsTable";
 import { LeagueTable } from "@/components/LeagueTable";
 import clubLogo from "@/assets/club-logo.jpg";
@@ -128,61 +129,69 @@ function TeamDetail({ team }: { team: TeamData }) {
   );
 }
 
+const ageGroups = [
+  { label: "All", filter: () => true },
+  { label: "U7–U9", filter: (t: TeamData) => ["Under 7", "Under 8", "Under 9"].includes(t.ageGroup) },
+  { label: "U10–U11", filter: (t: TeamData) => ["Under 10", "Under 11"].includes(t.ageGroup) },
+  { label: "U13–U14", filter: (t: TeamData) => ["Under 13", "Under 14"].includes(t.ageGroup) },
+];
+
 function TeamCard({ team, index }: { team: TeamData; index: number }) {
   const f = team.nextFixture;
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay: index * 0.05 }}
+      exit={{ opacity: 0, y: -12 }}
+      transition={{ duration: 0.35, delay: index * 0.04 }}
+      layout
     >
       <Link
         to={`/teams/${team.slug}`}
-        className="group relative flex flex-col bg-card border border-border rounded-xl overflow-hidden hover:border-primary/40 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5"
+        className="group relative block overflow-hidden rounded-lg border border-border bg-secondary hover:border-primary/60 transition-all duration-300"
       >
-        {/* Header stripe */}
-        <div className="bg-gradient-to-r from-primary/20 to-transparent px-5 py-4 flex items-center gap-3">
-          <div className="relative">
-            <img src={clubLogo} alt="" className="w-11 h-11 rounded-full object-cover ring-2 ring-primary/30" />
-            <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-primary rounded-full flex items-center justify-center">
-              <Shield className="w-2.5 h-2.5 text-primary-foreground" />
-            </div>
-          </div>
-          <div className="flex-1 min-w-0">
-            <h3 className="font-display font-bold text-base group-hover:text-primary transition-colors truncate">
-              {team.name}
-            </h3>
-            <p className="text-xs text-muted-foreground font-display tracking-wide">{team.ageGroup}</p>
-          </div>
-          <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all shrink-0" />
-        </div>
+        {/* Top accent bar */}
+        <div className="h-1 bg-gradient-to-r from-primary via-primary/60 to-transparent" />
 
-        {/* Content */}
-        <div className="px-5 py-4 space-y-3 flex-1">
-          {/* Next match */}
-          <div className="space-y-1.5">
-            <p className="text-[10px] font-display tracking-widest text-muted-foreground uppercase">Next Match</p>
-            <p className="text-sm font-medium truncate">vs {f.opponent}</p>
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <Calendar className="w-3 h-3" />
-                {f.date}
+        <div className="p-5">
+          {/* Team header */}
+          <div className="flex items-center gap-4 mb-4">
+            <div className="relative shrink-0">
+              <div className="w-14 h-14 rounded-full bg-background border-2 border-primary/40 flex items-center justify-center overflow-hidden group-hover:border-primary transition-colors">
+                <img src={clubLogo} alt="" className="w-12 h-12 rounded-full object-cover" />
+              </div>
+              <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-primary rounded-full flex items-center justify-center shadow-lg">
+                <Shield className="w-3 h-3 text-primary-foreground" />
+              </div>
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-display text-xl font-bold tracking-tight group-hover:text-primary transition-colors">
+                {team.name}
+              </h3>
+              <p className="text-xs text-muted-foreground font-display tracking-widest uppercase">{team.ageGroup}</p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+          </div>
+
+          {/* Fixture bar */}
+          <div className="bg-background/60 rounded-md p-3 border border-border/50">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] font-display tracking-[0.2em] text-primary uppercase font-semibold">Next Fixture</span>
+              <span className={`text-[10px] font-display font-bold tracking-wider px-2 py-0.5 rounded ${f.venue === "Home" ? "bg-green-500/15 text-green-400" : "bg-blue-500/15 text-blue-400"}`}>
+                {f.venue.toUpperCase()}
               </span>
-              <span className="flex items-center gap-1">
-                <Clock className="w-3 h-3" />
-                {f.kickoff}
-              </span>
-              <span className={`inline-flex items-center gap-1 font-bold ${f.venue === "Home" ? "text-green-400" : "text-blue-400"}`}>
-                <MapPin className="w-3 h-3" />
-                {f.venue}
-              </span>
+            </div>
+            <p className="text-sm font-medium text-foreground truncate mb-1.5">vs {f.opponent}</p>
+            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+              <span className="flex items-center gap-1"><Calendar className="w-3 h-3 text-primary/60" />{f.date}</span>
+              <span className="flex items-center gap-1"><Clock className="w-3 h-3 text-primary/60" />{f.kickoff}</span>
             </div>
           </div>
 
           {/* Training */}
-          <div className="pt-2 border-t border-border/50">
-            <p className="text-[10px] font-display tracking-widest text-muted-foreground uppercase mb-1">Training</p>
-            <p className="text-xs text-foreground/80">{team.training}</p>
+          <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+            <MapPin className="w-3 h-3 text-primary/50" />
+            <span>Training: {team.training}</span>
           </div>
         </div>
       </Link>
@@ -192,58 +201,86 @@ function TeamCard({ team, index }: { team: TeamData; index: number }) {
 
 export default function TeamsPage() {
   const { teamSlug } = useParams<{ teamSlug: string }>();
+  const [activeTab, setActiveTab] = useState(0);
 
   if (teamSlug) {
     const team = allTeams.find(t => t.slug === teamSlug);
     if (team) return <TeamDetail team={team} />;
   }
 
+  const filteredTeams = allTeams.filter(ageGroups[activeTab].filter);
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
       <main className="flex-1 pt-24 pb-16">
         <div className="container mx-auto px-4">
+          {/* Hero */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-14"
+            transition={{ duration: 0.5 }}
+            className="text-center mb-10"
           >
             <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-4 py-1.5 mb-4">
               <Trophy className="h-4 w-4 text-primary" />
-              <span className="text-xs font-display tracking-wider text-primary">2025/26 SEASON</span>
+              <span className="text-xs font-display tracking-[0.2em] text-primary font-semibold">2025/26 SEASON</span>
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold font-display mb-3">
-              Our <span className="text-gold-gradient">Teams</span>
+            <h1 className="text-5xl md:text-6xl font-bold font-display tracking-tight mb-3">
+              OUR <span className="text-gold-gradient">TEAMS</span>
             </h1>
-            <p className="text-muted-foreground max-w-md mx-auto">
-              {allTeams.length} teams across all age groups. Select a team to view fixtures, results, and squad info.
+            <p className="text-muted-foreground max-w-lg mx-auto text-sm">
+              {allTeams.length} teams competing across all age groups. Select a team to view fixtures, league table & squad stats.
             </p>
           </motion.div>
 
+          {/* Age group tabs */}
+          <div className="max-w-5xl mx-auto mb-8">
+            <div className="flex items-center justify-center gap-1 bg-secondary/50 border border-border rounded-lg p-1 w-fit mx-auto">
+              {ageGroups.map((group, i) => (
+                <button
+                  key={group.label}
+                  onClick={() => setActiveTab(i)}
+                  className={`relative px-5 py-2 text-xs font-display font-semibold tracking-wider rounded-md transition-all duration-200 ${
+                    activeTab === i
+                      ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
+                      : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+                  }`}
+                >
+                  {group.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Teams grid */}
           <div className="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {allTeams.map((team, i) => (
-              <TeamCard key={team.slug} team={team} index={i} />
-            ))}
+            <AnimatePresence mode="popLayout">
+              {filteredTeams.map((team, i) => (
+                <TeamCard key={team.slug} team={team} index={i} />
+              ))}
+            </AnimatePresence>
           </div>
 
           {/* CTA */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.6 }}
-            className="max-w-md mx-auto text-center mt-14"
+            transition={{ delay: 0.5 }}
+            className="max-w-lg mx-auto text-center mt-14"
           >
-            <div className="bg-card border border-border rounded-xl p-6">
-              <TrendingUp className="h-8 w-8 text-primary mx-auto mb-3" />
-              <h3 className="font-display font-bold text-sm mb-1">Want to join the Lions?</h3>
-              <p className="text-xs text-muted-foreground mb-4">Register your interest for the upcoming season.</p>
+            <div className="bg-secondary border border-border rounded-lg p-6">
+              <div className="w-12 h-12 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto mb-4">
+                <TrendingUp className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="font-display font-bold text-lg tracking-tight mb-1">Join the Lions</h3>
+              <p className="text-sm text-muted-foreground mb-5">Register your interest for the upcoming season.</p>
               <Link
                 to="/register"
-                className="inline-flex items-center gap-2 bg-primary text-primary-foreground font-display text-xs tracking-wider px-5 py-2.5 rounded-md hover:bg-primary/90 transition-colors"
+                className="inline-flex items-center gap-2 bg-primary text-primary-foreground font-display text-sm font-semibold tracking-wider px-6 py-3 rounded-md hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20"
               >
-                Register Now
-                <ChevronRight className="h-3 w-3" />
+                REGISTER NOW
+                <ChevronRight className="h-4 w-4" />
               </Link>
             </div>
           </motion.div>
