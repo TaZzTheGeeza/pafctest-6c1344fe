@@ -154,11 +154,6 @@ export function Navbar() {
             <Link to="/shop" className="font-display text-[10px] tracking-[0.15em] uppercase text-primary hover:text-primary/80 transition-colors flex items-center gap-1.5">
               <ShoppingBag className="h-3 w-3" /> Shop
             </Link>
-            {(isCoach || isAdmin) && (
-              <Link to="/coach-panel" className="font-display text-[10px] tracking-[0.15em] uppercase text-primary hover:text-primary/80 transition-colors flex items-center gap-1.5">
-                <ClipboardList className="h-3 w-3" /> Coach Panel
-              </Link>
-            )}
           </div>
           <div className="flex items-center gap-3">
             <CartDrawer />
