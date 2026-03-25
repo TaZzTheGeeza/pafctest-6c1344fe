@@ -95,6 +95,7 @@ function FixtureSelect({ ageGroup, value, onChange, label = "Match (Opponent)" }
   );
 }
 
+function NoAgeGroupsWarning() {
   return (
     <div className="bg-card border border-border rounded-xl p-8 text-center">
       <AlertTriangle className="h-12 w-12 text-amber-500 mx-auto mb-4" />
