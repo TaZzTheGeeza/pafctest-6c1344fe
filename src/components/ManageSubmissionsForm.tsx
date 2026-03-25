@@ -195,7 +195,7 @@ function ReportEditTab({ report, roster, onSaved }: { report: any; roster: Roste
 
 // ─── POTM Edit Tab ───
 
-function POTMEditTab({ potmAwards, roster, teamSlug, onSaved }: { potmAwards: any[]; roster: RosterPlayer[]; teamSlug: string; onSaved: () => void }) {
+function POTMEditTab({ potmAwards, roster, teamSlug, report, onSaved }: { potmAwards: any[]; roster: RosterPlayer[]; teamSlug: string; report: any; onSaved: () => void }) {
   const [saving, setSaving] = useState(false);
   const fileInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
@@ -295,10 +295,10 @@ function POTMEditTab({ potmAwards, roster, teamSlug, onSaved }: { potmAwards: an
           // Insert new POTM award linked to this match report
           const { error } = await supabase.from("player_of_the_match").insert({
             ...data,
-            team_name: group_report.team_name,
-            age_group: group_report.age_group,
-            award_date: group_report.match_date,
-            match_description: group_report.opponent,
+            team_name: report.team_name,
+            age_group: report.age_group,
+            award_date: report.match_date,
+            match_description: report.opponent,
           });
           if (error) throw error;
         }
@@ -654,7 +654,7 @@ function MatchGroupCard({ group, isExpanded, teamSlug, onToggle, onRefresh }: {
             </TabsContent>
 
             <TabsContent value="potm">
-              <POTMEditTab potmAwards={group.potmAwards} roster={roster} teamSlug={teamSlug} onSaved={onRefresh} />
+              <POTMEditTab potmAwards={group.potmAwards} roster={roster} teamSlug={teamSlug} report={r} onSaved={onRefresh} />
             </TabsContent>
           </Tabs>
 
