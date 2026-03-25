@@ -18,7 +18,83 @@ const ALL_AGE_GROUPS = [
   "U11 Black", "U11 Gold", "U13 Black", "U13 Gold", "U14",
 ];
 
-function NoAgeGroupsWarning() {
+const AGE_GROUP_TO_SLUG: Record<string, string> = {};
+faTeamConfigs.forEach((c) => { AGE_GROUP_TO_SLUG[c.team] = c.slug; });
+
+function FixtureSelect({ ageGroup, value, onChange, label = "Match (Opponent)" }: {
+  ageGroup: string;
+  value: string;
+  onChange: (opponent: string, date: string) => void;
+  label?: string;
+}) {
+  const slug = AGE_GROUP_TO_SLUG[ageGroup];
+  const { data, isLoading } = useTeamFixtures(slug);
+
+  const allFixtures = [...(data?.results || []), ...(data?.fixtures || [])];
+  
+  const getOpponent = (f: FAFixture) => {
+    const isHome = f.homeTeam.includes("Peterborough Ath");
+    return isHome ? f.awayTeam : f.homeTeam;
+  };
+
+  if (!ageGroup) {
+    return (
+      <div>
+        <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">{label}</label>
+        <select disabled className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-muted-foreground">
+          <option>Select an age group first</option>
+        </select>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">{label}</label>
+      <select
+        value={value}
+        onChange={(e) => {
+          const selected = allFixtures.find((f) => `${f.date}|${getOpponent(f)}` === e.target.value);
+          if (selected) {
+            onChange(getOpponent(selected), selected.date);
+          } else {
+            onChange("", "");
+          }
+        }}
+        className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground"
+      >
+        <option value="">{isLoading ? "Loading fixtures..." : "Select a fixture"}</option>
+        {data?.results && data.results.length > 0 && (
+          <optgroup label="Results">
+            {data.results.map((f, i) => {
+              const opp = getOpponent(f);
+              const key = `${f.date}|${opp}`;
+              return (
+                <option key={`r-${i}`} value={key}>
+                  {f.date} — vs {opp} ({f.homeScore}-{f.awayScore})
+                </option>
+              );
+            })}
+          </optgroup>
+        )}
+        {data?.fixtures && data.fixtures.length > 0 && (
+          <optgroup label="Upcoming Fixtures">
+            {data.fixtures.map((f, i) => {
+              const opp = getOpponent(f);
+              const key = `${f.date}|${opp}`;
+              return (
+                <option key={`f-${i}`} value={key}>
+                  {f.date} — vs {opp}
+                </option>
+              );
+            })}
+          </optgroup>
+        )}
+      </select>
+    </div>
+  );
+}
+
   return (
     <div className="bg-card border border-border rounded-xl p-8 text-center">
       <AlertTriangle className="h-12 w-12 text-amber-500 mx-auto mb-4" />
