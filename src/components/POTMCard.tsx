@@ -1,5 +1,6 @@
 import { Trophy } from "lucide-react";
 import { motion } from "framer-motion";
+import { useEffect, useRef } from "react";
 
 interface POTMCardProps {
   playerName: string;
@@ -33,6 +34,22 @@ export function POTMCard({
     }
   })();
 
+  const shimmerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = shimmerRef.current;
+    if (!el) return;
+    const handleMove = (e: MouseEvent) => {
+      const rect = el.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) * 100;
+      const y = ((e.clientY - rect.top) / rect.height) * 100;
+      el.style.setProperty("--shimmer-x", `${x}%`);
+      el.style.setProperty("--shimmer-y", `${y}%`);
+    };
+    el.addEventListener("mousemove", handleMove);
+    return () => el.removeEventListener("mousemove", handleMove);
+  }, []);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 24, scale: 0.95 }}
@@ -42,7 +59,7 @@ export function POTMCard({
       className="group"
     >
       {/* Outer card shape – FIFA UT proportions */}
-      <div className="relative w-[220px] mx-auto select-none" style={{ aspectRatio: "0.66" }}>
+      <div ref={shimmerRef} className="potm-card relative w-[220px] mx-auto select-none" style={{ aspectRatio: "0.66" }}>
         <svg
           viewBox="0 0 220 333"
           fill="none"
@@ -103,7 +120,26 @@ export function POTMCard({
           {/* Bottom divider line */}
           <line x1="30" y1="240" x2="190" y2="240" stroke="hsl(38 45% 40%)" strokeWidth="0.8" opacity="0.5" />
           <line x1="30" y1="280" x2="190" y2="280" stroke="hsl(38 45% 40%)" strokeWidth="0.5" opacity="0.3" />
+          {/* Animated gold particles */}
+          {Array.from({ length: 12 }).map((_, i) => (
+            <circle
+              key={`particle-${i}`}
+              className="potm-particle"
+              cx={20 + Math.random() * 180}
+              cy={20 + Math.random() * 293}
+              r={0.8 + Math.random() * 1.2}
+              fill="hsl(38 55% 65%)"
+              opacity="0"
+              style={{
+                animationDelay: `${i * 0.4}s`,
+                animationDuration: `${2 + Math.random() * 2}s`,
+              } as React.CSSProperties}
+            />
+          ))}
         </svg>
+
+        {/* Holographic shimmer overlay */}
+        <div className="potm-shimmer absolute inset-0 rounded-2xl pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
         {/* Content overlay */}
         <div className="absolute inset-0 flex flex-col" style={{ padding: "12px 16px" }}>
