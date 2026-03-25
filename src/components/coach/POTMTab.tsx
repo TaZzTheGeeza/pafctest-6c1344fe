@@ -84,11 +84,29 @@ export function POTMTab({
 
         let photoUrl: string | null = null;
         if (entry.photoFile) {
-          const ext = entry.photoFile.name.split(".").pop() || "jpg";
-          const path = `potm/${teamSlug}/${awardDate}-${player.first_name}.${ext}`;
+          // Convert to base64 and remove background via AI
+          const base64 = await fileToBase64(entry.photoFile);
+          let finalBase64 = base64;
+          try {
+            toast.info("Removing background...");
+            const { data: bgData, error: bgError } = await supabase.functions.invoke(
+              "remove-background",
+              { body: { imageBase64: base64 } }
+            );
+            if (!bgError && bgData?.imageBase64) {
+              finalBase64 = bgData.imageBase64;
+            }
+          } catch {
+            // If background removal fails, use original photo
+            console.warn("Background removal failed, using original photo");
+          }
+
+          // Upload the processed image as PNG
+          const path = `potm/${teamSlug}/${awardDate}-${player.first_name}.png`;
+          const blob = base64ToBlob(finalBase64);
           const { error: uploadError } = await supabase.storage
             .from("club-photos")
-            .upload(path, entry.photoFile, { upsert: true });
+            .upload(path, blob, { upsert: true, contentType: "image/png" });
           if (uploadError) throw uploadError;
           const { data: urlData } = supabase.storage.from("club-photos").getPublicUrl(path);
           photoUrl = urlData.publicUrl;
