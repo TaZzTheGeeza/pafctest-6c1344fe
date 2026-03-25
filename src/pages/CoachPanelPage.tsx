@@ -5,8 +5,9 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Trophy, FileText, Upload, Star, CheckCircle, Loader2, ShieldX } from "lucide-react";
+import { Trophy, FileText, Upload, Star, CheckCircle, Loader2, ShieldX, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
+import { PlayerStatsForm } from "@/components/PlayerStatsForm";
 
 const ageGroups = [
   "U7s", "U8s Black", "U8s Gold", "U9s", "U10s",
@@ -285,7 +286,7 @@ function MatchReportForm() {
 
 export default function CoachPanelPage() {
   const { user, loading, isCoach, rolesLoading } = useAuth();
-  const [activeTab, setActiveTab] = useState<"potm" | "report">("potm");
+  const [activeTab, setActiveTab] = useState<"potm" | "report" | "stats">("potm");
 
   if (loading || rolesLoading) {
     return (
@@ -342,7 +343,7 @@ export default function CoachPanelPage() {
                 }`}
               >
                 <Star className="h-4 w-4" />
-                Player of the Match
+                POTM
               </button>
               <button
                 onClick={() => setActiveTab("report")}
@@ -353,9 +354,18 @@ export default function CoachPanelPage() {
                 <FileText className="h-4 w-4" />
                 Match Report
               </button>
+              <button
+                onClick={() => setActiveTab("stats")}
+                className={`flex-1 flex items-center justify-center gap-2 font-display text-sm tracking-wider py-3 rounded-lg border transition-all ${
+                  activeTab === "stats" ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:text-foreground hover:border-primary/50"
+                }`}
+              >
+                <BarChart3 className="h-4 w-4" />
+                Player Stats
+              </button>
             </div>
 
-            {activeTab === "potm" ? <POTMForm /> : <MatchReportForm />}
+            {activeTab === "potm" ? <POTMForm /> : activeTab === "report" ? <MatchReportForm /> : <PlayerStatsForm />}
           </div>
         </div>
       </main>

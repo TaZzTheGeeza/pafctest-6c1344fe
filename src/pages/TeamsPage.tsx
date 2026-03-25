@@ -2,7 +2,8 @@ import { motion } from "framer-motion";
 import { useParams, Link } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { Users, Clock, MapPin, Calendar, ChevronRight, Shield, Trophy, TrendingUp } from "lucide-react";
+import { Users, Clock, MapPin, Calendar, ChevronRight, Shield, Trophy, TrendingUp, BarChart3 } from "lucide-react";
+import { TeamStatsTable } from "@/components/TeamStatsTable";
 import clubLogo from "@/assets/club-logo.jpg";
 
 interface TeamData {
@@ -81,10 +82,13 @@ function TeamDetail({ team }: { team: TeamData }) {
                 </div>
               </div>
 
-              <div className="bg-card border border-border rounded-lg p-6 text-center">
-                <Users className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-                <h3 className="font-display text-sm font-bold mb-2">Squad & Full Fixtures</h3>
-                <p className="text-xs text-muted-foreground">Full squad list, season fixtures, and past results will be added here.</p>
+              {/* Player Stats */}
+              <div>
+                <div className="flex items-center gap-2 mb-4">
+                  <BarChart3 className="h-5 w-5 text-primary" />
+                  <h2 className="font-display text-sm font-bold text-primary tracking-wider">Player Stats</h2>
+                </div>
+                <TeamStatsTable ageGroup={team.name} />
               </div>
             </div>
           </motion.div>

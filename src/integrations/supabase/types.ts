@@ -304,6 +304,48 @@ export type Database = {
         }
         Relationships: []
       }
+      player_stats: {
+        Row: {
+          age_group: string
+          appearances: number
+          assists: number
+          created_at: string
+          first_name: string
+          goals: number
+          id: string
+          potm_awards: number
+          shirt_number: number | null
+          team_name: string
+          updated_at: string
+        }
+        Insert: {
+          age_group: string
+          appearances?: number
+          assists?: number
+          created_at?: string
+          first_name: string
+          goals?: number
+          id?: string
+          potm_awards?: number
+          shirt_number?: number | null
+          team_name: string
+          updated_at?: string
+        }
+        Update: {
+          age_group?: string
+          appearances?: number
+          assists?: number
+          created_at?: string
+          first_name?: string
+          goals?: number
+          id?: string
+          potm_awards?: number
+          shirt_number?: number | null
+          team_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
