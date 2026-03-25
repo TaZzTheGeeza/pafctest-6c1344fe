@@ -34,15 +34,14 @@ export function MatchDetailPanel({ teamSlug, teamName, opponent, matchDate }: Ma
     },
   });
 
-  const { data: potm } = useQuery({
+  const { data: potmList } = useQuery({
     queryKey: ["potm-detail", teamName, dbDate],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("player_of_the_match")
         .select("*")
         .eq("team_name", teamName)
-        .eq("award_date", dbDate)
-        .maybeSingle();
+        .eq("award_date", dbDate);
       if (error) throw error;
       return data;
     },
@@ -66,7 +65,7 @@ export function MatchDetailPanel({ teamSlug, teamName, opponent, matchDate }: Ma
   const assistMakers = matchStats?.filter((s) => s.assists > 0) || [];
   const appearances = matchStats?.filter((s) => s.appeared) || [];
 
-  const hasData = report || potm || (matchStats && matchStats.length > 0);
+  const hasData = report || (potmList && potmList.length > 0) || (matchStats && matchStats.length > 0);
 
   if (reportLoading) {
     return (
@@ -132,27 +131,33 @@ export function MatchDetailPanel({ teamSlug, teamName, opponent, matchDate }: Ma
         )}
 
         {/* POTM */}
-        {potm && (
+        {potmList && potmList.length > 0 && (
           <div className="flex items-start gap-2">
             <Star className="h-3.5 w-3.5 text-yellow-500 mt-0.5 shrink-0" />
             <div className="flex-1 min-w-0">
-              <p className="text-[10px] font-display uppercase tracking-wider text-muted-foreground mb-0.5">Player of the Match</p>
-              <div className="flex items-center gap-2">
-                {potm.photo_url && (
-                  <img
-                    src={potm.photo_url}
-                    alt={potm.player_name}
-                    className="w-8 h-8 rounded-full object-cover border border-primary/30"
-                  />
-                )}
-                <div>
-                  <p className="text-sm font-medium text-foreground">
-                    {potm.shirt_number ? `#${potm.shirt_number} ` : ""}{potm.player_name}
-                  </p>
-                  {potm.reason && (
-                    <p className="text-xs text-muted-foreground">{potm.reason}</p>
-                  )}
-                </div>
+              <p className="text-[10px] font-display uppercase tracking-wider text-muted-foreground mb-1">
+                Player{potmList.length > 1 ? "s" : ""} of the Match
+              </p>
+              <div className="space-y-2">
+                {potmList.map((potm) => (
+                  <div key={potm.id} className="flex items-center gap-2">
+                    {potm.photo_url && (
+                      <img
+                        src={potm.photo_url}
+                        alt={potm.player_name}
+                        className="w-8 h-8 rounded-full object-cover border border-primary/30"
+                      />
+                    )}
+                    <div>
+                      <p className="text-sm font-medium text-foreground">
+                        {potm.shirt_number ? `#${potm.shirt_number} ` : ""}{potm.player_name}
+                      </p>
+                      {potm.reason && (
+                        <p className="text-xs text-muted-foreground">{potm.reason}</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
