@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { Pencil, Trash2, FileText, Star, Loader2, Save, X, ChevronDown, ChevronUp } from "lucide-react";
+import { Pencil, Trash2, FileText, Star, Loader2, Save, X, ChevronDown, ChevronUp, Camera, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -172,6 +172,9 @@ function MatchReportRow({ report, onDeleted }: { report: any; onDeleted: () => v
 function POTMRow({ potm, onDeleted }: { potm: any; onDeleted: () => void }) {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [newPhoto, setNewPhoto] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [removePhoto, setRemovePhoto] = useState(false);
   const [form, setForm] = useState({
     player_name: potm.player_name,
     team_name: potm.team_name,
@@ -180,6 +183,15 @@ function POTMRow({ potm, onDeleted }: { potm: any; onDeleted: () => void }) {
     match_description: potm.match_description || "",
     reason: potm.reason || "",
   });
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { toast.error("Photo must be under 5MB"); return; }
+    setNewPhoto(file);
+    setPhotoPreview(URL.createObjectURL(file));
+    setRemovePhoto(false);
+  };
 
   const handleSave = async () => {
     setSaving(true);
