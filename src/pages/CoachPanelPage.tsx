@@ -10,6 +10,8 @@ import { toast } from "sonner";
 import { ManageSubmissionsForm } from "@/components/ManageSubmissionsForm";
 import { PlayerStatsForm } from "@/components/PlayerStatsForm";
 import { useUserAgeGroups } from "@/hooks/useUserAgeGroups";
+import { useTeamFixtures, type FAFixture } from "@/hooks/useTeamFixtures";
+import { faTeamConfigs } from "@/lib/faFixtureConfig";
 
 const ALL_AGE_GROUPS = [
   "U7", "U8 Black", "U8 Gold", "U9", "U10",
