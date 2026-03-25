@@ -69,6 +69,7 @@ function TeamDetail({ team }: { team: TeamData }) {
   const { isCoach, isAdmin, isPlayer } = useAuth();
   const canManage = isCoach || isAdmin;
   const [coachFixture, setCoachFixture] = useState<FAFixture | null>(null);
+  const [expandedResult, setExpandedResult] = useState<number | null>(null);
 
   // Determine next fixture from live data or fall back to hardcoded
   const nextFixture = liveData?.fixtures?.[0];
