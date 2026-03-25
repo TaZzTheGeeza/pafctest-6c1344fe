@@ -5,7 +5,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Trophy, FileText, Upload, Star, CheckCircle, Loader2, ShieldX, BarChart3, Settings, AlertTriangle } from "lucide-react";
+import { Trophy, FileText, Upload, Star, CheckCircle, Loader2, ShieldX, BarChart3, Settings, AlertTriangle, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { ManageSubmissionsForm } from "@/components/ManageSubmissionsForm";
 import { PlayerStatsForm } from "@/components/PlayerStatsForm";
@@ -107,73 +107,101 @@ function NoAgeGroupsWarning() {
   );
 }
 
+interface POTMEntry {
+  player_name: string;
+  shirt_number: string;
+  reason: string;
+  photoFile: File | null;
+  photoPreview: string | null;
+}
+
 function POTMForm({ ageGroups }: { ageGroups: string[] }) {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [photoFile, setPhotoFile] = useState<File | null>(null);
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [fixtureKey, setFixtureKey] = useState("");
-  const [form, setForm] = useState({
-    player_name: "",
-    shirt_number: "",
-    team_name: "",
-    age_group: ageGroups.length === 1 ? ageGroups[0] : "",
-    match_description: "",
-    reason: "",
-  });
+  const [ageGroup, setAgeGroup] = useState(ageGroups.length === 1 ? ageGroups[0] : "");
+  const [matchDescription, setMatchDescription] = useState("");
+  const [matchDate, setMatchDate] = useState("");
+  const [entries, setEntries] = useState<POTMEntry[]>([
+    { player_name: "", shirt_number: "", reason: "", photoFile: null, photoPreview: null },
+  ]);
 
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const addEntry = () => {
+    setEntries([...entries, { player_name: "", shirt_number: "", reason: "", photoFile: null, photoPreview: null }]);
+  };
+
+  const removeEntry = (i: number) => {
+    if (entries[i].photoPreview) URL.revokeObjectURL(entries[i].photoPreview!);
+    setEntries(entries.filter((_, idx) => idx !== i));
+  };
+
+  const updateEntry = (i: number, field: keyof POTMEntry, value: any) => {
+    const next = [...entries];
+    next[i] = { ...next[i], [field]: value };
+    setEntries(next);
+  };
+
+  const handlePhotoChange = (i: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setPhotoFile(file);
-      setPhotoPreview(URL.createObjectURL(file));
-    }
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { toast.error("Photo must be under 5MB"); return; }
+    const next = [...entries];
+    if (next[i].photoPreview) URL.revokeObjectURL(next[i].photoPreview!);
+    next[i] = { ...next[i], photoFile: file, photoPreview: URL.createObjectURL(file) };
+    setEntries(next);
+  };
+
+  const clearPhoto = (i: number) => {
+    const next = [...entries];
+    if (next[i].photoPreview) URL.revokeObjectURL(next[i].photoPreview!);
+    next[i] = { ...next[i], photoFile: null, photoPreview: null };
+    setEntries(next);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.player_name || !form.age_group) {
-      toast.error("Please fill in all required fields");
+    const validEntries = entries.filter(en => en.player_name.trim());
+    if (!ageGroup || validEntries.length === 0) {
+      toast.error("Please select a team and add at least one player");
       return;
     }
     setSubmitting(true);
 
-    let photo_url: string | null = null;
+    try {
+      for (const entry of validEntries) {
+        let photo_url: string | null = null;
 
-    if (photoFile) {
-      const fileExt = photoFile.name.split(".").pop();
-      const filePath = `potm/${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
-      const { error: uploadError } = await supabase.storage
-        .from("club-photos")
-        .upload(filePath, photoFile);
+        if (entry.photoFile) {
+          const fileExt = entry.photoFile.name.split(".").pop();
+          const filePath = `potm/${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
+          const { error: uploadError } = await supabase.storage
+            .from("club-photos")
+            .upload(filePath, entry.photoFile);
+          if (uploadError) throw uploadError;
+          const { data: urlData } = supabase.storage.from("club-photos").getPublicUrl(filePath);
+          photo_url = urlData.publicUrl;
+        }
 
-      if (uploadError) {
-        toast.error("Failed to upload photo");
-        setSubmitting(false);
-        return;
+        const { error } = await supabase.from("player_of_the_match").insert({
+          player_name: entry.player_name.trim(),
+          shirt_number: entry.shirt_number ? parseInt(entry.shirt_number) : null,
+          team_name: `Peterborough Athletic ${ageGroup}`,
+          age_group: ageGroup,
+          match_description: matchDescription.trim() || null,
+          reason: entry.reason.trim() || null,
+          photo_url,
+          award_date: matchDate || new Date().toISOString().split("T")[0],
+        });
+        if (error) throw error;
       }
 
-      const { data: urlData } = supabase.storage.from("club-photos").getPublicUrl(filePath);
-      photo_url = urlData.publicUrl;
-    }
-
-    const { error } = await supabase.from("player_of_the_match").insert({
-      player_name: form.player_name.trim(),
-      shirt_number: form.shirt_number ? parseInt(form.shirt_number) : null,
-      team_name: `Peterborough Athletic ${form.age_group}`,
-      age_group: form.age_group,
-      match_description: form.match_description.trim() || null,
-      reason: form.reason.trim() || null,
-      photo_url,
-      award_date: new Date().toISOString().split("T")[0],
-    });
-
-    setSubmitting(false);
-    if (error) {
-      toast.error("Failed to submit POTM");
-    } else {
-      toast.success("Player of the Match submitted!");
+      entries.forEach(en => { if (en.photoPreview) URL.revokeObjectURL(en.photoPreview); });
+      toast.success(`${validEntries.length} POTM award${validEntries.length > 1 ? "s" : ""} submitted!`);
       setSubmitted(true);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to submit POTM");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -182,9 +210,16 @@ function POTMForm({ ageGroups }: { ageGroups: string[] }) {
       <div className="bg-card border border-border rounded-xl p-8 text-center">
         <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
         <h3 className="font-display text-xl font-bold text-foreground mb-2">POTM Submitted!</h3>
-        <p className="text-muted-foreground mb-4">The award will appear on the Player of the Match wall.</p>
+        <p className="text-muted-foreground mb-4">The award(s) will appear on the Player of the Match wall.</p>
         <button
-          onClick={() => { setSubmitted(false); setFixtureKey(""); setForm({ player_name: "", shirt_number: "", team_name: "", age_group: ageGroups.length === 1 ? ageGroups[0] : "", match_description: "", reason: "" }); setPhotoFile(null); setPhotoPreview(null); }}
+          onClick={() => {
+            setSubmitted(false);
+            setFixtureKey("");
+            setMatchDescription("");
+            setMatchDate("");
+            setAgeGroup(ageGroups.length === 1 ? ageGroups[0] : "");
+            setEntries([{ player_name: "", shirt_number: "", reason: "", photoFile: null, photoPreview: null }]);
+          }}
           className="text-sm font-display text-primary hover:text-gold-light transition-colors"
         >
           Submit another
@@ -202,56 +237,78 @@ function POTMForm({ ageGroups }: { ageGroups: string[] }) {
 
       <div>
         <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Team *</label>
-        <select value={form.age_group} onChange={(e) => setForm({ ...form, age_group: e.target.value })} className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground">
+        <select value={ageGroup} onChange={(e) => setAgeGroup(e.target.value)} className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground">
           <option value="">Select team</option>
           {ageGroups.map((g) => <option key={g} value={g}>{g}</option>)}
         </select>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Player Full Name *</label>
-          <input value={form.player_name} onChange={(e) => setForm({ ...form, player_name: e.target.value })} placeholder="Full name" className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground" />
-        </div>
-        <div>
-          <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Shirt Number</label>
-          <input type="number" value={form.shirt_number} onChange={(e) => setForm({ ...form, shirt_number: e.target.value })} placeholder="e.g. 7" className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground" />
-        </div>
-      </div>
-
       <FixtureSelect
-        ageGroup={form.age_group}
+        ageGroup={ageGroup}
         value={fixtureKey}
         onChange={(opponent, date) => {
           setFixtureKey(`${date}|${opponent}`);
-          setForm({ ...form, match_description: opponent });
+          setMatchDescription(opponent);
+          setMatchDate(date);
         }}
       />
 
-      <div>
-        <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Reason for Award</label>
-        <textarea value={form.reason} onChange={(e) => setForm({ ...form, reason: e.target.value })} placeholder="What made this player stand out?" rows={3} className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground resize-none" />
-      </div>
-
-      <div>
-        <label className="block text-xs font-display tracking-wider text-muted-foreground mb-2">Player Photo</label>
-        {photoPreview ? (
-          <div className="relative w-32 h-32 rounded-lg overflow-hidden">
-            <img src={photoPreview} alt="Preview" className="w-full h-full object-cover" />
-            <button type="button" onClick={() => { setPhotoFile(null); setPhotoPreview(null); }} className="absolute top-1 right-1 bg-black/60 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs">×</button>
+      {entries.map((entry, i) => (
+        <div key={i} className="border border-border rounded-lg p-4 space-y-4 relative">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-display text-muted-foreground">POTM #{i + 1}</span>
+            {entries.length > 1 && (
+              <button type="button" onClick={() => removeEntry(i)} className="text-destructive hover:text-destructive/80 transition-colors">
+                <Trash2 className="h-4 w-4" />
+              </button>
+            )}
           </div>
-        ) : (
-          <label className="flex items-center gap-3 cursor-pointer bg-secondary border border-dashed border-border rounded-lg px-4 py-6 hover:border-primary/50 transition-colors">
-            <Upload className="h-5 w-5 text-muted-foreground" />
-            <span className="text-sm text-muted-foreground">Click to upload a photo</span>
-            <input type="file" accept="image/*" onChange={handlePhotoChange} className="hidden" />
-          </label>
-        )}
-      </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Player Full Name *</label>
+              <input value={entry.player_name} onChange={(e) => updateEntry(i, "player_name", e.target.value)} placeholder="Full name" className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground" />
+            </div>
+            <div>
+              <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Shirt Number</label>
+              <input type="number" value={entry.shirt_number} onChange={(e) => updateEntry(i, "shirt_number", e.target.value)} placeholder="e.g. 7" className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground" />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Reason for Award</label>
+            <textarea value={entry.reason} onChange={(e) => updateEntry(i, "reason", e.target.value)} placeholder="What made this player stand out?" rows={2} className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground resize-none" />
+          </div>
+
+          <div>
+            <label className="block text-xs font-display tracking-wider text-muted-foreground mb-2">Player Photo</label>
+            {entry.photoPreview ? (
+              <div className="relative w-24 h-24 rounded-lg overflow-hidden">
+                <img src={entry.photoPreview} alt="Preview" className="w-full h-full object-cover" />
+                <button type="button" onClick={() => clearPhoto(i)} className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs">×</button>
+              </div>
+            ) : (
+              <label className="flex items-center gap-3 cursor-pointer bg-secondary border border-dashed border-border rounded-lg px-4 py-4 hover:border-primary/50 transition-colors">
+                <Upload className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">Click to upload a photo</span>
+                <input type="file" accept="image/*" onChange={(e) => handlePhotoChange(i, e)} className="hidden" />
+              </label>
+            )}
+          </div>
+        </div>
+      ))}
+
+      <button
+        type="button"
+        onClick={addEntry}
+        className="w-full border border-dashed border-border rounded-lg py-2.5 text-sm font-display text-muted-foreground hover:text-foreground hover:border-primary/50 transition-colors flex items-center justify-center gap-2"
+      >
+        <Plus className="h-4 w-4" /> Add Another POTM
+      </button>
 
       <button type="submit" disabled={submitting} className="w-full bg-primary text-primary-foreground font-display tracking-wider py-3 rounded-lg hover:bg-gold-light transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
         {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Star className="h-4 w-4" />}
-        {submitting ? "Submitting..." : "Submit POTM"}
+        {submitting ? "Submitting..." : `Submit POTM${entries.length > 1 ? ` (${entries.length})` : ""}`}
       </button>
     </form>
   );
