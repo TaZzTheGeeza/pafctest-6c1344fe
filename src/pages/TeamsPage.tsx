@@ -7,7 +7,7 @@ import { TeamStatsTable } from "@/components/TeamStatsTable";
 import { LeagueTable } from "@/components/LeagueTable";
 import clubLogo from "@/assets/club-logo.jpg";
 
-const leagueTableConfig: Record<string, { divisionSeason: string; faUrl: string; highlightTeams: string[] }> = {
+const leagueTableConfig: Record<string, { divisionSeason?: string; tableUrl?: string; faUrl: string; highlightTeams: string[] }> = {
   "u13s-black": {
     divisionSeason: "189349138",
     faUrl: "https://fulltime.thefa.com/table.html?divisionseason=189349138",
@@ -17,6 +17,11 @@ const leagueTableConfig: Record<string, { divisionSeason: string; faUrl: string;
     divisionSeason: "189349138",
     faUrl: "https://fulltime.thefa.com/table.html?divisionseason=189349138",
     highlightTeams: ["Peterborough Ath U13 Gold"],
+  },
+  "u14s": {
+    tableUrl: "https://fulltime.thefa.com/table.html?selectedSeason=233257866&selectedDivision=682264182&activeTab=1",
+    faUrl: "https://fulltime.thefa.com/table.html?selectedSeason=233257866&selectedDivision=682264182&activeTab=1",
+    highlightTeams: ["Peterborough Ath U14"],
   },
 };
 
@@ -100,6 +105,7 @@ function TeamDetail({ team }: { team: TeamData }) {
               {leagueTableConfig[team.slug] && (
                 <LeagueTable
                   divisionSeason={leagueTableConfig[team.slug].divisionSeason}
+                  tableUrl={leagueTableConfig[team.slug].tableUrl}
                   highlightTeams={leagueTableConfig[team.slug].highlightTeams}
                   faUrl={leagueTableConfig[team.slug].faUrl}
                 />
