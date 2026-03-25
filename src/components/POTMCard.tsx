@@ -74,17 +74,16 @@ export function POTMCard({
               {/* Gold radial glow */}
               <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center_60%,_hsla(38,45%,47%,0.2)_0%,_transparent_70%)]" />
 
-              {/* Age group badge */}
-              <div className="absolute top-4 left-4 z-20">
-                <span className="font-display text-[10px] font-bold uppercase tracking-[0.2em] px-2.5 py-1 rounded-full bg-primary/20 text-primary border border-primary/30 backdrop-blur-sm">
+              {/* Header row: age group + POTM label + star */}
+              <div className="absolute top-3 left-3 right-3 z-20 flex items-center gap-1.5">
+                <span className="font-display text-[9px] font-bold uppercase tracking-[0.15em] px-2 py-0.5 rounded-full bg-primary/20 text-primary border border-primary/30 backdrop-blur-sm whitespace-nowrap shrink-0">
                   {ageGroup}
                 </span>
-              </div>
-
-              {/* POTM star badge */}
-              <div className="absolute top-4 right-4 z-20">
-                <div className="w-9 h-9 rounded-full bg-primary/20 border border-primary/40 backdrop-blur-sm flex items-center justify-center">
-                  <Star className="h-4 w-4 text-primary fill-primary" />
+                <span className="font-display text-[9px] font-bold uppercase tracking-[0.12em] text-primary/80 truncate">
+                  Player of the Match
+                </span>
+                <div className="w-8 h-8 rounded-full bg-primary/20 border border-primary/40 backdrop-blur-sm flex items-center justify-center shrink-0 ml-auto">
+                  <Star className="h-3.5 w-3.5 text-primary fill-primary" />
                 </div>
               </div>
 
