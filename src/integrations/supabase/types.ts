@@ -181,6 +181,53 @@ export type Database = {
         }
         Relationships: []
       }
+      match_player_stats: {
+        Row: {
+          appeared: boolean
+          assists: number
+          created_at: string
+          goals: number
+          id: string
+          match_date: string
+          opponent: string
+          player_stat_id: string
+          potm: boolean
+          team_slug: string
+        }
+        Insert: {
+          appeared?: boolean
+          assists?: number
+          created_at?: string
+          goals?: number
+          id?: string
+          match_date: string
+          opponent: string
+          player_stat_id: string
+          potm?: boolean
+          team_slug: string
+        }
+        Update: {
+          appeared?: boolean
+          assists?: number
+          created_at?: string
+          goals?: number
+          id?: string
+          match_date?: string
+          opponent?: string
+          player_stat_id?: string
+          potm?: boolean
+          team_slug?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_player_stats_player_stat_id_fkey"
+            columns: ["player_stat_id"]
+            isOneToOne: false
+            referencedRelation: "player_stats"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       match_reports: {
         Row: {
           age_group: string
