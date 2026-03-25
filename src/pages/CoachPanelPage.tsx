@@ -5,8 +5,9 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Trophy, FileText, Upload, Star, CheckCircle, Loader2, ShieldX } from "lucide-react";
+import { Trophy, FileText, Upload, Star, CheckCircle, Loader2, ShieldX, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
+import { PlayerStatsForm } from "@/components/PlayerStatsForm";
 
 const ageGroups = [
   "U7s", "U8s Black", "U8s Gold", "U9s", "U10s",
