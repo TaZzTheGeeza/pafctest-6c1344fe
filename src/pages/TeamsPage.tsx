@@ -65,7 +65,7 @@ function formatFADate(dateStr: string): string {
 function TeamDetail({ team }: { team: TeamData }) {
   const f = team.nextFixture;
   const { data: liveData, isLoading: fixturesLoading } = useTeamFixtures(team.slug);
-  const { isCoach, isAdmin } = useAuth();
+  const { isCoach, isAdmin, isPlayer } = useAuth();
   const canManage = isCoach || isAdmin;
   const [coachFixture, setCoachFixture] = useState<FAFixture | null>(null);
 
@@ -193,8 +193,8 @@ function TeamDetail({ team }: { team: TeamData }) {
                 </div>
               )}
 
-              {/* Results from FA */}
-              {liveData && liveData.results.length > 0 && (
+              {/* Results from FA - restricted to player/coach/admin */}
+              {(isCoach || isAdmin || isPlayer) && liveData && liveData.results.length > 0 && (
                 <div className="bg-card border border-border rounded-lg overflow-hidden">
                   <div className="bg-primary/10 px-6 py-3 border-b border-border">
                     <h2 className="font-display text-sm font-bold text-primary tracking-wider">Results</h2>
@@ -244,14 +244,16 @@ function TeamDetail({ team }: { team: TeamData }) {
                 />
               )}
 
-              {/* Player Stats */}
-              <div>
-                <div className="flex items-center gap-2 mb-4">
-                  <BarChart3 className="h-5 w-5 text-primary" />
-                  <h2 className="font-display text-sm font-bold text-primary tracking-wider">Player Stats</h2>
+              {/* Player Stats - restricted to player/coach/admin */}
+              {(isCoach || isAdmin || isPlayer) && (
+                <div>
+                  <div className="flex items-center gap-2 mb-4">
+                    <BarChart3 className="h-5 w-5 text-primary" />
+                    <h2 className="font-display text-sm font-bold text-primary tracking-wider">Player Stats</h2>
+                  </div>
+                  <TeamStatsTable ageGroup={team.name} />
                 </div>
-                <TeamStatsTable ageGroup={team.name} />
-              </div>
+              )}
             </div>
           </motion.div>
         </div>
