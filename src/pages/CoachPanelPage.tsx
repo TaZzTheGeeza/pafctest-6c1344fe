@@ -342,39 +342,59 @@ function POTMForm({ ageGroups }: { ageGroups: string[] }) {
   );
 }
 
+interface GoalAssistEntry { playerId: string; count: number; }
+
 function MatchReportForm({ ageGroups }: { ageGroups: string[] }) {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [fixtureKey, setFixtureKey] = useState("");
   const [matchDate, setMatchDate] = useState("");
-  const [form, setForm] = useState({
-    team_name: "",
-    age_group: ageGroups.length === 1 ? ageGroups[0] : "",
-    opponent: "",
-    home_score: "",
-    away_score: "",
-    goal_scorers: "",
-    assists: "",
-    notes: "",
-  });
+  const [ageGroup, setAgeGroup] = useState(ageGroups.length === 1 ? ageGroups[0] : "");
+  const [opponent, setOpponent] = useState("");
+  const [homeScore, setHomeScore] = useState("");
+  const [awayScore, setAwayScore] = useState("");
+  const [goalEntries, setGoalEntries] = useState<GoalAssistEntry[]>([]);
+  const [assistEntries, setAssistEntries] = useState<GoalAssistEntry[]>([]);
+  const [notes, setNotes] = useState("");
+
+  const slug = AGE_GROUP_TO_SLUG[ageGroup];
+  const { data: roster = [] } = useTeamRoster(slug);
+
+  const addGoalEntry = () => setGoalEntries([...goalEntries, { playerId: "", count: 1 }]);
+  const addAssistEntry = () => setAssistEntries([...assistEntries, { playerId: "", count: 1 }]);
+  const removeGoalEntry = (i: number) => setGoalEntries(goalEntries.filter((_, idx) => idx !== i));
+  const removeAssistEntry = (i: number) => setAssistEntries(assistEntries.filter((_, idx) => idx !== i));
+
+  const updateGoalEntry = (i: number, field: keyof GoalAssistEntry, val: string | number) => {
+    const next = [...goalEntries]; next[i] = { ...next[i], [field]: val }; setGoalEntries(next);
+  };
+  const updateAssistEntry = (i: number, field: keyof GoalAssistEntry, val: string | number) => {
+    const next = [...assistEntries]; next[i] = { ...next[i], [field]: val }; setAssistEntries(next);
+  };
+
+  const buildText = (entries: GoalAssistEntry[]) =>
+    entries.filter(e => e.playerId).map(e => {
+      const p = roster.find(r => r.id === e.playerId);
+      return p ? `${p.first_name}${e.count > 1 ? ` x${e.count}` : ""}` : "";
+    }).filter(Boolean).join(", ");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.age_group || !form.opponent) {
+    if (!ageGroup || !opponent) {
       toast.error("Please fill in all required fields");
       return;
     }
     setSubmitting(true);
 
     const { error } = await supabase.from("match_reports").insert({
-      team_name: `Peterborough Athletic ${form.age_group}`,
-      age_group: form.age_group,
-      opponent: form.opponent.trim(),
-      home_score: parseInt(form.home_score) || 0,
-      away_score: parseInt(form.away_score) || 0,
-      goal_scorers: form.goal_scorers.trim() || null,
-      assists: form.assists.trim() || null,
-      notes: form.notes.trim() || null,
+      team_name: `Peterborough Athletic ${ageGroup}`,
+      age_group: ageGroup,
+      opponent: opponent.trim(),
+      home_score: parseInt(homeScore) || 0,
+      away_score: parseInt(awayScore) || 0,
+      goal_scorers: buildText(goalEntries) || null,
+      assists: buildText(assistEntries) || null,
+      notes: notes.trim() || null,
       match_date: matchDate || new Date().toISOString().split("T")[0],
     });
 
@@ -387,21 +407,73 @@ function MatchReportForm({ ageGroups }: { ageGroups: string[] }) {
     }
   };
 
+  const resetForm = () => {
+    setSubmitted(false); setFixtureKey(""); setMatchDate("");
+    setAgeGroup(ageGroups.length === 1 ? ageGroups[0] : "");
+    setOpponent(""); setHomeScore(""); setAwayScore("");
+    setGoalEntries([]); setAssistEntries([]); setNotes("");
+  };
+
   if (submitted) {
     return (
       <div className="bg-card border border-border rounded-xl p-8 text-center">
         <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
         <h3 className="font-display text-xl font-bold text-foreground mb-2">Match Report Submitted!</h3>
         <p className="text-muted-foreground mb-4">Thank you for reporting the result.</p>
-        <button
-          onClick={() => { setSubmitted(false); setFixtureKey(""); setMatchDate(""); setForm({ team_name: "", age_group: ageGroups.length === 1 ? ageGroups[0] : "", opponent: "", home_score: "", away_score: "", goal_scorers: "", assists: "", notes: "" }); }}
-          className="text-sm font-display text-primary hover:text-gold-light transition-colors"
-        >
+        <button onClick={resetForm} className="text-sm font-display text-primary hover:text-gold-light transition-colors">
           Submit another
         </button>
       </div>
     );
   }
+
+  const renderEntryList = (
+    entries: GoalAssistEntry[],
+    updateFn: (i: number, field: keyof GoalAssistEntry, val: string | number) => void,
+    removeFn: (i: number) => void,
+    addFn: () => void,
+    label: string,
+    emptyText: string,
+  ) => (
+    <div>
+      <div className="flex items-center justify-between mb-1">
+        <label className="block text-xs font-display tracking-wider text-muted-foreground">{label}</label>
+        <button type="button" onClick={addFn} className="text-xs font-display text-primary hover:text-gold-light transition-colors flex items-center gap-1">
+          <Plus className="h-3 w-3" /> Add
+        </button>
+      </div>
+      {entries.length === 0 ? (
+        <p className="text-xs text-muted-foreground italic py-2">{emptyText}</p>
+      ) : (
+        <div className="space-y-2">
+          {entries.map((entry, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <select
+                value={entry.playerId}
+                onChange={(e) => updateFn(i, "playerId", e.target.value)}
+                className="flex-1 bg-secondary border border-border rounded-lg px-3 py-2 text-sm text-foreground"
+              >
+                <option value="">Select player</option>
+                {roster.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.shirt_number ? `#${p.shirt_number} ` : ""}{p.first_name}
+                  </option>
+                ))}
+              </select>
+              <input
+                type="number" min="1" value={entry.count}
+                onChange={(e) => updateFn(i, "count", parseInt(e.target.value) || 1)}
+                className="w-16 bg-secondary border border-border rounded-lg px-2 py-2 text-sm text-foreground text-center"
+              />
+              <button type="button" onClick={() => removeFn(i)} className="p-1.5 text-destructive hover:text-destructive/80">
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <form onSubmit={handleSubmit} className="bg-card border border-border rounded-xl p-6 space-y-5">
@@ -412,19 +484,19 @@ function MatchReportForm({ ageGroups }: { ageGroups: string[] }) {
 
       <div>
         <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Team *</label>
-        <select value={form.age_group} onChange={(e) => setForm({ ...form, age_group: e.target.value })} className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground">
+        <select value={ageGroup} onChange={(e) => { setAgeGroup(e.target.value); setGoalEntries([]); setAssistEntries([]); }} className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground">
           <option value="">Select team</option>
           {ageGroups.map((g) => <option key={g} value={g}>{g}</option>)}
         </select>
       </div>
 
       <FixtureSelect
-        ageGroup={form.age_group}
+        ageGroup={ageGroup}
         value={fixtureKey}
-        onChange={(opponent, date) => {
-          setFixtureKey(`${date}|${opponent}`);
+        onChange={(opp, date) => {
+          setFixtureKey(`${date}|${opp}`);
           setMatchDate(date);
-          setForm({ ...form, opponent });
+          setOpponent(opp);
         }}
         label="Opponent *"
       />
@@ -432,27 +504,26 @@ function MatchReportForm({ ageGroups }: { ageGroups: string[] }) {
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Our Score</label>
-          <input type="number" min="0" value={form.home_score} onChange={(e) => setForm({ ...form, home_score: e.target.value })} placeholder="0" className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground" />
+          <input type="number" min="0" value={homeScore} onChange={(e) => setHomeScore(e.target.value)} placeholder="0" className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground" />
         </div>
         <div>
           <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Their Score</label>
-          <input type="number" min="0" value={form.away_score} onChange={(e) => setForm({ ...form, away_score: e.target.value })} placeholder="0" className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground" />
+          <input type="number" min="0" value={awayScore} onChange={(e) => setAwayScore(e.target.value)} placeholder="0" className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground" />
         </div>
       </div>
 
-      <div>
-        <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Goal Scorers</label>
-        <input value={form.goal_scorers} onChange={(e) => setForm({ ...form, goal_scorers: e.target.value })} placeholder="e.g. J. Smith (2), A. Jones (1)" className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground" />
-      </div>
+      {renderEntryList(goalEntries, updateGoalEntry, removeGoalEntry, addGoalEntry, "Goal Scorers", "No goals — click Add to log scorers")}
+      {renderEntryList(assistEntries, updateAssistEntry, removeAssistEntry, addAssistEntry, "Assists", "No assists — click Add to log")}
 
-      <div>
-        <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Assists</label>
-        <input value={form.assists} onChange={(e) => setForm({ ...form, assists: e.target.value })} placeholder="e.g. T. Brown, M. Wilson" className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground" />
-      </div>
+      {roster.length === 0 && ageGroup && (
+        <p className="text-xs text-amber-600 bg-amber-50 dark:bg-amber-950/30 rounded-md p-2">
+          ⚠️ No players in roster yet. Add players via the Stats tab first.
+        </p>
+      )}
 
       <div>
         <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Match Notes</label>
-        <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="Any additional notes about the match..." rows={3} className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground resize-none" />
+        <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Any additional notes about the match..." rows={3} className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground resize-none" />
       </div>
 
       <button type="submit" disabled={submitting} className="w-full bg-primary text-primary-foreground font-display tracking-wider py-3 rounded-lg hover:bg-gold-light transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
