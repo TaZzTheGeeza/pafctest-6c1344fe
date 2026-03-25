@@ -195,24 +195,46 @@ function POTMRow({ potm, onDeleted }: { potm: any; onDeleted: () => void }) {
 
   const handleSave = async () => {
     setSaving(true);
-    const { error } = await supabase
-      .from("player_of_the_match")
-      .update({
-        player_name: form.player_name.trim(),
-        team_name: form.team_name.trim(),
-        age_group: form.age_group,
-        shirt_number: form.shirt_number ? parseInt(form.shirt_number) : null,
-        match_description: form.match_description.trim() || null,
-        reason: form.reason.trim() || null,
-      })
-      .eq("id", potm.id);
-    setSaving(false);
-    if (error) {
-      toast.error("Failed to update POTM");
-    } else {
+    try {
+      let photo_url = potm.photo_url;
+
+      // Upload new photo if selected
+      if (newPhoto) {
+        const ext = newPhoto.name.split(".").pop() || "jpg";
+        const path = `potm/${Date.now()}-${form.player_name.replace(/\s+/g, "-")}.${ext}`;
+        const { error: uploadError } = await supabase.storage
+          .from("club-photos")
+          .upload(path, newPhoto, { upsert: true });
+        if (uploadError) throw uploadError;
+        const { data: urlData } = supabase.storage.from("club-photos").getPublicUrl(path);
+        photo_url = urlData.publicUrl;
+      } else if (removePhoto) {
+        photo_url = null;
+      }
+
+      const { error } = await supabase
+        .from("player_of_the_match")
+        .update({
+          player_name: form.player_name.trim(),
+          team_name: form.team_name.trim(),
+          age_group: form.age_group,
+          shirt_number: form.shirt_number ? parseInt(form.shirt_number) : null,
+          match_description: form.match_description.trim() || null,
+          reason: form.reason.trim() || null,
+          photo_url,
+        })
+        .eq("id", potm.id);
+      if (error) throw error;
       toast.success("POTM award updated");
       setEditing(false);
+      setNewPhoto(null);
+      if (photoPreview) URL.revokeObjectURL(photoPreview);
+      setPhotoPreview(null);
       onDeleted(); // refresh
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update POTM");
+    } finally {
+      setSaving(false);
     }
   };
 
