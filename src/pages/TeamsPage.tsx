@@ -53,8 +53,28 @@ const allTeams: TeamData[] = [
   { slug: "u14s", name: "U14s", ageGroup: "Under 14", training: "Mon & Wed 7:00pm", nextFixture: { opponent: "Park Farm Pumas U14 Black", venue: "Home", date: "Sun 12 April", kickoff: "14:00" } },
 ];
 
+function formatFADate(dateStr: string): string {
+  // dateStr is "DD/MM/YY" format
+  const [d, m, y] = dateStr.split("/");
+  const date = new Date(2000 + parseInt(y), parseInt(m) - 1, parseInt(d));
+  return date.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
+}
+
 function TeamDetail({ team }: { team: TeamData }) {
   const f = team.nextFixture;
+  const { data: liveData, isLoading: fixturesLoading } = useTeamFixtures(team.slug);
+
+  // Determine next fixture from live data or fall back to hardcoded
+  const nextFixture = liveData?.fixtures?.[0];
+  const displayFixture = nextFixture
+    ? {
+        opponent: nextFixture.homeTeam.includes("Peterborough Ath") ? nextFixture.awayTeam : nextFixture.homeTeam,
+        venue: nextFixture.homeTeam.includes("Peterborough Ath") ? "Home" as const : "Away" as const,
+        date: formatFADate(nextFixture.date),
+        kickoff: nextFixture.time,
+      }
+    : f;
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -75,6 +95,7 @@ function TeamDetail({ team }: { team: TeamData }) {
             </div>
 
             <div className="max-w-2xl mx-auto space-y-6">
+              {/* Next Fixture */}
               <div className="bg-card border border-border rounded-lg overflow-hidden">
                 <div className="bg-primary/10 px-6 py-3 border-b border-border">
                   <h2 className="font-display text-sm font-bold text-primary tracking-wider">Next Fixture</h2>
@@ -90,18 +111,88 @@ function TeamDetail({ team }: { team: TeamData }) {
                     </div>
                     <span className="font-display text-lg text-muted-foreground">VS</span>
                     <div className="text-right">
-                      <p className="font-display font-bold text-sm">{f.opponent}</p>
+                      <p className="font-display font-bold text-sm">{displayFixture.opponent}</p>
                     </div>
                   </div>
                   <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
-                    <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{f.date}</span>
-                    <span className="flex items-center gap-1"><Clock className="w-3 h-3" />KO {f.kickoff}</span>
-                    <span className={`flex items-center gap-1 font-bold ${f.venue === "Home" ? "text-green-400" : "text-blue-400"}`}>
-                      <MapPin className="w-3 h-3" />{f.venue}
+                    <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{displayFixture.date}</span>
+                    <span className="flex items-center gap-1"><Clock className="w-3 h-3" />KO {displayFixture.kickoff}</span>
+                    <span className={`flex items-center gap-1 font-bold ${displayFixture.venue === "Home" ? "text-green-400" : "text-blue-400"}`}>
+                      <MapPin className="w-3 h-3" />{displayFixture.venue}
                     </span>
                   </div>
                 </div>
               </div>
+
+              {/* All Fixtures from FA */}
+              {fixturesLoading && (
+                <div className="flex items-center justify-center py-8 text-muted-foreground gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span className="text-sm">Loading fixtures from FA Full-Time...</span>
+                </div>
+              )}
+
+              {liveData && liveData.fixtures.length > 0 && (
+                <div className="bg-card border border-border rounded-lg overflow-hidden">
+                  <div className="bg-primary/10 px-6 py-3 border-b border-border">
+                    <h2 className="font-display text-sm font-bold text-primary tracking-wider">Upcoming Fixtures</h2>
+                  </div>
+                  <div className="divide-y divide-border">
+                    {liveData.fixtures.map((fix, i) => {
+                      const isHome = fix.homeTeam.includes("Peterborough Ath");
+                      return (
+                        <div key={i} className="px-6 py-3 flex items-center justify-between">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate">
+                              {isHome ? "vs" : "@"} {isHome ? fix.awayTeam : fix.homeTeam}
+                            </p>
+                            <p className="text-[10px] text-muted-foreground">{fix.competition}</p>
+                          </div>
+                          <div className="flex items-center gap-3 text-xs text-muted-foreground shrink-0">
+                            <span className={`font-bold ${isHome ? "text-green-400" : "text-blue-400"}`}>
+                              {isHome ? "H" : "A"}
+                            </span>
+                            <span>{formatFADate(fix.date)}</span>
+                            <span className="font-mono">{fix.time}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Results from FA */}
+              {liveData && liveData.results.length > 0 && (
+                <div className="bg-card border border-border rounded-lg overflow-hidden">
+                  <div className="bg-primary/10 px-6 py-3 border-b border-border">
+                    <h2 className="font-display text-sm font-bold text-primary tracking-wider">Results</h2>
+                  </div>
+                  <div className="divide-y divide-border">
+                    {liveData.results.slice(0, 10).map((res, i) => {
+                      const isHome = res.homeTeam.includes("Peterborough Ath");
+                      const scored = isHome ? (res.homeScore ?? 0) : (res.awayScore ?? 0);
+                      const conceded = isHome ? (res.awayScore ?? 0) : (res.homeScore ?? 0);
+                      const result = scored > conceded ? "W" : scored < conceded ? "L" : "D";
+                      const resultColor = result === "W" ? "bg-green-600" : result === "L" ? "bg-red-600" : "bg-yellow-600";
+                      return (
+                        <div key={i} className="px-6 py-3 flex items-center gap-3">
+                          <span className={`${resultColor} text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded`}>
+                            {result}
+                          </span>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate">
+                              {isHome ? "vs" : "@"} {isHome ? res.awayTeam : res.homeTeam}
+                            </p>
+                            <p className="text-[10px] text-muted-foreground">{formatFADate(res.date)}</p>
+                          </div>
+                          <span className="font-mono font-bold text-sm">{res.homeScore} - {res.awayScore}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
               {/* League Table */}
               {leagueTableConfig[team.slug] && (
