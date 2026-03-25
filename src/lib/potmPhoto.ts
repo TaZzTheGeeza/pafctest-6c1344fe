@@ -59,6 +59,175 @@ export function base64ToBlob(base64: string): Blob {
   return new Blob([arr], { type: mime });
 }
 
+function colorDistance(a: [number, number, number], b: [number, number, number]) {
+  return Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]) + Math.abs(a[2] - b[2]);
+}
+
+function isNearBackgroundColor(
+  r: number,
+  g: number,
+  b: number,
+  backgroundSamples: [number, number, number][],
+) {
+  return backgroundSamples.some((sample) => colorDistance([r, g, b], sample) <= 42);
+}
+
+function getPixelIndex(x: number, y: number, width: number) {
+  return (y * width + x) * 4;
+}
+
+function loadImage(source: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error("Failed to load processed image"));
+    image.src = source;
+  });
+}
+
+async function normalizePotmImage(base64: string, size = 1024) {
+  const image = await loadImage(base64);
+  const sourceCanvas = document.createElement("canvas");
+  sourceCanvas.width = image.width;
+  sourceCanvas.height = image.height;
+  const sourceContext = sourceCanvas.getContext("2d", { willReadFrequently: true });
+
+  if (!sourceContext) {
+    throw new Error("Failed to normalize processed image");
+  }
+
+  sourceContext.drawImage(image, 0, 0);
+  const imageData = sourceContext.getImageData(0, 0, sourceCanvas.width, sourceCanvas.height);
+  const { data, width, height } = imageData;
+  const visited = new Uint8Array(width * height);
+
+  const samplePoints: Array<[number, number]> = [
+    [0, 0],
+    [width - 1, 0],
+    [0, height - 1],
+    [width - 1, height - 1],
+    [Math.floor(width / 2), 0],
+    [Math.floor(width / 2), height - 1],
+    [0, Math.floor(height / 2)],
+    [width - 1, Math.floor(height / 2)],
+  ];
+
+  const backgroundSamples: [number, number, number][] = [];
+
+  samplePoints.forEach(([x, y]) => {
+    const index = getPixelIndex(x, y, width);
+    const alpha = data[index + 3];
+    if (alpha === 0) return;
+    const sample: [number, number, number] = [data[index], data[index + 1], data[index + 2]];
+    if (!backgroundSamples.some((existing) => colorDistance(existing, sample) <= 12)) {
+      backgroundSamples.push(sample);
+    }
+  });
+
+  const queue: Array<[number, number]> = [];
+
+  const enqueue = (x: number, y: number) => {
+    if (x < 0 || y < 0 || x >= width || y >= height) return;
+    const key = y * width + x;
+    if (visited[key]) return;
+    visited[key] = 1;
+    queue.push([x, y]);
+  };
+
+  for (let x = 0; x < width; x += 1) {
+    enqueue(x, 0);
+    enqueue(x, height - 1);
+  }
+
+  for (let y = 0; y < height; y += 1) {
+    enqueue(0, y);
+    enqueue(width - 1, y);
+  }
+
+  while (queue.length > 0) {
+    const [x, y] = queue.shift()!;
+    const index = getPixelIndex(x, y, width);
+    const alpha = data[index + 3];
+
+    if (alpha === 0) continue;
+
+    const r = data[index];
+    const g = data[index + 1];
+    const b = data[index + 2];
+
+    if (!isNearBackgroundColor(r, g, b, backgroundSamples)) continue;
+
+    data[index + 3] = 0;
+
+    enqueue(x + 1, y);
+    enqueue(x - 1, y);
+    enqueue(x, y + 1);
+    enqueue(x, y - 1);
+  }
+
+  sourceContext.putImageData(imageData, 0, 0);
+
+  let minX = width;
+  let minY = height;
+  let maxX = -1;
+  let maxY = -1;
+
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      const index = getPixelIndex(x, y, width);
+      if (data[index + 3] > 10) {
+        minX = Math.min(minX, x);
+        minY = Math.min(minY, y);
+        maxX = Math.max(maxX, x);
+        maxY = Math.max(maxY, y);
+      }
+    }
+  }
+
+  if (maxX === -1 || maxY === -1) {
+    return base64;
+  }
+
+  const subjectWidth = maxX - minX + 1;
+  const subjectHeight = maxY - minY + 1;
+  const targetCanvas = document.createElement("canvas");
+  targetCanvas.width = size;
+  targetCanvas.height = size;
+  const targetContext = targetCanvas.getContext("2d");
+
+  if (!targetContext) {
+    throw new Error("Failed to create square image");
+  }
+
+  const horizontalPadding = size * 0.12;
+  const topPadding = size * 0.12;
+  const bottomPadding = size * 0.06;
+  const scale = Math.min(
+    (size - horizontalPadding * 2) / subjectWidth,
+    (size - topPadding - bottomPadding) / subjectHeight,
+  );
+
+  const drawWidth = subjectWidth * scale;
+  const drawHeight = subjectHeight * scale;
+  const dx = (size - drawWidth) / 2;
+  const dy = size - bottomPadding - drawHeight;
+
+  targetContext.clearRect(0, 0, size, size);
+  targetContext.drawImage(
+    sourceCanvas,
+    minX,
+    minY,
+    subjectWidth,
+    subjectHeight,
+    dx,
+    dy,
+    drawWidth,
+    drawHeight,
+  );
+
+  return targetCanvas.toDataURL("image/png");
+}
+
 export async function uploadPotmPhoto(
   file: File,
   options: {
@@ -94,6 +263,8 @@ export async function uploadPotmPhoto(
     console.error("[POTM] Background removal exception:", error);
     options.onStatus?.("fallback");
   }
+
+  finalBase64 = await normalizePotmImage(finalBase64);
 
   const datePrefix = options.awardDate || new Date().toISOString().split("T")[0];
   const teamPrefix = options.teamSlug ? `${sanitizePathSegment(options.teamSlug)}/` : "";
