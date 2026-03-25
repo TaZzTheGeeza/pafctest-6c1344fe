@@ -51,7 +51,7 @@ serve(async (req) => {
             content: [
               {
                 type: "text",
-                text: "Remove the background from this image completely. Keep only the main person/subject and make everything else fully transparent. Output the result as a PNG image with transparent background.",
+                text: "Remove ONLY the background from this photo. Keep the entire person fully intact — their body, hair, clothing, skin, limbs, and all accessories must be completely preserved with no parts removed or clipped. Make the background fully transparent. Output as a PNG with transparent background.",
               },
               {
                 type: "image_url",
