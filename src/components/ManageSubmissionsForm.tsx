@@ -379,10 +379,14 @@ function POTMRow({ potm, onDeleted }: { potm: any; onDeleted: () => void }) {
 
 // ─── Main Component ───
 
+interface MatchGroup {
+  report: any;
+  potmAwards: any[];
+}
+
 export function ManageSubmissionsForm() {
   const queryClient = useQueryClient();
-  const [showReports, setShowReports] = useState(true);
-  const [showPotm, setShowPotm] = useState(true);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const { data: reports = [], isLoading: reportsLoading } = useQuery({
     queryKey: ["all-match-reports"],
@@ -415,59 +419,111 @@ export function ManageSubmissionsForm() {
     queryClient.invalidateQueries({ queryKey: ["all-potm-awards"] });
   };
 
+  // Group POTM awards into their matching report by team_name + date
+  const matchGroups: MatchGroup[] = reports.map((r: any) => {
+    const linked = potmAwards.filter(
+      (p: any) => p.team_name === r.team_name && p.award_date === r.match_date
+    );
+    return { report: r, potmAwards: linked };
+  });
+
+  // Find orphaned POTM awards (not linked to any report)
+  const linkedPotmIds = new Set(matchGroups.flatMap((g) => g.potmAwards.map((p: any) => p.id)));
+  const orphanedPotm = potmAwards.filter((p: any) => !linkedPotmIds.has(p.id));
+
+  const isLoading = reportsLoading || potmLoading;
+
   return (
-    <div className="space-y-6">
-      {/* Match Reports */}
-      <div className="bg-card border border-border rounded-xl overflow-hidden">
-        <button
-          onClick={() => setShowReports(!showReports)}
-          className="w-full flex items-center justify-between p-4 hover:bg-secondary/50 transition-colors"
-        >
-          <div className="flex items-center gap-2">
-            <FileText className="h-5 w-5 text-primary" />
-            <h3 className="font-display text-lg font-bold text-foreground">Match Reports</h3>
-            <span className="text-xs text-muted-foreground">({reports.length})</span>
-          </div>
-          {showReports ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
-        </button>
-        {showReports && (
-          <div className="px-4 pb-4 space-y-2">
-            {reportsLoading ? (
-              <div className="text-center py-6"><Loader2 className="h-5 w-5 animate-spin mx-auto text-primary" /></div>
-            ) : reports.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">No match reports submitted yet.</p>
-            ) : (
-              reports.map((r) => <MatchReportRow key={r.id} report={r} onDeleted={refresh} />)
-            )}
-          </div>
-        )}
+    <div className="space-y-4">
+      <div className="flex items-center gap-2 mb-2">
+        <FileText className="h-5 w-5 text-primary" />
+        <h3 className="font-display text-lg font-bold text-foreground">Submitted Matches</h3>
+        <span className="text-xs text-muted-foreground">({reports.length} reports, {potmAwards.length} POTM awards)</span>
       </div>
 
-      {/* POTM Awards */}
-      <div className="bg-card border border-border rounded-xl overflow-hidden">
-        <button
-          onClick={() => setShowPotm(!showPotm)}
-          className="w-full flex items-center justify-between p-4 hover:bg-secondary/50 transition-colors"
-        >
-          <div className="flex items-center gap-2">
-            <Star className="h-5 w-5 text-primary" />
-            <h3 className="font-display text-lg font-bold text-foreground">POTM Awards</h3>
-            <span className="text-xs text-muted-foreground">({potmAwards.length})</span>
-          </div>
-          {showPotm ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
-        </button>
-        {showPotm && (
-          <div className="px-4 pb-4 space-y-2">
-            {potmLoading ? (
-              <div className="text-center py-6"><Loader2 className="h-5 w-5 animate-spin mx-auto text-primary" /></div>
-            ) : potmAwards.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">No POTM awards submitted yet.</p>
-            ) : (
-              potmAwards.map((p) => <POTMRow key={p.id} potm={p} onDeleted={refresh} />)
-            )}
-          </div>
-        )}
-      </div>
+      {isLoading ? (
+        <div className="text-center py-8"><Loader2 className="h-5 w-5 animate-spin mx-auto text-primary" /></div>
+      ) : matchGroups.length === 0 && orphanedPotm.length === 0 ? (
+        <p className="text-sm text-muted-foreground text-center py-8 bg-card border border-border rounded-xl">No submissions yet.</p>
+      ) : (
+        <>
+          {matchGroups.map((group) => {
+            const r = group.report;
+            const isExpanded = expandedId === r.id;
+            return (
+              <div key={r.id} className="bg-card border border-border rounded-xl overflow-hidden">
+                {/* Match header row */}
+                <button
+                  onClick={() => setExpandedId(isExpanded ? null : r.id)}
+                  className="w-full flex items-center gap-3 p-3 hover:bg-secondary/50 transition-colors text-left"
+                >
+                  <FileText className="h-4 w-4 text-primary shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-display text-foreground truncate">
+                      {r.team_name} <span className="text-muted-foreground font-body font-normal">vs</span> {r.opponent}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground">
+                      {r.home_score}-{r.away_score} · {r.age_group} · {format(new Date(r.match_date), "dd MMM yyyy")}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    {group.potmAwards.length > 0 && (
+                      <span className="flex items-center gap-0.5 text-[10px] font-display text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+                        <Star className="h-2.5 w-2.5" /> {group.potmAwards.length} POTM
+                      </span>
+                    )}
+                    {isExpanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+                  </div>
+                </button>
+
+                {/* Expanded content */}
+                {isExpanded && (
+                  <div className="border-t border-border">
+                    {/* Match report edit */}
+                    <div className="px-3 py-2">
+                      <p className="text-[10px] font-display uppercase tracking-wider text-muted-foreground mb-2">Match Report</p>
+                      <MatchReportRow report={r} onDeleted={refresh} />
+                    </div>
+
+                    {/* Linked POTM awards */}
+                    {group.potmAwards.length > 0 && (
+                      <div className="px-3 py-2 border-t border-border/50">
+                        <p className="text-[10px] font-display uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1">
+                          <Star className="h-2.5 w-2.5 text-primary" /> POTM Awards ({group.potmAwards.length})
+                        </p>
+                        <div className="space-y-2">
+                          {group.potmAwards.map((p: any) => (
+                            <POTMRow key={p.id} potm={p} onDeleted={refresh} />
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+
+          {/* Orphaned POTM awards (not linked to a report) */}
+          {orphanedPotm.length > 0 && (
+            <div className="bg-card border border-border rounded-xl overflow-hidden">
+              <div className="p-3 border-b border-border">
+                <p className="text-sm font-display text-foreground flex items-center gap-2">
+                  <Star className="h-4 w-4 text-primary" />
+                  Unlinked POTM Awards
+                  <span className="text-xs text-muted-foreground font-body">({orphanedPotm.length})</span>
+                </p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">These awards aren't matched to a report — submit a match report for the same team &amp; date to link them.</p>
+              </div>
+              <div className="px-3 py-2 space-y-2">
+                {orphanedPotm.map((p: any) => (
+                  <POTMRow key={p.id} potm={p} onDeleted={refresh} />
+                ))}
+              </div>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }
