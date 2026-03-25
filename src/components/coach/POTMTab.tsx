@@ -10,6 +10,24 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useTeamRoster, getAgeGroup } from "@/hooks/useTeamRoster";
 import type { FAFixture } from "@/hooks/useTeamFixtures";
 
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function base64ToBlob(base64: string): Blob {
+  const parts = base64.split(",");
+  const mime = parts[0]?.match(/:(.*?);/)?.[1] || "image/png";
+  const raw = atob(parts[1]);
+  const arr = new Uint8Array(raw.length);
+  for (let i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
+  return new Blob([arr], { type: mime });
+}
+
 interface POTMEntry {
   playerId: string;
   reason: string;
@@ -84,11 +102,29 @@ export function POTMTab({
 
         let photoUrl: string | null = null;
         if (entry.photoFile) {
-          const ext = entry.photoFile.name.split(".").pop() || "jpg";
-          const path = `potm/${teamSlug}/${awardDate}-${player.first_name}.${ext}`;
+          // Convert to base64 and remove background via AI
+          const base64 = await fileToBase64(entry.photoFile);
+          let finalBase64 = base64;
+          try {
+            toast.info("Removing background...");
+            const { data: bgData, error: bgError } = await supabase.functions.invoke(
+              "remove-background",
+              { body: { imageBase64: base64 } }
+            );
+            if (!bgError && bgData?.imageBase64) {
+              finalBase64 = bgData.imageBase64;
+            }
+          } catch {
+            // If background removal fails, use original photo
+            console.warn("Background removal failed, using original photo");
+          }
+
+          // Upload the processed image as PNG
+          const path = `potm/${teamSlug}/${awardDate}-${player.first_name}.png`;
+          const blob = base64ToBlob(finalBase64);
           const { error: uploadError } = await supabase.storage
             .from("club-photos")
-            .upload(path, entry.photoFile, { upsert: true });
+            .upload(path, blob, { upsert: true, contentType: "image/png" });
           if (uploadError) throw uploadError;
           const { data: urlData } = supabase.storage.from("club-photos").getPublicUrl(path);
           photoUrl = urlData.publicUrl;
