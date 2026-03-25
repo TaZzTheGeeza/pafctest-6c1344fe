@@ -19,7 +19,6 @@ const communityItems = [
 ];
 
 const playerItems = [
-  { label: "Player Hub", path: "/player-hub" },
   { label: "Registration", path: "/register" },
   { label: "Our Teams", path: "/teams" },
   { label: "Club Documents", path: "/club-documents" },
