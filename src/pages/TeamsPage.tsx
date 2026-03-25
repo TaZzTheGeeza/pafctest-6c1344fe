@@ -65,6 +65,9 @@ function formatFADate(dateStr: string): string {
 function TeamDetail({ team }: { team: TeamData }) {
   const f = team.nextFixture;
   const { data: liveData, isLoading: fixturesLoading } = useTeamFixtures(team.slug);
+  const { isCoach, isAdmin } = useAuth();
+  const canManage = isCoach || isAdmin;
+  const [coachFixture, setCoachFixture] = useState<FAFixture | null>(null);
 
   // Determine next fixture from live data or fall back to hardcoded
   const nextFixture = liveData?.fixtures?.[0];
