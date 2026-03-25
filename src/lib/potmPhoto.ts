@@ -183,7 +183,7 @@ async function normalizePotmImage(base64: string, size = 1024) {
     const g = data[index + 1];
     const b = data[index + 2];
 
-    if (!isNearBackgroundColor(r, g, b, backgroundSamples) && !isCheckerboardPixel(r, g, b)) continue;
+    if (!isNearBackgroundColor(r, g, b, backgroundSamples)) continue;
 
     data[index + 3] = 0;
 
