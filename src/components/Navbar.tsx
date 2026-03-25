@@ -41,6 +41,7 @@ type NavItem = {
 const navItems: NavItem[] = [
   { label: "Home", path: "/" },
   { label: "Player Hub", path: "/player-hub", dropdown: playerItems },
+  { label: "Our Teams", path: "/teams" },
   { label: "PAFC TV", path: "https://www.youtube.com/@PeterboroughAthleticFC", external: true },
   { label: "Community", path: "/news", dropdown: communityItems },
   { label: "About", path: "/club-info", dropdown: aboutItems },
