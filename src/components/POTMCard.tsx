@@ -1,4 +1,4 @@
-import { Star, Trophy } from "lucide-react";
+import { Trophy } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface POTMCardProps {
@@ -27,7 +27,7 @@ export function POTMCard({
   const formattedDate = (() => {
     try {
       const d = new Date(awardDate);
-      return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+      return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short" });
     } catch {
       return awardDate;
     }
@@ -41,51 +41,90 @@ export function POTMCard({
       transition={{ duration: 0.5, delay: index * 0.08 }}
       className="group"
     >
-      <div className="relative w-[260px] mx-auto select-none">
-        {/* Card body */}
-        <div
-          className="relative rounded-2xl overflow-hidden border-2 border-primary/40"
-          style={{
-            background:
-              "linear-gradient(160deg, hsl(38 50% 34%) 0%, hsl(0 0% 8%) 35%, hsl(0 0% 8%) 65%, hsl(38 50% 34%) 100%)",
-          }}
+      {/* Outer card shape – FIFA UT proportions */}
+      <div className="relative w-[220px] mx-auto select-none" style={{ aspectRatio: "0.66" }}>
+        <svg
+          viewBox="0 0 220 333"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className="absolute inset-0 w-full h-full drop-shadow-xl"
+          preserveAspectRatio="none"
         >
-          {/* Decorative top arc */}
-          <div className="absolute top-0 left-0 right-0 h-40 overflow-hidden">
-            <div
-              className="absolute -top-20 left-1/2 -translate-x-1/2 w-[400px] h-[200px] rounded-[50%] opacity-15"
-              style={{
-                background:
-                  "radial-gradient(ellipse at center, hsl(38 45% 55%) 0%, transparent 70%)",
-              }}
-            />
-            {/* Gold line accents */}
-            <svg className="absolute top-0 left-0 w-full h-full opacity-10" viewBox="0 0 260 160" fill="none">
-              <path d="M0 80 Q65 20 130 50 Q195 80 260 30" stroke="hsl(38 45% 55%)" strokeWidth="1" />
-              <path d="M0 100 Q65 40 130 70 Q195 100 260 50" stroke="hsl(38 45% 55%)" strokeWidth="0.5" />
-            </svg>
-          </div>
+          <defs>
+            <linearGradient id={`card-bg-${index}`} x1="0" y1="0" x2="220" y2="333" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stopColor="hsl(38 40% 28%)" />
+              <stop offset="30%" stopColor="hsl(38 30% 18%)" />
+              <stop offset="60%" stopColor="hsl(30 20% 12%)" />
+              <stop offset="100%" stopColor="hsl(38 40% 22%)" />
+            </linearGradient>
+            <linearGradient id={`card-border-${index}`} x1="0" y1="0" x2="220" y2="333" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stopColor="hsl(38 50% 50%)" />
+              <stop offset="50%" stopColor="hsl(38 45% 35%)" />
+              <stop offset="100%" stopColor="hsl(38 50% 45%)" />
+            </linearGradient>
+            <clipPath id={`card-clip-${index}`}>
+              <path d="M20 0 H200 Q220 0 220 20 V313 Q220 333 200 333 H20 Q0 333 0 313 V20 Q0 0 20 0Z" />
+            </clipPath>
+          </defs>
+          {/* Card fill */}
+          <path
+            d="M20 0 H200 Q220 0 220 20 V313 Q220 333 200 333 H20 Q0 333 0 313 V20 Q0 0 20 0Z"
+            fill={`url(#card-bg-${index})`}
+          />
+          {/* Border */}
+          <path
+            d="M20 0 H200 Q220 0 220 20 V313 Q220 333 200 333 H20 Q0 333 0 313 V20 Q0 0 20 0Z"
+            fill="none"
+            stroke={`url(#card-border-${index})`}
+            strokeWidth="2"
+          />
+          {/* Decorative swoosh wings behind photo */}
+          <path
+            d="M10 110 Q50 70 110 85 Q170 70 210 110"
+            stroke="hsl(38 45% 40%)"
+            strokeWidth="1"
+            fill="none"
+            opacity="0.4"
+          />
+          <path
+            d="M5 120 Q40 60 110 80 Q180 60 215 120"
+            stroke="hsl(38 45% 35%)"
+            strokeWidth="0.8"
+            fill="none"
+            opacity="0.25"
+          />
+          <path
+            d="M15 130 Q55 80 110 95 Q165 80 205 130"
+            stroke="hsl(38 45% 45%)"
+            strokeWidth="0.6"
+            fill="none"
+            opacity="0.2"
+          />
+          {/* Bottom divider line */}
+          <line x1="30" y1="240" x2="190" y2="240" stroke="hsl(38 45% 40%)" strokeWidth="0.8" opacity="0.5" />
+          <line x1="30" y1="280" x2="190" y2="280" stroke="hsl(38 45% 40%)" strokeWidth="0.5" opacity="0.3" />
+        </svg>
 
-          {/* Rating badge */}
-          <div className="absolute top-3 left-3 z-10 flex flex-col items-center">
-            <span className="font-display text-3xl font-bold text-primary leading-none">
-              ★
-            </span>
-            <span className="font-display text-[10px] uppercase tracking-widest text-primary/80 mt-0.5">
-              POTM
-            </span>
-          </div>
-
-          {/* Age group badge */}
-          <div className="absolute top-3 right-3 z-10">
-            <span className="font-display text-xs font-semibold bg-primary/20 text-primary px-2 py-0.5 rounded border border-primary/30">
+        {/* Content overlay */}
+        <div className="absolute inset-0 flex flex-col" style={{ padding: "12px 16px" }}>
+          {/* Top row: Rating + Position */}
+          <div className="flex items-start justify-between mb-1">
+            <div className="flex flex-col items-center">
+              <span className="font-display text-[28px] font-bold leading-none" style={{ color: "hsl(38 50% 60%)" }}>
+                ★
+              </span>
+              <span className="font-display text-[9px] font-bold uppercase tracking-wider mt-0.5" style={{ color: "hsl(38 45% 50%)" }}>
+                POTM
+              </span>
+            </div>
+            <span className="font-display text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded" style={{ color: "hsl(38 45% 55%)", background: "hsla(38, 45%, 40%, 0.2)", border: "1px solid hsla(38, 45%, 40%, 0.3)" }}>
               {ageGroup}
             </span>
           </div>
 
-          {/* Player photo area */}
-          <div className="relative pt-10 pb-2 px-8 flex justify-center">
-            <div className="relative w-36 h-36 rounded-xl overflow-hidden border-2 border-primary/30 shadow-lg shadow-primary/10">
+          {/* Player photo */}
+          <div className="flex-1 flex items-center justify-center" style={{ marginTop: "-4px", marginBottom: "4px" }}>
+            <div className="relative w-[120px] h-[120px] rounded-full overflow-hidden border-2 shadow-lg" style={{ borderColor: "hsl(38 45% 40%)" }}>
               {photoUrl ? (
                 <img
                   src={photoUrl}
@@ -93,71 +132,61 @@ export function POTMCard({
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                 />
               ) : (
-                <div className="w-full h-full bg-secondary flex items-center justify-center">
-                  <span className="font-display text-5xl font-bold text-primary/30">
-                    {shirtNumber ? `${shirtNumber}` : "?"}
+                <div className="w-full h-full flex items-center justify-center" style={{ background: "hsl(0 0% 12%)" }}>
+                  <span className="font-display text-4xl font-bold" style={{ color: "hsla(38, 45%, 50%, 0.3)" }}>
+                    {shirtNumber || "?"}
                   </span>
                 </div>
               )}
-              {/* Subtle overlay gradient */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
             </div>
           </div>
 
-          {/* Divider line */}
-          <div className="mx-6 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
-
-          {/* Player info */}
-          <div className="px-5 pt-3 pb-2 text-center">
+          {/* Player name */}
+          <div className="text-center mb-1">
             {shirtNumber && (
-              <span className="font-display text-xs text-primary/70 tracking-wider">
+              <span className="font-display text-[10px] block" style={{ color: "hsl(38 45% 45%)" }}>
                 #{shirtNumber}
               </span>
             )}
-            <h3 className="font-display text-xl font-bold text-foreground uppercase tracking-wide leading-tight">
+            <h3 className="font-display text-lg font-bold uppercase tracking-wide leading-tight text-foreground">
               {playerName}
             </h3>
-            <p className="font-body text-[11px] text-muted-foreground mt-0.5">
-              {teamName}
-            </p>
           </div>
 
-          {/* Stats bar */}
-          <div className="mx-5 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
-
-          <div className="px-5 py-2.5 grid grid-cols-3 gap-1 text-center">
-            <div>
-              <p className="font-display text-[9px] uppercase tracking-widest text-primary/60">Match</p>
-              <p className="font-body text-[10px] text-foreground/80 mt-0.5 truncate">
-                {matchDescription?.replace(/^vs\s*/i, "") || "—"}
-              </p>
-            </div>
-            <div>
-              <p className="font-display text-[9px] uppercase tracking-widest text-primary/60">Date</p>
-              <p className="font-body text-[10px] text-foreground/80 mt-0.5">{formattedDate}</p>
-            </div>
-            <div>
-              <p className="font-display text-[9px] uppercase tracking-widest text-primary/60">Award</p>
-              <p className="font-body text-[10px] text-primary mt-0.5 flex items-center justify-center gap-0.5">
-                <Trophy className="h-2.5 w-2.5" /> POTM
-              </p>
-            </div>
-          </div>
-
-          {/* Reason quote */}
-          {reason && (
-            <>
-              <div className="mx-5 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
-              <div className="px-5 py-2.5">
-                <p className="font-body text-[10px] text-foreground/60 italic text-center leading-relaxed line-clamp-2">
-                  "{reason}"
+          {/* Stats row – mimicking FIFA stat bar */}
+          <div className="grid grid-cols-4 gap-0 text-center mb-1.5" style={{ marginTop: "2px" }}>
+            {[
+              { label: "TEAM", value: teamName.length > 8 ? teamName.substring(0, 8) : teamName },
+              { label: "VS", value: matchDescription?.replace(/^vs\s*/i, "").substring(0, 8) || "—" },
+              { label: "DATE", value: formattedDate },
+              { label: "AWD", value: "⭐" },
+            ].map((stat) => (
+              <div key={stat.label}>
+                <p className="font-display text-[8px] font-bold uppercase tracking-widest" style={{ color: "hsl(38 45% 45%)" }}>
+                  {stat.label}
+                </p>
+                <p className="font-body text-[9px] font-medium text-foreground/80 mt-0.5 truncate px-0.5">
+                  {stat.value}
                 </p>
               </div>
-            </>
-          )}
+            ))}
+          </div>
 
-          {/* Bottom accent */}
-          <div className="h-1.5 bg-gradient-to-r from-primary/60 via-primary to-primary/60" />
+          {/* Bottom row: reason + trophy icon */}
+          <div className="flex items-center justify-center gap-1 mt-auto">
+            {reason ? (
+              <p className="font-body text-[8px] text-foreground/50 italic text-center leading-tight line-clamp-2 px-1">
+                "{reason}"
+              </p>
+            ) : (
+              <div className="flex items-center gap-1">
+                <Trophy className="h-3 w-3" style={{ color: "hsl(38 45% 50%)" }} />
+                <span className="font-display text-[9px] uppercase tracking-wider" style={{ color: "hsl(38 45% 50%)" }}>
+                  Player of the Match
+                </span>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </motion.div>
