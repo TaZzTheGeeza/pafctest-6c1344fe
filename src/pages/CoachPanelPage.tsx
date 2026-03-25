@@ -296,7 +296,7 @@ function MatchReportForm({ ageGroups }: { ageGroups: string[] }) {
       goal_scorers: form.goal_scorers.trim() || null,
       assists: form.assists.trim() || null,
       notes: form.notes.trim() || null,
-      match_date: new Date().toISOString().split("T")[0],
+      match_date: matchDate || new Date().toISOString().split("T")[0],
     });
 
     setSubmitting(false);
@@ -345,10 +345,16 @@ function MatchReportForm({ ageGroups }: { ageGroups: string[] }) {
         </div>
       </div>
 
-      <div>
-        <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Opponent *</label>
-        <input value={form.opponent} onChange={(e) => setForm({ ...form, opponent: e.target.value })} placeholder="e.g. Thurlby Tigers U7 Yellow" className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground" />
-      </div>
+      <FixtureSelect
+        ageGroup={form.age_group}
+        value={fixtureKey}
+        onChange={(opponent, date) => {
+          setFixtureKey(`${date}|${opponent}`);
+          setMatchDate(date);
+          setForm({ ...form, opponent });
+        }}
+        label="Opponent *"
+      />
 
       <div className="grid grid-cols-2 gap-4">
         <div>
