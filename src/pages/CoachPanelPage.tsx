@@ -225,10 +225,14 @@ function POTMForm({ ageGroups }: { ageGroups: string[] }) {
         </div>
       </div>
 
-      <div>
-        <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Match (Opponent)</label>
-        <input value={form.match_description} onChange={(e) => setForm({ ...form, match_description: e.target.value })} placeholder="e.g. Thurlby Tigers U7 Yellow" className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground" />
-      </div>
+      <FixtureSelect
+        ageGroup={form.age_group}
+        value={fixtureKey}
+        onChange={(opponent, date) => {
+          setFixtureKey(`${date}|${opponent}`);
+          setForm({ ...form, match_description: opponent });
+        }}
+      />
 
       <div>
         <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Reason for Award</label>
