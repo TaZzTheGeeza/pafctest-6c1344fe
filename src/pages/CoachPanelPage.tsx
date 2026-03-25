@@ -315,7 +315,7 @@ function MatchReportForm({ ageGroups }: { ageGroups: string[] }) {
         <h3 className="font-display text-xl font-bold text-foreground mb-2">Match Report Submitted!</h3>
         <p className="text-muted-foreground mb-4">Thank you for reporting the result.</p>
         <button
-          onClick={() => { setSubmitted(false); setForm({ team_name: "", age_group: ageGroups.length === 1 ? ageGroups[0] : "", opponent: "", home_score: "", away_score: "", goal_scorers: "", assists: "", notes: "" }); }}
+          onClick={() => { setSubmitted(false); setFixtureKey(""); setMatchDate(""); setForm({ team_name: "", age_group: ageGroups.length === 1 ? ageGroups[0] : "", opponent: "", home_score: "", away_score: "", goal_scorers: "", assists: "", notes: "" }); }}
           className="text-sm font-display text-primary hover:text-gold-light transition-colors"
         >
           Submit another
