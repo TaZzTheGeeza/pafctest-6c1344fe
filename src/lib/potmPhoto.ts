@@ -69,8 +69,7 @@ function colorDistance(a: [number, number, number], b: [number, number, number])
 }
 
 function isGreenScreenPixel(r: number, g: number, b: number) {
-  // Broad green detection to catch fringing/halo pixels at subject edges
-  return g > 120 && g > r + 30 && g > b + 30;
+  return g > 180 && g > r + 60 && g > b + 60;
 }
 
 function isNearBackgroundColor(
