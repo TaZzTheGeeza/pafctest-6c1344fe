@@ -275,14 +275,14 @@ function MatchReportForm({ ageGroups }: { ageGroups: string[] }) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.team_name || !form.age_group || !form.opponent) {
+    if (!form.age_group || !form.opponent) {
       toast.error("Please fill in all required fields");
       return;
     }
     setSubmitting(true);
 
     const { error } = await supabase.from("match_reports").insert({
-      team_name: form.team_name.trim(),
+      team_name: `Peterborough Athletic ${form.age_group}`,
       age_group: form.age_group,
       opponent: form.opponent.trim(),
       home_score: parseInt(form.home_score) || 0,
