@@ -65,39 +65,38 @@ export default function POTMPage() {
             </p>
           </motion.div>
 
-          {/* Age group filters */}
-          {ageGroups.length > 1 && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.2 }}
-              className="flex items-center justify-center gap-2 flex-wrap mb-10"
+          {/* Age group filter */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.2 }}
+            className="flex items-center justify-center gap-2 flex-wrap mb-10"
+          >
+            <Filter className="h-4 w-4 text-muted-foreground mr-1" />
+            <button
+              onClick={() => setSelectedGroup("all")}
+              className={`font-display text-xs uppercase tracking-wider px-4 py-2 rounded-full border transition-all duration-200 ${
+                selectedGroup === "all"
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-transparent text-muted-foreground border-border hover:border-primary/50 hover:text-foreground"
+              }`}
             >
+              All Teams
+            </button>
+            {ageGroups.map((g) => (
               <button
-                onClick={() => setSelectedGroup("all")}
+                key={g}
+                onClick={() => setSelectedGroup(g)}
                 className={`font-display text-xs uppercase tracking-wider px-4 py-2 rounded-full border transition-all duration-200 ${
-                  selectedGroup === "all"
+                  selectedGroup === g
                     ? "bg-primary text-primary-foreground border-primary"
                     : "bg-transparent text-muted-foreground border-border hover:border-primary/50 hover:text-foreground"
                 }`}
               >
-                All Teams
+                {g}
               </button>
-              {ageGroups.map((g) => (
-                <button
-                  key={g}
-                  onClick={() => setSelectedGroup(g)}
-                  className={`font-display text-xs uppercase tracking-wider px-4 py-2 rounded-full border transition-all duration-200 ${
-                    selectedGroup === g
-                      ? "bg-primary text-primary-foreground border-primary"
-                      : "bg-transparent text-muted-foreground border-border hover:border-primary/50 hover:text-foreground"
-                  }`}
-                >
-                  {g}
-                </button>
-              ))}
-            </motion.div>
-          )}
+            ))}
+          </motion.div>
 
           {/* Content */}
           {loading ? (
