@@ -181,6 +181,48 @@ export type Database = {
         }
         Relationships: []
       }
+      match_reports: {
+        Row: {
+          age_group: string
+          assists: string | null
+          away_score: number
+          created_at: string
+          goal_scorers: string | null
+          home_score: number
+          id: string
+          match_date: string
+          notes: string | null
+          opponent: string
+          team_name: string
+        }
+        Insert: {
+          age_group: string
+          assists?: string | null
+          away_score?: number
+          created_at?: string
+          goal_scorers?: string | null
+          home_score?: number
+          id?: string
+          match_date?: string
+          notes?: string | null
+          opponent: string
+          team_name: string
+        }
+        Update: {
+          age_group?: string
+          assists?: string | null
+          away_score?: number
+          created_at?: string
+          goal_scorers?: string | null
+          home_score?: number
+          id?: string
+          match_date?: string
+          notes?: string | null
+          opponent?: string
+          team_name?: string
+        }
+        Relationships: []
+      }
       player_of_the_match: {
         Row: {
           age_group: string
@@ -191,6 +233,7 @@ export type Database = {
           photo_url: string | null
           player_name: string
           reason: string | null
+          shirt_number: number | null
           team_name: string
         }
         Insert: {
@@ -202,6 +245,7 @@ export type Database = {
           photo_url?: string | null
           player_name: string
           reason?: string | null
+          shirt_number?: number | null
           team_name: string
         }
         Update: {
@@ -213,6 +257,7 @@ export type Database = {
           photo_url?: string | null
           player_name?: string
           reason?: string | null
+          shirt_number?: number | null
           team_name?: string
         }
         Relationships: []
