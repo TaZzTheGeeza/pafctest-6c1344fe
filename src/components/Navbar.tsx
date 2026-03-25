@@ -39,7 +39,6 @@ const navItems: NavItem[] = [
   { label: "Register", path: "/register" },
   { label: "Contact", path: "/contact" },
 ];
-];
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
