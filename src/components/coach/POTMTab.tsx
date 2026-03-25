@@ -106,17 +106,26 @@ export function POTMTab({
           const base64 = await fileToBase64(entry.photoFile);
           let finalBase64 = base64;
           try {
-            toast.info("Removing background...");
+            toast.info("Removing background — this may take a moment...");
             const { data: bgData, error: bgError } = await supabase.functions.invoke(
               "remove-background",
               { body: { imageBase64: base64 } }
             );
-            if (!bgError && bgData?.imageBase64) {
-              finalBase64 = bgData.imageBase64;
+            if (bgError) {
+              console.error("Background removal error:", bgError);
+              toast.warning("Background removal failed, using original photo");
+            } else if (bgData?.imageBase64) {
+              finalBase64 = bgData.imageBase64.startsWith("data:")
+                ? bgData.imageBase64
+                : `data:image/png;base64,${bgData.imageBase64}`;
+              toast.success("Background removed!");
+            } else {
+              console.warn("No image in response:", bgData);
+              toast.warning("Background removal returned no image, using original");
             }
-          } catch {
-            // If background removal fails, use original photo
-            console.warn("Background removal failed, using original photo");
+          } catch (bgErr) {
+            console.error("Background removal exception:", bgErr);
+            toast.warning("Background removal failed, using original photo");
           }
 
           // Upload the processed image as PNG
