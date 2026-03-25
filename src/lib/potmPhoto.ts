@@ -63,6 +63,15 @@ function colorDistance(a: [number, number, number], b: [number, number, number])
   return Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]) + Math.abs(a[2] - b[2]);
 }
 
+function isCheckerboardPixel(r: number, g: number, b: number) {
+  // Light gray squares (~204,204,204) and white squares (~255,255,255)
+  const isLightGray = Math.abs(r - 204) < 15 && Math.abs(g - 204) < 15 && Math.abs(b - 204) < 15;
+  const isWhite = r > 240 && g > 240 && b > 240;
+  // Also catch mid-gray checkerboard variants
+  const isMidGray = Math.abs(r - 192) < 20 && Math.abs(g - 192) < 20 && Math.abs(b - 192) < 20;
+  return isLightGray || isWhite || isMidGray;
+}
+
 function isNearBackgroundColor(
   r: number,
   g: number,
@@ -178,7 +187,7 @@ async function normalizePotmImage(base64: string, size = 1024) {
     const g = data[index + 1];
     const b = data[index + 2];
 
-    if (!isNearBackgroundColor(r, g, b, backgroundSamples)) continue;
+    if (!isNearBackgroundColor(r, g, b, backgroundSamples) && !isCheckerboardPixel(r, g, b)) continue;
 
     data[index + 3] = 0;
 
