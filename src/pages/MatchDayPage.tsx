@@ -16,7 +16,7 @@ interface LiveMatch {
   venue: string | null;
   kickoff_time: string | null;
   status: string;
-  match_events: any[];
+  match_events: any[] | null;
 }
 
 const statusLabels: Record<string, { label: string; color: string }> = {
@@ -86,7 +86,7 @@ export default function MatchDayPage() {
         .from("live_matches")
         .select("*")
         .order("kickoff_time", { ascending: true });
-      if (data) setMatches(data);
+      if (data) setMatches(data.map(d => ({ ...d, match_events: Array.isArray(d.match_events) ? d.match_events : [] })));
       setLoading(false);
     };
     fetchMatches();
