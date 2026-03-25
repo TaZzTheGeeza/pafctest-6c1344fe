@@ -4,8 +4,8 @@ import { Users, Plus, Trash2, Save, Loader2, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
 
 const ageGroups = [
-  "U7s", "U8s Black", "U8s Gold", "U9s", "U10s",
-  "U11s Black", "U11s Gold", "U13s Black", "U13s Gold", "U14s",
+  "U7", "U8 Black", "U8 Gold", "U9", "U10",
+  "U11 Black", "U11 Gold", "U13 Black", "U13 Gold", "U14",
 ];
 
 interface PlayerStat {
