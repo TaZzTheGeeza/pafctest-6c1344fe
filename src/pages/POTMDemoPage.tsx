@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Star, Trophy, Users, Calendar, Sparkles } from "lucide-react";
+import demoPhoto from "@/assets/potm-demo-photo.jpeg";
 
 const DEMO_PLAYER = {
   playerName: "James Wilson",
@@ -28,11 +29,7 @@ function BaseCardContent({ playerName, teamName, ageGroup, matchDescription, shi
             <Star className="h-3.5 w-3.5 text-primary fill-primary" />
           </div>
         </div>
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-24 h-24 rounded-full bg-secondary border-2 border-primary/30 flex items-center justify-center">
-            <span className="font-display text-4xl font-bold text-primary/40">{shirtNumber}</span>
-          </div>
-        </div>
+        <img src={demoPhoto} alt={playerName} className="absolute inset-0 w-full h-full object-cover object-top" />
         <div className="absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-card via-card/80 to-transparent" />
         <div className="absolute bottom-12 right-3 z-20">
           <span className="font-display text-4xl font-bold text-primary/15">{shirtNumber}</span>
