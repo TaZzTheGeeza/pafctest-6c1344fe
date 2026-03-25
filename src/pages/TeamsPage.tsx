@@ -2,9 +2,14 @@ import { motion } from "framer-motion";
 import { useParams, Link } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { Users, Clock, MapPin, Calendar, ChevronRight, Shield, Trophy, TrendingUp, BarChart3 } from "lucide-react";
+import { Users, Clock, MapPin, Calendar, ChevronRight, Shield, Trophy, TrendingUp, BarChart3, ExternalLink, Table2 } from "lucide-react";
 import { TeamStatsTable } from "@/components/TeamStatsTable";
 import clubLogo from "@/assets/club-logo.jpg";
+
+const leagueTableUrls: Record<string, string> = {
+  "u13s-black": "https://fulltime.thefa.com/table.html?divisionseason=189349138",
+  "u13s-gold": "https://fulltime.thefa.com/table.html?divisionseason=189349138",
+};
 
 interface TeamData {
   slug: string;
