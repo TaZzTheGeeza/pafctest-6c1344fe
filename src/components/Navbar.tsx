@@ -20,7 +20,6 @@ const communityItems = [
 
 const playerItems = [
   { label: "Registration", path: "/register" },
-  { label: "Our Teams", path: "/teams" },
   { label: "Club Documents", path: "/club-documents" },
   { label: "Safeguarding", path: "/safeguarding" },
 ];
