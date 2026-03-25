@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { Navigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
-import { Trophy, FileText, Upload, Star, CheckCircle, Loader2 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { Trophy, FileText, Upload, Star, CheckCircle, Loader2, ShieldX } from "lucide-react";
 import { toast } from "sonner";
 
 const ageGroups = [
@@ -282,7 +284,38 @@ function MatchReportForm() {
 }
 
 export default function CoachPanelPage() {
+  const { user, loading, isCoach, rolesLoading } = useAuth();
   const [activeTab, setActiveTab] = useState<"potm" | "report">("potm");
+
+  if (loading || rolesLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/auth?redirect=/coach-panel" replace />;
+  }
+
+  if (!isCoach) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <main className="flex-1 pt-24 pb-16 flex items-center justify-center">
+          <div className="text-center px-4">
+            <ShieldX className="h-16 w-16 text-destructive mx-auto mb-4" />
+            <h1 className="text-2xl font-bold font-display text-foreground mb-2">Access Denied</h1>
+            <p className="text-muted-foreground max-w-md">
+              You don't have coach permissions. Please contact a club admin to request access.
+            </p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
