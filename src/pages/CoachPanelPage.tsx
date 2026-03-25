@@ -132,7 +132,7 @@ function POTMForm({ ageGroups }: { ageGroups: string[] }) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.player_name || !form.age_group || !form.team_name) {
+    if (!form.player_name || !form.age_group) {
       toast.error("Please fill in all required fields");
       return;
     }
@@ -160,7 +160,7 @@ function POTMForm({ ageGroups }: { ageGroups: string[] }) {
     const { error } = await supabase.from("player_of_the_match").insert({
       player_name: form.player_name.trim(),
       shirt_number: form.shirt_number ? parseInt(form.shirt_number) : null,
-      team_name: form.team_name.trim(),
+      team_name: `Peterborough Athletic ${form.age_group}`,
       age_group: form.age_group,
       match_description: form.match_description.trim() || null,
       reason: form.reason.trim() || null,
@@ -200,18 +200,12 @@ function POTMForm({ ageGroups }: { ageGroups: string[] }) {
         <h3 className="font-display text-lg font-bold text-foreground">Player of the Match</h3>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Age Group *</label>
-          <select value={form.age_group} onChange={(e) => setForm({ ...form, age_group: e.target.value })} className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground">
-            <option value="">Select age group</option>
-            {ageGroups.map((g) => <option key={g} value={g}>{g}</option>)}
-          </select>
-        </div>
-        <div>
-          <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Team Name *</label>
-          <input value={form.team_name} onChange={(e) => setForm({ ...form, team_name: e.target.value })} placeholder="e.g. Peterborough Athletic U9s" className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground" />
-        </div>
+      <div>
+        <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Team *</label>
+        <select value={form.age_group} onChange={(e) => setForm({ ...form, age_group: e.target.value })} className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground">
+          <option value="">Select team</option>
+          {ageGroups.map((g) => <option key={g} value={g}>{g}</option>)}
+        </select>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -281,14 +275,14 @@ function MatchReportForm({ ageGroups }: { ageGroups: string[] }) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.team_name || !form.age_group || !form.opponent) {
+    if (!form.age_group || !form.opponent) {
       toast.error("Please fill in all required fields");
       return;
     }
     setSubmitting(true);
 
     const { error } = await supabase.from("match_reports").insert({
-      team_name: form.team_name.trim(),
+      team_name: `Peterborough Athletic ${form.age_group}`,
       age_group: form.age_group,
       opponent: form.opponent.trim(),
       home_score: parseInt(form.home_score) || 0,
@@ -331,18 +325,12 @@ function MatchReportForm({ ageGroups }: { ageGroups: string[] }) {
         <h3 className="font-display text-lg font-bold text-foreground">Match Report</h3>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Age Group *</label>
-          <select value={form.age_group} onChange={(e) => setForm({ ...form, age_group: e.target.value })} className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground">
-            <option value="">Select age group</option>
-            {ageGroups.map((g) => <option key={g} value={g}>{g}</option>)}
-          </select>
-        </div>
-        <div>
-          <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Your Team Name *</label>
-          <input value={form.team_name} onChange={(e) => setForm({ ...form, team_name: e.target.value })} placeholder="e.g. Peterborough Athletic U9s" className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground" />
-        </div>
+      <div>
+        <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Team *</label>
+        <select value={form.age_group} onChange={(e) => setForm({ ...form, age_group: e.target.value })} className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground">
+          <option value="">Select team</option>
+          {ageGroups.map((g) => <option key={g} value={g}>{g}</option>)}
+        </select>
       </div>
 
       <FixtureSelect
