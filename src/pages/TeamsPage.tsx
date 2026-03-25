@@ -96,15 +96,6 @@ function TeamDetail({ team }: { team: TeamData }) {
                 </div>
               </div>
 
-              {/* Player Stats */}
-              <div>
-                <div className="flex items-center gap-2 mb-4">
-                  <BarChart3 className="h-5 w-5 text-primary" />
-                  <h2 className="font-display text-sm font-bold text-primary tracking-wider">Player Stats</h2>
-                </div>
-                <TeamStatsTable ageGroup={team.name} />
-              </div>
-
               {/* League Table */}
               {leagueTableConfig[team.slug] && (
                 <LeagueTable
@@ -113,6 +104,15 @@ function TeamDetail({ team }: { team: TeamData }) {
                   faUrl={leagueTableConfig[team.slug].faUrl}
                 />
               )}
+
+              {/* Player Stats */}
+              <div>
+                <div className="flex items-center gap-2 mb-4">
+                  <BarChart3 className="h-5 w-5 text-primary" />
+                  <h2 className="font-display text-sm font-bold text-primary tracking-wider">Player Stats</h2>
+                </div>
+                <TeamStatsTable ageGroup={team.name} />
+              </div>
             </div>
           </motion.div>
         </div>
