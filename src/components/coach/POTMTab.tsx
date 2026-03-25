@@ -2,13 +2,20 @@ import { useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Trophy, Loader2, Camera, X } from "lucide-react";
+import { Trophy, Loader2, Camera, X, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useTeamRoster, getAgeGroup } from "@/hooks/useTeamRoster";
 import type { FAFixture } from "@/hooks/useTeamFixtures";
+
+interface POTMEntry {
+  playerId: string;
+  reason: string;
+  photoFile: File | null;
+  photoPreview: string | null;
+}
 
 export function POTMTab({
   teamSlug, teamName, opponent, fixture,
@@ -17,88 +24,108 @@ export function POTMTab({
 }) {
   const { data: roster = [] } = useTeamRoster(teamSlug);
   const queryClient = useQueryClient();
-  const [selectedPlayerId, setSelectedPlayerId] = useState("");
-  const [reason, setReason] = useState("");
+  const [entries, setEntries] = useState<POTMEntry[]>([
+    { playerId: "", reason: "", photoFile: null, photoPreview: null },
+  ]);
   const [saving, setSaving] = useState(false);
-  const [photoFile, setPhotoFile] = useState<File | null>(null);
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  const selectedPlayer = roster.find(p => p.id === selectedPlayerId);
+  const addEntry = () => {
+    setEntries([...entries, { playerId: "", reason: "", photoFile: null, photoPreview: null }]);
+  };
 
-  const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const removeEntry = (i: number) => {
+    const entry = entries[i];
+    if (entry.photoPreview) URL.revokeObjectURL(entry.photoPreview);
+    setEntries(entries.filter((_, idx) => idx !== i));
+  };
+
+  const updateEntry = (i: number, field: keyof POTMEntry, val: any) => {
+    const next = [...entries];
+    next[i] = { ...next[i], [field]: val };
+    setEntries(next);
+  };
+
+  const handlePhotoSelect = (i: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) {
       toast.error("Photo must be under 5MB");
       return;
     }
-    setPhotoFile(file);
-    setPhotoPreview(URL.createObjectURL(file));
+    const next = [...entries];
+    if (next[i].photoPreview) URL.revokeObjectURL(next[i].photoPreview!);
+    next[i] = { ...next[i], photoFile: file, photoPreview: URL.createObjectURL(file) };
+    setEntries(next);
   };
 
-  const clearPhoto = () => {
-    setPhotoFile(null);
-    if (photoPreview) URL.revokeObjectURL(photoPreview);
-    setPhotoPreview(null);
-    if (fileInputRef.current) fileInputRef.current.value = "";
+  const clearPhoto = (i: number) => {
+    const next = [...entries];
+    if (next[i].photoPreview) URL.revokeObjectURL(next[i].photoPreview!);
+    next[i] = { ...next[i], photoFile: null, photoPreview: null };
+    setEntries(next);
+    if (fileInputRefs.current[i]) fileInputRefs.current[i]!.value = "";
   };
+
+  const selectedIds = entries.map(e => e.playerId).filter(Boolean);
 
   const handleSave = async () => {
-    if (!selectedPlayerId) { toast.error("Select a player"); return; }
-    if (!selectedPlayer) return;
+    const validEntries = entries.filter(e => e.playerId);
+    if (validEntries.length === 0) { toast.error("Select at least one player"); return; }
     setSaving(true);
     try {
       const [d, m, y] = fixture.date.split("/");
       const awardDate = `20${y}-${m}-${d}`;
-      const matchDate = awardDate;
+      const ageGroup = getAgeGroup(teamSlug);
 
-      let photoUrl: string | null = null;
+      for (const entry of validEntries) {
+        const player = roster.find(p => p.id === entry.playerId);
+        if (!player) continue;
 
-      // Upload photo if attached
-      if (photoFile) {
-        const ext = photoFile.name.split(".").pop() || "jpg";
-        const path = `potm/${teamSlug}/${awardDate}-${selectedPlayer.first_name}.${ext}`;
-        const { error: uploadError } = await supabase.storage
-          .from("club-photos")
-          .upload(path, photoFile, { upsert: true });
-        if (uploadError) throw uploadError;
-        const { data: urlData } = supabase.storage.from("club-photos").getPublicUrl(path);
-        photoUrl = urlData.publicUrl;
+        let photoUrl: string | null = null;
+        if (entry.photoFile) {
+          const ext = entry.photoFile.name.split(".").pop() || "jpg";
+          const path = `potm/${teamSlug}/${awardDate}-${player.first_name}.${ext}`;
+          const { error: uploadError } = await supabase.storage
+            .from("club-photos")
+            .upload(path, entry.photoFile, { upsert: true });
+          if (uploadError) throw uploadError;
+          const { data: urlData } = supabase.storage.from("club-photos").getPublicUrl(path);
+          photoUrl = urlData.publicUrl;
+        }
+
+        const { error } = await supabase.from("player_of_the_match").insert({
+          player_name: player.first_name,
+          team_name: teamName,
+          age_group: ageGroup,
+          shirt_number: player.shirt_number,
+          match_description: `vs ${opponent}`,
+          reason: entry.reason || null,
+          award_date: awardDate,
+          photo_url: photoUrl,
+        });
+        if (error) throw error;
+
+        const { error: statsError } = await supabase
+          .from("match_player_stats")
+          .upsert({
+            player_stat_id: entry.playerId,
+            team_slug: teamSlug,
+            match_date: awardDate,
+            opponent,
+            potm: true,
+            goals: 0,
+            assists: 0,
+            appeared: false,
+          }, { onConflict: "player_stat_id,match_date,opponent" });
+        if (statsError) throw statsError;
       }
 
-      // Save POTM award
-      const { error } = await supabase.from("player_of_the_match").insert({
-        player_name: selectedPlayer.first_name,
-        team_name: teamName,
-        age_group: getAgeGroup(teamSlug),
-        shirt_number: selectedPlayer.shirt_number,
-        match_description: `vs ${opponent}`,
-        reason: reason || null,
-        award_date: awardDate,
-        photo_url: photoUrl,
-      });
-      if (error) throw error;
-
-      // Update match_player_stats with POTM flag
-      const { error: statsError } = await supabase
-        .from("match_player_stats")
-        .upsert({
-          player_stat_id: selectedPlayerId,
-          team_slug: teamSlug,
-          match_date: matchDate,
-          opponent,
-          potm: true,
-          goals: 0,
-          assists: 0,
-          appeared: false,
-        }, { onConflict: "player_stat_id,match_date,opponent" });
-
-      if (statsError) throw statsError;
-
       queryClient.invalidateQueries({ queryKey: ["team-roster"] });
-      clearPhoto();
-      toast.success("POTM saved & stats updated!");
+      // Reset
+      entries.forEach(e => { if (e.photoPreview) URL.revokeObjectURL(e.photoPreview); });
+      setEntries([{ playerId: "", reason: "", photoFile: null, photoPreview: null }]);
+      toast.success(`${validEntries.length} POTM award${validEntries.length > 1 ? "s" : ""} saved!`);
     } catch (err: any) {
       toast.error(err.message || "Failed to save POTM");
     } finally {
@@ -108,65 +135,88 @@ export function POTMTab({
 
   return (
     <div className="space-y-4 pt-2">
-      <div>
-        <Label className="text-xs">Select Player</Label>
-        <Select value={selectedPlayerId} onValueChange={setSelectedPlayerId}>
-          <SelectTrigger>
-            <SelectValue placeholder="Choose from roster" />
-          </SelectTrigger>
-          <SelectContent>
-            {roster.map((p) => (
-              <SelectItem key={p.id} value={p.id}>
-                {p.shirt_number ? `#${p.shirt_number} ` : ""}{p.first_name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      {entries.map((entry, i) => {
+        const player = roster.find(p => p.id === entry.playerId);
+        return (
+          <div key={i} className="border border-border rounded-lg p-3 space-y-3 relative">
+            {entries.length > 1 && (
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-display text-muted-foreground">POTM #{i + 1}</span>
+                <Button size="sm" variant="ghost" onClick={() => removeEntry(i)} className="h-6 w-6 p-0">
+                  <Trash2 className="h-3 w-3 text-destructive" />
+                </Button>
+              </div>
+            )}
 
-      <div>
-        <Label className="text-xs">Reason for Award</Label>
-        <Textarea
-          placeholder="Outstanding performance, great tackles..."
-          value={reason}
-          onChange={(e) => setReason(e.target.value)}
-          rows={3}
-        />
-      </div>
+            <div>
+              <Label className="text-xs">Select Player</Label>
+              <Select value={entry.playerId} onValueChange={(v) => updateEntry(i, "playerId", v)}>
+                <SelectTrigger className="h-8 text-sm">
+                  <SelectValue placeholder="Choose from roster" />
+                </SelectTrigger>
+                <SelectContent>
+                  {roster
+                    .filter(p => !selectedIds.includes(p.id) || p.id === entry.playerId)
+                    .map((p) => (
+                      <SelectItem key={p.id} value={p.id}>
+                        {p.shirt_number ? `#${p.shirt_number} ` : ""}{p.first_name}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-      <div>
-        <Label className="text-xs">Attach Photo</Label>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          onChange={handlePhotoSelect}
-          className="hidden"
-        />
-        {photoPreview ? (
-          <div className="relative inline-block mt-1">
-            <img src={photoPreview} alt="POTM preview" className="h-24 w-24 object-cover rounded-lg border border-border" />
-            <button
-              type="button"
-              onClick={clearPhoto}
-              className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-0.5"
-            >
-              <X className="h-3.5 w-3.5" />
-            </button>
+            <div>
+              <Label className="text-xs">Reason for Award</Label>
+              <Textarea
+                placeholder="Outstanding performance..."
+                value={entry.reason}
+                onChange={(e) => updateEntry(i, "reason", e.target.value)}
+                rows={2}
+                className="text-sm"
+              />
+            </div>
+
+            <div>
+              <Label className="text-xs">Attach Photo</Label>
+              <input
+                ref={(el) => { fileInputRefs.current[i] = el; }}
+                type="file"
+                accept="image/*"
+                onChange={(e) => handlePhotoSelect(i, e)}
+                className="hidden"
+              />
+              {entry.photoPreview ? (
+                <div className="relative inline-block mt-1">
+                  <img src={entry.photoPreview} alt="POTM preview" className="h-20 w-20 object-cover rounded-lg border border-border" />
+                  <button
+                    type="button"
+                    onClick={() => clearPhoto(i)}
+                    className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-0.5"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="mt-1 w-full h-8 text-xs"
+                  onClick={() => fileInputRefs.current[i]?.click()}
+                >
+                  <Camera className="h-3.5 w-3.5 mr-1" />
+                  Add Photo
+                </Button>
+              )}
+            </div>
           </div>
-        ) : (
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="mt-1 w-full"
-            onClick={() => fileInputRef.current?.click()}
-          >
-            <Camera className="h-4 w-4 mr-2" />
-            Add Photo
-          </Button>
-        )}
-      </div>
+        );
+      })}
+
+      <Button type="button" variant="outline" size="sm" onClick={addEntry} className="w-full gap-1">
+        <Plus className="h-3.5 w-3.5" /> Add Another POTM
+      </Button>
 
       {roster.length === 0 && (
         <p className="text-xs text-amber-600 bg-amber-50 dark:bg-amber-950/30 rounded-md p-2">
@@ -176,7 +226,7 @@ export function POTMTab({
 
       <Button onClick={handleSave} disabled={saving || roster.length === 0} className="w-full">
         {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trophy className="h-4 w-4 mr-2" />}
-        Save Player of the Match
+        Save POTM Award{entries.filter(e => e.playerId).length > 1 ? "s" : ""}
       </Button>
     </div>
   );
