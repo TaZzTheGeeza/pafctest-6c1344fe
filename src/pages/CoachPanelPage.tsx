@@ -495,7 +495,9 @@ function MatchReportForm({ ageGroups }: { ageGroups: string[] }) {
         value={fixtureKey}
         onChange={(opp, date) => {
           setFixtureKey(`${date}|${opp}`);
-          setMatchDate(date);
+          const [dd, mm, yy] = date.split("/");
+          const fullYear = yy.length === 4 ? yy : `20${yy}`;
+          setMatchDate(`${fullYear}-${mm}-${dd}`);
           setOpponent(opp);
         }}
         label="Opponent *"
