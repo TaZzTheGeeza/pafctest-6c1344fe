@@ -55,12 +55,12 @@ serve(async (req) => {
           model: "google/gemini-3.1-flash-image-preview",
           messages: [
             {
-58:               role: "user",
-59:               content: [
-60:                 {
-61:                   type: "text",
-62:                   text: "Remove the background from this photo completely, making it fully transparent. Output the result as a PNG image with an alpha-transparent background. Keep the person fully intact — do not crop or clip any part of their head, hair, body, arms, hands, clothing, or accessories. Return only the image, no text.",
-63:                 },
+              role: "user",
+              content: [
+                {
+                  type: "text",
+                  text: "Remove the background from this photo completely, making it fully transparent. Output the result as a PNG image with an alpha-transparent background. Keep the person fully intact — do not crop or clip any part of their head, hair, body, arms, hands, clothing, or accessories. Return only the image, no text.",
+                },
                 {
                   type: "image_url",
                   image_url: { url: dataUri },
