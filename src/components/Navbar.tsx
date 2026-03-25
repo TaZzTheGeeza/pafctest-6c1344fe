@@ -146,7 +146,22 @@ export function Navbar() {
             Shop
           </Link>
           <CartDrawer />
-        </div>
+          {user ? (
+            <button
+              onClick={() => signOut()}
+              className="font-display text-xs tracking-wider px-3 py-1.5 rounded-md transition-colors text-muted-foreground hover:text-primary"
+            >
+              Sign Out
+            </button>
+          ) : (
+            <Link
+              to="/auth"
+              className="font-display text-xs tracking-wider px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5 border border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground"
+            >
+              <LogIn className="h-3.5 w-3.5" />
+              Sign In
+            </Link>
+          )}
 
         {/* Mobile toggle */}
         <div className="flex items-center gap-4 lg:hidden">
