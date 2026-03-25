@@ -468,6 +468,45 @@ export type Database = {
         }
         Relationships: []
       }
+      team_selections: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          fixture_date: string
+          formation: string | null
+          id: string
+          notes: string | null
+          opponent: string
+          players: Json
+          team_slug: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          fixture_date: string
+          formation?: string | null
+          id?: string
+          notes?: string | null
+          opponent: string
+          players?: Json
+          team_slug: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          fixture_date?: string
+          formation?: string | null
+          id?: string
+          notes?: string | null
+          opponent?: string
+          players?: Json
+          team_slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       tournament_age_groups: {
         Row: {
           age_group: string
@@ -725,6 +764,42 @@ export type Database = {
           tournament_date?: string | null
           updated_at?: string
           venue?: string | null
+        }
+        Relationships: []
+      }
+      training_notes: {
+        Row: {
+          content: string
+          created_at: string
+          created_by: string | null
+          fixture_date: string | null
+          id: string
+          note_type: string
+          opponent: string | null
+          team_slug: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          created_by?: string | null
+          fixture_date?: string | null
+          id?: string
+          note_type?: string
+          opponent?: string | null
+          team_slug: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          fixture_date?: string | null
+          id?: string
+          note_type?: string
+          opponent?: string | null
+          team_slug?: string
+          updated_at?: string
         }
         Relationships: []
       }

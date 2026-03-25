@@ -3,10 +3,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useParams, Link } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { Clock, MapPin, Calendar, ChevronRight, Shield, Trophy, TrendingUp, BarChart3, Loader2, Navigation } from "lucide-react";
+import { Clock, MapPin, Calendar, ChevronRight, Shield, Trophy, TrendingUp, BarChart3, Loader2, Navigation, ClipboardEdit } from "lucide-react";
 import { TeamStatsTable } from "@/components/TeamStatsTable";
 import { LeagueTable } from "@/components/LeagueTable";
 import { useTeamFixtures, FAFixture } from "@/hooks/useTeamFixtures";
+import { useAuth } from "@/contexts/AuthContext";
+import { CoachFixturePanel } from "@/components/CoachFixturePanel";
 import clubLogo from "@/assets/club-logo.jpg";
 
 const leagueTableConfig: Record<string, { divisionSeason?: string; tableUrl?: string; faUrl: string; highlightTeams: string[] }> = {
@@ -63,6 +65,9 @@ function formatFADate(dateStr: string): string {
 function TeamDetail({ team }: { team: TeamData }) {
   const f = team.nextFixture;
   const { data: liveData, isLoading: fixturesLoading } = useTeamFixtures(team.slug);
+  const { isCoach, isAdmin } = useAuth();
+  const canManage = isCoach || isAdmin;
+  const [coachFixture, setCoachFixture] = useState<FAFixture | null>(null);
 
   // Determine next fixture from live data or fall back to hardcoded
   const nextFixture = liveData?.fixtures?.[0];
@@ -166,12 +171,21 @@ function TeamDetail({ team }: { team: TeamData }) {
                               )}
                             </div>
                           </div>
-                          <div className="flex items-center gap-3 text-xs text-muted-foreground shrink-0">
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground shrink-0">
                             <span className={`font-bold ${isHome ? "text-green-400" : "text-blue-400"}`}>
                               {isHome ? "H" : "A"}
                             </span>
                             <span>{formatFADate(fix.date)}</span>
                             <span className="font-mono">{fix.time}</span>
+                            {canManage && (
+                              <button
+                                onClick={() => setCoachFixture(fix)}
+                                className="ml-1 p-1 rounded hover:bg-primary/10 text-primary transition-colors"
+                                title="Coach panel"
+                              >
+                                <ClipboardEdit className="w-3.5 h-3.5" />
+                              </button>
+                            )}
                           </div>
                         </div>
                       );
@@ -205,6 +219,15 @@ function TeamDetail({ team }: { team: TeamData }) {
                             <p className="text-[10px] text-muted-foreground">{formatFADate(res.date)}</p>
                           </div>
                           <span className="font-mono font-bold text-sm">{res.homeScore} - {res.awayScore}</span>
+                          {canManage && (
+                            <button
+                              onClick={() => setCoachFixture(res)}
+                              className="p-1 rounded hover:bg-primary/10 text-primary transition-colors"
+                              title="Coach panel"
+                            >
+                              <ClipboardEdit className="w-3.5 h-3.5" />
+                            </button>
+                          )}
                         </div>
                       );
                     })}
@@ -234,6 +257,18 @@ function TeamDetail({ team }: { team: TeamData }) {
           </motion.div>
         </div>
       </main>
+
+      {/* Coach Fixture Panel */}
+      {coachFixture && (
+        <CoachFixturePanel
+          open={!!coachFixture}
+          onClose={() => setCoachFixture(null)}
+          fixture={coachFixture}
+          teamSlug={team.slug}
+          teamName={team.name}
+        />
+      )}
+
       <Footer />
     </div>
   );
