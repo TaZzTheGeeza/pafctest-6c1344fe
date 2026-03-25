@@ -37,23 +37,22 @@ function parseFixturesPage(html: string): Fixture[] {
     const homeMatch = row.match(/<td class="home-team right">[\s\S]*?<a[^>]*>\s*([\s\S]*?)\s*<\/a>/);
     // Extract away team
     const awayMatch = row.match(/<td class="road-team left cell-divider">[\s\S]*?<a[^>]*>\s*([\s\S]*?)\s*<\/a>/);
-    // Extract venue
-    const venueMatch = row.match(/<td class="left cell-divider">[\s\S]*?<td class="left cell-divider">[\s\S]*?<a[^>]*>\s*([\s\S]*?)\s*<\/a>/);
-    // Extract competition
-    const compCells = row.match(/<td class="left cell-divider">[\s\S]*?<a[^>]*>\s*([^<]*?)\s*<\/a>/g);
 
     if (homeMatch && awayMatch) {
       const home = homeMatch[1].replace(/<[^>]+>/g, '').trim();
       const away = awayMatch[1].replace(/<[^>]+>/g, '').trim();
 
-      // Find venue and competition from the cell-divider tds (3rd and 4th)
-      let venue = '';
-      let competition = '';
-      if (compCells && compCells.length >= 3) {
-        const extractText = (s: string) => s.replace(/<[^>]+>/g, '').trim();
-        venue = extractText(compCells[1]);
-        competition = extractText(compCells[2]);
+      // Extract all left cell-divider td contents
+      const cellDividerRegex = /<td class="left cell-divider">([\s\S]*?)<\/td>/g;
+      const cells: string[] = [];
+      let cellMatch;
+      while ((cellMatch = cellDividerRegex.exec(row)) !== null) {
+        cells.push(cellMatch[1].replace(/<[^>]+>/g, '').trim());
       }
+
+      // cells[0] = date/time, cells[1] = venue, cells[2] = competition
+      const venue = cells.length >= 2 ? cells[1] : '';
+      const competition = cells.length >= 3 ? cells[2] : '';
 
       fixtures.push({
         date: dateTimeMatch[1].trim(),
