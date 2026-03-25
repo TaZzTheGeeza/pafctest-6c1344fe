@@ -464,7 +464,7 @@ interface MatchGroup {
   potmAwards: any[];
 }
 
-export function ManageSubmissionsForm() {
+export function ManageSubmissionsForm({ allowedAgeGroups }: { allowedAgeGroups?: string[] }) {
   const queryClient = useQueryClient();
   const [expandedId, setExpandedId] = useState<string | null>(null);
 

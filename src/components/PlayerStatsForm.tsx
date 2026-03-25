@@ -138,7 +138,7 @@ export function PlayerStatsForm({ allowedAgeGroups }: { allowedAgeGroups?: strin
           className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground"
         >
           <option value="">Choose age group...</option>
-          {ageGroups.map((g) => (
+          {visibleGroups.map((g) => (
             <option key={g} value={g}>{g}</option>
           ))}
         </select>
