@@ -69,7 +69,7 @@ function isNearBackgroundColor(
   b: number,
   backgroundSamples: [number, number, number][],
 ) {
-  return backgroundSamples.some((sample) => colorDistance([r, g, b], sample) <= 56);
+  return backgroundSamples.some((sample) => colorDistance([r, g, b], sample) <= 36);
 }
 
 function getPixelIndex(x: number, y: number, width: number) {
