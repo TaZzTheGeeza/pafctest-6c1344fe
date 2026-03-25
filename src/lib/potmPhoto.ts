@@ -204,8 +204,8 @@ async function normalizePotmImage(base64: string, size = 1024) {
       const g = data[idx + 1];
       const b = data[idx + 2];
 
-      // Fully transparent green-screen leftovers
-      if (isGreenScreenPixel(r, g, b)) {
+      // Fully transparent bright-green leftovers
+      if (g > 180 && g > r + 60 && g > b + 60) {
         data[idx + 3] = 0;
         continue;
       }
