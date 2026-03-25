@@ -202,7 +202,7 @@ async function normalizePotmImage(base64: string, size = 1024) {
   }
 
   // ── Remove green fringe from edges (3-pass for deeper cleanup) ──
-  for (let pass = 0; pass < 3; pass++) {
+  for (let pass = 0; pass < 4; pass++) {
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
         const idx = getPixelIndex(x, y, width);
@@ -219,32 +219,32 @@ async function normalizePotmImage(base64: string, size = 1024) {
           continue;
         }
 
-        // De-fringe: if pixel is semi-transparent and greenish, fade it out
-        if (a < 230 && g > r && g > b) {
+        // De-fringe: any pixel where green dominates → remove
+        if (g > r + 10 && g > b + 10) {
           data[idx + 3] = 0;
           continue;
         }
 
-        // Check if this is near an edge (has a transparent neighbour within 3px)
+        // Check if this is near an edge (has a transparent neighbour within 4px)
         let isEdge = false;
-        for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1],[2,0],[-2,0],[0,2],[0,-2],[3,0],[-3,0],[0,3],[0,-3]]) {
+        for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1],[2,0],[-2,0],[0,2],[0,-2],[3,0],[-3,0],[0,3],[0,-3],[4,0],[-4,0],[0,4],[0,-4],[1,1],[-1,-1],[1,-1],[-1,1]]) {
           const nx = x + dx, ny = y + dy;
           if (nx >= 0 && ny >= 0 && nx < width && ny < height) {
             if (data[getPixelIndex(nx, ny, width) + 3] === 0) { isEdge = true; break; }
           }
         }
 
-        if (isEdge && g > Math.max(r, b) + 5) {
-          // Strong green cast on edge → make fully transparent
-          if (g > Math.max(r, b) + 30) {
+        if (isEdge && g > Math.max(r, b)) {
+          // Any green cast on edge → make fully transparent
+          if (g > Math.max(r, b) + 15) {
             data[idx + 3] = 0;
           } else {
             // Mild green tint → desaturate and fade
             const avg = Math.round((r + g + b) / 3);
-            data[idx] = Math.round(r * 0.6 + avg * 0.4);
-            data[idx + 1] = Math.round(g * 0.15 + avg * 0.85);
-            data[idx + 2] = Math.round(b * 0.6 + avg * 0.4);
-            data[idx + 3] = Math.min(a, 140);
+            data[idx] = Math.round(r * 0.7 + avg * 0.3);
+            data[idx + 1] = Math.round(avg);
+            data[idx + 2] = Math.round(b * 0.7 + avg * 0.3);
+            data[idx + 3] = Math.min(a, 100);
           }
         }
       }
