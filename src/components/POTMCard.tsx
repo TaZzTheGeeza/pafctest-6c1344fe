@@ -59,9 +59,7 @@ export function POTMCard({
           className="absolute inset-0 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl hover:shadow-primary/20"
           style={{ backfaceVisibility: "hidden", transition: "box-shadow 0.3s ease" }}
         >
-          <div className="absolute inset-0 rounded-2xl p-[1px] bg-gradient-to-br from-primary via-primary/30 to-primary/60">
-            <div className="w-full h-full rounded-2xl bg-card" />
-          </div>
+          <div className="absolute inset-0 rounded-2xl bg-card" />
           <div className="relative z-10">
             {/* Photo area with club-themed background */}
             <div className="relative h-[320px] overflow-hidden">
