@@ -171,12 +171,21 @@ function TeamDetail({ team }: { team: TeamData }) {
                               )}
                             </div>
                           </div>
-                          <div className="flex items-center gap-3 text-xs text-muted-foreground shrink-0">
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground shrink-0">
                             <span className={`font-bold ${isHome ? "text-green-400" : "text-blue-400"}`}>
                               {isHome ? "H" : "A"}
                             </span>
                             <span>{formatFADate(fix.date)}</span>
                             <span className="font-mono">{fix.time}</span>
+                            {canManage && (
+                              <button
+                                onClick={() => setCoachFixture(fix)}
+                                className="ml-1 p-1 rounded hover:bg-primary/10 text-primary transition-colors"
+                                title="Coach panel"
+                              >
+                                <ClipboardEdit className="w-3.5 h-3.5" />
+                              </button>
+                            )}
                           </div>
                         </div>
                       );
@@ -210,6 +219,15 @@ function TeamDetail({ team }: { team: TeamData }) {
                             <p className="text-[10px] text-muted-foreground">{formatFADate(res.date)}</p>
                           </div>
                           <span className="font-mono font-bold text-sm">{res.homeScore} - {res.awayScore}</span>
+                          {canManage && (
+                            <button
+                              onClick={() => setCoachFixture(res)}
+                              className="p-1 rounded hover:bg-primary/10 text-primary transition-colors"
+                              title="Coach panel"
+                            >
+                              <ClipboardEdit className="w-3.5 h-3.5" />
+                            </button>
+                          )}
                         </div>
                       );
                     })}
