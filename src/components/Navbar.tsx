@@ -27,84 +27,23 @@ const aboutItems = [
   { label: "Sponsors", path: "/sponsors" },
 ];
 
-type DropdownItem = { label: string; path: string };
 type NavItem = {
   label: string;
   path: string;
   external?: boolean;
-  dropdown?: DropdownItem[];
+  dropdown?: { label: string; path: string }[];
 };
 
-const leftNav: NavItem[] = [
+const navItems: NavItem[] = [
   { label: "Home", path: "/" },
   { label: "Player Hub", path: "/player-hub", dropdown: playerItems },
   { label: "Our Teams", path: "/teams" },
-  { label: "Community", path: "/news", dropdown: communityItems },
-];
-
-const rightNav: NavItem[] = [
-  { label: "About", path: "/club-info", dropdown: aboutItems },
   { label: "PAFC TV", path: "https://www.youtube.com/@PeterboroughAthleticFC", external: true },
+  { label: "Community", path: "/news", dropdown: communityItems },
+  { label: "About", path: "/club-info", dropdown: aboutItems },
   { label: "Raffle", path: "/raffle" },
   { label: "Contact", path: "/contact" },
 ];
-
-const allNav: NavItem[] = [...leftNav, ...rightNav];
-
-function NavItemRenderer({ item, location }: { item: NavItem; location: ReturnType<typeof useLocation> }) {
-  if (item.dropdown) {
-    return (
-      <div className="relative group">
-        <Link
-          to={item.path}
-          className={`font-display text-[11px] tracking-[0.15em] uppercase px-3 py-2 transition-colors flex items-center gap-1 ${
-            item.dropdown.some(d => location.pathname === d.path) ? "text-primary" : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          {item.label}
-          <ChevronDown className="h-3 w-3 transition-transform group-hover:rotate-180" />
-        </Link>
-        <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 hidden group-hover:block">
-          <div className="bg-card border border-border rounded-lg shadow-2xl shadow-black/30 py-2 min-w-[180px]">
-            {item.dropdown.map((sub) => (
-              <Link
-                key={sub.path}
-                to={sub.path}
-                className="block px-4 py-2 text-[11px] font-display tracking-wider text-muted-foreground hover:text-primary hover:bg-secondary/60 transition-colors"
-              >
-                {sub.label}
-              </Link>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (item.external) {
-    return (
-      <a
-        href={item.path}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="font-display text-[11px] tracking-[0.15em] uppercase px-3 py-2 transition-colors text-muted-foreground hover:text-foreground"
-      >
-        {item.label}
-      </a>
-    );
-  }
-
-  return (
-    <Link
-      to={item.path}
-      className={`font-display text-[11px] tracking-[0.15em] uppercase px-3 py-2 transition-colors ${
-        location.pathname === item.path ? "text-primary" : "text-muted-foreground hover:text-foreground"
-      }`}
-    >
-      {item.label}
-    </Link>
-  );
-}
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -114,7 +53,7 @@ export function Navbar() {
   const { user, signOut } = useAuth();
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
+    const onScroll = () => setScrolled(window.scrollY > 40);
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
@@ -124,63 +63,141 @@ export function Navbar() {
   };
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 border-b border-border ${scrolled ? "bg-background/98 backdrop-blur-lg shadow-lg shadow-black/20" : "bg-background/90 backdrop-blur-md"}`}>
-      {/* Top utility bar */}
-      <div className="border-b border-border/50">
-        <div className="container mx-auto px-4 flex items-center justify-between h-8">
-          <div className="flex items-center gap-3">
-            <Link to="/tournament" className="font-display text-[10px] tracking-[0.15em] uppercase text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
-              <Trophy className="h-3 w-3" /> Tournament
-            </Link>
-            <Link to="/shop" className="font-display text-[10px] tracking-[0.15em] uppercase text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
-              <ShoppingBag className="h-3 w-3" /> Shop
-            </Link>
+    <nav
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-out ${
+        scrolled
+          ? "h-12 bg-background/70 backdrop-blur-2xl shadow-xl shadow-black/25 border-b border-primary/10"
+          : "h-16 bg-background/90 backdrop-blur-md border-b border-border"
+      }`}
+    >
+      <div className="container mx-auto px-4 flex items-center justify-between h-full">
+        {/* Logo — shrinks on scroll */}
+        <Link to="/" className="flex items-center gap-2.5 shrink-0 transition-all duration-500">
+          <img
+            src={clubLogo}
+            alt="PAFC Crest"
+            className={`rounded-full object-cover transition-all duration-500 ring-2 ring-primary/20 ${
+              scrolled ? "h-7 w-7" : "h-10 w-10"
+            }`}
+          />
+          <div className={`transition-all duration-500 overflow-hidden ${scrolled ? "w-0 opacity-0" : "w-auto opacity-100"}`}>
+            <span className="font-display text-sm font-bold text-primary leading-tight block whitespace-nowrap">Peterborough Athletic</span>
+            <span className="font-display text-[10px] text-muted-foreground tracking-[0.25em] uppercase">The Lions</span>
           </div>
-          <div className="flex items-center gap-3">
-            <CartDrawer />
-            {user ? (
-              <button onClick={() => signOut()} className="font-display text-[10px] tracking-[0.15em] uppercase text-muted-foreground hover:text-foreground transition-colors">
-                Sign Out
-              </button>
+          {/* Compact name on scroll */}
+          <span className={`font-display text-xs font-bold text-primary tracking-wider transition-all duration-500 ${scrolled ? "opacity-100" : "opacity-0 w-0"}`}>
+            PAFC
+          </span>
+        </Link>
+
+        {/* Desktop nav */}
+        <div className="hidden lg:flex items-center gap-0.5">
+          {navItems.map((item) =>
+            item.dropdown ? (
+              <div key={item.label} className="relative group">
+                <Link
+                  to={item.path}
+                  className={`font-display tracking-wider px-2.5 py-1.5 rounded-md transition-all flex items-center gap-1 ${
+                    scrolled ? "text-[10px]" : "text-xs"
+                  } ${
+                    item.dropdown.some(d => location.pathname === d.path)
+                      ? "text-primary"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {item.label}
+                  <ChevronDown className={`transition-all group-hover:rotate-180 ${scrolled ? "h-2.5 w-2.5" : "h-3 w-3"}`} />
+                </Link>
+                <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 hidden group-hover:block">
+                  <div className="bg-card/90 backdrop-blur-2xl border border-border/80 rounded-xl shadow-2xl shadow-black/40 py-2 min-w-[180px]">
+                    {item.dropdown.map((sub) => (
+                      <Link
+                        key={sub.path}
+                        to={sub.path}
+                        className="block px-4 py-2 text-[11px] font-display tracking-wider text-muted-foreground hover:text-primary hover:bg-primary/5 transition-colors"
+                      >
+                        {sub.label}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : item.external ? (
+              <a
+                key={item.label}
+                href={item.path}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`font-display tracking-wider px-2.5 py-1.5 rounded-md transition-all text-muted-foreground hover:text-foreground ${scrolled ? "text-[10px]" : "text-xs"}`}
+              >
+                {item.label}
+              </a>
             ) : (
-              <Link to="/auth" className="font-display text-[10px] tracking-[0.15em] uppercase text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
-                <LogIn className="h-3 w-3" /> Sign In
+              <Link
+                key={item.label}
+                to={item.path}
+                className={`font-display tracking-wider px-2.5 py-1.5 rounded-md transition-all ${scrolled ? "text-[10px]" : "text-xs"} ${
+                  location.pathname === item.path ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {item.label}
               </Link>
-            )}
-          </div>
+            )
+          )}
+
+          {/* Divider */}
+          <div className={`mx-1 bg-border transition-all ${scrolled ? "w-px h-4" : "w-px h-5"}`} />
+
+          {/* CTA buttons */}
+          <Link
+            to="/tournament"
+            className={`font-display tracking-wider rounded-md transition-all flex items-center gap-1 border ${
+              scrolled ? "text-[10px] px-2 py-1" : "text-xs px-2.5 py-1.5"
+            } ${
+              location.pathname.startsWith("/tournament")
+                ? "bg-primary text-primary-foreground border-primary"
+                : "border-primary/30 text-primary hover:bg-primary/10"
+            }`}
+          >
+            <Trophy className={scrolled ? "h-3 w-3" : "h-3.5 w-3.5"} />
+            {!scrolled && "Tournament"}
+          </Link>
+          <Link
+            to="/shop"
+            className={`font-display tracking-wider rounded-md transition-all flex items-center gap-1 border ${
+              scrolled ? "text-[10px] px-2 py-1" : "text-xs px-2.5 py-1.5"
+            } ${
+              location.pathname === "/shop"
+                ? "bg-primary text-primary-foreground border-primary"
+                : "border-primary/30 text-primary hover:bg-primary/10"
+            }`}
+          >
+            <ShoppingBag className={scrolled ? "h-3 w-3" : "h-3.5 w-3.5"} />
+            {!scrolled && "Shop"}
+          </Link>
+          <CartDrawer />
+          {user ? (
+            <button
+              onClick={() => signOut()}
+              className={`font-display tracking-wider px-2 py-1 rounded-md transition-all text-muted-foreground hover:text-primary ${scrolled ? "text-[10px]" : "text-xs"}`}
+            >
+              Sign Out
+            </button>
+          ) : (
+            <Link
+              to="/auth"
+              className={`font-display tracking-wider rounded-md transition-all flex items-center gap-1 bg-primary text-primary-foreground hover:bg-primary/90 ${
+                scrolled ? "text-[10px] px-2 py-1" : "text-xs px-2.5 py-1.5"
+              }`}
+            >
+              <LogIn className={scrolled ? "h-3 w-3" : "h-3.5 w-3.5"} />
+              {!scrolled && "Sign In"}
+            </Link>
+          )}
         </div>
-      </div>
 
-      {/* Main nav — split layout with centered logo */}
-      <div className="container mx-auto px-4 hidden lg:flex items-center justify-center h-14">
-        {/* Left nav */}
-        <div className="flex items-center gap-0.5 flex-1 justify-end pr-6">
-          {leftNav.map((item) => (
-            <NavItemRenderer key={item.label} item={item} location={location} />
-          ))}
-        </div>
-
-        {/* Centered logo */}
-        <Link to="/" className="flex flex-col items-center shrink-0 px-4 group">
-          <img src={clubLogo} alt="PAFC Crest" className={`rounded-full object-cover ring-2 ring-primary/30 group-hover:ring-primary/60 transition-all ${scrolled ? "h-9 w-9" : "h-11 w-11"}`} />
-          <span className="font-display text-[9px] tracking-[0.3em] text-muted-foreground uppercase mt-0.5">PAFC</span>
-        </Link>
-
-        {/* Right nav */}
-        <div className="flex items-center gap-0.5 flex-1 justify-start pl-6">
-          {rightNav.map((item) => (
-            <NavItemRenderer key={item.label} item={item} location={location} />
-          ))}
-        </div>
-      </div>
-
-      {/* Mobile header */}
-      <div className="flex items-center justify-between h-12 px-4 lg:hidden">
-        <Link to="/" className="flex items-center gap-2">
-          <img src={clubLogo} alt="PAFC Crest" className="h-8 w-8 rounded-full object-cover ring-2 ring-primary/30" />
-          <span className="font-display text-sm font-bold text-primary">PAFC</span>
-        </Link>
-        <div className="flex items-center gap-3">
+        {/* Mobile toggle */}
+        <div className="flex items-center gap-3 lg:hidden">
           <CartDrawer />
           <button onClick={() => setIsOpen(!isOpen)} className="text-foreground p-1">
             {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
@@ -190,9 +207,9 @@ export function Navbar() {
 
       {/* Mobile nav */}
       {isOpen && (
-        <div className="lg:hidden bg-background border-b border-border max-h-[80vh] overflow-y-auto">
+        <div className="lg:hidden bg-background/95 backdrop-blur-2xl border-b border-border max-h-[80vh] overflow-y-auto">
           <div className="container mx-auto px-4 py-4 flex flex-col gap-1">
-            {allNav.map((item) =>
+            {navItems.map((item) =>
               item.dropdown ? (
                 <div key={item.label}>
                   <button
