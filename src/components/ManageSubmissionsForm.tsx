@@ -590,6 +590,114 @@ export function ManageSubmissionsForm({ allowedAgeGroups }: { allowedAgeGroups?:
   );
 }
 
+// ─── Orphaned POTM Card with Edit ───
+
+function OrphanedPotmCard({ potm, onRefresh }: { potm: any; onRefresh: () => void }) {
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [playerName, setPlayerName] = useState(potm.player_name);
+  const [shirtNumber, setShirtNumber] = useState(String(potm.shirt_number || ""));
+  const [reason, setReason] = useState(potm.reason || "");
+  const [matchDesc, setMatchDesc] = useState(potm.match_description || "");
+
+  const handleSave = async () => {
+    setSaving(true);
+    const { error } = await supabase.from("player_of_the_match").update({
+      player_name: playerName.trim(),
+      shirt_number: shirtNumber ? parseInt(shirtNumber) : null,
+      reason: reason.trim() || null,
+      match_description: matchDesc.trim() || null,
+    }).eq("id", potm.id);
+    setSaving(false);
+    if (error) { toast.error("Failed to update"); return; }
+    toast.success("POTM award updated");
+    setEditing(false);
+    onRefresh();
+  };
+
+  const handleDelete = async () => {
+    const { error } = await supabase.from("player_of_the_match").delete().eq("id", potm.id);
+    if (error) { toast.error("Failed to delete"); return; }
+    toast.success("POTM award deleted");
+    onRefresh();
+  };
+
+  if (editing) {
+    return (
+      <div className="bg-card border border-border rounded-lg p-3 space-y-3">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-display text-muted-foreground">Edit POTM Award</span>
+          <Button size="sm" variant="ghost" onClick={() => setEditing(false)} className="h-6 w-6 p-0">
+            <X className="h-3 w-3" />
+          </Button>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <Label className="text-xs">Player Name</Label>
+            <Input value={playerName} onChange={(e) => setPlayerName(e.target.value)} className="h-8 text-sm" />
+          </div>
+          <div>
+            <Label className="text-xs">Shirt #</Label>
+            <Input type="number" value={shirtNumber} onChange={(e) => setShirtNumber(e.target.value)} className="h-8 text-sm" />
+          </div>
+        </div>
+        <div>
+          <Label className="text-xs">Match / Opponent</Label>
+          <Input value={matchDesc} onChange={(e) => setMatchDesc(e.target.value)} className="h-8 text-sm" />
+        </div>
+        <div>
+          <Label className="text-xs">Reason</Label>
+          <Textarea value={reason} onChange={(e) => setReason(e.target.value)} rows={2} className="text-sm" />
+        </div>
+        <div className="flex gap-2">
+          <Button onClick={handleSave} disabled={saving || !playerName.trim()} size="sm" className="flex-1 h-8 text-xs">
+            {saving ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Save className="h-3 w-3 mr-1" />}
+            Save
+          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" size="sm" className="h-8 text-xs">
+                <Trash2 className="h-3 w-3" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete POTM Award?</AlertDialogTitle>
+                <AlertDialogDescription>This will permanently delete this award for {potm.player_name}.</AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-card border border-border rounded-lg p-3 flex items-center gap-3">
+      {potm.photo_url ? (
+        <img src={potm.photo_url} alt={potm.player_name} className="h-8 w-8 rounded-full object-cover border border-primary/30 shrink-0" />
+      ) : (
+        <Star className="h-4 w-4 text-primary shrink-0" />
+      )}
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-display text-foreground truncate">
+          {potm.shirt_number ? `#${potm.shirt_number} ` : ""}{potm.player_name}
+        </p>
+        <p className="text-[10px] text-muted-foreground">
+          {potm.team_name} · {potm.age_group} · {potm.match_description || "No match"} · {format(new Date(potm.award_date), "dd MMM yyyy")}
+        </p>
+      </div>
+      <Button size="sm" variant="ghost" onClick={() => setEditing(true)} className="h-7 w-7 p-0 shrink-0">
+        <Pencil className="h-3 w-3 text-muted-foreground" />
+      </Button>
+    </div>
+  );
+}
+
 // ─── Match Group Card with Tabs ───
 
 function MatchGroupCard({ group, isExpanded, teamSlug, onToggle, onRefresh }: {
