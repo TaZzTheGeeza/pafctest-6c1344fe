@@ -206,6 +206,9 @@ async function normalizePotmImage(base64: string, size = 1024) {
     (size - horizontalPadding * 2) / subjectWidth,
     (size - topPadding - bottomPadding) / subjectHeight,
   );
+  const horizontalPadding = size * 0.02;
+  const topPadding = size * 0.02;
+  const bottomPadding = 0;
 
   const drawWidth = subjectWidth * scale;
   const drawHeight = subjectHeight * scale;
