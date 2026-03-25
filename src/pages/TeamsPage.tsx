@@ -141,12 +141,19 @@ function TeamDetail({ team }: { team: TeamData }) {
                     {liveData.fixtures.map((fix, i) => {
                       const isHome = fix.homeTeam.includes("Peterborough Ath");
                       return (
-                        <div key={i} className="px-6 py-3 flex items-center justify-between">
+                        <div key={i} className="px-6 py-3 flex items-center justify-between gap-4">
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium truncate">
                               {isHome ? "vs" : "@"} {isHome ? fix.awayTeam : fix.homeTeam}
                             </p>
-                            <p className="text-[10px] text-muted-foreground">{fix.competition}</p>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <p className="text-[10px] text-muted-foreground">{fix.competition}</p>
+                              {fix.venue && (
+                                <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                                  <MapPin className="w-2.5 h-2.5" />{fix.venue}
+                                </span>
+                              )}
+                            </div>
                           </div>
                           <div className="flex items-center gap-3 text-xs text-muted-foreground shrink-0">
                             <span className={`font-bold ${isHome ? "text-green-400" : "text-blue-400"}`}>
