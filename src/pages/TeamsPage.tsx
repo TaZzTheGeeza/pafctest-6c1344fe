@@ -108,7 +108,6 @@ function TeamDetail({ team }: { team: TeamData }) {
                 <div className="p-6">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
-                      <img src={clubLogo} alt="" className="w-10 h-10 rounded-full object-cover" />
                       <div>
                         <p className="font-display font-bold text-sm">{team.name}</p>
                         <p className="text-xs text-muted-foreground">Peterborough Athletic</p>
@@ -301,14 +300,6 @@ function TeamCard({ team, index }: { team: TeamData; index: number }) {
         <div className="p-5">
           {/* Team header */}
           <div className="flex items-center gap-4 mb-4">
-            <div className="relative shrink-0">
-              <div className="w-14 h-14 rounded-full bg-background border-2 border-primary/40 flex items-center justify-center overflow-hidden group-hover:border-primary transition-colors">
-                <img src={clubLogo} alt="" className="w-12 h-12 rounded-full object-cover" />
-              </div>
-              <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-primary rounded-full flex items-center justify-center shadow-lg">
-                <Shield className="w-3 h-3 text-primary-foreground" />
-              </div>
-            </div>
             <div className="flex-1 min-w-0">
               <h3 className="font-display text-xl font-bold tracking-tight group-hover:text-primary transition-colors">
                 {team.name}
