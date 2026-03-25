@@ -69,7 +69,10 @@ function colorDistance(a: [number, number, number], b: [number, number, number])
 }
 
 function isGreenScreenPixel(r: number, g: number, b: number) {
-  return g > 180 && g > r + 60 && g > b + 60;
+  // Broad green-screen detection: catches bright greens, dark greens, and yellowish greens
+  if (g > 140 && g > r + 40 && g > b + 40) return true;
+  if (g > 100 && g > r * 1.4 && g > b * 1.4) return true;
+  return false;
 }
 
 function isNearBackgroundColor(
@@ -198,45 +201,47 @@ async function normalizePotmImage(base64: string, size = 1024) {
     enqueue(x, y - 1);
   }
 
-  // ── Remove green fringe from edges ──
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) {
-      const idx = getPixelIndex(x, y, width);
-      const a = data[idx + 3];
-      if (a === 0) continue;
+  // ── Remove green fringe from edges (2-pass for deeper cleanup) ──
+  for (let pass = 0; pass < 2; pass++) {
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const idx = getPixelIndex(x, y, width);
+        const a = data[idx + 3];
+        if (a === 0) continue;
 
-      const r = data[idx];
-      const g = data[idx + 1];
-      const b = data[idx + 2];
+        const r = data[idx];
+        const g = data[idx + 1];
+        const b = data[idx + 2];
 
-      // Fully transparent green-screen leftovers
-      if (isGreenScreenPixel(r, g, b)) {
-        data[idx + 3] = 0;
-        continue;
-      }
-
-      // De-fringe: if pixel is semi-transparent and greenish, fade it out
-      if (a < 220 && g > r && g > b) {
-        data[idx + 3] = 0;
-        continue;
-      }
-
-      // Check if this is an edge pixel (has a transparent neighbour)
-      let isEdge = false;
-      for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]]) {
-        const nx = x + dx, ny = y + dy;
-        if (nx >= 0 && ny >= 0 && nx < width && ny < height) {
-          if (data[getPixelIndex(nx, ny, width) + 3] === 0) { isEdge = true; break; }
+        // Fully transparent green-screen leftovers
+        if (isGreenScreenPixel(r, g, b)) {
+          data[idx + 3] = 0;
+          continue;
         }
-      }
 
-      if (isEdge && g > Math.max(r, b) + 20) {
-        // Desaturate green cast on edge pixels
-        const avg = Math.round((r + g + b) / 3);
-        data[idx] = Math.round(r * 0.4 + avg * 0.6);
-        data[idx + 1] = Math.round(g * 0.3 + avg * 0.7);
-        data[idx + 2] = Math.round(b * 0.4 + avg * 0.6);
-        data[idx + 3] = Math.min(a, 180);
+        // De-fringe: if pixel is semi-transparent and greenish, fade it out
+        if (a < 230 && g > r && g > b) {
+          data[idx + 3] = 0;
+          continue;
+        }
+
+        // Check if this is near an edge (has a transparent neighbour within 2px)
+        let isEdge = false;
+        for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1],[2,0],[-2,0],[0,2],[0,-2]]) {
+          const nx = x + dx, ny = y + dy;
+          if (nx >= 0 && ny >= 0 && nx < width && ny < height) {
+            if (data[getPixelIndex(nx, ny, width) + 3] === 0) { isEdge = true; break; }
+          }
+        }
+
+        if (isEdge && g > Math.max(r, b) + 10) {
+          // Desaturate green cast on edge pixels
+          const avg = Math.round((r + g + b) / 3);
+          data[idx] = Math.round(r * 0.5 + avg * 0.5);
+          data[idx + 1] = Math.round(g * 0.2 + avg * 0.8);
+          data[idx + 2] = Math.round(b * 0.5 + avg * 0.5);
+          data[idx + 3] = Math.min(a, 160);
+        }
       }
     }
   }
