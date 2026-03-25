@@ -1,5 +1,6 @@
 import { Navbar } from "@/components/Navbar";
 import { HeroSection } from "@/components/HeroSection";
+import { FeaturedSections } from "@/components/FeaturedSections";
 import { FixturesSection } from "@/components/FixturesSection";
 import { AboutSection } from "@/components/AboutSection";
 import { SponsorsSection } from "@/components/SponsorsSection";
@@ -11,6 +12,7 @@ const Index = () => {
     <div className="min-h-screen flex flex-col">
       <Navbar />
       <HeroSection />
+      <FeaturedSections />
       <YouTubeSection />
       <FixturesSection />
       <AboutSection />
