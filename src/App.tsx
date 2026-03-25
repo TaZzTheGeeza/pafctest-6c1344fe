@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useCartSync } from "@/hooks/useCartSync";
 import { FootballBackground } from "@/components/FootballBackground";
+import { AnnouncementBanner } from "@/components/AnnouncementBanner";
 import Index from "./pages/Index.tsx";
 import ShopPage from "./pages/Shop.tsx";
 import ProductPage from "./pages/ProductPage.tsx";
@@ -24,6 +25,9 @@ import RaffleAdminPage from "./pages/RaffleAdminPage.tsx";
 import TournamentPage from "./pages/TournamentPage.tsx";
 import TournamentAdminPage from "./pages/TournamentAdminPage.tsx";
 import TeamProfilePage from "./pages/TeamProfilePage.tsx";
+import MatchDayPage from "./pages/MatchDayPage.tsx";
+import POTMPage from "./pages/POTMPage.tsx";
+import CalendarPage from "./pages/CalendarPage.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -32,6 +36,7 @@ function AppContent() {
   useCartSync();
   return (
     <BrowserRouter>
+      <AnnouncementBanner />
       <Routes>
         <Route path="/" element={<Index />} />
         <Route path="/shop" element={<ShopPage />} />
@@ -53,6 +58,9 @@ function AppContent() {
         <Route path="/tournament" element={<TournamentPage />} />
         <Route path="/tournament-admin" element={<TournamentAdminPage />} />
         <Route path="/tournament/team/:teamId" element={<TeamProfilePage />} />
+        <Route path="/match-day" element={<MatchDayPage />} />
+        <Route path="/player-of-the-match" element={<POTMPage />} />
+        <Route path="/calendar" element={<CalendarPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>

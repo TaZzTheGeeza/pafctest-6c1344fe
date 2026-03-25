@@ -13,6 +13,9 @@ const communityItems = [
   { label: "News", path: "/news" },
   { label: "Events", path: "/events" },
   { label: "Gallery", path: "/gallery" },
+  { label: "Match Day Hub", path: "/match-day" },
+  { label: "Player of the Match", path: "/player-of-the-match" },
+  { label: "Calendar", path: "/calendar" },
 ];
 
 const aboutItems = [
