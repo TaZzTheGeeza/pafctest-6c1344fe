@@ -8,7 +8,7 @@ import {
   FileText,
   Award,
   Users,
-  ClipboardList,
+  
   Shield,
   ChevronRight,
   Lock,
