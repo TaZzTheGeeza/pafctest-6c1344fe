@@ -9,45 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useTeamRoster, getAgeGroup } from "@/hooks/useTeamRoster";
 import type { FAFixture } from "@/hooks/useTeamFixtures";
-
-/** Resize image to max dimension and return as base64 data URI (PNG) */
-function resizeImageToBase64(file: File, maxDim = 1024): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    const url = URL.createObjectURL(file);
-    img.onload = () => {
-      URL.revokeObjectURL(url);
-      let { width, height } = img;
-      if (width > maxDim || height > maxDim) {
-        const scale = maxDim / Math.max(width, height);
-        width = Math.round(width * scale);
-        height = Math.round(height * scale);
-      }
-      const canvas = document.createElement("canvas");
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext("2d")!;
-      ctx.drawImage(img, 0, 0, width, height);
-      const dataUrl = canvas.toDataURL("image/png");
-      console.log("[POTM] Resized image to", width, "x", height, "base64 length:", dataUrl.length);
-      resolve(dataUrl);
-    };
-    img.onerror = () => {
-      URL.revokeObjectURL(url);
-      reject(new Error("Failed to load image for resizing"));
-    };
-    img.src = url;
-  });
-}
-
-function base64ToBlob(base64: string): Blob {
-  const parts = base64.split(",");
-  const mime = parts[0]?.match(/:(.*?);/)?.[1] || "image/png";
-  const raw = atob(parts[1]);
-  const arr = new Uint8Array(raw.length);
-  for (let i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
-  return new Blob([arr], { type: mime });
-}
+import { uploadPotmPhoto } from "@/lib/potmPhoto";
 
 interface POTMEntry {
   playerId: string;
@@ -123,47 +85,16 @@ export function POTMTab({
 
         let photoUrl: string | null = null;
         if (entry.photoFile) {
-          // Resize image and convert to base64 (keeps payload under edge function limits)
-          const base64 = await resizeImageToBase64(entry.photoFile, 1024);
-          console.log("[POTM] Base64 data URI length being sent:", base64.length);
-          
-          let finalBase64 = base64;
-          try {
-            toast.info("Removing background — this may take a moment...");
-            const { data: bgData, error: bgError } = await supabase.functions.invoke(
-              "remove-background",
-              { body: { imageBase64: base64 } }
-            );
-            
-            console.log("[POTM] Background removal response:", { error: bgError, hasData: !!bgData, keys: bgData ? Object.keys(bgData) : null });
-            
-            if (bgError) {
-              console.error("[POTM] Background removal error:", bgError);
-              toast.warning("Background removal failed, using original photo");
-            } else if (bgData?.imageBase64) {
-              finalBase64 = bgData.imageBase64.startsWith("data:")
-                ? bgData.imageBase64
-                : `data:image/png;base64,${bgData.imageBase64}`;
-              console.log("[POTM] Background removed successfully, result length:", finalBase64.length);
-              toast.success("Background removed!");
-            } else {
-              console.warn("[POTM] No image in response:", JSON.stringify(bgData).substring(0, 300));
-              toast.warning(bgData?.textResponse || "Background removal returned no image, using original");
-            }
-          } catch (bgErr) {
-            console.error("[POTM] Background removal exception:", bgErr);
-            toast.warning("Background removal failed, using original photo");
-          }
-
-          // Upload the processed image as PNG
-          const path = `potm/${teamSlug}/${awardDate}-${player.first_name}.png`;
-          const blob = base64ToBlob(finalBase64);
-          const { error: uploadError } = await supabase.storage
-            .from("club-photos")
-            .upload(path, blob, { upsert: true, contentType: "image/png" });
-          if (uploadError) throw uploadError;
-          const { data: urlData } = supabase.storage.from("club-photos").getPublicUrl(path);
-          photoUrl = urlData.publicUrl;
+          photoUrl = await uploadPotmPhoto(entry.photoFile, {
+            playerName: player.first_name,
+            awardDate,
+            teamSlug,
+            onStatus: (status) => {
+              if (status === "processing") toast.info("Removing background — this may take a moment...");
+              if (status === "processed") toast.success("Background removed!");
+              if (status === "fallback") toast.warning("Background removal failed, using original photo");
+            },
+          });
         }
 
         const { error } = await supabase.from("player_of_the_match").insert({
