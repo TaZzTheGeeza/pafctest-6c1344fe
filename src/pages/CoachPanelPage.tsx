@@ -296,7 +296,7 @@ function POTMForm({ ageGroups }: { ageGroups: string[] }) {
             </div>
             <div>
               <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Shirt Number</label>
-              <input type="number" value={entry.shirt_number} onChange={(e) => updateEntry(i, "shirt_number", e.target.value)} placeholder="e.g. 7" className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground" readOnly />
+              <input type="number" value={entry.shirt_number} onChange={(e) => updateEntry(i, "shirt_number", e.target.value)} placeholder="e.g. 7" className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground" />
             </div>
           </div>
 
