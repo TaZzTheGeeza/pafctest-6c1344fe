@@ -51,7 +51,7 @@ serve(async (req) => {
             content: [
               {
                 type: "text",
-                text: "Remove the background from this photo and replace it with PURE TRANSPARENCY (alpha channel = 0). Do NOT render a checkerboard pattern — that is a visual representation of transparency, not actual transparency. The output MUST be a PNG with a genuine transparent alpha channel. Keep the entire person fully intact — their body, hair, clothing, skin, limbs, and all accessories must be completely preserved with no parts removed or clipped. Output as a PNG with transparent background.",
+                text: "Remove the background from this photo and replace it with PURE TRANSPARENCY (alpha channel = 0). Do NOT render a checkerboard pattern — that is only a visual representation of transparency, not real transparency. The output MUST be a PNG with a genuine transparent alpha channel. Preserve the person's full silhouette exactly, especially the head, hair, ears, shoulders, hands, and kit edges. Do not trim, shrink, or clip any part of the subject; if uncertain, keep more of the subject rather than removing it. Output as a PNG with transparent background.",
               },
               {
                 type: "image_url",
