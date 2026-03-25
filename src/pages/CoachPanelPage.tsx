@@ -132,7 +132,7 @@ function POTMForm({ ageGroups }: { ageGroups: string[] }) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.player_name || !form.age_group || !form.team_name) {
+    if (!form.player_name || !form.age_group) {
       toast.error("Please fill in all required fields");
       return;
     }
@@ -160,7 +160,7 @@ function POTMForm({ ageGroups }: { ageGroups: string[] }) {
     const { error } = await supabase.from("player_of_the_match").insert({
       player_name: form.player_name.trim(),
       shirt_number: form.shirt_number ? parseInt(form.shirt_number) : null,
-      team_name: form.team_name.trim(),
+      team_name: `Peterborough Athletic ${form.age_group}`,
       age_group: form.age_group,
       match_description: form.match_description.trim() || null,
       reason: form.reason.trim() || null,
