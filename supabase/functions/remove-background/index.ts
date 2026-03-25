@@ -5,31 +5,35 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+function jsonResponse(body: Record<string, unknown>, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
+  let originalImageBase64: string | null = null;
+
   try {
     const { imageBase64 } = await req.json();
-    if (!imageBase64) {
-      return new Response(JSON.stringify({ error: "imageBase64 required" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    originalImageBase64 = imageBase64 ?? null;
+
+    if (!originalImageBase64) {
+      return jsonResponse({ error: "imageBase64 required" }, 400);
     }
 
     const apiKey = Deno.env.get("LOVABLE_API_KEY");
     if (!apiKey) {
       console.error("LOVABLE_API_KEY not configured");
-      return new Response(JSON.stringify({ error: "API key not configured" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return jsonResponse({ error: "API key not configured" }, 500);
     }
 
-    // Ensure imageBase64 is a proper data URI
-    let dataUri = imageBase64;
+    let dataUri = originalImageBase64;
     if (!dataUri.startsWith("data:")) {
       dataUri = `data:image/png;base64,${dataUri}`;
     }
@@ -37,41 +41,64 @@ serve(async (req) => {
     console.log("Starting background removal, data URI length:", dataUri.length);
     console.log("Data URI prefix:", dataUri.substring(0, 50));
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-3.1-flash-image-preview",
-        messages: [
-          {
-            role: "user",
-            content: [
-              {
-                type: "text",
-                text: "Remove the background from this photo. Replace the background with solid bright green (#00FF00) color. Keep the entire person fully intact — preserve their complete head, hair, ears, face, body, clothing, limbs, hands, and all accessories. Do not crop, shrink, or clip any part of the person. Output the result as a PNG image.",
-              },
-              {
-                type: "image_url",
-                image_url: { url: dataUri },
-              },
-            ],
-          },
-        ],
-        modalities: ["image", "text"],
-      }),
-    });
+    let response: Response | null = null;
+    let errText = "";
 
-    console.log("AI gateway response status:", response.status);
+    for (let attempt = 1; attempt <= 2; attempt += 1) {
+      response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-3.1-flash-image-preview",
+          messages: [
+            {
+              role: "user",
+              content: [
+                {
+                  type: "text",
+                  text: "Remove the background from this player photo. Replace the background with a solid bright green (#00FF00) backdrop only. Keep the player fully intact, including the full head, hair, ears, face, neck, body, arms, hands, clothing, boots, and all accessories. Do not crop, trim, or clip any part of the player. Return a single PNG image.",
+                },
+                {
+                  type: "image_url",
+                  image_url: { url: dataUri },
+                },
+              ],
+            },
+          ],
+          modalities: ["image", "text"],
+        }),
+      });
 
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error("AI gateway error:", response.status, errText);
-      return new Response(JSON.stringify({ error: "Background removal failed", details: errText }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      console.log(`AI gateway response status (attempt ${attempt}):`, response.status);
+
+      if (response.ok) {
+        break;
+      }
+
+      errText = await response.text();
+      console.error(`AI gateway error (attempt ${attempt}):`, response.status, errText);
+
+      if (response.status === 429) {
+        return jsonResponse({ error: "Lovable AI rate limit reached. Please try again shortly." }, 429);
+      }
+
+      if (response.status === 402) {
+        return jsonResponse({ error: "Lovable AI credits are unavailable right now." }, 402);
+      }
+
+      if (response.status < 500 || attempt === 2) {
+        break;
+      }
+    }
+
+    if (!response?.ok) {
+      return jsonResponse({
+        imageBase64: originalImageBase64,
+        fallback: true,
+        warning: errText || "AI gateway unavailable",
       });
     }
 
@@ -81,7 +108,6 @@ serve(async (req) => {
 
     let resultImage: string | null = null;
 
-    // Check for image in the images array (standard format)
     if (message?.images && Array.isArray(message.images) && message.images.length > 0) {
       const imgUrl = message.images[0]?.image_url?.url;
       if (imgUrl) {
@@ -90,13 +116,11 @@ serve(async (req) => {
       }
     }
 
-    // Fallback: check if content is a data URI
     if (!resultImage && message?.content && typeof message.content === "string" && message.content.startsWith("data:image")) {
       resultImage = message.content;
       console.log("Found image in content string, length:", resultImage.length);
     }
 
-    // Fallback: check content array format
     if (!resultImage && message?.content && Array.isArray(message.content)) {
       for (const part of message.content) {
         if (part.type === "image_url" && part.image_url?.url) {
@@ -110,31 +134,31 @@ serve(async (req) => {
     if (!resultImage) {
       const debugInfo = JSON.stringify(data).substring(0, 500);
       console.error("No image in response. Debug:", debugInfo);
-      return new Response(JSON.stringify({
-        error: "No image returned from AI",
-        textResponse: message?.content || null,
+      return jsonResponse({
+        imageBase64: originalImageBase64,
+        fallback: true,
+        warning: "No image returned from AI",
         debug: debugInfo,
-      }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Ensure the result is a proper data URI
     if (!resultImage.startsWith("data:")) {
       resultImage = `data:image/png;base64,${resultImage}`;
     }
 
     console.log("Background removal successful, result length:", resultImage.length);
-
-    return new Response(JSON.stringify({ imageBase64: resultImage }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return jsonResponse({ imageBase64: resultImage });
   } catch (err) {
     console.error("Error:", err);
-    return new Response(JSON.stringify({ error: err.message }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+
+    if (originalImageBase64) {
+      return jsonResponse({
+        imageBase64: originalImageBase64,
+        fallback: true,
+        warning: err instanceof Error ? err.message : "Unknown processing error",
+      });
+    }
+
+    return jsonResponse({ error: err instanceof Error ? err.message : "Unknown error" }, 500);
   }
 });
