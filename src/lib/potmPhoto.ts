@@ -63,16 +63,8 @@ function colorDistance(a: [number, number, number], b: [number, number, number])
   return Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]) + Math.abs(a[2] - b[2]);
 }
 
-function channelSpread(r: number, g: number, b: number) {
-  return Math.max(r, g, b) - Math.min(r, g, b);
-}
-
-function isCheckerboardPixel(r: number, g: number, b: number) {
-  const spread = channelSpread(r, g, b);
-  if (spread > 14) return false;
-
-  const average = (r + g + b) / 3;
-  return (average >= 184 && average <= 218) || average >= 244;
+function isGreenScreenPixel(r: number, g: number, b: number) {
+  return g > 180 && g > r + 60 && g > b + 60;
 }
 
 function isNearBackgroundColor(
@@ -81,22 +73,8 @@ function isNearBackgroundColor(
   b: number,
   backgroundSamples: [number, number, number][],
 ) {
-  const pixelSpread = channelSpread(r, g, b);
-
-  return backgroundSamples.some((sample) => {
-    const sampleSpread = channelSpread(sample[0], sample[1], sample[2]);
-    const threshold = sampleSpread <= 22 ? 24 : 36;
-
-    if (colorDistance([r, g, b], sample) > threshold) {
-      return false;
-    }
-
-    if (sampleSpread <= 22 && pixelSpread > 22) {
-      return false;
-    }
-
-    return true;
-  });
+  if (isGreenScreenPixel(r, g, b)) return true;
+  return backgroundSamples.some((sample) => colorDistance([r, g, b], sample) <= 30);
 }
 
 function getPixelIndex(x: number, y: number, width: number) {
