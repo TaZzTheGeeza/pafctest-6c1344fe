@@ -50,8 +50,8 @@ export function POTMTab({
   const handlePhotoSelect = (i: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Photo must be under 5MB");
+    if (file.size > 20 * 1024 * 1024) {
+      toast.error("Photo must be under 20MB");
       return;
     }
     const next = [...entries];
