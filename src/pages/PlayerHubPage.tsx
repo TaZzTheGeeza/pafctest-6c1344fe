@@ -6,9 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import {
   UserPlus,
   FileText,
-  Award,
   Users,
-  
   Shield,
   ChevronRight,
   Lock,
@@ -26,16 +24,6 @@ const hubItems = [
     restricted: false,
   },
   {
-    title: "Player of the Match",
-    description: "View the latest POTM winners across all age groups with photos and match details.",
-    icon: Award,
-    path: "/player-of-the-match",
-    color: "text-primary",
-    bgColor: "bg-primary/10",
-    borderColor: "border-primary/20",
-    restricted: true,
-  },
-  {
     title: "Club Documents",
     description: "Access player forms, codes of conduct, medical forms, and other essential paperwork.",
     icon: FileText,
@@ -44,16 +32,6 @@ const hubItems = [
     bgColor: "bg-blue-400/10",
     borderColor: "border-blue-400/20",
     restricted: true,
-  },
-  {
-    title: "Our Teams",
-    description: "Browse all teams, view upcoming fixtures, results, and squad information.",
-    icon: Users,
-    path: "/teams",
-    color: "text-purple-400",
-    bgColor: "bg-purple-400/10",
-    borderColor: "border-purple-400/20",
-    restricted: false,
   },
   {
     title: "Safeguarding",
