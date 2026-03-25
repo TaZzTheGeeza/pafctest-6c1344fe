@@ -56,16 +56,6 @@ const hubItems = [
     restricted: false,
   },
   {
-    title: "Match Reports",
-    description: "Read detailed match reports including scores, goal scorers, and assist providers.",
-    icon: ClipboardList,
-    path: "/match-day",
-    color: "text-orange-400",
-    bgColor: "bg-orange-400/10",
-    borderColor: "border-orange-400/20",
-    restricted: true,
-  },
-  {
     title: "Safeguarding",
     description: "Our commitment to player safety — policies, contacts, and reporting procedures.",
     icon: Shield,
