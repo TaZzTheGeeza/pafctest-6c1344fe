@@ -119,6 +119,116 @@ function getPixelIndex(x: number, y: number, width: number) {
   return (y * width + x) * 4;
 }
 
+function keepLargestAlphaRegion(
+  data: Uint8ClampedArray,
+  width: number,
+  height: number,
+  alphaThreshold = 24,
+) {
+  const visited = new Uint8Array(width * height);
+  const neighbourOffsets = [
+    [-1, -1],
+    [0, -1],
+    [1, -1],
+    [-1, 0],
+    [1, 0],
+    [-1, 1],
+    [0, 1],
+    [1, 1],
+  ] as const;
+
+  let largestComponent: number[] = [];
+  let largestScore = 0;
+
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      const key = y * width + x;
+      if (visited[key]) continue;
+
+      const pixelIndex = key * 4;
+      if (data[pixelIndex + 3] <= alphaThreshold) continue;
+
+      visited[key] = 1;
+      const component: number[] = [];
+      const queue = [key];
+      let queueIndex = 0;
+      let score = 0;
+
+      while (queueIndex < queue.length) {
+        const currentKey = queue[queueIndex];
+        queueIndex += 1;
+        component.push(currentKey);
+
+        const currentPixelIndex = currentKey * 4;
+        score += data[currentPixelIndex + 3];
+
+        const cx = currentKey % width;
+        const cy = Math.floor(currentKey / width);
+
+        for (const [dx, dy] of neighbourOffsets) {
+          const nx = cx + dx;
+          const ny = cy + dy;
+
+          if (nx < 0 || ny < 0 || nx >= width || ny >= height) continue;
+
+          const neighbourKey = ny * width + nx;
+          if (visited[neighbourKey]) continue;
+
+          visited[neighbourKey] = 1;
+
+          if (data[neighbourKey * 4 + 3] > alphaThreshold) {
+            queue.push(neighbourKey);
+          }
+        }
+      }
+
+      if (score > largestScore) {
+        largestScore = score;
+        largestComponent = component;
+      }
+    }
+  }
+
+  if (largestComponent.length === 0) return;
+
+  let keepMask = new Uint8Array(width * height);
+  for (const key of largestComponent) {
+    keepMask[key] = 1;
+  }
+
+  for (let pass = 0; pass < 2; pass += 1) {
+    const expandedMask = keepMask.slice();
+
+    for (let key = 0; key < keepMask.length; key += 1) {
+      if (keepMask[key]) continue;
+      if (data[key * 4 + 3] === 0) continue;
+
+      const x = key % width;
+      const y = Math.floor(key / width);
+
+      for (const [dx, dy] of neighbourOffsets) {
+        const nx = x + dx;
+        const ny = y + dy;
+
+        if (nx < 0 || ny < 0 || nx >= width || ny >= height) continue;
+
+        if (keepMask[ny * width + nx]) {
+          expandedMask[key] = 1;
+          break;
+        }
+      }
+    }
+
+    keepMask = expandedMask;
+  }
+
+  for (let key = 0; key < keepMask.length; key += 1) {
+    if (!keepMask[key]) {
+      data[key * 4 + 3] = 0;
+    }
+  }
+}
+
 function loadImage(source: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const image = new Image();
@@ -210,8 +320,11 @@ async function normalizePotmImage(base64: string, size = 1024) {
     enqueue(width - 1, y);
   }
 
-  while (queue.length > 0) {
-    const [x, y] = queue.shift()!;
+  let queueIndex = 0;
+
+  while (queueIndex < queue.length) {
+    const [x, y] = queue[queueIndex];
+    queueIndex += 1;
     const index = getPixelIndex(x, y, width);
     const alpha = data[index + 3];
 
@@ -282,6 +395,8 @@ async function normalizePotmImage(base64: string, size = 1024) {
       }
     }
   }
+
+  keepLargestAlphaRegion(data, width, height);
 
   sourceContext.putImageData(imageData, 0, 0);
 
