@@ -84,41 +84,41 @@ function MatchReportRow({ report, onDeleted }: { report: any; onDeleted: () => v
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-[10px] font-display tracking-wider text-muted-foreground mb-1">Team Name</label>
-            <input value={form.team_name} onChange={(e) => setForm({ ...form, team_name: e.target.value })} className="w-full bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground" />
+            <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Team Name</label>
+            <input value={form.team_name} onChange={(e) => setForm({ ...form, team_name: e.target.value })} className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground" />
           </div>
           <div>
-            <label className="block text-[10px] font-display tracking-wider text-muted-foreground mb-1">Age Group</label>
-            <select value={form.age_group} onChange={(e) => setForm({ ...form, age_group: e.target.value })} className="w-full bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground">
+            <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Age Group</label>
+            <select value={form.age_group} onChange={(e) => setForm({ ...form, age_group: e.target.value })} className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground">
               {ageGroups.map((g) => <option key={g} value={g}>{g}</option>)}
             </select>
           </div>
         </div>
         <div>
-          <label className="block text-[10px] font-display tracking-wider text-muted-foreground mb-1">Opponent</label>
-          <input value={form.opponent} onChange={(e) => setForm({ ...form, opponent: e.target.value })} className="w-full bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground" />
+          <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Opponent</label>
+          <input value={form.opponent} onChange={(e) => setForm({ ...form, opponent: e.target.value })} className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground" />
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-[10px] font-display tracking-wider text-muted-foreground mb-1">Our Score</label>
-            <input type="number" min="0" value={form.home_score} onChange={(e) => setForm({ ...form, home_score: e.target.value })} className="w-full bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground" />
+            <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Our Score</label>
+            <input type="number" min="0" value={form.home_score} onChange={(e) => setForm({ ...form, home_score: e.target.value })} className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground" />
           </div>
           <div>
-            <label className="block text-[10px] font-display tracking-wider text-muted-foreground mb-1">Their Score</label>
-            <input type="number" min="0" value={form.away_score} onChange={(e) => setForm({ ...form, away_score: e.target.value })} className="w-full bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground" />
+            <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Their Score</label>
+            <input type="number" min="0" value={form.away_score} onChange={(e) => setForm({ ...form, away_score: e.target.value })} className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground" />
           </div>
         </div>
         <div>
-          <label className="block text-[10px] font-display tracking-wider text-muted-foreground mb-1">Goal Scorers</label>
-          <input value={form.goal_scorers} onChange={(e) => setForm({ ...form, goal_scorers: e.target.value })} className="w-full bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground" />
+          <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Goal Scorers</label>
+          <input value={form.goal_scorers} onChange={(e) => setForm({ ...form, goal_scorers: e.target.value })} className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground" />
         </div>
         <div>
-          <label className="block text-[10px] font-display tracking-wider text-muted-foreground mb-1">Assists</label>
-          <input value={form.assists} onChange={(e) => setForm({ ...form, assists: e.target.value })} className="w-full bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground" />
+          <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Assists</label>
+          <input value={form.assists} onChange={(e) => setForm({ ...form, assists: e.target.value })} className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground" />
         </div>
         <div>
-          <label className="block text-[10px] font-display tracking-wider text-muted-foreground mb-1">Notes</label>
-          <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={2} className="w-full bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground resize-none" />
+          <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Notes</label>
+          <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={2} className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground resize-none" />
         </div>
         <Button onClick={handleSave} disabled={saving} size="sm" className="w-full gap-1">
           {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
@@ -259,38 +259,38 @@ function POTMRow({ potm, onDeleted }: { potm: any; onDeleted: () => void }) {
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-[10px] font-display tracking-wider text-muted-foreground mb-1">Player Name</label>
-            <input value={form.player_name} onChange={(e) => setForm({ ...form, player_name: e.target.value })} className="w-full bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground" />
+            <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Player Name</label>
+            <input value={form.player_name} onChange={(e) => setForm({ ...form, player_name: e.target.value })} className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground" />
           </div>
           <div>
-            <label className="block text-[10px] font-display tracking-wider text-muted-foreground mb-1">Shirt #</label>
-            <input type="number" value={form.shirt_number} onChange={(e) => setForm({ ...form, shirt_number: e.target.value })} className="w-full bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground" />
+            <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Shirt #</label>
+            <input type="number" value={form.shirt_number} onChange={(e) => setForm({ ...form, shirt_number: e.target.value })} className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground" />
           </div>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-[10px] font-display tracking-wider text-muted-foreground mb-1">Team Name</label>
-            <input value={form.team_name} onChange={(e) => setForm({ ...form, team_name: e.target.value })} className="w-full bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground" />
+            <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Team Name</label>
+            <input value={form.team_name} onChange={(e) => setForm({ ...form, team_name: e.target.value })} className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground" />
           </div>
           <div>
-            <label className="block text-[10px] font-display tracking-wider text-muted-foreground mb-1">Age Group</label>
-            <select value={form.age_group} onChange={(e) => setForm({ ...form, age_group: e.target.value })} className="w-full bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground">
+            <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Age Group</label>
+            <select value={form.age_group} onChange={(e) => setForm({ ...form, age_group: e.target.value })} className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground">
               {ageGroups.map((g) => <option key={g} value={g}>{g}</option>)}
             </select>
           </div>
         </div>
         <div>
-          <label className="block text-[10px] font-display tracking-wider text-muted-foreground mb-1">Match (Opponent)</label>
-          <input value={form.match_description} onChange={(e) => setForm({ ...form, match_description: e.target.value })} className="w-full bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground" />
+          <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Match (Opponent)</label>
+          <input value={form.match_description} onChange={(e) => setForm({ ...form, match_description: e.target.value })} className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground" />
         </div>
         <div>
-          <label className="block text-[10px] font-display tracking-wider text-muted-foreground mb-1">Reason</label>
-          <textarea value={form.reason} onChange={(e) => setForm({ ...form, reason: e.target.value })} rows={2} className="w-full bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground resize-none" />
+          <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Reason</label>
+          <textarea value={form.reason} onChange={(e) => setForm({ ...form, reason: e.target.value })} rows={2} className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground resize-none" />
         </div>
 
         {/* Photo section */}
         <div>
-          <label className="block text-[10px] font-display tracking-wider text-muted-foreground mb-1">Player Photo</label>
+          <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Player Photo</label>
           {(photoPreview || (!removePhoto && potm.photo_url)) ? (
             <div className="flex items-center gap-3">
               <div className="relative w-16 h-16 rounded-lg overflow-hidden border border-border shrink-0">
