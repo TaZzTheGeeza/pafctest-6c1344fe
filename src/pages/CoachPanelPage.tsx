@@ -184,7 +184,7 @@ function POTMForm({ ageGroups }: { ageGroups: string[] }) {
         <h3 className="font-display text-xl font-bold text-foreground mb-2">POTM Submitted!</h3>
         <p className="text-muted-foreground mb-4">The award will appear on the Player of the Match wall.</p>
         <button
-          onClick={() => { setSubmitted(false); setForm({ player_name: "", shirt_number: "", team_name: "", age_group: ageGroups.length === 1 ? ageGroups[0] : "", match_description: "", reason: "" }); setPhotoFile(null); setPhotoPreview(null); }}
+          onClick={() => { setSubmitted(false); setFixtureKey(""); setForm({ player_name: "", shirt_number: "", team_name: "", age_group: ageGroups.length === 1 ? ageGroups[0] : "", match_description: "", reason: "" }); setPhotoFile(null); setPhotoPreview(null); }}
           className="text-sm font-display text-primary hover:text-gold-light transition-colors"
         >
           Submit another
