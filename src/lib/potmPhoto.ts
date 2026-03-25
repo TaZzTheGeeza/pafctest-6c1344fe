@@ -68,17 +68,12 @@ function colorDistance(a: [number, number, number], b: [number, number, number])
   return Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]) + Math.abs(a[2] - b[2]);
 }
 
-function isGreenScreenPixel(r: number, g: number, b: number) {
-  return g > 180 && g > r + 60 && g > b + 60;
-}
-
 function isNearBackgroundColor(
   r: number,
   g: number,
   b: number,
   backgroundSamples: [number, number, number][],
 ) {
-  if (isGreenScreenPixel(r, g, b)) return true;
   return backgroundSamples.some((sample) => colorDistance([r, g, b], sample) <= 30);
 }
 
@@ -209,8 +204,8 @@ async function normalizePotmImage(base64: string, size = 1024) {
       const g = data[idx + 1];
       const b = data[idx + 2];
 
-      // Fully transparent green-screen leftovers
-      if (isGreenScreenPixel(r, g, b)) {
+      // Fully transparent bright-green leftovers
+      if (g > 180 && g > r + 60 && g > b + 60) {
         data[idx + 3] = 0;
         continue;
       }
