@@ -579,21 +579,7 @@ export function ManageSubmissionsForm({ allowedAgeGroups }: { allowedAgeGroups?:
               </div>
               <div className="px-3 py-2 space-y-2">
                 {orphanedPotm.map((p: any) => (
-                  <div key={p.id} className="bg-card border border-border rounded-lg p-3 flex items-center gap-3">
-                    {p.photo_url ? (
-                      <img src={p.photo_url} alt={p.player_name} className="h-8 w-8 rounded-full object-cover border border-primary/30 shrink-0" />
-                    ) : (
-                      <Star className="h-4 w-4 text-primary shrink-0" />
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-display text-foreground truncate">
-                        {p.shirt_number ? `#${p.shirt_number} ` : ""}{p.player_name}
-                      </p>
-                      <p className="text-[10px] text-muted-foreground">
-                        {p.team_name} · {p.age_group} · {p.match_description || "No match"} · {format(new Date(p.award_date), "dd MMM yyyy")}
-                      </p>
-                    </div>
-                  </div>
+                  <OrphanedPotmCard key={p.id} potm={p} onRefresh={refresh} />
                 ))}
               </div>
             </div>
