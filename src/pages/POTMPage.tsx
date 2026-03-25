@@ -4,7 +4,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { Trophy, Star } from "lucide-react";
-import { format } from "date-fns";
+import { POTMCard } from "@/components/POTMCard";
 
 interface POTM {
   id: string;
@@ -55,37 +55,19 @@ export default function POTMPage() {
               <p className="text-muted-foreground">No Player of the Match awards yet. Check back after match day!</p>
             </div>
           ) : (
-            <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 justify-items-center">
               {players.map((p, i) => (
-                <motion.div
+                <POTMCard
                   key={p.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.4, delay: i * 0.05 }}
-                  className="bg-card border border-border rounded-xl overflow-hidden group hover:border-primary/50 transition-colors"
-                >
-                  {p.photo_url ? (
-                    <div className="aspect-square overflow-hidden">
-                      <img src={p.photo_url} alt={p.player_name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                    </div>
-                  ) : (
-                    <div className="aspect-square bg-secondary flex items-center justify-center">
-                      <Star className="h-16 w-16 text-primary/30" />
-                    </div>
-                  )}
-                  <div className="p-5">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Trophy className="h-4 w-4 text-primary" />
-                      <span className="text-xs font-display tracking-wider text-primary">{p.age_group}</span>
-                    </div>
-                    <h3 className="font-display text-xl font-bold text-foreground mb-1">{p.player_name}</h3>
-                    <p className="text-sm text-muted-foreground mb-2">{p.team_name}</p>
-                    {p.match_description && <p className="text-xs text-muted-foreground mb-2">vs {p.match_description}</p>}
-                    {p.reason && <p className="text-sm text-foreground/80 italic">"{p.reason}"</p>}
-                    <p className="text-xs text-muted-foreground mt-3">{format(new Date(p.award_date), "dd MMM yyyy")}</p>
-                  </div>
-                </motion.div>
+                  playerName={p.player_name}
+                  teamName={p.team_name}
+                  ageGroup={p.age_group}
+                  matchDescription={p.match_description}
+                  photoUrl={p.photo_url}
+                  reason={p.reason}
+                  awardDate={p.award_date}
+                  index={i}
+                />
               ))}
             </div>
           )}
