@@ -158,23 +158,21 @@ export function POTMCard({
             </span>
           </div>
 
-          {/* Player photo */}
-          <div className="flex-1 flex items-center justify-center" style={{ marginTop: "-4px", marginBottom: "4px" }}>
-            <div className="relative w-[120px] h-[120px] rounded-full overflow-hidden border-2 shadow-lg" style={{ borderColor: "hsl(38 45% 40%)" }}>
-              {photoUrl ? (
-                <img
-                  src={photoUrl}
-                  alt={playerName}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center" style={{ background: "hsl(0 0% 12%)" }}>
-                  <span className="font-display text-4xl font-bold" style={{ color: "hsla(38, 45%, 50%, 0.3)" }}>
-                    {shirtNumber || "?"}
-                  </span>
-                </div>
-              )}
-            </div>
+          {/* Player photo – large, no background, floating over card */}
+          <div className="flex-1 flex items-center justify-center relative" style={{ marginTop: "-8px", marginBottom: "0px", minHeight: "150px" }}>
+            {photoUrl ? (
+              <img
+                src={photoUrl}
+                alt={playerName}
+                className="max-h-[160px] w-auto object-contain drop-shadow-lg group-hover:scale-110 transition-transform duration-700 relative z-10"
+              />
+            ) : (
+              <div className="w-[120px] h-[120px] rounded-full flex items-center justify-center" style={{ background: "hsl(0 0% 12%)", border: "2px solid hsl(38 45% 40%)" }}>
+                <span className="font-display text-4xl font-bold" style={{ color: "hsla(38, 45%, 50%, 0.3)" }}>
+                  {shirtNumber || "?"}
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Player name */}
