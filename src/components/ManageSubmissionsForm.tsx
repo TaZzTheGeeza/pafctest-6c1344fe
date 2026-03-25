@@ -503,8 +503,8 @@ export function ManageSubmissionsForm({ allowedAgeGroups }: { allowedAgeGroups?:
   });
 
   const refresh = () => {
-    queryClient.invalidateQueries({ queryKey: ["all-match-reports"] });
-    queryClient.invalidateQueries({ queryKey: ["all-potm-awards"] });
+    queryClient.invalidateQueries({ queryKey: ["all-match-reports", allowedAgeGroups] });
+    queryClient.invalidateQueries({ queryKey: ["all-potm-awards", allowedAgeGroups] });
   };
 
   const matchGroups: MatchGroup[] = reports.map((r: any) => {
