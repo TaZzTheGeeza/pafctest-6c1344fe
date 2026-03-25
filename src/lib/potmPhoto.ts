@@ -210,7 +210,7 @@ async function normalizePotmImage(base64: string, size = 1024) {
   const drawWidth = subjectWidth * scale;
   const drawHeight = subjectHeight * scale;
   const dx = (size - drawWidth) / 2;
-  const dy = size - bPad - drawHeight;
+  const dy = (size - drawHeight) / 2;
 
   targetContext.clearRect(0, 0, size, size);
   targetContext.drawImage(
