@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, ChevronDown, Trophy, ShoppingBag, Users } from "lucide-react";
+import { Menu, X, ChevronDown, Trophy, ShoppingBag, LogIn } from "lucide-react";
 import { CartDrawer } from "@/components/CartDrawer";
+import { useAuth } from "@/contexts/AuthContext";
 import clubLogo from "@/assets/club-logo.jpg";
 
 const teams = [
