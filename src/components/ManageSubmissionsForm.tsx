@@ -245,7 +245,7 @@ function POTMEditTab({ potmAwards, roster, teamSlug, report, onSaved }: { potmAw
   const handlePhotoSelect = (i: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) { toast.error("Photo must be under 5MB"); return; }
+    if (file.size > 20 * 1024 * 1024) { toast.error("Photo must be under 20MB"); return; }
     const next = [...entries];
     if (next[i].photoPreview) URL.revokeObjectURL(next[i].photoPreview!);
     next[i] = { ...next[i], photoFile: file, photoPreview: URL.createObjectURL(file), removePhoto: false };
