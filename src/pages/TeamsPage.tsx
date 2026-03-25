@@ -2,9 +2,14 @@ import { motion } from "framer-motion";
 import { useParams, Link } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { Users, Clock, MapPin, Calendar, ChevronRight, Shield, Trophy, TrendingUp, BarChart3 } from "lucide-react";
+import { Users, Clock, MapPin, Calendar, ChevronRight, Shield, Trophy, TrendingUp, BarChart3, ExternalLink, Table2 } from "lucide-react";
 import { TeamStatsTable } from "@/components/TeamStatsTable";
 import clubLogo from "@/assets/club-logo.jpg";
+
+const leagueTableUrls: Record<string, string> = {
+  "u13s-black": "https://fulltime.thefa.com/table.html?divisionseason=189349138",
+  "u13s-gold": "https://fulltime.thefa.com/table.html?divisionseason=189349138",
+};
 
 interface TeamData {
   slug: string;
@@ -90,6 +95,32 @@ function TeamDetail({ team }: { team: TeamData }) {
                 </div>
                 <TeamStatsTable ageGroup={team.name} />
               </div>
+
+              {/* League Table Link */}
+              {leagueTableUrls[team.slug] && (
+                <div className="bg-card border border-border rounded-lg overflow-hidden">
+                  <div className="bg-primary/10 px-6 py-3 border-b border-border">
+                    <h2 className="font-display text-sm font-bold text-primary tracking-wider flex items-center gap-2">
+                      <Table2 className="w-4 h-4" />
+                      League Table
+                    </h2>
+                  </div>
+                  <div className="p-6 text-center">
+                    <p className="text-sm text-muted-foreground mb-4">
+                      View the full league standings on FA Full-Time
+                    </p>
+                    <a
+                      href={leagueTableUrls[team.slug]}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 bg-primary text-primary-foreground font-display text-xs tracking-wider px-5 py-2.5 rounded-md hover:bg-primary/90 transition-colors"
+                    >
+                      View League Table
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  </div>
+                </div>
+              )}
             </div>
           </motion.div>
         </div>
