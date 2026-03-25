@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   UserPlus,
   FileText,
@@ -10,6 +11,7 @@ import {
   ClipboardList,
   Shield,
   ChevronRight,
+  Lock,
 } from "lucide-react";
 
 const hubItems = [
@@ -21,6 +23,7 @@ const hubItems = [
     color: "text-green-400",
     bgColor: "bg-green-400/10",
     borderColor: "border-green-400/20",
+    restricted: false,
   },
   {
     title: "Player of the Match",
@@ -30,6 +33,7 @@ const hubItems = [
     color: "text-primary",
     bgColor: "bg-primary/10",
     borderColor: "border-primary/20",
+    restricted: true,
   },
   {
     title: "Club Documents",
@@ -39,6 +43,7 @@ const hubItems = [
     color: "text-blue-400",
     bgColor: "bg-blue-400/10",
     borderColor: "border-blue-400/20",
+    restricted: true,
   },
   {
     title: "Our Teams",
@@ -48,6 +53,7 @@ const hubItems = [
     color: "text-purple-400",
     bgColor: "bg-purple-400/10",
     borderColor: "border-purple-400/20",
+    restricted: false,
   },
   {
     title: "Match Reports",
@@ -57,6 +63,7 @@ const hubItems = [
     color: "text-orange-400",
     bgColor: "bg-orange-400/10",
     borderColor: "border-orange-400/20",
+    restricted: true,
   },
   {
     title: "Safeguarding",
@@ -66,6 +73,7 @@ const hubItems = [
     color: "text-red-400",
     bgColor: "bg-red-400/10",
     borderColor: "border-red-400/20",
+    restricted: false,
   },
 ];
 
