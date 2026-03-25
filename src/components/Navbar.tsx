@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, ChevronDown, Trophy, ShoppingBag, LogIn, Newspaper, CalendarDays, Image, Radio, Award, Clock, UserPlus, FileText, Shield, Info, Heart } from "lucide-react";
+import { Menu, X, ChevronDown, Trophy, ShoppingBag, LogIn, Newspaper, CalendarDays, Image, Radio, Award, Clock, UserPlus, FileText, Shield, Info, Heart, ClipboardList } from "lucide-react";
 import { CartDrawer } from "@/components/CartDrawer";
 import { useAuth } from "@/contexts/AuthContext";
 import clubLogo from "@/assets/club-logo.jpg";
@@ -130,7 +130,7 @@ export function Navbar() {
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
-  const { user, signOut } = useAuth();
+  const { user, signOut, isCoach, isAdmin } = useAuth();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -154,6 +154,11 @@ export function Navbar() {
             <Link to="/shop" className="font-display text-[10px] tracking-[0.15em] uppercase text-primary hover:text-primary/80 transition-colors flex items-center gap-1.5">
               <ShoppingBag className="h-3 w-3" /> Shop
             </Link>
+            {(isCoach || isAdmin) && (
+              <Link to="/coach-panel" className="font-display text-[10px] tracking-[0.15em] uppercase text-primary hover:text-primary/80 transition-colors flex items-center gap-1.5">
+                <ClipboardList className="h-3 w-3" /> Coach Panel
+              </Link>
+            )}
           </div>
           <div className="flex items-center gap-3">
             <CartDrawer />
@@ -267,6 +272,11 @@ export function Navbar() {
                 <ShoppingBag className="h-4 w-4" /> Shop
               </Link>
             </div>
+            {(isCoach || isAdmin) && (
+              <Link to="/coach-panel" onClick={() => setIsOpen(false)} className="flex items-center justify-center gap-2 w-full font-display text-sm tracking-wider py-2.5 rounded-md border border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground transition-all mt-2">
+                <ClipboardList className="h-4 w-4" /> Coach Panel
+              </Link>
+            )}
             {user ? (
               <button onClick={() => { signOut(); setIsOpen(false); }} className="w-full font-display text-sm tracking-wider py-2.5 rounded-md border border-border text-muted-foreground hover:text-primary transition-colors mt-2">
                 Sign Out
