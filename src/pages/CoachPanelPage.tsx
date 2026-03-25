@@ -257,7 +257,10 @@ function POTMForm({ ageGroups }: { ageGroups: string[] }) {
         onChange={(opponent, date) => {
           setFixtureKey(`${date}|${opponent}`);
           setMatchDescription(opponent);
-          setMatchDate(date);
+          // Convert DD/MM/YY or DD/MM/YYYY to YYYY-MM-DD
+          const [dd, mm, yy] = date.split("/");
+          const fullYear = yy.length === 4 ? yy : `20${yy}`;
+          setMatchDate(`${fullYear}-${mm}-${dd}`);
         }}
       />
 
