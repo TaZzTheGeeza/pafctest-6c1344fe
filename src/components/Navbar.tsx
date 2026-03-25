@@ -272,6 +272,11 @@ export function Navbar() {
                 <ShoppingBag className="h-4 w-4" /> Shop
               </Link>
             </div>
+            {(isCoach || isAdmin) && (
+              <Link to="/coach-panel" onClick={() => setIsOpen(false)} className="flex items-center justify-center gap-2 w-full font-display text-sm tracking-wider py-2.5 rounded-md border border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground transition-all mt-2">
+                <ClipboardList className="h-4 w-4" /> Coach Panel
+              </Link>
+            )}
             {user ? (
               <button onClick={() => { signOut(); setIsOpen(false); }} className="w-full font-display text-sm tracking-wider py-2.5 rounded-md border border-border text-muted-foreground hover:text-primary transition-colors mt-2">
                 Sign Out
