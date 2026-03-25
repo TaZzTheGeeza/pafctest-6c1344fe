@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useParams, Link } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { Clock, MapPin, Calendar, ChevronRight, Shield, Trophy, TrendingUp, BarChart3, Loader2 } from "lucide-react";
+import { Clock, MapPin, Calendar, ChevronRight, Shield, Trophy, TrendingUp, BarChart3, Loader2, Navigation } from "lucide-react";
 import { TeamStatsTable } from "@/components/TeamStatsTable";
 import { LeagueTable } from "@/components/LeagueTable";
 import { useTeamFixtures, FAFixture } from "@/hooks/useTeamFixtures";
@@ -152,6 +152,17 @@ function TeamDetail({ team }: { team: TeamData }) {
                                 <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
                                   <MapPin className="w-2.5 h-2.5" />{fix.venue}
                                 </span>
+                              )}
+                              {fix.venue && (
+                                <a
+                                  href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(fix.venue)}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="text-[10px] text-primary hover:text-primary/80 flex items-center gap-0.5 transition-colors"
+                                >
+                                  <Navigation className="w-2.5 h-2.5" />Directions
+                                </a>
                               )}
                             </div>
                           </div>
