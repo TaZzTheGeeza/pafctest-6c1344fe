@@ -291,8 +291,17 @@ function POTMEditTab({ potmAwards, roster, teamSlug, onSaved }: { potmAwards: an
         if (entry.id) {
           const { error } = await supabase.from("player_of_the_match").update(data).eq("id", entry.id);
           if (error) throw error;
+        } else {
+          // Insert new POTM award linked to this match report
+          const { error } = await supabase.from("player_of_the_match").insert({
+            ...data,
+            team_name: group_report.team_name,
+            age_group: group_report.age_group,
+            award_date: group_report.match_date,
+            match_description: group_report.opponent,
+          });
+          if (error) throw error;
         }
-        // New entries would need team_name, age_group, award_date etc - skip for now
       }
 
       entries.forEach(e => { if (e.photoPreview) URL.revokeObjectURL(e.photoPreview); });
