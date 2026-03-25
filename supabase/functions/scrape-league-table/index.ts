@@ -19,16 +19,16 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { divisionSeason } = await req.json();
+    const { divisionSeason, tableUrl } = await req.json();
 
-    if (!divisionSeason) {
+    if (!divisionSeason && !tableUrl) {
       return new Response(
-        JSON.stringify({ success: false, error: 'divisionSeason is required' }),
+        JSON.stringify({ success: false, error: 'divisionSeason or tableUrl is required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const url = `https://fulltime.thefa.com/table.html?divisionseason=${divisionSeason}`;
+    const url = tableUrl || `https://fulltime.thefa.com/table.html?divisionseason=${divisionSeason}`;
     console.log('Scraping league table from:', url);
 
     const response = await fetch(url, {
