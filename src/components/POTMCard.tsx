@@ -1,6 +1,7 @@
 import { Trophy, Star, Calendar, Users } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState } from "react";
+import potmCardBg from "@/assets/potm-card-bg.jpg";
 
 interface POTMCardProps {
   playerName: string;
@@ -62,9 +63,18 @@ export function POTMCard({
             <div className="w-full h-full rounded-2xl bg-card" />
           </div>
           <div className="relative z-10">
-            {/* Photo area */}
-            <div className="relative h-[320px] overflow-hidden bg-gradient-to-b from-secondary to-card">
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center_70%,_hsla(38,45%,47%,0.15)_0%,_transparent_70%)]" />
+            {/* Photo area with club-themed background */}
+            <div className="relative h-[320px] overflow-hidden">
+              {/* Club-themed background */}
+              <img
+                src={potmCardBg}
+                alt=""
+                className="absolute inset-0 w-full h-full object-cover"
+                loading="lazy"
+                aria-hidden="true"
+              />
+              {/* Gold radial glow */}
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center_60%,_hsla(38,45%,47%,0.2)_0%,_transparent_70%)]" />
 
               {/* Age group badge */}
               <div className="absolute top-4 left-4 z-20">
@@ -80,16 +90,17 @@ export function POTMCard({
                 </div>
               </div>
 
-              {/* Player image */}
+              {/* Player image (transparent background from AI removal) */}
               {photoUrl ? (
                 <img
                   src={photoUrl}
                   alt={playerName}
-                  className="absolute inset-0 w-full h-full object-cover object-center"
+                  className="absolute inset-0 w-full h-full object-contain object-bottom z-10"
+                  loading="lazy"
                 />
               ) : (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-28 h-28 rounded-full bg-secondary border-2 border-primary/30 flex items-center justify-center">
+                <div className="absolute inset-0 flex items-center justify-center z-10">
+                  <div className="w-28 h-28 rounded-full bg-secondary/80 border-2 border-primary/30 flex items-center justify-center backdrop-blur-sm">
                     <span className="font-display text-5xl font-bold text-primary/40">
                       {shirtNumber || playerName.charAt(0)}
                     </span>
@@ -97,12 +108,12 @@ export function POTMCard({
                 </div>
               )}
 
-              {/* Bottom gradient fade */}
-              <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-card via-card/80 to-transparent" />
+              {/* Bottom gradient fade into card */}
+              <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-card via-card/80 to-transparent z-10" />
             </div>
 
             {/* Minimal info on front */}
-            <div className="relative px-5 pb-4 -mt-8">
+            <div className="relative px-5 pb-4 -mt-8 z-10">
               <h3 className="font-display text-xl font-bold uppercase tracking-wide text-foreground leading-tight">
                 {playerName}
               </h3>
