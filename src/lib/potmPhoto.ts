@@ -68,17 +68,12 @@ function colorDistance(a: [number, number, number], b: [number, number, number])
   return Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]) + Math.abs(a[2] - b[2]);
 }
 
-function isGreenScreenPixel(r: number, g: number, b: number) {
-  return g > 180 && g > r + 60 && g > b + 60;
-}
-
 function isNearBackgroundColor(
   r: number,
   g: number,
   b: number,
   backgroundSamples: [number, number, number][],
 ) {
-  if (isGreenScreenPixel(r, g, b)) return true;
   return backgroundSamples.some((sample) => colorDistance([r, g, b], sample) <= 30);
 }
 
