@@ -326,6 +326,7 @@ export async function uploadPotmPhoto(
   const fallbackBase64 = await resizeImageToBase64(file, 1024);
   const aiBase64 = await resizeImageToBase64(file, 384, "image/jpeg", 0.82);
   let finalBase64 = fallbackBase64;
+  const uploadVersion = Date.now();
 
   options.onStatus?.("processing");
 
@@ -359,7 +360,7 @@ export async function uploadPotmPhoto(
   const datePrefix = options.awardDate || new Date().toISOString().split("T")[0];
   const teamPrefix = options.teamSlug ? `${sanitizePathSegment(options.teamSlug)}/` : "";
   const playerSegment = sanitizePathSegment(options.playerName);
-  const path = `potm/${teamPrefix}${datePrefix}-${playerSegment}.png`;
+  const path = `potm/${teamPrefix}${datePrefix}-${playerSegment}-${uploadVersion}.png`;
   const blob = base64ToBlob(finalBase64);
 
   const { error: uploadError } = await supabase.storage
@@ -369,5 +370,5 @@ export async function uploadPotmPhoto(
   if (uploadError) throw uploadError;
 
   const { data: urlData } = supabase.storage.from("club-photos").getPublicUrl(path);
-  return urlData.publicUrl;
+  return `${urlData.publicUrl}?v=${uploadVersion}`;
 }
