@@ -200,18 +200,12 @@ function POTMForm({ ageGroups }: { ageGroups: string[] }) {
         <h3 className="font-display text-lg font-bold text-foreground">Player of the Match</h3>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Age Group *</label>
-          <select value={form.age_group} onChange={(e) => setForm({ ...form, age_group: e.target.value })} className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground">
-            <option value="">Select age group</option>
-            {ageGroups.map((g) => <option key={g} value={g}>{g}</option>)}
-          </select>
-        </div>
-        <div>
-          <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Team Name *</label>
-          <input value={form.team_name} onChange={(e) => setForm({ ...form, team_name: e.target.value })} placeholder="e.g. Peterborough Athletic U9s" className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground" />
-        </div>
+      <div>
+        <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Team *</label>
+        <select value={form.age_group} onChange={(e) => setForm({ ...form, age_group: e.target.value })} className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground">
+          <option value="">Select team</option>
+          {ageGroups.map((g) => <option key={g} value={g}>{g}</option>)}
+        </select>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -331,18 +325,12 @@ function MatchReportForm({ ageGroups }: { ageGroups: string[] }) {
         <h3 className="font-display text-lg font-bold text-foreground">Match Report</h3>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Age Group *</label>
-          <select value={form.age_group} onChange={(e) => setForm({ ...form, age_group: e.target.value })} className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground">
-            <option value="">Select age group</option>
-            {ageGroups.map((g) => <option key={g} value={g}>{g}</option>)}
-          </select>
-        </div>
-        <div>
-          <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Your Team Name *</label>
-          <input value={form.team_name} onChange={(e) => setForm({ ...form, team_name: e.target.value })} placeholder="e.g. Peterborough Athletic U9s" className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground" />
-        </div>
+      <div>
+        <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Team *</label>
+        <select value={form.age_group} onChange={(e) => setForm({ ...form, age_group: e.target.value })} className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground">
+          <option value="">Select team</option>
+          {ageGroups.map((g) => <option key={g} value={g}>{g}</option>)}
+        </select>
       </div>
 
       <FixtureSelect
