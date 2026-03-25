@@ -21,8 +21,9 @@ interface PlayerStat {
   isNew?: boolean;
 }
 
-export function PlayerStatsForm() {
-  const [selectedGroup, setSelectedGroup] = useState("");
+export function PlayerStatsForm({ allowedAgeGroups }: { allowedAgeGroups?: string[] }) {
+  const visibleGroups = allowedAgeGroups && allowedAgeGroups.length > 0 ? allowedAgeGroups : ageGroups;
+  const [selectedGroup, setSelectedGroup] = useState(visibleGroups.length === 1 ? visibleGroups[0] : "");
   const [players, setPlayers] = useState<PlayerStat[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
