@@ -1,6 +1,6 @@
-import { Trophy } from "lucide-react";
+import { Trophy, Star, Calendar, Users } from "lucide-react";
 import { motion } from "framer-motion";
-import { useEffect, useRef } from "react";
+import { useRef, useEffect } from "react";
 
 interface POTMCardProps {
   playerName: string;
@@ -28,198 +28,143 @@ export function POTMCard({
   const formattedDate = (() => {
     try {
       const d = new Date(awardDate);
-      return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short" });
+      return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
     } catch {
       return awardDate;
     }
   })();
 
-  const shimmerRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const el = shimmerRef.current;
+    const el = cardRef.current;
     if (!el) return;
     const handleMove = (e: MouseEvent) => {
       const rect = el.getBoundingClientRect();
-      const x = ((e.clientX - rect.left) / rect.width) * 100;
-      const y = ((e.clientY - rect.top) / rect.height) * 100;
-      el.style.setProperty("--shimmer-x", `${x}%`);
-      el.style.setProperty("--shimmer-y", `${y}%`);
+      const x = ((e.clientX - rect.left) / rect.width - 0.5) * 12;
+      const y = ((e.clientY - rect.top) / rect.height - 0.5) * -12;
+      el.style.transform = `perspective(800px) rotateY(${x}deg) rotateX(${y}deg) scale(1.02)`;
+    };
+    const handleLeave = () => {
+      el.style.transform = "perspective(800px) rotateY(0deg) rotateX(0deg) scale(1)";
     };
     el.addEventListener("mousemove", handleMove);
-    return () => el.removeEventListener("mousemove", handleMove);
+    el.addEventListener("mouseleave", handleLeave);
+    return () => {
+      el.removeEventListener("mousemove", handleMove);
+      el.removeEventListener("mouseleave", handleLeave);
+    };
   }, []);
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 24, scale: 0.95 }}
-      whileInView={{ opacity: 1, y: 0, scale: 1 }}
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      transition={{ duration: 0.5, delay: index * 0.08 }}
-      className="group"
+      transition={{ duration: 0.5, delay: index * 0.06 }}
     >
-      {/* Outer card shape – FIFA UT proportions */}
-      <div ref={shimmerRef} className="potm-card relative w-[220px] mx-auto select-none" style={{ aspectRatio: "0.66" }}>
-        <svg
-          viewBox="0 0 220 333"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          className="absolute inset-0 w-full h-full drop-shadow-xl"
-          preserveAspectRatio="none"
-        >
-          <defs>
-            <linearGradient id={`card-bg-${index}`} x1="0" y1="0" x2="220" y2="333" gradientUnits="userSpaceOnUse">
-              <stop offset="0%" stopColor="hsl(38 40% 28%)" />
-              <stop offset="30%" stopColor="hsl(38 30% 18%)" />
-              <stop offset="60%" stopColor="hsl(30 20% 12%)" />
-              <stop offset="100%" stopColor="hsl(38 40% 22%)" />
-            </linearGradient>
-            <linearGradient id={`card-border-${index}`} x1="0" y1="0" x2="220" y2="333" gradientUnits="userSpaceOnUse">
-              <stop offset="0%" stopColor="hsl(38 50% 50%)" />
-              <stop offset="50%" stopColor="hsl(38 45% 35%)" />
-              <stop offset="100%" stopColor="hsl(38 50% 45%)" />
-            </linearGradient>
-            <clipPath id={`card-clip-${index}`}>
-              <path d="M20 0 H200 Q220 0 220 20 V313 Q220 333 200 333 H20 Q0 333 0 313 V20 Q0 0 20 0Z" />
-            </clipPath>
-          </defs>
-          {/* Card fill */}
-          <path
-            d="M20 0 H200 Q220 0 220 20 V313 Q220 333 200 333 H20 Q0 333 0 313 V20 Q0 0 20 0Z"
-            fill={`url(#card-bg-${index})`}
-          />
-          {/* Border */}
-          <path
-            d="M20 0 H200 Q220 0 220 20 V313 Q220 333 200 333 H20 Q0 333 0 313 V20 Q0 0 20 0Z"
-            fill="none"
-            stroke={`url(#card-border-${index})`}
-            strokeWidth="2"
-          />
-          {/* Decorative swoosh wings behind photo */}
-          <path
-            d="M10 110 Q50 70 110 85 Q170 70 210 110"
-            stroke="hsl(38 45% 40%)"
-            strokeWidth="1"
-            fill="none"
-            opacity="0.4"
-          />
-          <path
-            d="M5 120 Q40 60 110 80 Q180 60 215 120"
-            stroke="hsl(38 45% 35%)"
-            strokeWidth="0.8"
-            fill="none"
-            opacity="0.25"
-          />
-          <path
-            d="M15 130 Q55 80 110 95 Q165 80 205 130"
-            stroke="hsl(38 45% 45%)"
-            strokeWidth="0.6"
-            fill="none"
-            opacity="0.2"
-          />
-          {/* Bottom divider line */}
-          <line x1="30" y1="240" x2="190" y2="240" stroke="hsl(38 45% 40%)" strokeWidth="0.8" opacity="0.5" />
-          <line x1="30" y1="280" x2="190" y2="280" stroke="hsl(38 45% 40%)" strokeWidth="0.5" opacity="0.3" />
-          {/* Animated gold particles */}
-          {Array.from({ length: 12 }).map((_, i) => (
-            <circle
-              key={`particle-${i}`}
-              className="potm-particle"
-              cx={20 + Math.random() * 180}
-              cy={20 + Math.random() * 293}
-              r={0.8 + Math.random() * 1.2}
-              fill="hsl(38 55% 65%)"
-              opacity="0"
-              style={{
-                animationDelay: `${i * 0.4}s`,
-                animationDuration: `${2 + Math.random() * 2}s`,
-              } as React.CSSProperties}
-            />
-          ))}
-        </svg>
+      <div
+        ref={cardRef}
+        className="potm-card-v2 relative w-[280px] rounded-2xl overflow-hidden cursor-default"
+        style={{ transition: "transform 0.15s ease-out" }}
+      >
+        {/* Gold accent border */}
+        <div className="absolute inset-0 rounded-2xl p-[1px] bg-gradient-to-br from-primary via-primary/30 to-primary/60">
+          <div className="w-full h-full rounded-2xl bg-card" />
+        </div>
 
-        {/* Holographic shimmer overlay */}
-        <div className="potm-shimmer absolute inset-0 rounded-2xl pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        {/* Card content */}
+        <div className="relative z-10">
+          {/* Photo area */}
+          <div className="relative h-[300px] overflow-hidden bg-gradient-to-b from-secondary to-card">
+            {/* Subtle gold radial glow behind player */}
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center_70%,_hsla(38,45%,47%,0.15)_0%,_transparent_70%)]" />
 
-        {/* Content overlay */}
-        <div className="absolute inset-0 flex flex-col" style={{ padding: "12px 16px" }}>
-          {/* Top row: Rating + Position */}
-          <div className="flex items-start justify-between mb-1">
-            <div className="flex flex-col items-center">
-              <span className="font-display text-[28px] font-bold leading-none" style={{ color: "hsl(38 50% 60%)" }}>
-                ★
-              </span>
-              <span className="font-display text-[9px] font-bold uppercase tracking-wider mt-0.5" style={{ color: "hsl(38 45% 50%)" }}>
-                POTM
+            {/* Age group badge */}
+            <div className="absolute top-4 left-4 z-20">
+              <span className="font-display text-[10px] font-bold uppercase tracking-[0.2em] px-2.5 py-1 rounded-full bg-primary/20 text-primary border border-primary/30 backdrop-blur-sm">
+                {ageGroup}
               </span>
             </div>
-            <span className="font-display text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded" style={{ color: "hsl(38 45% 55%)", background: "hsla(38, 45%, 40%, 0.2)", border: "1px solid hsla(38, 45%, 40%, 0.3)" }}>
-              {ageGroup}
-            </span>
-          </div>
 
-          {/* Player photo – large, no background, floating over card */}
-          <div className="flex-1 flex items-center justify-center relative" style={{ marginTop: "-8px", marginBottom: "0px", minHeight: "150px" }}>
+            {/* POTM star badge */}
+            <div className="absolute top-4 right-4 z-20">
+              <div className="w-9 h-9 rounded-full bg-primary/20 border border-primary/40 backdrop-blur-sm flex items-center justify-center">
+                <Star className="h-4 w-4 text-primary fill-primary" />
+              </div>
+            </div>
+
+            {/* Player image */}
             {photoUrl ? (
               <img
                 src={photoUrl}
                 alt={playerName}
-                className="max-h-[160px] w-auto object-contain drop-shadow-lg group-hover:scale-110 transition-transform duration-700 relative z-10"
+                className="absolute inset-0 w-full h-full object-cover object-top"
               />
             ) : (
-              <div className="w-[120px] h-[120px] rounded-full flex items-center justify-center" style={{ background: "hsl(0 0% 12%)", border: "2px solid hsl(38 45% 40%)" }}>
-                <span className="font-display text-4xl font-bold" style={{ color: "hsla(38, 45%, 50%, 0.3)" }}>
-                  {shirtNumber || "?"}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-28 h-28 rounded-full bg-secondary border-2 border-primary/30 flex items-center justify-center">
+                  <span className="font-display text-5xl font-bold text-primary/40">
+                    {shirtNumber || playerName.charAt(0)}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Bottom gradient fade */}
+            <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-card via-card/80 to-transparent" />
+
+            {/* Shirt number overlay */}
+            {shirtNumber && (
+              <div className="absolute bottom-14 right-4 z-20">
+                <span className="font-display text-5xl font-bold text-primary/15">
+                  {shirtNumber}
                 </span>
               </div>
             )}
           </div>
 
-          {/* Player name */}
-          <div className="text-center mb-1">
-            {shirtNumber && (
-              <span className="font-display text-[10px] block" style={{ color: "hsl(38 45% 45%)" }}>
-                #{shirtNumber}
-              </span>
-            )}
-            <h3 className="font-display text-lg font-bold uppercase tracking-wide leading-tight text-foreground">
+          {/* Info section */}
+          <div className="relative px-5 pb-5 -mt-8">
+            {/* Player name */}
+            <h3 className="font-display text-xl font-bold uppercase tracking-wide text-foreground leading-tight">
               {playerName}
             </h3>
-          </div>
 
-          {/* Stats row – mimicking FIFA stat bar */}
-          <div className="grid grid-cols-4 gap-0 text-center mb-1.5" style={{ marginTop: "2px" }}>
-            {[
-              { label: "TEAM", value: teamName.length > 8 ? teamName.substring(0, 8) : teamName },
-              { label: "VS", value: matchDescription?.replace(/^vs\s*/i, "").substring(0, 8) || "—" },
-              { label: "DATE", value: formattedDate },
-              { label: "AWD", value: "⭐" },
-            ].map((stat) => (
-              <div key={stat.label}>
-                <p className="font-display text-[8px] font-bold uppercase tracking-widest" style={{ color: "hsl(38 45% 45%)" }}>
-                  {stat.label}
-                </p>
-                <p className="font-body text-[9px] font-medium text-foreground/80 mt-0.5 truncate px-0.5">
-                  {stat.value}
-                </p>
+            {/* Team & match info */}
+            <div className="mt-2.5 space-y-1.5">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Users className="h-3 w-3 text-primary/70 shrink-0" />
+                <span className="text-xs font-body truncate">{teamName}</span>
               </div>
-            ))}
-          </div>
+              {matchDescription && (
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Trophy className="h-3 w-3 text-primary/70 shrink-0" />
+                  <span className="text-xs font-body truncate">vs {matchDescription}</span>
+                </div>
+              )}
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Calendar className="h-3 w-3 text-primary/70 shrink-0" />
+                <span className="text-xs font-body">{formattedDate}</span>
+              </div>
+            </div>
 
-          {/* Bottom row: reason + trophy icon */}
-          <div className="flex items-center justify-center gap-1 mt-auto">
-            {reason ? (
-              <p className="font-body text-[8px] text-foreground/50 italic text-center leading-tight line-clamp-2 px-1">
-                "{reason}"
-              </p>
-            ) : (
-              <div className="flex items-center gap-1">
-                <Trophy className="h-3 w-3" style={{ color: "hsl(38 45% 50%)" }} />
-                <span className="font-display text-[9px] uppercase tracking-wider" style={{ color: "hsl(38 45% 50%)" }}>
-                  Player of the Match
-                </span>
+            {/* Reason quote */}
+            {reason && (
+              <div className="mt-3 pt-3 border-t border-border">
+                <p className="text-xs font-body text-muted-foreground italic leading-relaxed line-clamp-2">
+                  "{reason}"
+                </p>
               </div>
             )}
+
+            {/* POTM label */}
+            <div className="mt-3 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-primary/10 border border-primary/20">
+              <Star className="h-3 w-3 text-primary fill-primary" />
+              <span className="font-display text-[10px] font-bold uppercase tracking-[0.15em] text-primary">
+                Player of the Match
+              </span>
+            </div>
           </div>
         </div>
       </div>
