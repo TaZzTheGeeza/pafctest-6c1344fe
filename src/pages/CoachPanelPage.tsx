@@ -11,6 +11,7 @@ import { ManageSubmissionsForm } from "@/components/ManageSubmissionsForm";
 import { PlayerStatsForm } from "@/components/PlayerStatsForm";
 import { useUserAgeGroups } from "@/hooks/useUserAgeGroups";
 import { useTeamFixtures, type FAFixture } from "@/hooks/useTeamFixtures";
+import { useTeamRoster } from "@/hooks/useTeamRoster";
 import { faTeamConfigs } from "@/lib/faFixtureConfig";
 import { uploadPotmPhoto } from "@/lib/potmPhoto";
 
@@ -126,6 +127,10 @@ function POTMForm({ ageGroups }: { ageGroups: string[] }) {
   const [entries, setEntries] = useState<POTMEntry[]>([
     { player_name: "", shirt_number: "", reason: "", photoFile: null, photoPreview: null },
   ]);
+
+  const teamSlug = AGE_GROUP_TO_SLUG[ageGroup] || "";
+  const { data: roster = [] } = useTeamRoster(teamSlug);
+  const selectedNames = entries.map(e => e.player_name).filter(Boolean);
 
   const addEntry = () => {
     setEntries([...entries, { player_name: "", shirt_number: "", reason: "", photoFile: null, photoPreview: null }]);
@@ -270,11 +275,28 @@ function POTMForm({ ageGroups }: { ageGroups: string[] }) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Player Full Name *</label>
-              <input value={entry.player_name} onChange={(e) => updateEntry(i, "player_name", e.target.value)} placeholder="Full name" className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground" />
+              <select
+                value={entry.player_name}
+                onChange={(e) => {
+                  const selected = roster.find(p => p.first_name === e.target.value);
+                  updateEntry(i, "player_name", e.target.value);
+                  if (selected?.shirt_number) updateEntry(i, "shirt_number", String(selected.shirt_number));
+                }}
+                className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground"
+              >
+                <option value="">Select player</option>
+                {roster
+                  .filter(p => !selectedNames.includes(p.first_name) || p.first_name === entry.player_name)
+                  .map((p) => (
+                    <option key={p.id} value={p.first_name}>
+                      {p.shirt_number ? `#${p.shirt_number} ` : ""}{p.first_name}
+                    </option>
+                  ))}
+              </select>
             </div>
             <div>
               <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Shirt Number</label>
-              <input type="number" value={entry.shirt_number} onChange={(e) => updateEntry(i, "shirt_number", e.target.value)} placeholder="e.g. 7" className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground" />
+              <input type="number" value={entry.shirt_number} onChange={(e) => updateEntry(i, "shirt_number", e.target.value)} placeholder="e.g. 7" className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground" readOnly />
             </div>
           </div>
 
