@@ -2,7 +2,7 @@ export interface FAFixtureConfig {
   team: string;
   slug: string;
   fixtureUrl: string;
-  resultUrl: string;
+  resultUrl?: string;
 }
 
 const season = "233257866";
