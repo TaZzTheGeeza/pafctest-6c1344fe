@@ -10,6 +10,24 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useTeamRoster, getAgeGroup } from "@/hooks/useTeamRoster";
 import type { FAFixture } from "@/hooks/useTeamFixtures";
 
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function base64ToBlob(base64: string): Blob {
+  const parts = base64.split(",");
+  const mime = parts[0]?.match(/:(.*?);/)?.[1] || "image/png";
+  const raw = atob(parts[1]);
+  const arr = new Uint8Array(raw.length);
+  for (let i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
+  return new Blob([arr], { type: mime });
+}
+
 interface POTMEntry {
   playerId: string;
   reason: string;
