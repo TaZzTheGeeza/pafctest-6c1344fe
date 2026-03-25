@@ -85,6 +85,36 @@ function isNearBackgroundColor(
   return backgroundSamples.some((sample) => colorDistance([r, g, b], sample) <= 30);
 }
 
+function applyGreenScreenTransparency(data: Uint8ClampedArray) {
+  for (let index = 0; index < data.length; index += 4) {
+    const alpha = data[index + 3];
+    if (alpha === 0) continue;
+
+    const r = data[index];
+    const g = data[index + 1];
+    const b = data[index + 2];
+    const maxOther = Math.max(r, b);
+    const greenDominance = g - maxOther;
+    const colorDistanceToPureGreen = Math.abs(r) + Math.abs(g - 255) + Math.abs(b);
+
+    if (g > 96 && greenDominance > 22) {
+      if (greenDominance > 54 || colorDistanceToPureGreen < 170) {
+        data[index + 3] = 0;
+        continue;
+      }
+
+      const fadeStrength = Math.min(1, Math.max(0, (greenDominance - 22) / 32));
+      const nextAlpha = Math.round(alpha * (1 - fadeStrength));
+      data[index + 3] = Math.min(alpha, nextAlpha);
+
+      const neutral = Math.round((r + b) / 2);
+      data[index] = Math.round(r * 0.82 + neutral * 0.18);
+      data[index + 1] = Math.round(g * 0.2 + neutral * 0.8);
+      data[index + 2] = Math.round(b * 0.82 + neutral * 0.18);
+    }
+  }
+}
+
 function getPixelIndex(x: number, y: number, width: number) {
   return (y * width + x) * 4;
 }
@@ -200,6 +230,8 @@ async function normalizePotmImage(base64: string, size = 1024) {
     enqueue(x, y + 1);
     enqueue(x, y - 1);
   }
+
+  applyGreenScreenTransparency(data);
 
   // ── Remove green fringe from edges (3-pass for deeper cleanup) ──
   for (let pass = 0; pass < 4; pass++) {
