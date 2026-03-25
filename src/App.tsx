@@ -29,6 +29,7 @@ import TeamProfilePage from "./pages/TeamProfilePage.tsx";
 import MatchDayPage from "./pages/MatchDayPage.tsx";
 import POTMPage from "./pages/POTMPage.tsx";
 import CalendarPage from "./pages/CalendarPage.tsx";
+import PlayerHubPage from "./pages/PlayerHubPage.tsx";
 import CoachPanelPage from "./pages/CoachPanelPage.tsx";
 import AuthPage from "./pages/AuthPage.tsx";
 import NotFound from "./pages/NotFound.tsx";
@@ -56,6 +57,7 @@ function AppContent() {
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/safeguarding" element={<SafeguardingPage />} />
         <Route path="/register" element={<PlayerRegistrationPage />} />
+        <Route path="/player-hub" element={<PlayerHubPage />} />
         <Route path="/raffle" element={<RafflePage />} />
         <Route path="/raffle-admin" element={<RaffleAdminPage />} />
         <Route path="/tournament" element={<TournamentPage />} />

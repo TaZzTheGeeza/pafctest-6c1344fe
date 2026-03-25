@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, ChevronDown, Trophy, ShoppingBag } from "lucide-react";
+import { Menu, X, ChevronDown, Trophy, ShoppingBag, Users } from "lucide-react";
 import { CartDrawer } from "@/components/CartDrawer";
 import clubLogo from "@/assets/club-logo.jpg";
 
@@ -16,6 +16,14 @@ const communityItems = [
   { label: "Match Day Hub", path: "/match-day" },
   { label: "Player of the Match", path: "/player-of-the-match" },
   { label: "Calendar", path: "/calendar" },
+];
+
+const playerItems = [
+  { label: "Player Hub", path: "/player-hub" },
+  { label: "Registration", path: "/register" },
+  { label: "Our Teams", path: "/teams" },
+  { label: "Club Documents", path: "/club-documents" },
+  { label: "Safeguarding", path: "/safeguarding" },
 ];
 
 const aboutItems = [
@@ -34,12 +42,11 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   { label: "Home", path: "/" },
-  { label: "Teams", path: "/teams", dropdown: teams.map(t => ({ label: t, path: `/teams/${t.toLowerCase().replace(/\s+/g, "-")}` })) },
+  { label: "Players", path: "/player-hub", dropdown: playerItems },
   { label: "PAFC TV", path: "https://www.youtube.com/@PeterboroughAthleticFC", external: true },
   { label: "Community", path: "/news", dropdown: communityItems },
   { label: "About", path: "/club-info", dropdown: aboutItems },
   { label: "Raffle", path: "/raffle" },
-  { label: "Register", path: "/register" },
   { label: "Contact", path: "/contact" },
 ];
 
