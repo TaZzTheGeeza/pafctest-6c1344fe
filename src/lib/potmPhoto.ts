@@ -63,13 +63,16 @@ function colorDistance(a: [number, number, number], b: [number, number, number])
   return Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]) + Math.abs(a[2] - b[2]);
 }
 
+function channelSpread(r: number, g: number, b: number) {
+  return Math.max(r, g, b) - Math.min(r, g, b);
+}
+
 function isCheckerboardPixel(r: number, g: number, b: number) {
-  // Light gray squares (~204,204,204) and white squares (~255,255,255)
-  const isLightGray = Math.abs(r - 204) < 15 && Math.abs(g - 204) < 15 && Math.abs(b - 204) < 15;
-  const isWhite = r > 240 && g > 240 && b > 240;
-  // Also catch mid-gray checkerboard variants
-  const isMidGray = Math.abs(r - 192) < 20 && Math.abs(g - 192) < 20 && Math.abs(b - 192) < 20;
-  return isLightGray || isWhite || isMidGray;
+  const spread = channelSpread(r, g, b);
+  if (spread > 14) return false;
+
+  const average = (r + g + b) / 3;
+  return (average >= 184 && average <= 218) || average >= 244;
 }
 
 function isNearBackgroundColor(
@@ -78,7 +81,22 @@ function isNearBackgroundColor(
   b: number,
   backgroundSamples: [number, number, number][],
 ) {
-  return backgroundSamples.some((sample) => colorDistance([r, g, b], sample) <= 36);
+  const pixelSpread = channelSpread(r, g, b);
+
+  return backgroundSamples.some((sample) => {
+    const sampleSpread = channelSpread(sample[0], sample[1], sample[2]);
+    const threshold = sampleSpread <= 22 ? 24 : 36;
+
+    if (colorDistance([r, g, b], sample) > threshold) {
+      return false;
+    }
+
+    if (sampleSpread <= 22 && pixelSpread > 22) {
+      return false;
+    }
+
+    return true;
+  });
 }
 
 function getPixelIndex(x: number, y: number, width: number) {
