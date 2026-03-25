@@ -14,6 +14,209 @@ export type Database = {
   }
   public: {
     Tables: {
+      announcements: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          message: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          message: string
+          type?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          message?: string
+          type?: string
+        }
+        Relationships: []
+      }
+      club_events: {
+        Row: {
+          created_at: string
+          description: string | null
+          end_time: string | null
+          event_type: string
+          id: string
+          is_all_day: boolean
+          location: string | null
+          start_time: string
+          team: string | null
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          end_time?: string | null
+          event_type?: string
+          id?: string
+          is_all_day?: boolean
+          location?: string | null
+          start_time: string
+          team?: string | null
+          title: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          end_time?: string | null
+          event_type?: string
+          id?: string
+          is_all_day?: boolean
+          location?: string | null
+          start_time?: string
+          team?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
+      gallery_albums: {
+        Row: {
+          cover_url: string | null
+          created_at: string
+          description: string | null
+          event_date: string | null
+          id: string
+          title: string
+        }
+        Insert: {
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          event_date?: string | null
+          id?: string
+          title: string
+        }
+        Update: {
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          event_date?: string | null
+          id?: string
+          title?: string
+        }
+        Relationships: []
+      }
+      gallery_photos: {
+        Row: {
+          album_id: string
+          caption: string | null
+          created_at: string
+          id: string
+          sort_order: number
+          url: string
+        }
+        Insert: {
+          album_id: string
+          caption?: string | null
+          created_at?: string
+          id?: string
+          sort_order?: number
+          url: string
+        }
+        Update: {
+          album_id?: string
+          caption?: string | null
+          created_at?: string
+          id?: string
+          sort_order?: number
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gallery_photos_album_id_fkey"
+            columns: ["album_id"]
+            isOneToOne: false
+            referencedRelation: "gallery_albums"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      live_matches: {
+        Row: {
+          age_group: string
+          away_score: number
+          away_team: string
+          created_at: string
+          home_score: number
+          home_team: string
+          id: string
+          kickoff_time: string | null
+          match_events: Json | null
+          status: string
+          venue: string | null
+        }
+        Insert: {
+          age_group: string
+          away_score?: number
+          away_team: string
+          created_at?: string
+          home_score?: number
+          home_team: string
+          id?: string
+          kickoff_time?: string | null
+          match_events?: Json | null
+          status?: string
+          venue?: string | null
+        }
+        Update: {
+          age_group?: string
+          away_score?: number
+          away_team?: string
+          created_at?: string
+          home_score?: number
+          home_team?: string
+          id?: string
+          kickoff_time?: string | null
+          match_events?: Json | null
+          status?: string
+          venue?: string | null
+        }
+        Relationships: []
+      }
+      player_of_the_match: {
+        Row: {
+          age_group: string
+          award_date: string
+          created_at: string
+          id: string
+          match_description: string | null
+          photo_url: string | null
+          player_name: string
+          reason: string | null
+          team_name: string
+        }
+        Insert: {
+          age_group: string
+          award_date?: string
+          created_at?: string
+          id?: string
+          match_description?: string | null
+          photo_url?: string | null
+          player_name: string
+          reason?: string | null
+          team_name: string
+        }
+        Update: {
+          age_group?: string
+          award_date?: string
+          created_at?: string
+          id?: string
+          match_description?: string | null
+          photo_url?: string | null
+          player_name?: string
+          reason?: string | null
+          team_name?: string
+        }
+        Relationships: []
+      }
       player_registrations: {
         Row: {
           additional_info: string | null
