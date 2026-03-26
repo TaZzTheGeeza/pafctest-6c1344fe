@@ -89,8 +89,8 @@ export function TeamChat({ teamSlug }: { teamSlug: string }) {
 
   const prevMessageCount = useRef(0);
   useEffect(() => {
-    if (messages.length > prevMessageCount.current) {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messages.length > prevMessageCount.current && messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
     }
     prevMessageCount.current = messages.length;
   }, [messages.length]);
@@ -233,7 +233,7 @@ export function TeamChat({ teamSlug }: { teamSlug: string }) {
         </div>
 
         {/* Messages Area */}
-        <div className="flex flex-col">
+        <div className="flex flex-col min-h-0 overflow-hidden">
           {activeChannel ? (
             <>
               <div className="border-b border-border px-4 py-2.5 flex items-center gap-2">
