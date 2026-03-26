@@ -395,7 +395,14 @@ function MatchReportForm({ ageGroups }: { ageGroups: string[] }) {
       goal_scorers: buildText(goalEntries) || null,
       assists: buildText(assistEntries) || null,
       notes: notes.trim() || null,
-      match_date: matchDate || new Date().toISOString().split("T")[0],
+      match_date: (() => {
+        let d = matchDate || new Date().toISOString().split("T")[0];
+        if (d.includes("/")) {
+          const [dd, mm, yy] = d.split("/");
+          d = `${yy.length === 4 ? yy : "20" + yy}-${mm}-${dd}`;
+        }
+        return d;
+      })(),
     });
 
     setSubmitting(false);
