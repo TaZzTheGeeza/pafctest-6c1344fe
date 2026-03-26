@@ -87,9 +87,13 @@ export function TeamChat({ teamSlug }: { teamSlug: string }) {
     }
   }, [activeChannel?.id]);
 
+  const prevMessageCount = useRef(0);
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    if (messages.length > prevMessageCount.current) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+    prevMessageCount.current = messages.length;
+  }, [messages.length]);
 
   async function loadChannels() {
     const { data } = await supabase.from("hub_channels").select("*").eq("team_slug", teamSlug).order("created_at");
