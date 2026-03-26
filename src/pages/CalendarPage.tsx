@@ -4,6 +4,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { CalendarDays, MapPin, Clock, Download, Filter } from "lucide-react";
+import { EventRSVP } from "@/components/EventRSVP";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isSameMonth, addMonths, subMonths } from "date-fns";
 
 interface ClubEvent {
@@ -175,6 +176,7 @@ export default function CalendarPage() {
                           >
                             <Download className="h-3 w-3" /> Add to Calendar
                           </button>
+                          <EventRSVP eventId={e.id} />
                         </div>
                       ))}
                     </div>
