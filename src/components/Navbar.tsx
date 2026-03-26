@@ -42,6 +42,7 @@ const leftNav: NavItem[] = [
   { label: "Player Hub", path: "/player-hub", dropdown: playerItems },
   { label: "Our Teams", path: "/teams" },
   { label: "Community", path: "/news", dropdown: communityItems },
+  { label: "PAFC Hub", path: "/hub" },
 ];
 
 const rightNav: NavItem[] = [
@@ -155,9 +156,6 @@ export function Navbar() {
             </Link>
             <Link to="/shop" className="font-display text-[10px] tracking-[0.15em] uppercase text-primary hover:text-primary/80 transition-colors flex items-center gap-1.5">
               <ShoppingBag className="h-3 w-3" /> Shop
-            </Link>
-            <Link to="/hub" className="font-display text-[10px] tracking-[0.15em] uppercase text-primary hover:text-primary/80 transition-colors flex items-center gap-1.5">
-              <MessageSquare className="h-3 w-3" /> PAFC Hub
             </Link>
           </div>
           <div className="flex items-center gap-3">
