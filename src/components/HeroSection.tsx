@@ -71,6 +71,17 @@ export function HeroSection() {
                 Club Shop
               </Link>
             </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              className="border-primary text-primary font-display tracking-wider hover:bg-primary hover:text-primary-foreground transition-colors animate-pulse hover:animate-none"
+              asChild
+            >
+              <Link to="/install">
+                <Smartphone className="w-5 h-5 mr-2" />
+                Get the PAFC App
+              </Link>
+            </Button>
           </div>
         </motion.div>
       </div>
