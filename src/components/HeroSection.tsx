@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ShoppingBag, Trophy, Users, ChevronRight } from "lucide-react";
+import { ShoppingBag, Trophy, Users, ChevronRight, Smartphone } from "lucide-react";
 import heroBg from "@/assets/hero-bg.jpg";
 import clubLogo from "@/assets/club-logo.jpg";
 
