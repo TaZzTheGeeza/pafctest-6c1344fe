@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, ChevronDown, Trophy, ShoppingBag, LogIn, Newspaper, CalendarDays, Image, Award, Clock, UserPlus, FileText, Shield, Info, Heart, ClipboardList } from "lucide-react";
+import { Menu, X, ChevronDown, Trophy, ShoppingBag, LogIn, Newspaper, CalendarDays, Image, Award, Clock, UserPlus, FileText, Shield, Info, Heart, ClipboardList, MessageSquare } from "lucide-react";
 import { CartDrawer } from "@/components/CartDrawer";
+import { NotificationBell } from "@/components/hub/NotificationBell";
 import { useAuth } from "@/contexts/AuthContext";
 import clubLogo from "@/assets/club-logo.jpg";
 
