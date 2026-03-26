@@ -160,7 +160,7 @@ export function Navbar() {
           </div>
           <div className="flex items-center gap-3">
             <NotificationBell />
-            <CartDrawer />
+            <span className="hidden lg:block"><CartDrawer /></span>
             {(isCoach || isAdmin) && (
               <Link to="/coach-panel" className="font-display text-[10px] tracking-[0.15em] uppercase text-primary hover:text-primary/80 transition-colors flex items-center gap-1.5">
                 <ClipboardList className="h-3 w-3" /> Coach Panel
