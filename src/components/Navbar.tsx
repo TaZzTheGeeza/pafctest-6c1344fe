@@ -42,7 +42,6 @@ const leftNav: NavItem[] = [
   { label: "Player Hub", path: "/player-hub", dropdown: playerItems },
   { label: "Our Teams", path: "/teams" },
   { label: "Community", path: "/news", dropdown: communityItems },
-  { label: "PAFC Hub", path: "/hub" },
 ];
 
 const rightNav: NavItem[] = [
