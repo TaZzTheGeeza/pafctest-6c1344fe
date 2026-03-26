@@ -59,8 +59,7 @@ serve(async (req) => {
               content: [
                 {
                   type: "text",
-                  text: "Remove the background from this football player photo and replace only the background with a solid bright green (#00FF00). Keep the subject at the exact same framing and scale as the source image. Do not zoom in, crop tighter, trim, or recompose the shot. Preserve the entire visible player from head to feet, including hair, ears, face, neck, torso, arms, hands, shorts, socks, legs, boots, and all accessories. If the full body is visible in the source, the full body must remain visible in the result. Return a single PNG image.",
-                  text: "Remove the background from this football player photo and replace ONLY the background with a solid bright green (#00FF00). CRITICAL: You must preserve ALL of the player's hair — every strand, curl, and wisp. Hair is NOT background. Do not remove, trim, fade, or simplify the hair outline. Keep the exact same framing, scale, and composition as the source. Preserve the entire visible player: full hair/head, ears, face, neck, torso, arms, hands, shorts, socks, legs, boots, and all accessories. Return a single PNG image.",
+                  text: "Remove the background from this photo and replace ONLY the background with a solid bright green (#00FF00). CRITICAL RULES: 1) Keep the EXACT same framing, scale, zoom level, and composition — do NOT crop, zoom in, or reframe. 2) Preserve 100% of the person's hair — every strand, curl, wisp. Hair is NOT background. 3) Preserve the entire visible body from top of head to feet including all clothing, skin, and accessories. 4) The output image must be the same dimensions as the input. Return a single PNG image.",
                 },
                 {
                   type: "image_url",
