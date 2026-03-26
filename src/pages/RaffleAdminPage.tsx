@@ -50,8 +50,6 @@ const RaffleAdminPage = () => {
   const [showCreate, setShowCreate] = useState(false);
   const [viewingRaffle, setViewingRaffle] = useState<string | null>(null);
   const [drawing, setDrawing] = useState<string | null>(null);
-  const [adminKey, setAdminKey] = useState("");
-  const [authenticated, setAuthenticated] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -80,21 +78,9 @@ const RaffleAdminPage = () => {
     draw_date: "",
   });
 
-  // Simple admin password check (temporary until proper auth)
-  const ADMIN_KEY = "pafc2024admin";
-
-  const handleLogin = () => {
-    if (adminKey === ADMIN_KEY) {
-      setAuthenticated(true);
-      fetchRaffles();
-    } else {
-      toast.error("Invalid admin key");
-    }
-  };
-
   useEffect(() => {
-    if (authenticated) fetchRaffles();
-  }, [authenticated]);
+    fetchRaffles();
+  }, []);
 
   const fetchRaffles = async () => {
     // Admin sees all raffles including draft
@@ -324,38 +310,6 @@ const RaffleAdminPage = () => {
   const formatPrice = (cents: number) => {
     return new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP" }).format(cents / 100);
   };
-
-  if (!authenticated) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <Navbar />
-        <main className="flex-1 pt-20 pb-12 flex items-center justify-center">
-          <Card className="w-full max-w-md bg-card border-border">
-            <CardHeader>
-              <CardTitle className="font-display">Raffle Admin</CardTitle>
-              <CardDescription>Enter the admin key to manage raffles</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label>Admin Key</Label>
-                <Input
-                  type="password"
-                  value={adminKey}
-                  onChange={(e) => setAdminKey(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-                  placeholder="Enter admin key..."
-                />
-              </div>
-              <Button onClick={handleLogin} className="w-full bg-gold-gradient text-primary-foreground font-display">
-                Access Admin Panel
-              </Button>
-            </CardContent>
-          </Card>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen flex flex-col">
