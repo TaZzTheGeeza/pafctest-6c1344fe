@@ -7,8 +7,11 @@ import { TeamChat } from "@/components/hub/TeamChat";
 import { PaymentCenter } from "@/components/hub/PaymentCenter";
 import { NotificationCenter } from "@/components/hub/NotificationCenter";
 import { TeamMemberManager } from "@/components/hub/TeamMemberManager";
-import { MessageSquare, CreditCard, Bell, CalendarCheck, Users, Shield, ChevronDown } from "lucide-react";
+import { MessageSquare, CreditCard, Bell, CalendarCheck, Users, Shield, ChevronDown, Car, TrendingUp, UserPlus } from "lucide-react";
 import { FixtureAvailability } from "@/components/hub/FixtureAvailability";
+import { CarpoolBoard } from "@/components/hub/CarpoolBoard";
+import { AttendanceStats } from "@/components/hub/AttendanceStats";
+import { GuardianManager } from "@/components/hub/GuardianManager";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -30,6 +33,9 @@ const tabs = [
   { id: "payments", label: "Payments", icon: CreditCard },
   { id: "notifications", label: "Notifications", icon: Bell },
   { id: "availability", label: "Availability", icon: CalendarCheck },
+  { id: "carpool", label: "Carpool", icon: Car },
+  { id: "attendance", label: "Attendance", icon: TrendingUp },
+  { id: "guardian", label: "Guardian", icon: UserPlus },
 ];
 
 export default function HubPage() {
@@ -177,6 +183,9 @@ export default function HubPage() {
                 {activeTab === "availability" && activeTeam && (
                   <FixtureAvailability teamSlug={activeTeam} />
                 )}
+                {activeTab === "carpool" && activeTeam && <CarpoolBoard teamSlug={activeTeam} />}
+                {activeTab === "attendance" && activeTeam && (isCoach || isAdmin) && <AttendanceStats teamSlug={activeTeam} />}
+                {activeTab === "guardian" && activeTeam && <GuardianManager teamSlug={activeTeam} teamName={activeTeamName || ""} />}
                 {activeTab === "members" && activeTeam && (isAdmin || isCoach) && (
                   <TeamMemberManager teamSlug={activeTeam} teamName={activeTeamName || ""} />
                 )}
