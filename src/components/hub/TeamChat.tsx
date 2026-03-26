@@ -18,10 +18,9 @@ interface Message {
   user_id: string;
   content: string;
   created_at: string;
-  profile?: { full_name: string | null; email: string | null };
 }
 
-export function TeamChat() {
+export function TeamChat({ teamSlug }: { teamSlug: string }) {
   const { user, isCoach, isAdmin } = useAuth();
   const [channels, setChannels] = useState<Channel[]>([]);
   const [activeChannel, setActiveChannel] = useState<Channel | null>(null);
@@ -33,8 +32,10 @@ export function TeamChat() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    setActiveChannel(null);
+    setMessages([]);
     loadChannels();
-  }, []);
+  }, [teamSlug]);
 
   useEffect(() => {
     if (activeChannel) {
@@ -56,10 +57,10 @@ export function TeamChat() {
   }, [messages]);
 
   async function loadChannels() {
-    const { data } = await supabase.from("hub_channels").select("*").order("created_at");
+    const { data } = await supabase.from("hub_channels").select("*").eq("team_slug", teamSlug).order("created_at");
     if (data) {
       setChannels(data);
-      if (data.length > 0 && !activeChannel) setActiveChannel(data[0]);
+      if (data.length > 0) setActiveChannel(data[0]);
     }
   }
 
@@ -90,7 +91,7 @@ export function TeamChat() {
 
   async function createChannel() {
     if (!newChannelName.trim()) return;
-    const { error } = await supabase.from("hub_channels").insert({ name: newChannelName.trim(), created_by: user?.id });
+    const { error } = await supabase.from("hub_channels").insert({ name: newChannelName.trim(), team_slug: teamSlug, created_by: user?.id });
     if (error) { toast.error("Failed to create channel"); return; }
     setNewChannelName("");
     setShowNewChannel(false);
@@ -132,7 +133,12 @@ export function TeamChat() {
               <span className="truncate font-display text-xs tracking-wider">{ch.name}</span>
             </button>
           ))}
-          {channels.length === 0 && <p className="text-xs text-muted-foreground text-center py-4">No channels yet</p>}
+          {channels.length === 0 && (
+            <div className="text-center py-4">
+              <p className="text-xs text-muted-foreground">No channels yet</p>
+              {(isCoach || isAdmin) && <p className="text-[10px] text-muted-foreground mt-1">Create one with the + button</p>}
+            </div>
+          )}
         </div>
       </div>
 
@@ -145,6 +151,9 @@ export function TeamChat() {
               <span className="font-display text-sm font-bold text-foreground">{activeChannel.name}</span>
             </div>
             <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
+              {messages.length === 0 && (
+                <p className="text-center text-sm text-muted-foreground py-8">No messages yet. Start the conversation!</p>
+              )}
               {messages.map((msg, i) => {
                 const isOwn = msg.user_id === user.id;
                 const showAvatar = i === 0 || messages[i - 1].user_id !== msg.user_id;
@@ -174,7 +183,9 @@ export function TeamChat() {
             </form>
           </>
         ) : (
-          <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">Select a channel to start chatting</div>
+          <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
+            {channels.length === 0 ? "No channels created yet" : "Select a channel to start chatting"}
+          </div>
         )}
       </div>
     </div>
