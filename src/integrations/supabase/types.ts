@@ -38,6 +38,48 @@ export type Database = {
         }
         Relationships: []
       }
+      carpool_offers: {
+        Row: {
+          created_at: string
+          direction: string
+          fixture_date: string
+          id: string
+          notes: string | null
+          opponent: string
+          pickup_location: string | null
+          seats_available: number
+          team_slug: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          direction?: string
+          fixture_date: string
+          id?: string
+          notes?: string | null
+          opponent: string
+          pickup_location?: string | null
+          seats_available?: number
+          team_slug: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          direction?: string
+          fixture_date?: string
+          id?: string
+          notes?: string | null
+          opponent?: string
+          pickup_location?: string | null
+          seats_available?: number
+          team_slug?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       club_events: {
         Row: {
           created_at: string
@@ -212,6 +254,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      guardians: {
+        Row: {
+          created_at: string
+          id: string
+          invite_token: string | null
+          parent_user_id: string
+          player_name: string
+          status: string
+          team_slug: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          invite_token?: string | null
+          parent_user_id: string
+          player_name: string
+          status?: string
+          team_slug: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          invite_token?: string | null
+          parent_user_id?: string
+          player_name?: string
+          status?: string
+          team_slug?: string
+        }
+        Relationships: []
       }
       hub_channels: {
         Row: {
