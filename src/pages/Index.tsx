@@ -5,6 +5,7 @@ import { FixturesSection } from "@/components/FixturesSection";
 import { AboutSection } from "@/components/AboutSection";
 import { SponsorsSection } from "@/components/SponsorsSection";
 import { YouTubeSection } from "@/components/YouTubeSection";
+import { FAAccreditedSection } from "@/components/FAAccreditedSection";
 import { Footer } from "@/components/Footer";
 
 const Index = () => {
