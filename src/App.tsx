@@ -65,7 +65,7 @@ function AppContent() {
         <Route path="/register" element={<PlayerRegistrationPage />} />
         <Route path="/player-hub" element={<PlayerHubPage />} />
         <Route path="/raffle" element={<RafflePage />} />
-        <Route path="/raffle-admin" element={<RaffleAdminPage />} />
+        <Route path="/raffle-admin" element={<RoleGate requiredRole="admin"><RaffleAdminPage /></RoleGate>} />
         <Route path="/tournament" element={<TournamentPage />} />
         <Route path="/tournament-admin" element={<TournamentAdminPage />} />
         <Route path="/tournament/team/:teamId" element={<TeamProfilePage />} />
