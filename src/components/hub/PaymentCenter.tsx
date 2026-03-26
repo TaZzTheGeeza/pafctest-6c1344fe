@@ -147,7 +147,7 @@ export function PaymentCenter() {
                   </div>
                   <div>
                     {status === "paid" ? (
-                      <span className="flex items-center gap-1 text-xs font-display tracking-wider text-green-500 bg-green-500/10 px-3 py-1.5 rounded-full">
+                      <span className="flex items-center gap-1 text-xs font-display tracking-wider text-primary bg-primary/10 px-3 py-1.5 rounded-full">
                         <Check className="h-3.5 w-3.5" /> Paid
                       </span>
                     ) : (
