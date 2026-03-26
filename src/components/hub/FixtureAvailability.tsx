@@ -124,6 +124,16 @@ export function FixtureAvailability({ teamSlug }: Props) {
                 <div className="flex flex-wrap items-center gap-3 mt-1 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{fixture.date} · {fixture.time}</span>
                   {fixture.venue && <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{fixture.venue}</span>}
+                  {fixture.venue && (
+                    <a
+                      href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(fixture.venue)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[10px] text-primary hover:text-primary/80 flex items-center gap-0.5 transition-colors"
+                    >
+                      <Navigation className="w-2.5 h-2.5" />Directions
+                    </a>
+                  )}
                 </div>
               </div>
 
