@@ -37,6 +37,7 @@ import ResultsPage from "./pages/ResultsPage.tsx";
 import POTMDemoPage from "./pages/POTMDemoPage.tsx";
 import HubPage from "./pages/HubPage.tsx";
 import InstallPage from "./pages/InstallPage.tsx";
+import AdminPanelPage from "./pages/AdminPanelPage.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
