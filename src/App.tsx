@@ -75,6 +75,7 @@ function AppContent() {
         <Route path="/results" element={<ResultsPage />} />
         <Route path="/potm-demo" element={<POTMDemoPage />} />
         <Route path="/hub" element={<HubPage />} />
+        <Route path="/install" element={<InstallPage />} />
         <Route path="/auth" element={<AuthPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
