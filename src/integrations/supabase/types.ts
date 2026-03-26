@@ -80,6 +80,57 @@ export type Database = {
         }
         Relationships: []
       }
+      carpool_requests: {
+        Row: {
+          accepted_at: string | null
+          accepted_by: string | null
+          created_at: string
+          direction: string
+          fixture_date: string
+          id: string
+          notes: string | null
+          opponent: string
+          passengers_count: number
+          pickup_location: string | null
+          status: string
+          team_slug: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          created_at?: string
+          direction?: string
+          fixture_date: string
+          id?: string
+          notes?: string | null
+          opponent: string
+          passengers_count?: number
+          pickup_location?: string | null
+          status?: string
+          team_slug: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          created_at?: string
+          direction?: string
+          fixture_date?: string
+          id?: string
+          notes?: string | null
+          opponent?: string
+          passengers_count?: number
+          pickup_location?: string | null
+          status?: string
+          team_slug?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       club_events: {
         Row: {
           created_at: string
