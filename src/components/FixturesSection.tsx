@@ -1,28 +1,41 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { Clock, ChevronRight, Calendar, Shield } from "lucide-react";
+import { Clock, ChevronRight, Calendar } from "lucide-react";
 import clubLogo from "@/assets/club-logo.jpg";
+
+// Opponent logos
+import thurlbyTigersLogo from "@/assets/opponents/thurlby-tigers.png";
+import oneTouchLogo from "@/assets/opponents/one-touch-football.png";
+import whittleseyLogo from "@/assets/opponents/whittlesey-junior.png";
+import deepingRangersLogo from "@/assets/opponents/deeping-rangers.png";
+import nethertonLogo from "@/assets/opponents/netherton-united.png";
+import gladstoneKnightsLogo from "@/assets/opponents/gladstone-knights.png";
+import yaxleyLogo from "@/assets/opponents/yaxley-fc.png";
+import neneValleyLogo from "@/assets/opponents/nene-valley.png";
+import moultonChapelLogo from "@/assets/opponents/moulton-chapel.png";
+import parkFarmPumasLogo from "@/assets/opponents/park-farm-pumas.png";
 
 interface Fixture {
   team: string;
   teamSlug: string;
   opponent: string;
+  opponentLogo: string;
   venue: "Home" | "Away";
   date: string;
   kickoff: string;
 }
 
 const upcomingFixtures: Fixture[] = [
-  { team: "U7s", teamSlug: "u7s", opponent: "Thurlby Tigers U7 Yellow", venue: "Home", date: "Sat 28 March", kickoff: "09:30" },
-  { team: "U8s Black", teamSlug: "u8s-black", opponent: "One Touch Football U8 Red", venue: "Home", date: "Sat 28 March", kickoff: "10:30" },
-  { team: "U8s Gold", teamSlug: "u8s-gold", opponent: "Whittlesey Jnr U8 Blue", venue: "Home", date: "Sat 28 March", kickoff: "09:30" },
-  { team: "U9s", teamSlug: "u9s", opponent: "Deeping Rangers U9 Claret", venue: "Home", date: "Sat 28 March", kickoff: "09:30" },
-  { team: "U10s", teamSlug: "u10s", opponent: "Netherton Utd U10 Red", venue: "Home", date: "Sat 28 March", kickoff: "10:30" },
-  { team: "U11s Black", teamSlug: "u11s-black", opponent: "Gladstone Knights U11", venue: "Away", date: "Sun 29 March", kickoff: "12:00" },
-  { team: "U11s Gold", teamSlug: "u11s-gold", opponent: "Yaxley FC U11 Blues", venue: "Home", date: "Sun 29 March", kickoff: "10:00" },
-  { team: "U13s Black", teamSlug: "u13s-black", opponent: "Nene Valley U13", venue: "Home", date: "Sun 29 March", kickoff: "12:00" },
-  { team: "U13s Gold", teamSlug: "u13s-gold", opponent: "Moulton Chapel U13", venue: "Home", date: "Sun 03 May", kickoff: "10:00" },
-  { team: "U14s", teamSlug: "u14s", opponent: "Park Farm Pumas U14 Black", venue: "Home", date: "Sun 12 April", kickoff: "14:00" },
+  { team: "U7s", teamSlug: "u7s", opponent: "Thurlby Tigers U7 Yellow", opponentLogo: thurlbyTigersLogo, venue: "Home", date: "Sat 28 March", kickoff: "09:30" },
+  { team: "U8s Black", teamSlug: "u8s-black", opponent: "One Touch Football U8 Red", opponentLogo: oneTouchLogo, venue: "Home", date: "Sat 28 March", kickoff: "10:30" },
+  { team: "U8s Gold", teamSlug: "u8s-gold", opponent: "Whittlesey Jnr U8 Blue", opponentLogo: whittleseyLogo, venue: "Home", date: "Sat 28 March", kickoff: "09:30" },
+  { team: "U9s", teamSlug: "u9s", opponent: "Deeping Rangers U9 Claret", opponentLogo: deepingRangersLogo, venue: "Home", date: "Sat 28 March", kickoff: "09:30" },
+  { team: "U10s", teamSlug: "u10s", opponent: "Netherton Utd U10 Red", opponentLogo: nethertonLogo, venue: "Home", date: "Sat 28 March", kickoff: "10:30" },
+  { team: "U11s Black", teamSlug: "u11s-black", opponent: "Gladstone Knights U11", opponentLogo: gladstoneKnightsLogo, venue: "Away", date: "Sun 29 March", kickoff: "12:00" },
+  { team: "U11s Gold", teamSlug: "u11s-gold", opponent: "Yaxley FC U11 Blues", opponentLogo: yaxleyLogo, venue: "Home", date: "Sun 29 March", kickoff: "10:00" },
+  { team: "U13s Black", teamSlug: "u13s-black", opponent: "Nene Valley U13", opponentLogo: neneValleyLogo, venue: "Home", date: "Sun 29 March", kickoff: "12:00" },
+  { team: "U13s Gold", teamSlug: "u13s-gold", opponent: "Moulton Chapel U13", opponentLogo: moultonChapelLogo, venue: "Home", date: "Sun 03 May", kickoff: "10:00" },
+  { team: "U14s", teamSlug: "u14s", opponent: "Park Farm Pumas U14 Black", opponentLogo: parkFarmPumasLogo, venue: "Home", date: "Sun 12 April", kickoff: "14:00" },
 ];
 
 export function FixturesSection() {
@@ -82,15 +95,18 @@ export function FixturesSection() {
                     {/* Matchup */}
                     <div className="flex items-center gap-3 mb-4">
                       <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                        <img src={clubLogo} alt="" className="w-9 h-9 rounded-full object-cover ring-2 ring-primary/30 shrink-0" />
+                        <img src={clubLogo} alt="PAFC" className="w-9 h-9 rounded-full object-cover ring-2 ring-primary/30 shrink-0" />
                         <span className="font-display text-base font-semibold text-foreground truncate">PAFC {fixture.team}</span>
                       </div>
                       <span className="font-display text-[11px] tracking-[0.15em] uppercase text-muted-foreground bg-secondary px-3 py-1.5 rounded-md shrink-0">vs</span>
                       <div className="flex items-center gap-2.5 flex-1 min-w-0 justify-end">
                         <span className="font-display text-sm text-muted-foreground truncate text-right">{fixture.opponent}</span>
-                        <div className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center shrink-0">
-                          <Shield className="w-4 h-4 text-muted-foreground" />
-                        </div>
+                        <img
+                          src={fixture.opponentLogo}
+                          alt={fixture.opponent}
+                          className="w-9 h-9 rounded-full object-contain bg-white shrink-0 ring-2 ring-border"
+                          loading="lazy"
+                        />
                       </div>
                     </div>
 
