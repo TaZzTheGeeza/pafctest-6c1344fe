@@ -177,6 +177,178 @@ export type Database = {
           },
         ]
       }
+      hub_channels: {
+        Row: {
+          channel_type: string
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string
+          team_slug: string | null
+        }
+        Insert: {
+          channel_type?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name: string
+          team_slug?: string | null
+        }
+        Update: {
+          channel_type?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name?: string
+          team_slug?: string | null
+        }
+        Relationships: []
+      }
+      hub_messages: {
+        Row: {
+          channel_id: string
+          content: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          channel_id: string
+          content: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          channel_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hub_messages_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "hub_channels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hub_notifications: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean
+          link: string | null
+          message: string
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          link?: string | null
+          message: string
+          title: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          link?: string | null
+          message?: string
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      hub_payment_requests: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          created_by: string | null
+          currency: string
+          description: string | null
+          due_date: string | null
+          id: string
+          status: string
+          team_slug: string | null
+          title: string
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          status?: string
+          team_slug?: string | null
+          title: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          status?: string
+          team_slug?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
+      hub_payments: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          id: string
+          paid_at: string | null
+          request_id: string
+          status: string
+          stripe_payment_intent_id: string | null
+          user_id: string
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string
+          id?: string
+          paid_at?: string | null
+          request_id: string
+          status?: string
+          stripe_payment_intent_id?: string | null
+          user_id: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          id?: string
+          paid_at?: string | null
+          request_id?: string
+          status?: string
+          stripe_payment_intent_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hub_payments_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "hub_payment_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       live_matches: {
         Row: {
           age_group: string
