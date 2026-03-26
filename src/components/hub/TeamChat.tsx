@@ -89,8 +89,8 @@ export function TeamChat({ teamSlug }: { teamSlug: string }) {
 
   const prevMessageCount = useRef(0);
   useEffect(() => {
-    if (messages.length > prevMessageCount.current) {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messages.length > prevMessageCount.current && messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
     }
     prevMessageCount.current = messages.length;
   }, [messages.length]);
