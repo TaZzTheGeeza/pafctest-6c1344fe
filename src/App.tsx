@@ -36,6 +36,7 @@ import AuthPage from "./pages/AuthPage.tsx";
 import ResultsPage from "./pages/ResultsPage.tsx";
 import POTMDemoPage from "./pages/POTMDemoPage.tsx";
 import HubPage from "./pages/HubPage.tsx";
+import InstallPage from "./pages/InstallPage.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -74,6 +75,7 @@ function AppContent() {
         <Route path="/results" element={<ResultsPage />} />
         <Route path="/potm-demo" element={<POTMDemoPage />} />
         <Route path="/hub" element={<HubPage />} />
+        <Route path="/install" element={<InstallPage />} />
         <Route path="/auth" element={<AuthPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
