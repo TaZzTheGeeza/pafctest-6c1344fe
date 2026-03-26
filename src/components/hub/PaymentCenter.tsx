@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { CreditCard, Plus, Check, Clock, Users } from "lucide-react";
+import { CreditCard, Plus, Check, Clock, RefreshCw, ExternalLink, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import { useSearchParams } from "react-router-dom";
 
 interface PaymentRequest {
   id: string;
@@ -26,16 +27,87 @@ interface Payment {
   paid_at: string | null;
 }
 
+interface SubStatus {
+  subscribed: boolean;
+  product_id: string | null;
+  subscription_end: string | null;
+}
+
 export function PaymentCenter({ teamSlug }: { teamSlug: string }) {
   const { user, isCoach, isAdmin } = useAuth();
   const [requests, setRequests] = useState<PaymentRequest[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
   const [showCreate, setShowCreate] = useState(false);
   const [form, setForm] = useState({ title: "", description: "", amount: "", due_date: "" });
+  const [subStatus, setSubStatus] = useState<SubStatus | null>(null);
+  const [subLoading, setSubLoading] = useState(true);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [portalLoading, setPortalLoading] = useState(false);
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
-    if (user) { loadRequests(); loadPayments(); }
+    if (user) {
+      loadRequests();
+      loadPayments();
+      checkSubscription();
+    }
   }, [user, teamSlug]);
+
+  // Auto-check after returning from checkout
+  useEffect(() => {
+    if (searchParams.get("subscription") === "success") {
+      toast.success("Subscription setup successful! Welcome aboard 🎉");
+      checkSubscription();
+    }
+  }, [searchParams]);
+
+  // Periodic refresh every 60s
+  useEffect(() => {
+    if (!user) return;
+    const interval = setInterval(checkSubscription, 60000);
+    return () => clearInterval(interval);
+  }, [user]);
+
+  async function checkSubscription() {
+    try {
+      setSubLoading(true);
+      const { data, error } = await supabase.functions.invoke("check-subscription");
+      if (error) throw error;
+      setSubStatus(data);
+    } catch (e) {
+      console.error("Failed to check subscription:", e);
+    } finally {
+      setSubLoading(false);
+    }
+  }
+
+  async function startCheckout() {
+    try {
+      setCheckoutLoading(true);
+      const { data, error } = await supabase.functions.invoke("create-subs-checkout");
+      if (error) throw error;
+      if (data?.error) { toast.error(data.error); return; }
+      if (data?.url) window.open(data.url, "_blank");
+    } catch (e) {
+      toast.error("Failed to start checkout");
+    } finally {
+      setCheckoutLoading(false);
+    }
+  }
+
+  async function openPortal() {
+    try {
+      setPortalLoading(true);
+      const { data, error } = await supabase.functions.invoke("customer-portal");
+      if (error) throw error;
+      if (data?.error) { toast.error(data.error); return; }
+      if (data?.url) window.open(data.url, "_blank");
+    } catch (e) {
+      toast.error("Failed to open subscription management");
+    } finally {
+      setPortalLoading(false);
+    }
+  }
 
   async function loadRequests() {
     const { data } = await supabase.from("hub_payment_requests").select("*").eq("team_slug", teamSlug).order("created_at", { ascending: false });
@@ -91,17 +163,80 @@ export function PaymentCenter({ teamSlug }: { teamSlug: string }) {
 
   return (
     <div className="space-y-6">
+      {/* Monthly Subscription Card */}
+      <div className="bg-card border-2 border-primary/30 rounded-xl p-6 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2" />
+        <div className="relative">
+          <div className="flex items-center gap-2 mb-1">
+            <CreditCard className="h-5 w-5 text-primary" />
+            <h3 className="font-display text-sm tracking-wider text-foreground uppercase">Monthly Player Subs</h3>
+          </div>
+          <p className="text-muted-foreground text-sm mb-4">Direct debit subscription — £30/month per player</p>
+
+          {subLoading ? (
+            <div className="flex items-center gap-2 text-muted-foreground text-sm">
+              <Loader2 className="h-4 w-4 animate-spin" /> Checking subscription status...
+            </div>
+          ) : subStatus?.subscribed ? (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <span className="flex items-center gap-1.5 text-sm font-display tracking-wider text-primary bg-primary/10 px-3 py-1.5 rounded-full">
+                  <Check className="h-4 w-4" /> Active Subscription
+                </span>
+              </div>
+              {subStatus.subscription_end && (
+                <p className="text-xs text-muted-foreground">
+                  Next payment: {format(new Date(subStatus.subscription_end), "dd MMMM yyyy")}
+                </p>
+              )}
+              <div className="flex flex-wrap gap-2 mt-2">
+                <button onClick={openPortal} disabled={portalLoading} className="flex items-center gap-1.5 text-xs font-display tracking-wider bg-secondary text-foreground px-4 py-2 rounded-lg hover:bg-secondary/80 transition-colors disabled:opacity-50">
+                  {portalLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ExternalLink className="h-3.5 w-3.5" />}
+                  Manage Subscription
+                </button>
+                <button onClick={checkSubscription} className="flex items-center gap-1.5 text-xs font-display tracking-wider text-muted-foreground hover:text-foreground px-3 py-2 transition-colors">
+                  <RefreshCw className="h-3.5 w-3.5" /> Refresh
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <div className="bg-secondary/50 rounded-lg p-4">
+                <div className="flex items-baseline gap-1 mb-2">
+                  <span className="text-3xl font-bold font-display text-primary">£30</span>
+                  <span className="text-sm text-muted-foreground">/month</span>
+                </div>
+                <ul className="text-sm text-muted-foreground space-y-1">
+                  <li className="flex items-center gap-2"><Check className="h-3.5 w-3.5 text-primary" /> Weekly training sessions</li>
+                  <li className="flex items-center gap-2"><Check className="h-3.5 w-3.5 text-primary" /> Match day participation</li>
+                  <li className="flex items-center gap-2"><Check className="h-3.5 w-3.5 text-primary" /> FA-qualified coaching</li>
+                  <li className="flex items-center gap-2"><Check className="h-3.5 w-3.5 text-primary" /> Kit & equipment included</li>
+                </ul>
+              </div>
+              <button onClick={startCheckout} disabled={checkoutLoading} className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground rounded-lg px-4 py-3 font-display text-sm tracking-wider hover:bg-primary/90 transition-colors disabled:opacity-50">
+                {checkoutLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />}
+                Set Up Direct Debit
+              </button>
+              <button onClick={checkSubscription} className="w-full flex items-center justify-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors py-1">
+                <RefreshCw className="h-3 w-3" /> Already subscribed? Refresh status
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Coach: One-off Payment Requests */}
       {(isCoach || isAdmin) && (
         <div className="bg-card border border-border rounded-xl p-5">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-display text-sm tracking-wider text-foreground uppercase">Manage Payment Requests</h3>
+            <h3 className="font-display text-sm tracking-wider text-foreground uppercase">One-Off Payment Requests</h3>
             <button onClick={() => setShowCreate(!showCreate)} className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 font-display tracking-wider">
               <Plus className="h-3.5 w-3.5" /> New Request
             </button>
           </div>
           {showCreate && (
             <form onSubmit={createRequest} className="space-y-3 bg-secondary/50 rounded-lg p-4 mb-4">
-              <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Title (e.g. Monthly Subs - March)" className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground" required />
+              <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Title (e.g. Kit Fee, Tournament Entry)" className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground" required />
               <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Description (optional)" className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground" rows={2} />
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -119,14 +254,11 @@ export function PaymentCenter({ teamSlug }: { teamSlug: string }) {
         </div>
       )}
 
-      <div className="space-y-3">
-        {requests.length === 0 ? (
-          <div className="bg-card border border-border rounded-xl p-8 text-center">
-            <CreditCard className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-            <p className="text-sm text-muted-foreground">No payment requests for this team</p>
-          </div>
-        ) : (
-          requests.map((req) => {
+      {/* One-off Payment Requests List */}
+      {requests.length > 0 && (
+        <div className="space-y-3">
+          <h3 className="font-display text-xs tracking-wider text-muted-foreground uppercase">One-Off Payments</h3>
+          {requests.map((req) => {
             const status = getPaymentStatus(req.id);
             return (
               <div key={req.id} className="bg-card border border-border rounded-xl p-5">
@@ -157,9 +289,9 @@ export function PaymentCenter({ teamSlug }: { teamSlug: string }) {
                 </div>
               </div>
             );
-          })
-        )}
-      </div>
+          })}
+        </div>
+      )}
     </div>
   );
 }
