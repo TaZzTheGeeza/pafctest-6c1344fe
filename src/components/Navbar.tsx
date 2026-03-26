@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, ChevronDown, Trophy, ShoppingBag, LogIn, Newspaper, CalendarDays, Image, Award, Clock, UserPlus, FileText, Shield, Info, Heart, ClipboardList } from "lucide-react";
+import { Menu, X, ChevronDown, Trophy, ShoppingBag, LogIn, Newspaper, CalendarDays, Image, Award, Clock, UserPlus, FileText, Shield, Info, Heart, ClipboardList, MessageSquare } from "lucide-react";
 import { CartDrawer } from "@/components/CartDrawer";
+import { NotificationBell } from "@/components/hub/NotificationBell";
 import { useAuth } from "@/contexts/AuthContext";
 import clubLogo from "@/assets/club-logo.jpg";
 
@@ -155,8 +156,12 @@ export function Navbar() {
             <Link to="/shop" className="font-display text-[10px] tracking-[0.15em] uppercase text-primary hover:text-primary/80 transition-colors flex items-center gap-1.5">
               <ShoppingBag className="h-3 w-3" /> Shop
             </Link>
+            <Link to="/hub" className="font-display text-[10px] tracking-[0.15em] uppercase text-primary hover:text-primary/80 transition-colors flex items-center gap-1.5">
+              <MessageSquare className="h-3 w-3" /> PAFC Hub
+            </Link>
           </div>
           <div className="flex items-center gap-3">
+            <NotificationBell />
             <CartDrawer />
             {(isCoach || isAdmin) && (
               <Link to="/coach-panel" className="font-display text-[10px] tracking-[0.15em] uppercase text-primary hover:text-primary/80 transition-colors flex items-center gap-1.5">
