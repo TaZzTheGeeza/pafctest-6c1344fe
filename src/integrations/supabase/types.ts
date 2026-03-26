@@ -243,6 +243,7 @@ export type Database = {
           is_read: boolean
           link: string | null
           message: string
+          team_slug: string | null
           title: string
           type: string
           user_id: string
@@ -253,6 +254,7 @@ export type Database = {
           is_read?: boolean
           link?: string | null
           message: string
+          team_slug?: string | null
           title: string
           type?: string
           user_id: string
@@ -263,6 +265,7 @@ export type Database = {
           is_read?: boolean
           link?: string | null
           message?: string
+          team_slug?: string | null
           title?: string
           type?: string
           user_id?: string
@@ -725,6 +728,30 @@ export type Database = {
         }
         Relationships: []
       }
+      team_members: {
+        Row: {
+          created_at: string
+          id: string
+          role: string
+          team_slug: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: string
+          team_slug: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: string
+          team_slug?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       team_selections: {
         Row: {
           created_at: string
@@ -1112,6 +1139,10 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_team_member: {
+        Args: { _team_slug: string; _user_id: string }
         Returns: boolean
       }
     }

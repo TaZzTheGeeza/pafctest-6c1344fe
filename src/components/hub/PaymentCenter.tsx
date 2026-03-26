@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { CreditCard, Plus, Check, Clock, AlertCircle, Users } from "lucide-react";
+import { CreditCard, Plus, Check, Clock, Users } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 
@@ -26,7 +26,7 @@ interface Payment {
   paid_at: string | null;
 }
 
-export function PaymentCenter() {
+export function PaymentCenter({ teamSlug }: { teamSlug: string }) {
   const { user, isCoach, isAdmin } = useAuth();
   const [requests, setRequests] = useState<PaymentRequest[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -35,10 +35,10 @@ export function PaymentCenter() {
 
   useEffect(() => {
     if (user) { loadRequests(); loadPayments(); }
-  }, [user]);
+  }, [user, teamSlug]);
 
   async function loadRequests() {
-    const { data } = await supabase.from("hub_payment_requests").select("*").order("created_at", { ascending: false });
+    const { data } = await supabase.from("hub_payment_requests").select("*").eq("team_slug", teamSlug).order("created_at", { ascending: false });
     if (data) setRequests(data);
   }
 
@@ -53,7 +53,7 @@ export function PaymentCenter() {
     if (!form.title || isNaN(amountCents) || amountCents <= 0) { toast.error("Please fill in all fields"); return; }
     const { error } = await supabase.from("hub_payment_requests").insert({
       title: form.title, description: form.description || null, amount_cents: amountCents,
-      due_date: form.due_date || null, created_by: user?.id,
+      due_date: form.due_date || null, created_by: user?.id, team_slug: teamSlug,
     });
     if (error) { toast.error("Failed to create request"); return; }
     setForm({ title: "", description: "", amount: "", due_date: "" });
@@ -91,7 +91,6 @@ export function PaymentCenter() {
 
   return (
     <div className="space-y-6">
-      {/* Coach: Create Payment Request */}
       {(isCoach || isAdmin) && (
         <div className="bg-card border border-border rounded-xl p-5">
           <div className="flex items-center justify-between mb-4">
@@ -120,12 +119,11 @@ export function PaymentCenter() {
         </div>
       )}
 
-      {/* Payment Requests List */}
       <div className="space-y-3">
         {requests.length === 0 ? (
           <div className="bg-card border border-border rounded-xl p-8 text-center">
             <CreditCard className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-            <p className="text-sm text-muted-foreground">No payment requests yet</p>
+            <p className="text-sm text-muted-foreground">No payment requests for this team</p>
           </div>
         ) : (
           requests.map((req) => {
