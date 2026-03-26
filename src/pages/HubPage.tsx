@@ -174,15 +174,8 @@ export default function HubPage() {
                 {activeTab === "chat" && activeTeam && <TeamChat teamSlug={activeTeam} />}
                 {activeTab === "payments" && activeTeam && <PaymentCenter teamSlug={activeTeam} />}
                 {activeTab === "notifications" && <NotificationCenter />}
-                {activeTab === "availability" && (
-                  <div className="bg-card border border-border rounded-xl p-8 text-center">
-                    <CalendarCheck className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="font-display text-lg font-bold text-foreground mb-2">Event Availability</h3>
-                    <p className="text-sm text-muted-foreground mb-4">Manage your availability for matches and training on the calendar.</p>
-                    <Link to="/calendar" className="inline-block bg-primary text-primary-foreground rounded-lg px-6 py-2.5 font-display text-sm tracking-wider hover:bg-primary/90 transition-colors">
-                      Go to Calendar
-                    </Link>
-                  </div>
+                {activeTab === "availability" && activeTeam && (
+                  <FixtureAvailability teamSlug={activeTeam} />
                 )}
                 {activeTab === "members" && activeTeam && (isAdmin || isCoach) && (
                   <TeamMemberManager teamSlug={activeTeam} teamName={activeTeamName || ""} />
