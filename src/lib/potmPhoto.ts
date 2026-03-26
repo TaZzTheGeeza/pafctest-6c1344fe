@@ -522,10 +522,45 @@ export async function uploadPotmPhoto(
       console.warn("[POTM] Background removal fallback:", data?.warning || "Unknown AI fallback");
       options.onStatus?.("fallback");
     } else if (data?.imageBase64) {
-      finalBase64 = data.imageBase64.startsWith("data:")
+      const aiResult = data.imageBase64.startsWith("data:")
         ? data.imageBase64
         : `data:image/png;base64,${data.imageBase64}`;
-      options.onStatus?.("processed");
+
+      // Dimension check: if the AI result is drastically smaller than the
+      // original it likely cropped the subject too aggressively — fall back.
+      const passesCheck = await new Promise<boolean>((resolve) => {
+        const orig = new Image();
+        const proc = new Image();
+        let origLoaded = false;
+        let procLoaded = false;
+
+        const evaluate = () => {
+          if (!origLoaded || !procLoaded) return;
+          const origArea = orig.width * orig.height;
+          const procArea = proc.width * proc.height;
+          if (procArea < origArea * 0.35) {
+            console.warn(`[POTM] AI result too small (${proc.width}x${proc.height} vs ${orig.width}x${orig.height}). Using original.`);
+            resolve(false);
+          } else {
+            resolve(true);
+          }
+        };
+
+        orig.onload = () => { origLoaded = true; evaluate(); };
+        orig.onerror = () => resolve(true); // can't check, trust AI
+        proc.onload = () => { procLoaded = true; evaluate(); };
+        proc.onerror = () => resolve(false); // broken image, fallback
+
+        orig.src = fallbackBase64;
+        proc.src = aiResult;
+      });
+
+      if (passesCheck) {
+        finalBase64 = aiResult;
+        options.onStatus?.("processed");
+      } else {
+        options.onStatus?.("fallback");
+      }
     } else {
       console.warn("[POTM] No image returned from background removal", data);
       options.onStatus?.("fallback");
