@@ -17,6 +17,7 @@ const Index = () => {
       <YouTubeSection />
       <FixturesSection />
       <AboutSection />
+      <FAAccreditedSection />
       <SponsorsSection />
       <Footer />
     </div>
