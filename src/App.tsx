@@ -77,6 +77,7 @@ function AppContent() {
         <Route path="/potm-demo" element={<POTMDemoPage />} />
         <Route path="/hub" element={<HubPage />} />
         <Route path="/install" element={<InstallPage />} />
+        <Route path="/admin" element={<RoleGate requiredRole="admin"><AdminPanelPage /></RoleGate>} />
         <Route path="/auth" element={<AuthPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
