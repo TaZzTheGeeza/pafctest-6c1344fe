@@ -115,6 +115,42 @@ export type Database = {
           },
         ]
       }
+      fixture_availability: {
+        Row: {
+          created_at: string
+          fixture_date: string
+          id: string
+          note: string | null
+          opponent: string
+          status: string
+          team_slug: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          fixture_date: string
+          id?: string
+          note?: string | null
+          opponent: string
+          status?: string
+          team_slug: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          fixture_date?: string
+          id?: string
+          note?: string | null
+          opponent?: string
+          status?: string
+          team_slug?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       gallery_albums: {
         Row: {
           cover_url: string | null
