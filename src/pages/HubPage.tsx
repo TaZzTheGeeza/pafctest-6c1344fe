@@ -8,6 +8,7 @@ import { PaymentCenter } from "@/components/hub/PaymentCenter";
 import { NotificationCenter } from "@/components/hub/NotificationCenter";
 import { TeamMemberManager } from "@/components/hub/TeamMemberManager";
 import { MessageSquare, CreditCard, Bell, CalendarCheck, Users, Shield, ChevronDown } from "lucide-react";
+import { FixtureAvailability } from "@/components/hub/FixtureAvailability";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
