@@ -51,97 +51,60 @@ export function FixturesSection() {
           <p className="text-muted-foreground text-sm">Next match for every PAFC team</p>
         </motion.div>
 
-        {/* Fixtures table */}
-        <div className="max-w-4xl mx-auto">
-          {/* Table header */}
-          <div className="hidden md:grid grid-cols-[1fr_auto_1fr_auto_auto] gap-4 items-center px-5 py-3 mb-2">
-            <span className="font-display text-[10px] tracking-[0.2em] uppercase text-muted-foreground">Home</span>
-            <span />
-            <span className="font-display text-[10px] tracking-[0.2em] uppercase text-muted-foreground">Away</span>
-            <span className="font-display text-[10px] tracking-[0.2em] uppercase text-muted-foreground text-right">Date</span>
-            <span className="font-display text-[10px] tracking-[0.2em] uppercase text-muted-foreground text-right w-14">K/O</span>
-          </div>
-
-          {/* Fixture rows */}
-          <div className="space-y-2">
+        {/* Fixtures grid */}
+        <div className="max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {upcomingFixtures.map((fixture, i) => {
               const isHome = fixture.venue === "Home";
-              const homeTeam = isHome ? `PAFC ${fixture.team}` : fixture.opponent;
-              const awayTeam = isHome ? fixture.opponent : `PAFC ${fixture.team}`;
 
               return (
                 <motion.div
                   key={fixture.teamSlug}
-                  initial={{ opacity: 0, x: -10 }}
-                  whileInView={{ opacity: 1, x: 0 }}
+                  initial={{ opacity: 0, y: 15 }}
+                  whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.35, delay: i * 0.04 }}
                 >
                   <Link
                     to={`/teams/${fixture.teamSlug}`}
-                    className="group block bg-card/80 backdrop-blur-sm border border-border hover:border-primary/50 rounded-lg transition-all duration-200 hover:shadow-lg hover:shadow-primary/5"
+                    className="group block bg-card/80 backdrop-blur-sm border border-border hover:border-primary/50 rounded-xl transition-all duration-200 hover:shadow-lg hover:shadow-primary/5 p-5"
                   >
-                    {/* Desktop layout */}
-                    <div className="hidden md:grid grid-cols-[1fr_auto_1fr_auto_auto] gap-4 items-center px-5 py-3.5">
-                      {/* Home team */}
-                      <div className="flex items-center gap-3 justify-end text-right">
-                        <span className={`font-display text-sm tracking-wide ${isHome ? "text-foreground font-semibold" : "text-muted-foreground"}`}>
-                          {homeTeam}
-                        </span>
-                        {isHome && <img src={clubLogo} alt="" className="w-7 h-7 rounded-full object-cover ring-1 ring-primary/30" />}
-                        {!isHome && <div className="w-7 h-7 rounded-full bg-secondary flex items-center justify-center"><Shield className="w-3.5 h-3.5 text-muted-foreground" /></div>}
+                    {/* Team badge */}
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="font-display text-xs font-bold tracking-wider text-primary uppercase">{fixture.team}</span>
+                      <span className={`text-[10px] font-display tracking-wider uppercase px-2.5 py-1 rounded-full ${
+                        isHome ? "bg-green-500/10 text-green-400 border border-green-500/20" : "bg-blue-500/10 text-blue-400 border border-blue-500/20"
+                      }`}>
+                        {fixture.venue}
+                      </span>
+                    </div>
+
+                    {/* Matchup */}
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                        <img src={clubLogo} alt="" className="w-9 h-9 rounded-full object-cover ring-2 ring-primary/30 shrink-0" />
+                        <span className="font-display text-base font-semibold text-foreground truncate">PAFC {fixture.team}</span>
                       </div>
-
-                      {/* VS badge */}
-                      <div className="flex items-center justify-center">
-                        <span className="font-display text-[10px] tracking-[0.15em] uppercase text-muted-foreground bg-secondary px-3 py-1 rounded-md">vs</span>
-                      </div>
-
-                      {/* Away team */}
-                      <div className="flex items-center gap-3">
-                        {!isHome && <img src={clubLogo} alt="" className="w-7 h-7 rounded-full object-cover ring-1 ring-primary/30" />}
-                        {isHome && <div className="w-7 h-7 rounded-full bg-secondary flex items-center justify-center"><Shield className="w-3.5 h-3.5 text-muted-foreground" /></div>}
-                        <span className={`font-display text-sm tracking-wide ${!isHome ? "text-foreground font-semibold" : "text-muted-foreground"}`}>
-                          {awayTeam}
-                        </span>
-                      </div>
-
-                      {/* Date */}
-                      <span className="font-display text-xs text-muted-foreground whitespace-nowrap">{fixture.date}</span>
-
-                      {/* Kickoff */}
-                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground w-14 justify-end">
-                        <Clock className="w-3 h-3" />
-                        <span className="font-display">{fixture.kickoff}</span>
+                      <span className="font-display text-[11px] tracking-[0.15em] uppercase text-muted-foreground bg-secondary px-3 py-1.5 rounded-md shrink-0">vs</span>
+                      <div className="flex items-center gap-2.5 flex-1 min-w-0 justify-end">
+                        <span className="font-display text-sm text-muted-foreground truncate text-right">{fixture.opponent}</span>
+                        <div className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center shrink-0">
+                          <Shield className="w-4 h-4 text-muted-foreground" />
+                        </div>
                       </div>
                     </div>
 
-                    {/* Mobile layout */}
-                    <div className="md:hidden p-4">
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="font-display text-xs font-bold text-primary">{fixture.team}</span>
-                        <span className={`text-[10px] font-display tracking-wider uppercase px-2 py-0.5 rounded-full ${
-                          isHome ? "bg-green-500/10 text-green-400 border border-green-500/20" : "bg-blue-500/10 text-blue-400 border border-blue-500/20"
-                        }`}>
-                          {fixture.venue}
-                        </span>
+                    {/* Date & Kickoff */}
+                    <div className="flex items-center justify-between pt-3 border-t border-border/50">
+                      <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                        <Calendar className="w-3.5 h-3.5" />
+                        <span className="font-display">{fixture.date}</span>
                       </div>
-                      <div className="flex items-center gap-3 mb-2">
-                        <img src={clubLogo} alt="" className="w-6 h-6 rounded-full object-cover ring-1 ring-primary/30" />
-                        <span className="font-display text-sm text-foreground font-medium">PAFC {fixture.team}</span>
-                        <span className="text-xs text-muted-foreground">vs</span>
-                        <span className="font-display text-sm text-muted-foreground truncate">{fixture.opponent}</span>
+                      <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                        <Clock className="w-3.5 h-3.5" />
+                        <span className="font-display">{fixture.kickoff}</span>
                       </div>
-                      <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                        <div className="flex items-center gap-1">
-                          <Calendar className="w-3 h-3" />
-                          {fixture.date}
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          {fixture.kickoff}
-                        </div>
-                      </div>
+                      <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
                     </div>
                   </Link>
                 </motion.div>
