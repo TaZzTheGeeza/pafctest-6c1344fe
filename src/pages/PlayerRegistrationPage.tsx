@@ -270,9 +270,9 @@ export default function PlayerRegistrationPage() {
                   </div>
 
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">Preferred Age Group *</label>
+                    <label className="text-xs text-muted-foreground mb-1 block">Select Team *</label>
                     <select name="preferredAgeGroup" value={form.preferredAgeGroup} onChange={handleChange} required className={selectClass}>
-                      <option value="">Select age group...</option>
+                      <option value="">Select team...</option>
                       {ageGroups.map((g) => (
                         <option key={g} value={g}>{g}</option>
                       ))}
