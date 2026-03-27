@@ -215,8 +215,8 @@ export default function AdminPlayerProfilePage() {
       <main className="flex-1 pt-28 pb-16">
         <div className="max-w-5xl mx-auto px-4">
           {/* Back link */}
-          <Link to="/admin" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors mb-6">
-            <ArrowLeft className="h-4 w-4" /> Back to Admin Panel
+          <Link to="/dashboard" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors mb-6">
+            <ArrowLeft className="h-4 w-4" /> Back to Dashboard
           </Link>
 
           {/* Player Header */}

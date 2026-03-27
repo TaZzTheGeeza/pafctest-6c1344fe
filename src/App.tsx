@@ -38,7 +38,7 @@ import ResultsPage from "./pages/ResultsPage.tsx";
 import POTMDemoPage from "./pages/POTMDemoPage.tsx";
 import HubPage from "./pages/HubPage.tsx";
 import InstallPage from "./pages/InstallPage.tsx";
-import AdminPanelPage from "./pages/AdminPanelPage.tsx";
+import DashboardPage from "./pages/DashboardPage.tsx";
 import AdminPlayerProfilePage from "./pages/AdminPlayerProfilePage.tsx";
 import MyProfilePage from "./pages/MyProfilePage.tsx";
 import BulkDocumentUploadPage from "./pages/BulkDocumentUploadPage.tsx";
@@ -90,12 +90,13 @@ function AppContent() {
         
         <Route path="/player-of-the-match" element={<RoleGate requiredRole="player"><POTMPage /></RoleGate>} />
         <Route path="/calendar" element={<CalendarPage />} />
-        <Route path="/coach-panel" element={<CoachPanelPage />} />
+        <Route path="/coach-panel" element={<Navigate to="/dashboard" replace />} />
         <Route path="/results" element={<ResultsPage />} />
         <Route path="/potm-demo" element={<POTMDemoPage />} />
         <Route path="/hub" element={<HubPage />} />
         <Route path="/install" element={<InstallPage />} />
-        <Route path="/admin" element={<RoleGate requiredRole="admin"><AdminPanelPage /></RoleGate>} />
+        <Route path="/dashboard" element={<RoleGate requiredRole="coach"><DashboardPage /></RoleGate>} />
+        <Route path="/admin" element={<Navigate to="/dashboard" replace />} />
         <Route path="/admin/player/:userId" element={<RoleGate requiredRole="admin"><AdminPlayerProfilePage /></RoleGate>} />
         <Route path="/admin/bulk-documents" element={<RoleGate requiredRole="admin"><BulkDocumentUploadPage /></RoleGate>} />
         <Route path="/admin/safeguarding-reports" element={<SafeguardingReportsPage />} />

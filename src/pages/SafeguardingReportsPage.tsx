@@ -96,8 +96,8 @@ export default function SafeguardingReportsPage() {
         <main className="flex-1 pt-28 pb-16">
           <div className="container mx-auto px-4">
             <div className="flex items-center gap-3 mb-8">
-              <Link to="/admin">
-                <Button variant="ghost" size="sm"><ArrowLeft className="h-4 w-4 mr-1" />Admin</Button>
+              <Link to="/dashboard">
+                <Button variant="ghost" size="sm"><ArrowLeft className="h-4 w-4 mr-1" />Dashboard</Button>
               </Link>
               <Shield className="h-6 w-6 text-primary" />
               <h1 className="text-2xl font-display font-bold">Safeguarding Reports</h1>
