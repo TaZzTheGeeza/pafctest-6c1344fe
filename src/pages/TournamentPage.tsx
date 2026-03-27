@@ -302,13 +302,14 @@ const TournamentPage = () => {
                   <SelectTrigger id="tournament-section" className="font-display tracking-[0.15em] uppercase">
                     <SelectValue placeholder="Select section" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="overview">Overview</SelectItem>
-                    <SelectItem value="groups">Groups</SelectItem>
-                    <SelectItem value="fixtures">Fixtures</SelectItem>
-                    <SelectItem value="knockout">Knockout</SelectItem>
-                    <SelectItem value="register">Register</SelectItem>
-                  </SelectContent>
+                    <SelectContent>
+                      <SelectItem value="overview">Overview</SelectItem>
+                      <SelectItem value="info">Venue & Rules</SelectItem>
+                      <SelectItem value="groups">Groups</SelectItem>
+                      <SelectItem value="fixtures">Fixtures</SelectItem>
+                      <SelectItem value="knockout">Knockout</SelectItem>
+                      <SelectItem value="register">Register</SelectItem>
+                    </SelectContent>
                 </Select>
               </div>
 
