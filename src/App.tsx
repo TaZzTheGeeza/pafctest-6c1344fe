@@ -1,9 +1,10 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate, useLocation } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useCartSync } from "@/hooks/useCartSync";
+import { useEffect } from "react";
 import { FootballBackground } from "@/components/FootballBackground";
 import { AnnouncementBanner } from "@/components/AnnouncementBanner";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -45,6 +46,14 @@ import SafeguardingReportsPage from "./pages/SafeguardingReportsPage.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+}
 
 function PlayerHubRedirect() {
   return <Navigate to="/hub?tab=player" replace />;
