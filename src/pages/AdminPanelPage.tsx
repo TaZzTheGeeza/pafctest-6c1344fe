@@ -269,13 +269,14 @@ function UserRow({
   onRemoveRole: (userId: string, role: AppRole) => void;
 }) {
   const [showAddMenu, setShowAddMenu] = useState(false);
+  const navigate = useNavigate();
   const isCurrentUser = user.id === currentUserId;
   const availableRoles = (["admin", "coach", "player", "user"] as AppRole[]).filter(
     (r) => !user.roles.includes(r)
   );
 
   return (
-    <div className="px-5 py-4 hover:bg-secondary/20 transition-colors">
+    <div className="px-5 py-4 hover:bg-secondary/20 transition-colors cursor-pointer" onClick={() => navigate(`/admin/player/${user.id}`)}>
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
         {/* User Info */}
         <div className="flex items-center gap-3 flex-1 min-w-0">
