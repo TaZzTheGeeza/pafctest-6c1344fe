@@ -642,6 +642,42 @@ export type Database = {
         }
         Relationships: []
       }
+      player_documents: {
+        Row: {
+          created_at: string
+          document_type: string
+          expiry_date: string | null
+          file_url: string | null
+          id: string
+          notes: string | null
+          title: string
+          uploaded_by: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          document_type?: string
+          expiry_date?: string | null
+          file_url?: string | null
+          id?: string
+          notes?: string | null
+          title: string
+          uploaded_by?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          document_type?: string
+          expiry_date?: string | null
+          file_url?: string | null
+          id?: string
+          notes?: string | null
+          title?: string
+          uploaded_by?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       player_of_the_match: {
         Row: {
           age_group: string
