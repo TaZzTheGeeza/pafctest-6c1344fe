@@ -7,10 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Trophy, Ticket, Clock, Gift, Loader2, CheckCircle, Users } from "lucide-react";
+import { Trophy, Ticket, Clock, Gift, Loader2, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useSearchParams } from "react-router-dom";
+import NumberPicker from "@/components/raffle/NumberPicker";
 
 interface Raffle {
   id: string;
@@ -20,6 +21,7 @@ interface Raffle {
   ticket_price_cents: number;
   currency: string;
   max_tickets: number | null;
+  number_range: number | null;
   draw_date: string | null;
   status: string;
   winner_name: string | null;
@@ -39,7 +41,7 @@ const RafflePage = () => {
   const [raffles, setRaffles] = useState<Raffle[]>([]);
   const [tickets, setTickets] = useState<Record<string, RaffleTicket[]>>({});
   const [loading, setLoading] = useState(true);
-  const [purchaseForm, setPurchaseForm] = useState<Record<string, { name: string; email: string; phone: string; quantity: number }>>({});
+  const [purchaseForm, setPurchaseForm] = useState<Record<string, { name: string; email: string; phone: string; selectedNumbers: number[] }>>({});
   const [purchasing, setPurchasing] = useState<string | null>(null);
   const [searchParams] = useSearchParams();
 
@@ -65,9 +67,8 @@ const RafflePage = () => {
       return;
     }
 
-    setRaffles(data || []);
+    setRaffles((data as any[]) || []);
 
-    // Fetch ticket counts for each raffle
     for (const raffle of data || []) {
       const { data: ticketData } = await supabase
         .from("raffle_tickets")
@@ -84,22 +85,36 @@ const RafflePage = () => {
 
   const handlePurchase = async (raffleId: string) => {
     const form = purchaseForm[raffleId];
-    if (!form?.name || !form?.email || !form?.quantity) {
-      toast.error("Please fill in your name, email, and number of tickets");
+    if (!form?.name || !form?.email) {
+      toast.error("Please fill in your name and email");
+      return;
+    }
+
+    const raffle = raffles.find(r => r.id === raffleId);
+    const hasNumberPicker = raffle?.number_range && raffle.number_range > 0;
+
+    if (hasNumberPicker && (!form.selectedNumbers || form.selectedNumbers.length === 0)) {
+      toast.error("Please select at least one number");
       return;
     }
 
     setPurchasing(raffleId);
     try {
-      const { data, error } = await supabase.functions.invoke("create-raffle-checkout", {
-        body: {
-          raffleId,
-          quantity: form.quantity,
-          buyerName: form.name,
-          buyerEmail: form.email,
-          buyerPhone: form.phone,
-        },
-      });
+      const body: any = {
+        raffleId,
+        buyerName: form.name,
+        buyerEmail: form.email,
+        buyerPhone: form.phone,
+      };
+
+      if (hasNumberPicker) {
+        body.chosenNumbers = form.selectedNumbers;
+        body.quantity = form.selectedNumbers.length;
+      } else {
+        body.quantity = form.selectedNumbers?.length || 1;
+      }
+
+      const { data, error } = await supabase.functions.invoke("create-raffle-checkout", { body });
 
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
@@ -113,7 +128,7 @@ const RafflePage = () => {
     }
   };
 
-  const updateForm = (raffleId: string, field: string, value: string | number) => {
+  const updateForm = (raffleId: string, field: string, value: any) => {
     setPurchaseForm(prev => ({
       ...prev,
       [raffleId]: { ...prev[raffleId], [field]: value } as any,
@@ -129,7 +144,6 @@ const RafflePage = () => {
       <Navbar />
       <main className="flex-1 pt-28 pb-12">
         <div className="container mx-auto px-4">
-          {/* Header */}
           <div className="text-center mb-12">
             <div className="inline-flex items-center gap-2 bg-primary/10 px-4 py-2 rounded-full mb-4">
               <Ticket className="h-4 w-4 text-primary" />
@@ -158,7 +172,10 @@ const RafflePage = () => {
             <div className="space-y-8 max-w-3xl mx-auto">
               {raffles.map((raffle) => {
                 const soldTickets = tickets[raffle.id]?.length || 0;
+                const takenNumbers = (tickets[raffle.id] || []).map(t => t.ticket_number);
                 const isDrawn = raffle.status === "drawn";
+                const hasNumberPicker = raffle.number_range && raffle.number_range > 0;
+                const selectedNumbers = purchaseForm[raffle.id]?.selectedNumbers || [];
 
                 return (
                   <Card key={raffle.id} className="bg-card border-border overflow-hidden">
@@ -172,8 +189,8 @@ const RafflePage = () => {
                         <div>
                           <CardTitle className="font-display text-2xl">{raffle.title}</CardTitle>
                           {raffle.description && (
-                             <CardDescription className="mt-2 text-sm" dangerouslySetInnerHTML={{ __html: raffle.description }} />
-                           )}
+                            <CardDescription className="mt-2 text-sm" dangerouslySetInnerHTML={{ __html: raffle.description }} />
+                          )}
                         </div>
                         <Badge variant={isDrawn ? "secondary" : "default"} className={isDrawn ? "" : "bg-green-600"}>
                           {isDrawn ? "Drawn" : "Active"}
@@ -181,7 +198,6 @@ const RafflePage = () => {
                       </div>
                     </CardHeader>
                     <CardContent className="pt-6 space-y-6">
-                      {/* Prize & Details */}
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div className="flex items-start gap-3">
                           <Trophy className="h-5 w-5 text-primary mt-0.5" />
@@ -208,13 +224,11 @@ const RafflePage = () => {
                         </div>
                       </div>
 
-                      {/* Tickets sold info */}
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Users className="h-4 w-4" />
                         <span>{soldTickets} ticket{soldTickets !== 1 ? "s" : ""} sold{raffle.max_tickets ? ` of ${raffle.max_tickets}` : ""}</span>
                       </div>
 
-                      {/* Winner announcement */}
                       {isDrawn && raffle.winner_name && (
                         <div className="bg-primary/10 border border-primary/30 rounded-lg p-4 text-center">
                           <Trophy className="h-8 w-8 text-primary mx-auto mb-2" />
@@ -223,13 +237,14 @@ const RafflePage = () => {
                         </div>
                       )}
 
-                      {/* Purchase form - only for active raffles */}
                       {!isDrawn && (
                         <>
                           <Separator />
                           <div>
-                            <h3 className="font-display text-lg mb-4">Buy Tickets</h3>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <h3 className="font-display text-lg mb-4">
+                              {hasNumberPicker ? "Choose Your Numbers" : "Buy Tickets"}
+                            </h3>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                               <div>
                                 <Label htmlFor={`name-${raffle.id}`}>Full Name *</Label>
                                 <Input
@@ -258,27 +273,44 @@ const RafflePage = () => {
                                   onChange={(e) => updateForm(raffle.id, "phone", e.target.value)}
                                 />
                               </div>
-                              <div>
-                                <Label htmlFor={`qty-${raffle.id}`}>Number of Tickets *</Label>
-                                <Input
-                                  id={`qty-${raffle.id}`}
-                                  type="number"
-                                  min={1}
-                                  max={raffle.max_tickets ? raffle.max_tickets - soldTickets : 50}
-                                  placeholder="1"
-                                  value={purchaseForm[raffle.id]?.quantity || ""}
-                                  onChange={(e) => updateForm(raffle.id, "quantity", parseInt(e.target.value) || 0)}
-                                />
-                              </div>
+                              {!hasNumberPicker && (
+                                <div>
+                                  <Label htmlFor={`qty-${raffle.id}`}>Number of Tickets *</Label>
+                                  <Input
+                                    id={`qty-${raffle.id}`}
+                                    type="number"
+                                    min={1}
+                                    max={raffle.max_tickets ? raffle.max_tickets - soldTickets : 50}
+                                    placeholder="1"
+                                    value={selectedNumbers.length || ""}
+                                    onChange={(e) => {
+                                      const qty = parseInt(e.target.value) || 0;
+                                      updateForm(raffle.id, "selectedNumbers", Array.from({ length: qty }, (_, i) => i + 1));
+                                    }}
+                                  />
+                                </div>
+                              )}
                             </div>
-                            {purchaseForm[raffle.id]?.quantity > 0 && (
+
+                            {hasNumberPicker && (
+                              <NumberPicker
+                                numberRange={raffle.number_range!}
+                                takenNumbers={takenNumbers}
+                                selectedNumbers={selectedNumbers}
+                                onSelectionChange={(nums) => updateForm(raffle.id, "selectedNumbers", nums)}
+                                maxSelection={raffle.max_tickets ? raffle.max_tickets - soldTickets : undefined}
+                              />
+                            )}
+
+                            {selectedNumbers.length > 0 && (
                               <p className="mt-3 text-sm text-muted-foreground">
-                                Total: <span className="text-primary font-bold">{formatPrice(raffle.ticket_price_cents * (purchaseForm[raffle.id]?.quantity || 0), raffle.currency)}</span>
+                                {selectedNumbers.length} ticket{selectedNumbers.length !== 1 ? "s" : ""} ·{" "}
+                                Total: <span className="text-primary font-bold">{formatPrice(raffle.ticket_price_cents * selectedNumbers.length, raffle.currency)}</span>
                               </p>
                             )}
                             <Button
                               onClick={() => handlePurchase(raffle.id)}
-                              disabled={purchasing === raffle.id}
+                              disabled={purchasing === raffle.id || selectedNumbers.length === 0}
                               className="w-full mt-4 bg-gold-gradient text-primary-foreground font-display"
                               size="lg"
                             >
@@ -287,7 +319,9 @@ const RafflePage = () => {
                               ) : (
                                 <>
                                   <Ticket className="h-4 w-4 mr-2" />
-                                  Buy Tickets
+                                  {hasNumberPicker
+                                    ? `Buy ${selectedNumbers.length} Number${selectedNumbers.length !== 1 ? "s" : ""}`
+                                    : "Buy Tickets"}
                                 </>
                               )}
                             </Button>
