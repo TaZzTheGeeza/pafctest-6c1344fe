@@ -46,6 +46,37 @@ export default function AdminPanelPage() {
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<AppRole | "all">("all");
   const [addingRole, setAddingRole] = useState<string | null>(null);
+  const [registrationOpen, setRegistrationOpen] = useState(false);
+  const [togglingReg, setTogglingReg] = useState(false);
+
+  useEffect(() => {
+    loadRegistrationSetting();
+  }, []);
+
+  async function loadRegistrationSetting() {
+    const { data } = await supabase
+      .from("site_settings" as any)
+      .select("value")
+      .eq("key", "registration_open")
+      .single();
+    if (data) setRegistrationOpen((data as any).value === "true");
+  }
+
+  async function toggleRegistration() {
+    setTogglingReg(true);
+    const newVal = !registrationOpen;
+    const { error } = await supabase
+      .from("site_settings" as any)
+      .update({ value: newVal ? "true" : "false", updated_at: new Date().toISOString() } as any)
+      .eq("key", "registration_open");
+    if (error) {
+      toast.error("Failed to update registration setting");
+    } else {
+      setRegistrationOpen(newVal);
+      toast.success(`Player registration ${newVal ? "opened" : "closed"}`);
+    }
+    setTogglingReg(false);
+  }
 
   useEffect(() => {
     loadUsers();
@@ -163,6 +194,30 @@ export default function AdminPanelPage() {
                 <p className={`text-2xl font-display font-bold ${s.color}`}>{s.value}</p>
               </div>
             ))}
+          </div>
+
+          {/* Registration Toggle */}
+          <div className="mb-8">
+            <div className="bg-card border border-border rounded-xl p-5 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <Users className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm font-display font-semibold text-foreground">Player Registration</p>
+                  <p className="text-[10px] text-muted-foreground">
+                    {registrationOpen ? "Registration is currently OPEN" : "Registration is currently CLOSED"}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={toggleRegistration}
+                disabled={togglingReg}
+                className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${registrationOpen ? "bg-primary" : "bg-muted"}`}
+              >
+                <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${registrationOpen ? "translate-x-6" : "translate-x-1"}`} />
+              </button>
+            </div>
           </div>
 
           {/* Quick Links */}
