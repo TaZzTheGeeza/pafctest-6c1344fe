@@ -912,6 +912,7 @@ export type Database = {
           description: string | null
           draw_date: string | null
           draw_started_at: string | null
+          draw_video_url: string | null
           drawn_ticket_number: number | null
           id: string
           image_url: string | null
@@ -933,6 +934,7 @@ export type Database = {
           description?: string | null
           draw_date?: string | null
           draw_started_at?: string | null
+          draw_video_url?: string | null
           drawn_ticket_number?: number | null
           id?: string
           image_url?: string | null
@@ -954,6 +956,7 @@ export type Database = {
           description?: string | null
           draw_date?: string | null
           draw_started_at?: string | null
+          draw_video_url?: string | null
           drawn_ticket_number?: number | null
           id?: string
           image_url?: string | null
