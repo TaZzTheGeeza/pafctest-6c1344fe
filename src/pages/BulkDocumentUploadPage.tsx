@@ -122,8 +122,8 @@ export default function BulkDocumentUploadPage() {
       <Navbar />
       <main className="flex-1 pt-28 pb-16">
         <div className="max-w-4xl mx-auto px-4">
-          <Link to="/admin" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors mb-6">
-            <ArrowLeft className="h-4 w-4" /> Back to Admin Panel
+          <Link to="/dashboard" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors mb-6">
+            <ArrowLeft className="h-4 w-4" /> Back to Dashboard
           </Link>
 
           <div className="flex items-center gap-3 mb-8">
