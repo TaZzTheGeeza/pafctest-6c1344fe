@@ -191,47 +191,44 @@ export default function HubPage() {
               <p className="text-sm text-muted-foreground mb-4">You haven't been added to a team yet. Ask your coach or club admin to add you.</p>
             </div>
           ) : (
-            <div className="max-w-5xl mx-auto pb-20">
-              {/* Header with team picker */}
-              <div className="flex items-center justify-between mb-6">
-                <div className="relative">
-                  <button
-                    onClick={() => setShowTeamPicker(!showTeamPicker)}
-                    className="flex items-center gap-2 bg-card border border-border rounded-full px-4 py-2 hover:border-primary/50 transition-colors"
-                  >
-                    <Users className="h-4 w-4 text-primary" />
-                    <span className="font-display text-sm font-bold text-foreground">{activeTeamName}</span>
-                    <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${showTeamPicker ? "rotate-180" : ""}`} />
-                  </button>
-                  {showTeamPicker && (
-                    <div className="absolute top-full left-0 mt-1 bg-card border border-border rounded-xl shadow-xl shadow-black/20 p-2 min-w-[200px] z-50">
-                      <p className="text-[10px] font-display tracking-wider text-muted-foreground uppercase px-2 py-1">Your Teams</p>
-                      {myTeams.map((slug) => {
-                        const team = TEAMS.find((t) => t.slug === slug);
-                        return (
-                          <button
-                            key={slug}
-                            onClick={() => selectTeam(slug)}
-                            className={`w-full text-left px-3 py-2 rounded-lg text-sm font-display tracking-wider transition-colors ${activeTeam === slug ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-secondary"}`}
-                          >
-                            {team?.name || slug}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
+            <div className="max-w-5xl mx-auto">
+              {/* Segmented Header — team + tabs in one row */}
+              <div className="bg-card border border-border rounded-2xl p-1.5 mb-6">
+                {/* Top row: team picker */}
+                <div className="flex items-center gap-2 px-2 pb-2 border-b border-border mb-2">
+                  <div className="relative flex-1">
+                    <button
+                      onClick={() => setShowTeamPicker(!showTeamPicker)}
+                      className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+                    >
+                      <div className="w-7 h-7 rounded-full bg-primary/15 flex items-center justify-center">
+                        <Users className="h-3.5 w-3.5 text-primary" />
+                      </div>
+                      <span className="font-display text-sm font-bold text-foreground tracking-wider">{activeTeamName}</span>
+                      <ChevronDown className={`h-3 w-3 text-muted-foreground transition-transform ${showTeamPicker ? "rotate-180" : ""}`} />
+                    </button>
+                    {showTeamPicker && (
+                      <div className="absolute top-full left-0 mt-2 bg-card border border-border rounded-xl shadow-xl shadow-black/20 p-2 min-w-[200px] z-50">
+                        <p className="text-[10px] font-display tracking-wider text-muted-foreground uppercase px-2 py-1">Your Teams</p>
+                        {myTeams.map((slug) => {
+                          const team = TEAMS.find((t) => t.slug === slug);
+                          return (
+                            <button
+                              key={slug}
+                              onClick={() => selectTeam(slug)}
+                              className={`w-full text-left px-3 py-2 rounded-lg text-sm font-display tracking-wider transition-colors ${activeTeam === slug ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-secondary"}`}
+                            >
+                              {team?.name || slug}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <h2 className="font-display text-sm tracking-wider text-muted-foreground">
-                  {allTabs.find(t => t.id === activeTab)?.label}
-                </h2>
-              </div>
 
-              {/* Content */}
-              {renderContent()}
-
-              {/* Bottom Tab Bar */}
-              <div className="fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-md border-t border-border">
-                <div className="max-w-5xl mx-auto flex items-center justify-around px-2 py-1.5">
+                {/* Segmented tab row */}
+                <div className="flex items-center gap-0.5 overflow-x-auto scrollbar-hide px-0.5">
                   {allTabs.map((tab) => {
                     const Icon = tab.icon;
                     const isActive = activeTab === tab.id;
@@ -239,24 +236,22 @@ export default function HubPage() {
                       <button
                         key={tab.id}
                         onClick={() => selectTab(tab.id)}
-                        className={`flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg transition-all min-w-0 ${
+                        className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-display tracking-wider whitespace-nowrap transition-all ${
                           isActive
-                            ? "text-primary"
-                            : "text-muted-foreground hover:text-foreground"
+                            ? "bg-primary text-primary-foreground shadow-sm"
+                            : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
                         }`}
                       >
-                        <Icon className={`h-5 w-5 ${isActive ? "text-primary" : ""}`} />
-                        <span className={`text-[9px] font-display tracking-wider truncate max-w-[60px] ${isActive ? "font-bold" : ""}`}>
-                          {tab.label}
-                        </span>
-                        {isActive && (
-                          <div className="w-1 h-1 rounded-full bg-primary mt-0.5" />
-                        )}
+                        <Icon className="h-3.5 w-3.5" />
+                        {tab.label}
                       </button>
                     );
                   })}
                 </div>
               </div>
+
+              {/* Content */}
+              {renderContent()}
             </div>
           )}
         </div>
