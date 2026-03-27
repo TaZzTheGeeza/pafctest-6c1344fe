@@ -69,8 +69,25 @@ export default function SafeguardingPage() {
               <Shield className="h-10 w-10 text-primary mx-auto mb-4" />
               <h2 className="font-display text-xl font-bold mb-1">Club Welfare Officer</h2>
               <p className="text-2xl font-display text-gold-gradient mb-4">Jayne Garratt-Pearson</p>
-              <p className="text-sm text-muted-foreground mb-6">
-                Our Club Welfare Officer is the first point of contact for any safeguarding concerns. They have completed the FA Welfare Officers Course and the FA Safeguarding Children Course.
+              <div className="text-sm text-muted-foreground mb-6 text-left space-y-4">
+                <p>
+                  My name is Jayne, and I am pleased to introduce myself as the Club Welfare Officer. I wanted to take this opportunity to let you know that I am here as the first point of contact for any concerns you may have regarding the wellbeing and safety of your children within the club.
+                </p>
+                <p>
+                  A Welfare Officer is responsible for helping to ensure that the club provides a safe, positive, and inclusive environment for all members. This includes promoting good practice, listening to any concerns, and supporting both children and adults where needed.
+                </p>
+                <p>In my role, I can offer support in several ways, including:</p>
+                <ul className="list-disc list-inside space-y-1 pl-2">
+                  <li>Being a confidential and approachable point of contact for any worries or concerns</li>
+                  <li>Providing guidance on safeguarding and wellbeing matters</li>
+                  <li>Supporting children who may be feeling anxious, upset, or unsure</li>
+                  <li>Helping parents and carers navigate any issues within the club</li>
+                  <li>Signposting to additional support services if needed</li>
+                </ul>
+                <p>
+                  My aim is to make sure every child feels safe, valued, and able to enjoy their time at the club. Whether you have a concern, a question, or simply need someone to talk to, please don't hesitate to get in touch. I am always happy to help and to be a friendly, approachable face if you would like a chat.
+                </p>
+              </div>
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <a href="mailto:welfare@peterboroughathleticfc.co.uk">
