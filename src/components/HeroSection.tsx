@@ -7,14 +7,14 @@ import clubLogo from "@/assets/club-logo.jpg";
 
 export function HeroSection() {
   return (
-    <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
+    <section className="relative min-h-[90vh] flex items-end justify-center overflow-hidden">
       <div
-        className="absolute inset-0 bg-cover bg-center"
+        className="absolute inset-0 bg-cover bg-top"
         style={{ backgroundImage: `url(${heroBg})` }}
       />
-      <div className="absolute inset-0 bg-gradient-to-b from-background/85 via-background/65 to-background" />
+      <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/30 to-background/95" />
 
-      <div className="relative z-10 container mx-auto px-4 text-center pt-24 md:pt-16">
+      <div className="relative z-10 container mx-auto px-4 text-center pb-16">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
