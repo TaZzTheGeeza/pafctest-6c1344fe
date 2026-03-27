@@ -23,6 +23,19 @@ export default function PlayerRegistrationPage() {
   const [submitted, setSubmitted] = useState(paymentStatus === "success");
   const [paymentCancelled, setPaymentCancelled] = useState(paymentStatus === "cancelled");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [registrationOpen, setRegistrationOpen] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    async function checkRegistration() {
+      const { data } = await supabase
+        .from("site_settings" as any)
+        .select("value")
+        .eq("key", "registration_open")
+        .single();
+      setRegistrationOpen(data ? (data as any).value === "true" : false);
+    }
+    checkRegistration();
+  }, []);
 
   useEffect(() => {
     if (paymentStatus === "cancelled") {
