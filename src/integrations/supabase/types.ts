@@ -950,7 +950,7 @@ export type Database = {
           incident_date?: string | null
           is_anonymous?: boolean
           people_involved?: string | null
-          reference_number: string
+          reference_number?: string
           reporter_email?: string | null
           reporter_name?: string | null
           reporter_phone?: string | null
