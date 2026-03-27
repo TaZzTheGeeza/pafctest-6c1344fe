@@ -720,42 +720,78 @@ export type Database = {
       player_registrations: {
         Row: {
           additional_info: string | null
+          address: string | null
           child_dob: string
           child_name: string
+          consent_medical: boolean | null
+          consent_photography: boolean | null
           created_at: string
+          declaration_confirmed: boolean | null
           email: string
+          emergency_contact_name: string | null
+          emergency_contact_phone: string | null
+          emergency_contact_relationship: string | null
+          fa_fan_number: string | null
+          foster_care_details: string | null
           id: string
+          known_to_social_services: boolean | null
           medical_conditions: string | null
           parent_name: string
           phone: string
           preferred_age_group: string
           previous_club: string | null
+          relationship_to_child: string | null
+          social_services_details: string | null
         }
         Insert: {
           additional_info?: string | null
+          address?: string | null
           child_dob: string
           child_name: string
+          consent_medical?: boolean | null
+          consent_photography?: boolean | null
           created_at?: string
+          declaration_confirmed?: boolean | null
           email: string
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          emergency_contact_relationship?: string | null
+          fa_fan_number?: string | null
+          foster_care_details?: string | null
           id?: string
+          known_to_social_services?: boolean | null
           medical_conditions?: string | null
           parent_name: string
           phone: string
           preferred_age_group: string
           previous_club?: string | null
+          relationship_to_child?: string | null
+          social_services_details?: string | null
         }
         Update: {
           additional_info?: string | null
+          address?: string | null
           child_dob?: string
           child_name?: string
+          consent_medical?: boolean | null
+          consent_photography?: boolean | null
           created_at?: string
+          declaration_confirmed?: boolean | null
           email?: string
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          emergency_contact_relationship?: string | null
+          fa_fan_number?: string | null
+          foster_care_details?: string | null
           id?: string
+          known_to_social_services?: boolean | null
           medical_conditions?: string | null
           parent_name?: string
           phone?: string
           preferred_age_group?: string
           previous_club?: string | null
+          relationship_to_child?: string | null
+          social_services_details?: string | null
         }
         Relationships: []
       }
