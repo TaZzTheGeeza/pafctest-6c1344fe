@@ -923,6 +923,60 @@ export type Database = {
         }
         Relationships: []
       }
+      safeguarding_reports: {
+        Row: {
+          admin_notes: string | null
+          category: string
+          created_at: string
+          description: string
+          id: string
+          incident_date: string | null
+          is_anonymous: boolean
+          people_involved: string | null
+          reference_number: string
+          reporter_email: string | null
+          reporter_name: string | null
+          reporter_phone: string | null
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          category?: string
+          created_at?: string
+          description: string
+          id?: string
+          incident_date?: string | null
+          is_anonymous?: boolean
+          people_involved?: string | null
+          reference_number?: string
+          reporter_email?: string | null
+          reporter_name?: string | null
+          reporter_phone?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          admin_notes?: string | null
+          category?: string
+          created_at?: string
+          description?: string
+          id?: string
+          incident_date?: string | null
+          is_anonymous?: boolean
+          people_involved?: string | null
+          reference_number?: string
+          reporter_email?: string | null
+          reporter_name?: string | null
+          reporter_phone?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       team_members: {
         Row: {
           created_at: string

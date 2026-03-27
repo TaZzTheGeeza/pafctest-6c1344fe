@@ -1,0 +1,1 @@
+ALTER TABLE public.safeguarding_reports ALTER COLUMN reference_number SET DEFAULT '';
