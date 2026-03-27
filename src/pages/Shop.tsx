@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ShoppingBag, Loader2 } from "lucide-react";
+import { ShoppingBag, Loader2, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ShopifyProduct, storefrontApiRequest, STOREFRONT_PRODUCTS_QUERY } from "@/lib/shopify";
 import { useCartStore } from "@/stores/cartStore";
 import { toast } from "sonner";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { supabase } from "@/integrations/supabase/client";
 
 const CATEGORIES = [
   { label: "All", tag: null },
@@ -20,8 +21,20 @@ export default function ShopPage() {
   const [products, setProducts] = useState<ShopifyProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [shopOpen, setShopOpen] = useState(true);
   const addItem = useCartStore(state => state.addItem);
   const isCartLoading = useCartStore(state => state.isLoading);
+
+  useEffect(() => {
+    supabase
+      .from("site_settings" as any)
+      .select("value")
+      .eq("key", "shop_open")
+      .single()
+      .then(({ data }) => {
+        if (data) setShopOpen((data as any).value === "true");
+      });
+  }, []);
 
   useEffect(() => {
     async function fetchProducts() {
