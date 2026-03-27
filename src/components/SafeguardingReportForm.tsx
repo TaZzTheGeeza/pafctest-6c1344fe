@@ -46,18 +46,20 @@ export function SafeguardingReportForm() {
 
     setSubmitting(true);
     try {
+      const insertData: Record<string, unknown> = {
+        is_anonymous: isAnonymous,
+        reporter_name: isAnonymous ? null : reporterName.trim() || null,
+        reporter_email: isAnonymous ? null : reporterEmail.trim() || null,
+        reporter_phone: isAnonymous ? null : reporterPhone.trim() || null,
+        category,
+        description: description.trim(),
+        people_involved: peopleInvolved.trim() || null,
+        incident_date: incidentDate || null,
+      };
+
       const { data, error } = await supabase
-        .from("safeguarding_reports")
-        .insert({
-          is_anonymous: isAnonymous,
-          reporter_name: isAnonymous ? null : reporterName.trim() || null,
-          reporter_email: isAnonymous ? null : reporterEmail.trim() || null,
-          reporter_phone: isAnonymous ? null : reporterPhone.trim() || null,
-          category,
-          description: description.trim(),
-          people_involved: peopleInvolved.trim() || null,
-          incident_date: incidentDate || null,
-        })
+        .from("safeguarding_reports" as any)
+        .insert(insertData)
         .select("reference_number")
         .single();
 

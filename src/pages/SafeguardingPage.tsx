@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Shield, Phone, Mail, AlertTriangle, CheckCircle, Users, FileText, ExternalLink } from "lucide-react";
+import { SafeguardingReportForm } from "@/components/SafeguardingReportForm";
 import { Button } from "@/components/ui/button";
 import clubLogo from "@/assets/club-logo.jpg";
 
@@ -152,6 +153,19 @@ export default function SafeguardingPage() {
                 </div>
               </div>
             </div>
+          </motion.div>
+
+          {/* Report a Concern */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.5 }}
+            className="max-w-2xl mx-auto mb-16"
+          >
+            <h2 className="font-display text-2xl font-bold text-center mb-8">
+              Report a <span className="text-gold-gradient">Concern</span>
+            </h2>
+            <SafeguardingReportForm />
           </motion.div>
 
           {/* FA Resources */}
