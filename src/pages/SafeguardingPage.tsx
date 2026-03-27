@@ -68,7 +68,7 @@ export default function SafeguardingPage() {
             <div className="bg-card border-2 border-primary rounded-lg p-8 text-center">
               <Shield className="h-10 w-10 text-primary mx-auto mb-4" />
               <h2 className="font-display text-xl font-bold mb-1">Club Welfare Officer</h2>
-              <p className="text-2xl font-display text-gold-gradient mb-4">Jayne Garatt-Pearson</p>
+              <p className="text-2xl font-display text-gold-gradient mb-4">Jayne Garratt-Pearson</p>
               <p className="text-sm text-muted-foreground mb-6">
                 Our Club Welfare Officer is the first point of contact for any safeguarding concerns. They have completed the FA Welfare Officers Course and the FA Safeguarding Children Course.
               </p>
