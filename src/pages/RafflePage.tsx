@@ -93,6 +93,7 @@ const RafflePage = () => {
                     winner_ticket_id: updated.winner_ticket_id,
                     draw_started_at: updated.draw_started_at,
                     drawn_ticket_number: updated.drawn_ticket_number,
+                    draw_video_url: updated.draw_video_url,
                   }
                 : r
             )
