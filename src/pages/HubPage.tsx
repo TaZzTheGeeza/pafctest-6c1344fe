@@ -191,18 +191,17 @@ export default function HubPage() {
               <p className="text-sm text-muted-foreground mb-4">You haven't been added to a team yet. Ask your coach or club admin to add you.</p>
             </div>
           ) : (
-            <div className="max-w-5xl mx-auto">
-              {/* Horizontal bar: team picker + icon tabs */}
-              <div className="bg-card border border-border rounded-xl p-2 mb-6 flex flex-wrap items-center gap-2">
-                {/* Team Picker Pill */}
+            <div className="max-w-5xl mx-auto pb-20">
+              {/* Header with team picker */}
+              <div className="flex items-center justify-between mb-6">
                 <div className="relative">
                   <button
                     onClick={() => setShowTeamPicker(!showTeamPicker)}
-                    className="flex items-center gap-1.5 bg-primary/10 border border-primary/20 rounded-full px-3 py-1.5 hover:bg-primary/20 transition-colors"
+                    className="flex items-center gap-2 bg-card border border-border rounded-full px-4 py-2 hover:border-primary/50 transition-colors"
                   >
-                    <Users className="h-3.5 w-3.5 text-primary" />
-                    <span className="font-display text-xs font-bold text-primary tracking-wider">{activeTeamName}</span>
-                    <ChevronDown className={`h-3 w-3 text-primary/70 transition-transform ${showTeamPicker ? "rotate-180" : ""}`} />
+                    <Users className="h-4 w-4 text-primary" />
+                    <span className="font-display text-sm font-bold text-foreground">{activeTeamName}</span>
+                    <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${showTeamPicker ? "rotate-180" : ""}`} />
                   </button>
                   {showTeamPicker && (
                     <div className="absolute top-full left-0 mt-1 bg-card border border-border rounded-xl shadow-xl shadow-black/20 p-2 min-w-[200px] z-50">
@@ -222,43 +221,42 @@ export default function HubPage() {
                     </div>
                   )}
                 </div>
-
-                {/* Divider */}
-                <div className="w-px h-6 bg-border" />
-
-                {/* Icon Tabs */}
-                <TooltipProvider delayDuration={100}>
-                  <div className="flex items-center gap-1 flex-wrap">
-                    {allTabs.map((tab) => {
-                      const Icon = tab.icon;
-                      const isActive = activeTab === tab.id;
-                      return (
-                        <Tooltip key={tab.id}>
-                          <TooltipTrigger asChild>
-                            <button
-                              onClick={() => selectTab(tab.id)}
-                              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-display tracking-wider transition-all ${
-                                isActive
-                                  ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
-                                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
-                              }`}
-                            >
-                              <Icon className="h-3.5 w-3.5" />
-                              <span className="hidden sm:inline">{tab.label}</span>
-                            </button>
-                          </TooltipTrigger>
-                          <TooltipContent side="bottom" className="font-display text-xs sm:hidden">
-                            {tab.label}
-                          </TooltipContent>
-                        </Tooltip>
-                      );
-                    })}
-                  </div>
-                </TooltipProvider>
+                <h2 className="font-display text-sm tracking-wider text-muted-foreground">
+                  {allTabs.find(t => t.id === activeTab)?.label}
+                </h2>
               </div>
 
               {/* Content */}
               {renderContent()}
+
+              {/* Bottom Tab Bar */}
+              <div className="fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-md border-t border-border">
+                <div className="max-w-5xl mx-auto flex items-center justify-around px-2 py-1.5">
+                  {allTabs.map((tab) => {
+                    const Icon = tab.icon;
+                    const isActive = activeTab === tab.id;
+                    return (
+                      <button
+                        key={tab.id}
+                        onClick={() => selectTab(tab.id)}
+                        className={`flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg transition-all min-w-0 ${
+                          isActive
+                            ? "text-primary"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        <Icon className={`h-5 w-5 ${isActive ? "text-primary" : ""}`} />
+                        <span className={`text-[9px] font-display tracking-wider truncate max-w-[60px] ${isActive ? "font-bold" : ""}`}>
+                          {tab.label}
+                        </span>
+                        {isActive && (
+                          <div className="w-1 h-1 rounded-full bg-primary mt-0.5" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           )}
         </div>
