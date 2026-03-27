@@ -703,6 +703,23 @@ const RaffleAdminPage = () => {
           />
         )}
       </AnimatePresence>
+
+      {/* Background Video Recorder */}
+      {isRecording && drawnWinner && drawingRaffleId && (
+        <DrawVideoRecorder
+          raffleName={raffles.find(r => r.id === drawingRaffleId)?.title || "Raffle"}
+          winnerName={drawnWinner.buyer_name}
+          ticketNumber={drawnWinner.ticket_number}
+          participantNames={[
+            ...new Set(
+              (tickets[drawingRaffleId] || [])
+                .filter(t => t.payment_status === "paid")
+                .map(t => t.buyer_name)
+            ),
+          ]}
+          onVideoReady={handleVideoReady}
+        />
+      )}
       <Footer />
     </div>
   );
