@@ -63,6 +63,7 @@ const RaffleAdminPage = () => {
     ticket_price: "",
     max_tickets: "",
     draw_date: "",
+    number_range: "",
   });
   const [editImageFile, setEditImageFile] = useState<File | null>(null);
   const [editImagePreview, setEditImagePreview] = useState<string | null>(null);
@@ -76,6 +77,7 @@ const RaffleAdminPage = () => {
     ticket_price: "",
     max_tickets: "",
     draw_date: "",
+    number_range: "",
   });
 
   useEffect(() => {
