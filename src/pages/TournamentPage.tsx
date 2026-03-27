@@ -19,22 +19,9 @@ import pitchLayout from "@/assets/tournament/pitch-layout.png";
 import venueDirections from "@/assets/tournament/venue-directions.jpeg";
 import { TournamentBracket } from "@/components/TournamentBracket";
 import { toast } from "sonner";
-import { z } from "zod";
-
-const registrationSchema = z.object({
-  team_name: z.string().trim().min(1, "Team name is required").max(100),
-  manager_name: z.string().trim().min(1, "Manager name is required").max(100),
-  manager_email: z.string().trim().email("Invalid email").max(255),
-  manager_phone: z.string().trim().max(20).optional(),
-  player_count: z.number().min(1).max(30).optional(),
-});
 
 const TournamentPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [regForm, setRegForm] = useState({
-    team_name: "", manager_name: "", manager_email: "", manager_phone: "", player_count: "", age_group_id: ""
-  });
-  const [submitting, setSubmitting] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [activeSection, setActiveSection] = useState("overview");
