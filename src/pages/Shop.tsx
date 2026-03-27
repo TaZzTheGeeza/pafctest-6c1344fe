@@ -86,7 +86,15 @@ export default function ShopPage() {
             </p>
           </motion.div>
 
-          {/* Category Tabs */}
+          {!shopOpen && (
+            <div className="max-w-lg mx-auto mb-8 bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 flex items-center gap-3">
+              <AlertTriangle className="h-5 w-5 text-amber-400 shrink-0" />
+              <p className="text-sm text-amber-200 font-display">
+                The club shop is currently closed for orders. You can still browse our products.
+              </p>
+            </div>
+          )}
+
           <div className="flex justify-center gap-2 mb-10 flex-wrap">
             {CATEGORIES.map((cat) => (
               <button
