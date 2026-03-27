@@ -227,7 +227,48 @@ export default function PlayerRegistrationPage() {
                     </div>
                   </div>
 
-                  {/* Preferred Age Group */}
+                  {/* Player Photo */}
+                  <div>
+                    <h3 className="font-display text-sm font-bold text-primary mb-3">Player Photo *</h3>
+                    <p className="text-xs text-muted-foreground mb-3">Please attach a passport-style photo of the player.</p>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handlePhotoChange}
+                      className="hidden"
+                    />
+                    {photoPreview ? (
+                      <div className="flex items-start gap-4">
+                        <div className="relative">
+                          <img
+                            src={photoPreview}
+                            alt="Player photo preview"
+                            className="w-32 h-40 object-cover rounded-lg border-2 border-primary"
+                          />
+                          <button
+                            type="button"
+                            onClick={removePhoto}
+                            className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-2">{photoFile?.name}</p>
+                      </div>
+                    ) : (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="font-display tracking-wider"
+                      >
+                        <Camera className="w-4 h-4 mr-2" />
+                        Upload Photo
+                      </Button>
+                    )}
+                  </div>
+
                   <div>
                     <label className="text-xs text-muted-foreground mb-1 block">Preferred Age Group *</label>
                     <select name="preferredAgeGroup" value={form.preferredAgeGroup} onChange={handleChange} required className={selectClass}>
