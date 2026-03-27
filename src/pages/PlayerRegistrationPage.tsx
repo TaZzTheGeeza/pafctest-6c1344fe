@@ -491,6 +491,7 @@ export default function PlayerRegistrationPage() {
               </motion.div>
             )}
           </div>
+          )}
         </div>
       </main>
       <Footer />
