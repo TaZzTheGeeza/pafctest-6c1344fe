@@ -476,95 +476,177 @@ function UserRow({
   onRemoveRole: (userId: string, role: AppRole) => void;
 }) {
   const [showAddMenu, setShowAddMenu] = useState(false);
+  const [showTeamAssign, setShowTeamAssign] = useState(false);
+  const [assignedTeams, setAssignedTeams] = useState<string[]>([]);
+  const [loadingTeams, setLoadingTeams] = useState(false);
   const navigate = useNavigate();
   const isCurrentUser = user.id === currentUserId;
   const availableRoles = (["admin", "coach", "player", "user"] as AppRole[]).filter(
     (r) => !user.roles.includes(r)
   );
+  const isCoachUser = user.roles.includes("coach");
+
+  async function loadAssignedTeams() {
+    setLoadingTeams(true);
+    const { data } = await supabase
+      .from("user_age_groups")
+      .select("age_group")
+      .eq("user_id", user.id);
+    setAssignedTeams(data?.map((d) => d.age_group) || []);
+    setLoadingTeams(false);
+  }
+
+  async function toggleTeam(ageGroup: string) {
+    if (assignedTeams.includes(ageGroup)) {
+      await supabase
+        .from("user_age_groups")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("age_group", ageGroup);
+      setAssignedTeams((prev) => prev.filter((t) => t !== ageGroup));
+      toast.success(`Removed from ${ageGroup}`);
+    } else {
+      await supabase
+        .from("user_age_groups")
+        .insert({ user_id: user.id, age_group: ageGroup });
+      setAssignedTeams((prev) => [...prev, ageGroup]);
+      toast.success(`Assigned to ${ageGroup}`);
+    }
+  }
+
+  function handleTeamToggle() {
+    if (!showTeamAssign) loadAssignedTeams();
+    setShowTeamAssign(!showTeamAssign);
+  }
 
   return (
-    <div className="px-5 py-4 hover:bg-secondary/20 transition-colors cursor-pointer" onClick={() => navigate(`/admin/player/${user.id}`)}>
-      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-        <div className="flex items-center gap-3 flex-1 min-w-0">
-          <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-display text-sm font-bold shrink-0">
-            {(user.full_name || user.email || "?")[0].toUpperCase()}
-          </div>
-          <div className="min-w-0">
-            <p className="text-sm font-display font-semibold text-foreground truncate flex items-center gap-2">
-              {user.full_name || "Unnamed"}
-              {isCurrentUser && (
-                <span className="text-[10px] bg-primary/20 text-primary px-1.5 py-0.5 rounded-full">You</span>
-              )}
-            </p>
-            <p className="text-xs text-muted-foreground truncate">{user.email}</p>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
-          {user.roles.length === 0 && (
-            <span className="text-xs text-muted-foreground italic">No roles</span>
-          )}
-          {user.roles.map((role) => {
-            const config = ROLE_CONFIG[role];
-            const Icon = config.icon;
-            return (
-              <span
-                key={role}
-                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-display border ${config.color}`}
-              >
-                <Icon className="h-3 w-3" />
-                {config.label}
-                <button
-                  onClick={() => onRemoveRole(user.id, role)}
-                  className="ml-0.5 hover:text-destructive transition-colors"
-                  title={`Remove ${config.label} role`}
-                >
-                  <Trash2 className="h-3 w-3" />
-                </button>
-              </span>
-            );
-          })}
-
-          {availableRoles.length > 0 && (
-            <div className="relative">
-              <button
-                onClick={() => setShowAddMenu(!showAddMenu)}
-                className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-display border border-dashed border-border text-muted-foreground hover:border-primary hover:text-primary transition-colors"
-              >
-                <Plus className="h-3 w-3" /> Add
-                <ChevronDown className={`h-3 w-3 transition-transform ${showAddMenu ? "rotate-180" : ""}`} />
-              </button>
-              {showAddMenu && (
-                <div className="absolute right-0 top-full mt-1 bg-card border border-border rounded-lg shadow-xl z-50 py-1 min-w-[140px]">
-                  {availableRoles.map((role) => {
-                    const config = ROLE_CONFIG[role];
-                    const Icon = config.icon;
-                    const isAdding = addingRole === `${user.id}-${role}`;
-                    return (
-                      <button
-                        key={role}
-                        onClick={() => {
-                          onAddRole(user.id, role);
-                          setShowAddMenu(false);
-                        }}
-                        disabled={isAdding}
-                        className="w-full flex items-center gap-2 px-3 py-2 text-xs font-display text-foreground hover:bg-secondary/50 transition-colors"
-                      >
-                        {isAdding ? (
-                          <Loader2 className="h-3 w-3 animate-spin" />
-                        ) : (
-                          <Icon className="h-3 w-3" />
-                        )}
-                        {config.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
+    <div className="hover:bg-secondary/20 transition-colors">
+      <div className="px-5 py-4 cursor-pointer" onClick={() => navigate(`/admin/player/${user.id}`)}>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-display text-sm font-bold shrink-0">
+              {(user.full_name || user.email || "?")[0].toUpperCase()}
             </div>
-          )}
+            <div className="min-w-0">
+              <p className="text-sm font-display font-semibold text-foreground truncate flex items-center gap-2">
+                {user.full_name || "Unnamed"}
+                {isCurrentUser && (
+                  <span className="text-[10px] bg-primary/20 text-primary px-1.5 py-0.5 rounded-full">You</span>
+                )}
+              </p>
+              <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+            {user.roles.length === 0 && (
+              <span className="text-xs text-muted-foreground italic">No roles</span>
+            )}
+            {user.roles.map((role) => {
+              const config = ROLE_CONFIG[role];
+              const Icon = config.icon;
+              return (
+                <span
+                  key={role}
+                  className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-display border ${config.color}`}
+                >
+                  <Icon className="h-3 w-3" />
+                  {config.label}
+                  <button
+                    onClick={() => onRemoveRole(user.id, role)}
+                    className="ml-0.5 hover:text-destructive transition-colors"
+                    title={`Remove ${config.label} role`}
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </button>
+                </span>
+              );
+            })}
+
+            {availableRoles.length > 0 && (
+              <div className="relative">
+                <button
+                  onClick={() => setShowAddMenu(!showAddMenu)}
+                  className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-display border border-dashed border-border text-muted-foreground hover:border-primary hover:text-primary transition-colors"
+                >
+                  <Plus className="h-3 w-3" /> Add
+                  <ChevronDown className={`h-3 w-3 transition-transform ${showAddMenu ? "rotate-180" : ""}`} />
+                </button>
+                {showAddMenu && (
+                  <div className="absolute right-0 top-full mt-1 bg-card border border-border rounded-lg shadow-xl z-50 py-1 min-w-[140px]">
+                    {availableRoles.map((role) => {
+                      const config = ROLE_CONFIG[role];
+                      const Icon = config.icon;
+                      const isAdding = addingRole === `${user.id}-${role}`;
+                      return (
+                        <button
+                          key={role}
+                          onClick={() => {
+                            onAddRole(user.id, role);
+                            setShowAddMenu(false);
+                          }}
+                          disabled={isAdding}
+                          className="w-full flex items-center gap-2 px-3 py-2 text-xs font-display text-foreground hover:bg-secondary/50 transition-colors"
+                        >
+                          {isAdding ? (
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                          ) : (
+                            <Icon className="h-3 w-3" />
+                          )}
+                          {config.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {isCoachUser && (
+              <button
+                onClick={handleTeamToggle}
+                className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-display border border-amber-500/30 text-amber-400 hover:bg-amber-500/10 transition-colors"
+              >
+                <Users className="h-3 w-3" /> Teams
+                <ChevronDown className={`h-3 w-3 transition-transform ${showTeamAssign ? "rotate-180" : ""}`} />
+              </button>
+            )}
+          </div>
         </div>
       </div>
+
+      {/* Team Assignment Panel */}
+      {isCoachUser && showTeamAssign && (
+        <div className="px-5 pb-4" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-secondary/30 border border-border rounded-lg p-3 ml-13">
+            <p className="text-[10px] font-display tracking-wider uppercase text-muted-foreground mb-2">
+              Assign teams for this coach
+            </p>
+            {loadingTeams ? (
+              <Loader2 className="h-4 w-4 animate-spin text-primary" />
+            ) : (
+              <div className="flex flex-wrap gap-1.5">
+                {ALL_AGE_GROUPS.map((ag) => {
+                  const assigned = assignedTeams.includes(ag);
+                  return (
+                    <button
+                      key={ag}
+                      onClick={() => toggleTeam(ag)}
+                      className={`px-2.5 py-1 rounded-full text-xs font-display border transition-all ${
+                        assigned
+                          ? "bg-amber-500/20 text-amber-400 border-amber-500/30"
+                          : "border-border text-muted-foreground hover:border-amber-500/30 hover:text-amber-400"
+                      }`}
+                    >
+                      {ag}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
