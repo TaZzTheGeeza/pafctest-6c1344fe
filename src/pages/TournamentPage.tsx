@@ -33,6 +33,7 @@ const TournamentPage = () => {
   const [submitting, setSubmitting] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [activeSection, setActiveSection] = useState("overview");
 
   const { data: tournaments } = useQuery({
     queryKey: ["tournaments"],
@@ -291,14 +292,22 @@ const TournamentPage = () => {
               </CardContent>
             </Card>
           ) : (
-            <Tabs defaultValue="overview" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-2 auto-rows-fr gap-1 h-auto min-h-0 items-stretch justify-stretch bg-muted/80 p-1">
-                <TabsTrigger value="overview" className="w-full min-h-10 whitespace-normal text-center">Overview</TabsTrigger>
-                <TabsTrigger value="groups" className="w-full min-h-10 whitespace-normal text-center">Groups</TabsTrigger>
-                <TabsTrigger value="fixtures" className="w-full min-h-10 whitespace-normal text-center">Fixtures</TabsTrigger>
-                <TabsTrigger value="knockout" className="w-full min-h-10 whitespace-normal text-center">Knockout</TabsTrigger>
-                <TabsTrigger value="register" className="col-span-2 w-full min-h-10 whitespace-normal text-center">Register</TabsTrigger>
-              </TabsList>
+            <Tabs value={activeSection} onValueChange={setActiveSection} className="space-y-6">
+              <div className="max-w-sm mx-auto">
+                <Label htmlFor="tournament-section" className="sr-only">Tournament section</Label>
+                <Select value={activeSection} onValueChange={setActiveSection}>
+                  <SelectTrigger id="tournament-section" className="font-display tracking-[0.15em] uppercase">
+                    <SelectValue placeholder="Select section" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="overview">Overview</SelectItem>
+                    <SelectItem value="groups">Groups</SelectItem>
+                    <SelectItem value="fixtures">Fixtures</SelectItem>
+                    <SelectItem value="knockout">Knockout</SelectItem>
+                    <SelectItem value="register">Register</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
               {/* OVERVIEW */}
               <TabsContent value="overview" className="space-y-6">
