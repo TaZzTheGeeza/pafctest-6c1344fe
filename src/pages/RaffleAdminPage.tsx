@@ -16,6 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { AnimatePresence } from "framer-motion";
 import RaffleDraw from "@/components/raffle/RaffleDraw";
+import DrawVideoRecorder from "@/components/raffle/DrawVideoRecorder";
 
 interface Raffle {
   id: string;
@@ -299,9 +300,18 @@ const RaffleAdminPage = () => {
     setDrawingRaffleId(raffleId);
   };
 
-  const handleDrawComplete = async (winner: { id: string; ticket_number: number; buyer_name: string }) => {
+  const [drawnWinner, setDrawnWinner] = useState<{
+    id: string;
+    ticket_number: number;
+    buyer_name: string;
+    buyer_email: string;
+  } | null>(null);
+  const [isRecording, setIsRecording] = useState(false);
+
+  const handleDrawComplete = async (winner: { id: string; ticket_number: number; buyer_name: string; buyer_email: string }) => {
     if (!drawingRaffleId) return;
 
+    // Save winner to DB
     const { error } = await supabase
       .from("raffles")
       .update({
@@ -316,6 +326,44 @@ const RaffleAdminPage = () => {
       toast.error("Failed to record winner");
     } else {
       fetchRaffles();
+    }
+
+    // Start video recording in background
+    setDrawnWinner(winner);
+    setIsRecording(true);
+    toast.info("Recording draw video...", { duration: 3000 });
+  };
+
+  const handleVideoReady = async (blob: Blob) => {
+    if (!drawingRaffleId) return;
+    setIsRecording(false);
+
+    try {
+      const fileName = `draw-${drawingRaffleId}-${Date.now()}.webm`;
+      const { error: uploadError } = await supabase.storage
+        .from("draw-videos")
+        .upload(fileName, blob, { contentType: "video/webm" });
+
+      if (uploadError) {
+        console.error("Failed to upload draw video:", uploadError);
+        toast.error("Failed to save draw video");
+        return;
+      }
+
+      const { data: urlData } = supabase.storage
+        .from("draw-videos")
+        .getPublicUrl(fileName);
+
+      await supabase
+        .from("raffles")
+        .update({ draw_video_url: urlData.publicUrl } as any)
+        .eq("id", drawingRaffleId);
+
+      toast.success("Draw video saved! Viewers can now watch the replay.");
+      fetchRaffles();
+    } catch (err) {
+      console.error("Video save error:", err);
+      toast.error("Failed to save draw video");
     }
   };
 
