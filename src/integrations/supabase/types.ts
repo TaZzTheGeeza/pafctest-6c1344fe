@@ -1264,42 +1264,110 @@ export type Database = {
           },
         ]
       }
+      tournament_team_players: {
+        Row: {
+          created_at: string
+          date_of_birth: string
+          id: string
+          player_name: string
+          shirt_number: number | null
+          team_id: string
+        }
+        Insert: {
+          created_at?: string
+          date_of_birth: string
+          id?: string
+          player_name: string
+          shirt_number?: number | null
+          team_id: string
+        }
+        Update: {
+          created_at?: string
+          date_of_birth?: string
+          id?: string
+          player_name?: string
+          shirt_number?: number | null
+          team_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_team_players_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "tournament_teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tournament_teams: {
         Row: {
           age_group_id: string
+          club_name: string | null
+          club_org_id: string | null
+          consent_photography: boolean | null
+          consent_rules: boolean | null
+          county: string | null
           created_at: string
           group_id: string | null
           id: string
+          league_division: string | null
           manager_email: string
           manager_name: string
           manager_phone: string | null
           player_count: number | null
+          secretary_email: string | null
+          secretary_name: string | null
+          secretary_phone: string | null
           status: string
+          team_category: string | null
           team_name: string
+          whatsapp_contacts: Json | null
         }
         Insert: {
           age_group_id: string
+          club_name?: string | null
+          club_org_id?: string | null
+          consent_photography?: boolean | null
+          consent_rules?: boolean | null
+          county?: string | null
           created_at?: string
           group_id?: string | null
           id?: string
+          league_division?: string | null
           manager_email: string
           manager_name: string
           manager_phone?: string | null
           player_count?: number | null
+          secretary_email?: string | null
+          secretary_name?: string | null
+          secretary_phone?: string | null
           status?: string
+          team_category?: string | null
           team_name: string
+          whatsapp_contacts?: Json | null
         }
         Update: {
           age_group_id?: string
+          club_name?: string | null
+          club_org_id?: string | null
+          consent_photography?: boolean | null
+          consent_rules?: boolean | null
+          county?: string | null
           created_at?: string
           group_id?: string | null
           id?: string
+          league_division?: string | null
           manager_email?: string
           manager_name?: string
           manager_phone?: string | null
           player_count?: number | null
+          secretary_email?: string | null
+          secretary_name?: string | null
+          secretary_phone?: string | null
           status?: string
+          team_category?: string | null
           team_name?: string
+          whatsapp_contacts?: Json | null
         }
         Relationships: [
           {
