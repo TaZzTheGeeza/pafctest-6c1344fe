@@ -281,20 +281,19 @@ const RaffleAdminPage = () => {
     }
   };
 
-  const drawWinner = async (raffleId: string) => {
+  const [drawingRaffleId, setDrawingRaffleId] = useState<string | null>(null);
+
+  const openDrawOverlay = (raffleId: string) => {
     const paidTickets = (tickets[raffleId] || []).filter(t => t.payment_status === "paid");
     if (paidTickets.length === 0) {
       toast.error("No paid tickets to draw from");
       return;
     }
+    setDrawingRaffleId(raffleId);
+  };
 
-    setDrawing(raffleId);
-
-    // Dramatic delay
-    await new Promise(r => setTimeout(r, 2000));
-
-    const winnerIndex = Math.floor(Math.random() * paidTickets.length);
-    const winner = paidTickets[winnerIndex];
+  const handleDrawComplete = async (winner: { id: string; ticket_number: number; buyer_name: string }) => {
+    if (!drawingRaffleId) return;
 
     const { error } = await supabase
       .from("raffles")
@@ -303,15 +302,17 @@ const RaffleAdminPage = () => {
         winner_ticket_id: winner.id,
         winner_name: winner.buyer_name,
       })
-      .eq("id", raffleId);
+      .eq("id", drawingRaffleId);
 
     if (error) {
       toast.error("Failed to record winner");
     } else {
-      toast.success(`🎉 Winner: ${winner.buyer_name} (Ticket #${winner.ticket_number})!`, { duration: 10000 });
       fetchRaffles();
     }
-    setDrawing(null);
+  };
+
+  const closeDrawOverlay = () => {
+    setDrawingRaffleId(null);
   };
 
   const formatPrice = (cents: number) => {
