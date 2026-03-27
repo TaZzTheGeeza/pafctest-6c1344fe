@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Send, Hash, Plus, Users, ImagePlus, Loader2, X } from "lucide-react";
+import { Send, Hash, Plus, Users, ImagePlus, Loader2, X, Pencil, Trash2, Check } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 
@@ -65,6 +65,9 @@ export function TeamChat({ teamSlug }: { teamSlug: string }) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editText, setEditText] = useState("");
+  const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
 
   useEffect(() => {
     setActiveChannel(null);
@@ -81,6 +84,14 @@ export function TeamChat({ teamSlug }: { teamSlug: string }) {
           const msg = payload.new as Message;
           setMessages((prev) => [...prev, msg]);
           loadProfileFor(msg.user_id);
+        })
+        .on("postgres_changes", { event: "UPDATE", schema: "public", table: "hub_messages", filter: `channel_id=eq.${activeChannel.id}` }, (payload) => {
+          const updated = payload.new as Message;
+          setMessages((prev) => prev.map((m) => m.id === updated.id ? updated : m));
+        })
+        .on("postgres_changes", { event: "DELETE", schema: "public", table: "hub_messages", filter: `channel_id=eq.${activeChannel.id}` }, (payload) => {
+          const deleted = payload.old as { id: string };
+          setMessages((prev) => prev.filter((m) => m.id !== deleted.id));
         })
         .subscribe();
       return () => { supabase.removeChannel(channel); };
@@ -191,6 +202,30 @@ export function TeamChat({ teamSlug }: { teamSlug: string }) {
     toast.success("Channel created!");
   }
 
+  async function deleteMessage(msgId: string) {
+    const { error } = await supabase.from("hub_messages").delete().eq("id", msgId);
+    if (error) { toast.error("Failed to delete message"); return; }
+    setMessages((prev) => prev.filter((m) => m.id !== msgId));
+    setMenuOpenId(null);
+  }
+
+  async function saveEdit(msgId: string) {
+    if (!editText.trim()) return;
+    const { error } = await supabase.from("hub_messages").update({ content: editText.trim() }).eq("id", msgId);
+    if (error) { toast.error("Failed to edit message"); return; }
+    setMessages((prev) => prev.map((m) => m.id === msgId ? { ...m, content: editText.trim() } : m));
+    setEditingId(null);
+    setEditText("");
+  }
+
+  function startEdit(msg: Message) {
+    // Strip image tags for editing text portion
+    const textOnly = msg.content.replace(/\[img:[^\]]+\]/g, "").trim();
+    setEditText(textOnly || msg.content);
+    setEditingId(msg.id);
+    setMenuOpenId(null);
+  }
+
   if (!user) {
     return (
       <div className="text-center py-16">
@@ -249,33 +284,78 @@ export function TeamChat({ teamSlug }: { teamSlug: string }) {
                 )}
                 {messages.map((msg, i) => {
                   const isOwn = msg.user_id === user.id;
+                  const canManage = isOwn || isAdmin;
                   const showAvatar = i === 0 || messages[i - 1].user_id !== msg.user_id;
                   const parts = parseMessage(msg.content);
+                  const isEditing = editingId === msg.id;
                   return (
-                    <div key={msg.id} className={`flex ${isOwn ? "justify-end" : "justify-start"}`}>
+                    <div key={msg.id} className={`group flex ${isOwn ? "justify-end" : "justify-start"}`}>
                       <div className={`max-w-[75%] ${isOwn ? "items-end" : "items-start"}`}>
                         {showAvatar && (
                           <p className={`text-[10px] font-display tracking-wider mb-0.5 ${isOwn ? "text-right text-primary" : "text-muted-foreground"}`}>
                             {isOwn ? "You" : profiles[msg.user_id] || "Loading..."}
                           </p>
                         )}
-                        <div className={`rounded-xl px-3 py-2 text-sm ${isOwn ? "bg-primary text-primary-foreground" : "bg-secondary text-foreground"}`}>
-                          {parts.map((part, pi) =>
-                            part.type === "image" ? (
-                              <img
-                                key={pi}
-                                src={part.value}
-                                alt="Shared image"
-                                loading="lazy"
-                                onClick={() => setLightboxUrl(part.value)}
-                                className="rounded-lg max-w-full max-h-60 object-cover cursor-pointer hover:opacity-90 transition-opacity mt-1 mb-1"
+                        <div className="relative">
+                          {isEditing ? (
+                            <div className="flex gap-1.5 items-center">
+                              <input
+                                value={editText}
+                                onChange={(e) => setEditText(e.target.value)}
+                                onKeyDown={(e) => { if (e.key === "Enter") saveEdit(msg.id); if (e.key === "Escape") { setEditingId(null); setEditText(""); } }}
+                                className="flex-1 bg-secondary border border-primary/50 rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                                autoFocus
                               />
-                            ) : (
-                              <span key={pi}>{part.value}</span>
-                            )
+                              <button onClick={() => saveEdit(msg.id)} className="p-1.5 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90">
+                                <Check className="h-3.5 w-3.5" />
+                              </button>
+                              <button onClick={() => { setEditingId(null); setEditText(""); }} className="p-1.5 rounded-lg bg-secondary text-muted-foreground hover:text-foreground">
+                                <X className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          ) : (
+                            <>
+                              <div className={`rounded-xl px-3 py-2 text-sm ${isOwn ? "bg-primary text-primary-foreground" : "bg-secondary text-foreground"}`}>
+                                {parts.map((part, pi) =>
+                                  part.type === "image" ? (
+                                    <img
+                                      key={pi}
+                                      src={part.value}
+                                      alt="Shared image"
+                                      loading="lazy"
+                                      onClick={() => setLightboxUrl(part.value)}
+                                      className="rounded-lg max-w-full max-h-60 object-cover cursor-pointer hover:opacity-90 transition-opacity mt-1 mb-1"
+                                    />
+                                  ) : (
+                                    <span key={pi}>{part.value}</span>
+                                  )
+                                )}
+                              </div>
+                              {/* Edit/Delete controls */}
+                              {canManage && (
+                                <div className={`flex gap-1 mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity ${isOwn ? "justify-end" : "justify-start"}`}>
+                                  {isOwn && (
+                                    <button
+                                      onClick={() => startEdit(msg)}
+                                      className="p-1 rounded text-muted-foreground hover:text-primary transition-colors"
+                                      title="Edit message"
+                                    >
+                                      <Pencil className="h-3 w-3" />
+                                    </button>
+                                  )}
+                                  <button
+                                    onClick={() => deleteMessage(msg.id)}
+                                    className="p-1 rounded text-muted-foreground hover:text-destructive transition-colors"
+                                    title="Delete message"
+                                  >
+                                    <Trash2 className="h-3 w-3" />
+                                  </button>
+                                </div>
+                              )}
+                            </>
                           )}
                         </div>
-                        <p className="text-[9px] text-muted-foreground mt-0.5">{format(new Date(msg.created_at), "HH:mm")}</p>
+                        {!isEditing && <p className="text-[9px] text-muted-foreground mt-0.5">{format(new Date(msg.created_at), "HH:mm")}</p>}
                       </div>
                     </div>
                   );
