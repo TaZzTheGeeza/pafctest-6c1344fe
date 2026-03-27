@@ -75,7 +75,7 @@ const ResultsPage = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <main className="flex-1 pt-20 pb-12">
+      <main className="flex-1 pt-28 pb-12">
         <div className="container mx-auto px-4 max-w-3xl">
           <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-2">
             <span className="text-gold-gradient">Match</span> Results
