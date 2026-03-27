@@ -50,11 +50,37 @@ export default function PlayerRegistrationPage() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please upload an image file.");
+      return;
+    }
+    if (file.size > 20 * 1024 * 1024) {
+      toast.error("Image must be under 20MB.");
+      return;
+    }
+    setPhotoFile(file);
+    setPhotoPreview(URL.createObjectURL(file));
+  };
+
+  const removePhoto = () => {
+    setPhotoFile(null);
+    setPhotoPreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!form.declarationConfirmed) {
       toast.error("Please confirm the declaration before submitting.");
+      return;
+    }
+
+    if (!photoFile) {
+      toast.error("Please attach a passport-style photo of the player.");
       return;
     }
 
@@ -83,6 +109,21 @@ export default function PlayerRegistrationPage() {
         consent_photography: form.consentPhotography,
         declaration_confirmed: form.declarationConfirmed,
       };
+
+      // Upload photo first
+      const fileExt = photoFile.name.split(".").pop();
+      const filePath = `${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
+      const { error: uploadError } = await supabase.storage
+        .from("registration-photos")
+        .upload(filePath, photoFile);
+
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage
+        .from("registration-photos")
+        .getPublicUrl(filePath);
+
+      insertData.photo_url = urlData.publicUrl;
 
       const { error } = await supabase
         .from("player_registrations" as any)
