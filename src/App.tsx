@@ -38,6 +38,7 @@ import POTMDemoPage from "./pages/POTMDemoPage.tsx";
 import HubPage from "./pages/HubPage.tsx";
 import InstallPage from "./pages/InstallPage.tsx";
 import AdminPanelPage from "./pages/AdminPanelPage.tsx";
+import AdminPlayerProfilePage from "./pages/AdminPlayerProfilePage.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
