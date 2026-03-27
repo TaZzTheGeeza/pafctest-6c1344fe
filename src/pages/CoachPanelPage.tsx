@@ -117,7 +117,7 @@ interface POTMEntry {
   photoPreview: string | null;
 }
 
-function POTMForm({ ageGroups }: { ageGroups: string[] }) {
+export function POTMForm({ ageGroups }: { ageGroups: string[] }) {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [fixtureKey, setFixtureKey] = useState("");
@@ -344,7 +344,7 @@ function POTMForm({ ageGroups }: { ageGroups: string[] }) {
 
 interface GoalAssistEntry { playerId: string; count: number; }
 
-function MatchReportForm({ ageGroups }: { ageGroups: string[] }) {
+export function MatchReportForm({ ageGroups }: { ageGroups: string[] }) {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [fixtureKey, setFixtureKey] = useState("");
