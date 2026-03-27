@@ -192,6 +192,9 @@ export function TeamChat({ teamSlug }: { teamSlug: string }) {
     setPendingImageUrl(null);
   }
 
+  const [editingChannelId, setEditingChannelId] = useState<string | null>(null);
+  const [editChannelName, setEditChannelName] = useState("");
+
   async function createChannel() {
     if (!newChannelName.trim()) return;
     const { error } = await supabase.from("hub_channels").insert({ name: newChannelName.trim(), team_slug: teamSlug, created_by: user?.id });
@@ -200,6 +203,32 @@ export function TeamChat({ teamSlug }: { teamSlug: string }) {
     setShowNewChannel(false);
     loadChannels();
     toast.success("Channel created!");
+  }
+
+  async function renameChannel(channelId: string) {
+    if (!editChannelName.trim()) return;
+    const { error } = await supabase.from("hub_channels").update({ name: editChannelName.trim() }).eq("id", channelId);
+    if (error) { toast.error("Failed to rename channel"); return; }
+    setChannels((prev) => prev.map((c) => c.id === channelId ? { ...c, name: editChannelName.trim() } : c));
+    if (activeChannel?.id === channelId) setActiveChannel((prev) => prev ? { ...prev, name: editChannelName.trim() } : prev);
+    setEditingChannelId(null);
+    setEditChannelName("");
+    toast.success("Channel renamed!");
+  }
+
+  async function deleteChannel(channelId: string) {
+    if (!confirm("Delete this channel and all its messages?")) return;
+    // Delete messages first, then channel
+    await supabase.from("hub_messages").delete().eq("channel_id", channelId);
+    const { error } = await supabase.from("hub_channels").delete().eq("id", channelId);
+    if (error) { toast.error("Failed to delete channel"); return; }
+    setChannels((prev) => prev.filter((c) => c.id !== channelId));
+    if (activeChannel?.id === channelId) {
+      const remaining = channels.filter((c) => c.id !== channelId);
+      setActiveChannel(remaining.length > 0 ? remaining[0] : null);
+      setMessages([]);
+    }
+    toast.success("Channel deleted!");
   }
 
   async function deleteMessage(msgId: string) {
