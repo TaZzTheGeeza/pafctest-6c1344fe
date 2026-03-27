@@ -85,6 +85,14 @@ export function TeamChat({ teamSlug }: { teamSlug: string }) {
           setMessages((prev) => [...prev, msg]);
           loadProfileFor(msg.user_id);
         })
+        .on("postgres_changes", { event: "UPDATE", schema: "public", table: "hub_messages", filter: `channel_id=eq.${activeChannel.id}` }, (payload) => {
+          const updated = payload.new as Message;
+          setMessages((prev) => prev.map((m) => m.id === updated.id ? updated : m));
+        })
+        .on("postgres_changes", { event: "DELETE", schema: "public", table: "hub_messages", filter: `channel_id=eq.${activeChannel.id}` }, (payload) => {
+          const deleted = payload.old as { id: string };
+          setMessages((prev) => prev.filter((m) => m.id !== deleted.id));
+        })
         .subscribe();
       return () => { supabase.removeChannel(channel); };
     }
