@@ -461,11 +461,11 @@ export default function PlayerRegistrationPage() {
                     className="w-full bg-gold-gradient text-primary-foreground font-display tracking-wider"
                   >
                     {isSubmitting ? (
-                      "Submitting..."
+                      "Processing..."
                     ) : (
                       <>
                         <Send className="w-4 h-4 mr-2" />
-                        Submit Registration
+                        Submit & Pay £40
                       </>
                     )}
                   </Button>
