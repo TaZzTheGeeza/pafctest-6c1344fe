@@ -88,7 +88,6 @@ export default function SafeguardingPage() {
                   My aim is to make sure every child feels safe, valued, and able to enjoy their time at the club. Whether you have a concern, a question, or simply need someone to talk to, please don't hesitate to get in touch. I am always happy to help and to be a friendly, approachable face if you would like a chat.
                 </p>
               </div>
-              </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <a href="mailto:welfare@peterboroughathleticfc.co.uk">
                   <Button variant="outline" className="font-display tracking-wider">
