@@ -21,18 +21,12 @@ export function HeroSection() {
           transition={{ duration: 0.8 }}
           className="flex flex-col items-center"
         >
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold font-display mb-1">
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold font-display mb-2 mt-8">
             <span className="text-gold-gradient">Peterborough</span>
             <br />
             <span className="text-foreground">Athletic FC</span>
           </h1>
-          <p className="text-xs md:text-sm font-display text-primary tracking-[0.3em] mb-2">The Lions · Est. 2020</p>
-          <p className="text-sm md:text-base text-muted-foreground max-w-xl mx-auto mb-3 font-body">
-            Proudly FA Accredited · Grassroots Football for All · Powered by Community
-          </p>
-          <p className="text-sm text-muted-foreground max-w-lg mx-auto mb-8 font-body leading-relaxed">
-            More than just a football club — we are a family. Built on teamwork, respect, and community spirit.
-          </p>
+          <p className="text-xs md:text-sm font-display text-primary tracking-[0.3em] mb-6">The Lions · Est. 2020</p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Button
               size="lg"
