@@ -7,7 +7,7 @@ import { TeamChat } from "@/components/hub/TeamChat";
 import { PaymentCenter } from "@/components/hub/PaymentCenter";
 import { NotificationCenter } from "@/components/hub/NotificationCenter";
 import { TeamMemberManager } from "@/components/hub/TeamMemberManager";
-import { MessageSquare, CreditCard, Bell, CalendarCheck, Users, Shield, ChevronDown, Car, TrendingUp, UserPlus } from "lucide-react";
+import { MessageSquare, CreditCard, Bell, CalendarCheck, Users, Shield, ChevronDown, Car, TrendingUp, UserPlus, User, FileText, ChevronRight } from "lucide-react";
 import { FixtureAvailability } from "@/components/hub/FixtureAvailability";
 import { CarpoolBoard } from "@/components/hub/CarpoolBoard";
 import { AttendanceStats } from "@/components/hub/AttendanceStats";
@@ -36,6 +36,46 @@ const tabs = [
   { id: "carpool", label: "Carpool", icon: Car },
   { id: "attendance", label: "Attendance", icon: TrendingUp },
   { id: "guardian", label: "Guardian", icon: UserPlus },
+  { id: "player", label: "Player Zone", icon: User },
+];
+
+const playerHubItems = [
+  {
+    title: "My Profile",
+    description: "View your stats, documents, availability history, and POTM awards.",
+    icon: User,
+    path: "/my-profile",
+    color: "text-primary",
+    bgColor: "bg-primary/10",
+    borderColor: "border-primary/20",
+  },
+  {
+    title: "Player Registration",
+    description: "Register your child's interest for the upcoming season.",
+    icon: UserPlus,
+    path: "/register",
+    color: "text-green-400",
+    bgColor: "bg-green-400/10",
+    borderColor: "border-green-400/20",
+  },
+  {
+    title: "Club Documents",
+    description: "Access player forms, codes of conduct, and essential paperwork.",
+    icon: FileText,
+    path: "/club-documents",
+    color: "text-blue-400",
+    bgColor: "bg-blue-400/10",
+    borderColor: "border-blue-400/20",
+  },
+  {
+    title: "Safeguarding",
+    description: "Player safety policies, contacts, and reporting procedures.",
+    icon: Shield,
+    path: "/safeguarding",
+    color: "text-red-400",
+    bgColor: "bg-red-400/10",
+    borderColor: "border-red-400/20",
+  },
 ];
 
 export default function HubPage() {
@@ -188,6 +228,30 @@ export default function HubPage() {
                 {activeTab === "guardian" && activeTeam && <GuardianManager teamSlug={activeTeam} teamName={activeTeamName || ""} />}
                 {activeTab === "members" && activeTeam && (isAdmin || isCoach) && (
                   <TeamMemberManager teamSlug={activeTeam} teamName={activeTeamName || ""} />
+                )}
+                {activeTab === "player" && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {playerHubItems.map((item) => (
+                      <Link
+                        key={item.title}
+                        to={item.path}
+                        className={`group relative flex flex-col bg-card border ${item.borderColor} rounded-xl p-6 hover:border-primary/40 transition-all hover:shadow-lg hover:shadow-primary/5`}
+                      >
+                        <div className={`${item.bgColor} w-12 h-12 rounded-lg flex items-center justify-center mb-4`}>
+                          <item.icon className={`h-6 w-6 ${item.color}`} />
+                        </div>
+                        <h3 className="font-display font-bold text-sm mb-2 group-hover:text-primary transition-colors">
+                          {item.title}
+                        </h3>
+                        <p className="text-xs text-muted-foreground leading-relaxed flex-1">
+                          {item.description}
+                        </p>
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground group-hover:text-primary transition-colors mt-4 font-display tracking-wider">
+                          View <ChevronRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
                 )}
               </div>
             </>

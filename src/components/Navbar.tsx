@@ -39,7 +39,7 @@ type NavItem = {
 
 const leftNav: NavItem[] = [
   { label: "Home", path: "/" },
-  { label: "Player Hub", path: "/player-hub" },
+  
   { label: "Our Teams", path: "/teams" },
   { label: "Community", path: "/news", dropdown: communityItems },
   { label: "PAFC Hub", path: "/hub" },
