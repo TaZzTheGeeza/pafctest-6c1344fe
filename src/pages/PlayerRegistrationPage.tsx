@@ -196,9 +196,9 @@ export default function PlayerRegistrationPage() {
 
                   {/* FA FAN Number */}
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">FA FAN Number</label>
-                    <Input name="faFanNumber" value={form.faFanNumber} onChange={handleChange} placeholder="If you don't have one, leave blank" maxLength={50} />
-                    <p className="text-[10px] text-muted-foreground mt-1">If you don't have one, the club will help arrange this.</p>
+                    <label className="text-xs text-muted-foreground mb-1 block">FA FAN Number *</label>
+                    <Input name="faFanNumber" value={form.faFanNumber} onChange={handleChange} required placeholder="Enter FA FAN number" maxLength={50} />
+                    <p className="text-[10px] text-muted-foreground mt-1">If you don't have one, please contact the club for assistance.</p>
                   </div>
 
                   {/* Parent / Carer Details */}
