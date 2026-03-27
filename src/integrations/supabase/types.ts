@@ -911,6 +911,8 @@ export type Database = {
           currency: string
           description: string | null
           draw_date: string | null
+          draw_started_at: string | null
+          drawn_ticket_number: number | null
           id: string
           image_url: string | null
           max_tickets: number | null
@@ -930,6 +932,8 @@ export type Database = {
           currency?: string
           description?: string | null
           draw_date?: string | null
+          draw_started_at?: string | null
+          drawn_ticket_number?: number | null
           id?: string
           image_url?: string | null
           max_tickets?: number | null
@@ -949,6 +953,8 @@ export type Database = {
           currency?: string
           description?: string | null
           draw_date?: string | null
+          draw_started_at?: string | null
+          drawn_ticket_number?: number | null
           id?: string
           image_url?: string | null
           max_tickets?: number | null
