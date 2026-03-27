@@ -15,11 +15,11 @@ import type { Database } from "@/integrations/supabase/types";
 import { ManageSubmissionsForm } from "@/components/ManageSubmissionsForm";
 import { PlayerStatsForm } from "@/components/PlayerStatsForm";
 import { useUserAgeGroups } from "@/hooks/useUserAgeGroups";
-import { MatchReportTab } from "@/components/coach/MatchReportTab";
-import { POTMTab } from "@/components/coach/POTMTab";
-import { TeamSelectionTab } from "@/components/coach/TeamSelectionTab";
-import { TrainingNotesTab } from "@/components/coach/TrainingNotesTab";
 import { faTeamConfigs } from "@/lib/faFixtureConfig";
+import { useTeamFixtures, type FAFixture } from "@/hooks/useTeamFixtures";
+import { useTeamRoster } from "@/hooks/useTeamRoster";
+import { uploadPotmPhoto } from "@/lib/potmPhoto";
+import { Upload, CheckCircle, AlertTriangle } from "lucide-react";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
 
