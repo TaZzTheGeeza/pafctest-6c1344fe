@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { UserPlus, Clock, Send, CheckCircle, AlertCircle } from "lucide-react";
+import { UserPlus, Clock, Send, CheckCircle, AlertCircle, Camera, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import clubLogo from "@/assets/club-logo.jpg";
@@ -19,6 +19,9 @@ const ageGroups = [
 export default function PlayerRegistrationPage() {
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState({
     childName: "",
     childDob: "",
@@ -47,11 +50,37 @@ export default function PlayerRegistrationPage() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please upload an image file.");
+      return;
+    }
+    if (file.size > 20 * 1024 * 1024) {
+      toast.error("Image must be under 20MB.");
+      return;
+    }
+    setPhotoFile(file);
+    setPhotoPreview(URL.createObjectURL(file));
+  };
+
+  const removePhoto = () => {
+    setPhotoFile(null);
+    setPhotoPreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!form.declarationConfirmed) {
       toast.error("Please confirm the declaration before submitting.");
+      return;
+    }
+
+    if (!photoFile) {
+      toast.error("Please attach a passport-style photo of the player.");
       return;
     }
 
@@ -80,6 +109,21 @@ export default function PlayerRegistrationPage() {
         consent_photography: form.consentPhotography,
         declaration_confirmed: form.declarationConfirmed,
       };
+
+      // Upload photo first
+      const fileExt = photoFile.name.split(".").pop();
+      const filePath = `${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
+      const { error: uploadError } = await supabase.storage
+        .from("registration-photos")
+        .upload(filePath, photoFile);
+
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage
+        .from("registration-photos")
+        .getPublicUrl(filePath);
+
+      insertData.photo_url = urlData.publicUrl;
 
       const { error } = await supabase
         .from("player_registrations" as any)
@@ -183,7 +227,48 @@ export default function PlayerRegistrationPage() {
                     </div>
                   </div>
 
-                  {/* Preferred Age Group */}
+                  {/* Player Photo */}
+                  <div>
+                    <h3 className="font-display text-sm font-bold text-primary mb-3">Player Photo *</h3>
+                    <p className="text-xs text-muted-foreground mb-3">Please attach a passport-style photo of the player.</p>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handlePhotoChange}
+                      className="hidden"
+                    />
+                    {photoPreview ? (
+                      <div className="flex items-start gap-4">
+                        <div className="relative">
+                          <img
+                            src={photoPreview}
+                            alt="Player photo preview"
+                            className="w-32 h-40 object-cover rounded-lg border-2 border-primary"
+                          />
+                          <button
+                            type="button"
+                            onClick={removePhoto}
+                            className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-2">{photoFile?.name}</p>
+                      </div>
+                    ) : (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="font-display tracking-wider"
+                      >
+                        <Camera className="w-4 h-4 mr-2" />
+                        Upload Photo
+                      </Button>
+                    )}
+                  </div>
+
                   <div>
                     <label className="text-xs text-muted-foreground mb-1 block">Preferred Age Group *</label>
                     <select name="preferredAgeGroup" value={form.preferredAgeGroup} onChange={handleChange} required className={selectClass}>

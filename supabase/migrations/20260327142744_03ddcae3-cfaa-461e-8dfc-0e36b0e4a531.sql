@@ -1,0 +1,1 @@
+ALTER TABLE public.player_registrations ADD COLUMN photo_url text;
