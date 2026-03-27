@@ -586,9 +586,15 @@ const RaffleAdminPage = () => {
                 <Input type="number" min="1" placeholder="Unlimited" value={editForm.max_tickets} onChange={(e) => setEditForm(p => ({ ...p, max_tickets: e.target.value }))} />
               </div>
             </div>
-            <div>
-              <Label>Draw Date (optional)</Label>
-              <Input type="date" value={editForm.draw_date} onChange={(e) => setEditForm(p => ({ ...p, draw_date: e.target.value }))} />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Number Range (optional)</Label>
+                <Input type="number" min="1" placeholder="e.g. 100" value={editForm.number_range} onChange={(e) => setEditForm(p => ({ ...p, number_range: e.target.value }))} />
+              </div>
+              <div>
+                <Label>Draw Date (optional)</Label>
+                <Input type="date" value={editForm.draw_date} onChange={(e) => setEditForm(p => ({ ...p, draw_date: e.target.value }))} />
+              </div>
             </div>
             <div>
               <Label>Raffle Image</Label>
