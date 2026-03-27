@@ -137,52 +137,8 @@ const TournamentPage = () => {
     }
   };
 
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!regForm.age_group_id) { toast.error("Please select an age group"); return; }
 
-    const parsed = registrationSchema.safeParse({
-      ...regForm,
-      player_count: regForm.player_count ? parseInt(regForm.player_count) : undefined,
-    });
-    if (!parsed.success) { toast.error(parsed.error.errors[0].message); return; }
 
-    setSubmitting(true);
-
-    // Insert team as pending
-    const { data: newTeam, error } = await supabase.from("tournament_teams").insert({
-      age_group_id: regForm.age_group_id,
-      team_name: parsed.data.team_name,
-      manager_name: parsed.data.manager_name,
-      manager_email: parsed.data.manager_email,
-      manager_phone: parsed.data.manager_phone || null,
-      player_count: parsed.data.player_count || null,
-      status: "pending",
-    }).select().single();
-
-    if (error || !newTeam) {
-      setSubmitting(false);
-      toast.error("Registration failed");
-      return;
-    }
-
-    // Create Stripe checkout session
-    try {
-      const { data, error: fnError } = await supabase.functions.invoke("create-tournament-checkout", {
-        body: { team_id: newTeam.id },
-      });
-
-      if (fnError) throw fnError;
-      if (data?.url) {
-        window.location.href = data.url;
-      } else {
-        throw new Error("No checkout URL received");
-      }
-    } catch (err) {
-      toast.error("Failed to start payment. Please try again.");
-      setSubmitting(false);
-    }
-  };
 
   const getStandings = (groupId: string) => {
     const groupTeams = teams?.filter(t => t.group_id === groupId) || [];
