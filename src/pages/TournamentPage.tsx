@@ -255,7 +255,7 @@ const TournamentPage = () => {
                         <SelectItem value="groups">Groups</SelectItem>
                         <SelectItem value="fixtures">Fixtures</SelectItem>
                         <SelectItem value="knockout">Knockout</SelectItem>
-                        <SelectItem value="register">Enter Your Team</SelectItem>
+                        <SelectItem value="register">ENTER HERE!</SelectItem>
                       </SelectContent>
                   </Select>
                 </div>
@@ -264,7 +264,7 @@ const TournamentPage = () => {
                   size="lg"
                   className="w-full sm:w-auto font-display tracking-wider text-sm animate-pulse hover:animate-none"
                 >
-                  ⚽ Enter Your Team!
+                  ENTER HERE!
                 </Button>
               </div>
 
