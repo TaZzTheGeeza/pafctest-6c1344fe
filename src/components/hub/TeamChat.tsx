@@ -285,10 +285,50 @@ export function TeamChat({ teamSlug }: { teamSlug: string }) {
           )}
           <div className="flex-1 overflow-y-auto space-y-0.5">
             {channels.map((ch) => (
-              <button key={ch.id} onClick={() => setActiveChannel(ch)} className={`w-full text-left flex items-center gap-2 px-2 py-1.5 rounded-md text-sm transition-colors ${activeChannel?.id === ch.id ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-secondary"}`}>
-                <Hash className="h-3.5 w-3.5 shrink-0" />
-                <span className="truncate font-display text-xs tracking-wider">{ch.name}</span>
-              </button>
+              <div key={ch.id} className="group/ch relative">
+                {editingChannelId === ch.id ? (
+                  <div className="flex gap-1 items-center px-1 py-1">
+                    <input
+                      value={editChannelName}
+                      onChange={(e) => setEditChannelName(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === "Enter") renameChannel(ch.id); if (e.key === "Escape") { setEditingChannelId(null); setEditChannelName(""); } }}
+                      className="flex-1 min-w-0 bg-background border border-primary/50 rounded px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                      autoFocus
+                    />
+                    <button onClick={() => renameChannel(ch.id)} className="p-1 rounded bg-primary text-primary-foreground hover:bg-primary/90">
+                      <Check className="h-3 w-3" />
+                    </button>
+                    <button onClick={() => { setEditingChannelId(null); setEditChannelName(""); }} className="p-1 rounded bg-secondary text-muted-foreground hover:text-foreground">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ) : (
+                  <button onClick={() => setActiveChannel(ch)} className={`w-full text-left flex items-center gap-2 px-2 py-1.5 rounded-md text-sm transition-colors ${activeChannel?.id === ch.id ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-secondary"}`}>
+                    <Hash className="h-3.5 w-3.5 shrink-0" />
+                    <span className="truncate font-display text-xs tracking-wider flex-1">{ch.name}</span>
+                    {(isCoach || isAdmin) && (
+                      <span className="hidden group-hover/ch:flex gap-0.5 shrink-0">
+                        <span
+                          role="button"
+                          onClick={(e) => { e.stopPropagation(); setEditingChannelId(ch.id); setEditChannelName(ch.name); }}
+                          className="p-0.5 rounded hover:bg-primary/20 text-muted-foreground hover:text-primary transition-colors"
+                          title="Rename channel"
+                        >
+                          <Pencil className="h-3 w-3" />
+                        </span>
+                        <span
+                          role="button"
+                          onClick={(e) => { e.stopPropagation(); deleteChannel(ch.id); }}
+                          className="p-0.5 rounded hover:bg-destructive/20 text-muted-foreground hover:text-destructive transition-colors"
+                          title="Delete channel"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </span>
+                      </span>
+                    )}
+                  </button>
+                )}
+              </div>
             ))}
             {channels.length === 0 && (
               <div className="text-center py-4">
