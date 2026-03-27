@@ -90,7 +90,7 @@ export default function SafeguardingReportsPage() {
   };
 
   return (
-    <RoleGate allowedRoles={["admin"]}>
+    <RoleGate requiredRole="admin">
       <div className="min-h-screen flex flex-col">
         <Navbar />
         <main className="flex-1 pt-28 pb-16">
