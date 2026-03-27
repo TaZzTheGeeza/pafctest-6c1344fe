@@ -1,4 +1,5 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -17,8 +18,17 @@ const ageGroups = [
 ];
 
 export default function PlayerRegistrationPage() {
-  const [submitted, setSubmitted] = useState(false);
+  const [searchParams] = useSearchParams();
+  const paymentStatus = searchParams.get("status");
+  const [submitted, setSubmitted] = useState(paymentStatus === "success");
+  const [paymentCancelled, setPaymentCancelled] = useState(paymentStatus === "cancelled");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (paymentStatus === "cancelled") {
+      toast.error("Payment was cancelled. Your registration has been saved — please complete payment to finish registration.");
+    }
+  }, [paymentStatus]);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -131,10 +141,18 @@ export default function PlayerRegistrationPage() {
 
       if (error) throw error;
 
-      toast.success("Registration submitted!", {
-        description: "We'll be in touch when registration opens for the 2026/27 season.",
-      });
-      setSubmitted(true);
+      // Redirect to Stripe for £40 payment
+      toast.info("Redirecting to payment...");
+      const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke(
+        "create-registration-checkout",
+        { body: { email: form.email, childName: form.childName } }
+      );
+
+      if (checkoutError || !checkoutData?.url) {
+        throw new Error(checkoutError?.message || "Failed to create payment session");
+      }
+
+      window.location.href = checkoutData.url;
     } catch (err) {
       toast.error("Something went wrong. Please try again.");
       console.error(err);
@@ -186,12 +204,12 @@ export default function PlayerRegistrationPage() {
                 className="bg-card border border-border rounded-lg p-12 text-center"
               >
                 <CheckCircle className="h-16 w-16 text-primary mx-auto mb-4" />
-                <h2 className="font-display text-2xl font-bold mb-2">Thank You!</h2>
+                <h2 className="font-display text-2xl font-bold mb-2">Registration Complete!</h2>
                 <p className="text-muted-foreground mb-2">
-                  Your registration has been submitted successfully.
+                  Your registration and payment have been received successfully.
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  We'll be in touch when registration opens for the 2026/27 season.
+                  We'll be in touch with next steps for the 2026/27 season.
                 </p>
               </motion.div>
             ) : (
@@ -443,11 +461,11 @@ export default function PlayerRegistrationPage() {
                     className="w-full bg-gold-gradient text-primary-foreground font-display tracking-wider"
                   >
                     {isSubmitting ? (
-                      "Submitting..."
+                      "Processing..."
                     ) : (
                       <>
                         <Send className="w-4 h-4 mr-2" />
-                        Submit Registration
+                        Submit & Pay £40
                       </>
                     )}
                   </Button>
