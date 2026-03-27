@@ -14,6 +14,8 @@ import { Plus, Trophy, Ticket, Loader2, Shuffle, Eye, Trash2, ImagePlus, X, Penc
 import RichTextEditor from "@/components/RichTextEditor";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { AnimatePresence } from "framer-motion";
+import RaffleDraw from "@/components/raffle/RaffleDraw";
 
 interface Raffle {
   id: string;
@@ -49,7 +51,7 @@ const RaffleAdminPage = () => {
   const [creating, setCreating] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
   const [viewingRaffle, setViewingRaffle] = useState<string | null>(null);
-  const [drawing, setDrawing] = useState<string | null>(null);
+  
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -279,20 +281,19 @@ const RaffleAdminPage = () => {
     }
   };
 
-  const drawWinner = async (raffleId: string) => {
+  const [drawingRaffleId, setDrawingRaffleId] = useState<string | null>(null);
+
+  const openDrawOverlay = (raffleId: string) => {
     const paidTickets = (tickets[raffleId] || []).filter(t => t.payment_status === "paid");
     if (paidTickets.length === 0) {
       toast.error("No paid tickets to draw from");
       return;
     }
+    setDrawingRaffleId(raffleId);
+  };
 
-    setDrawing(raffleId);
-
-    // Dramatic delay
-    await new Promise(r => setTimeout(r, 2000));
-
-    const winnerIndex = Math.floor(Math.random() * paidTickets.length);
-    const winner = paidTickets[winnerIndex];
+  const handleDrawComplete = async (winner: { id: string; ticket_number: number; buyer_name: string }) => {
+    if (!drawingRaffleId) return;
 
     const { error } = await supabase
       .from("raffles")
@@ -301,15 +302,17 @@ const RaffleAdminPage = () => {
         winner_ticket_id: winner.id,
         winner_name: winner.buyer_name,
       })
-      .eq("id", raffleId);
+      .eq("id", drawingRaffleId);
 
     if (error) {
       toast.error("Failed to record winner");
     } else {
-      toast.success(`🎉 Winner: ${winner.buyer_name} (Ticket #${winner.ticket_number})!`, { duration: 10000 });
       fetchRaffles();
     }
-    setDrawing(null);
+  };
+
+  const closeDrawOverlay = () => {
+    setDrawingRaffleId(null);
   };
 
   const formatPrice = (cents: number) => {
@@ -484,15 +487,11 @@ const RaffleAdminPage = () => {
                             </Button>
                             <Button
                               size="sm"
-                              onClick={() => drawWinner(raffle.id)}
-                              disabled={drawing === raffle.id || paidTickets.length === 0}
+                              onClick={() => openDrawOverlay(raffle.id)}
+                              disabled={paidTickets.length === 0}
                               className="bg-gold-gradient text-primary-foreground"
                             >
-                              {drawing === raffle.id ? (
-                                <><Shuffle className="h-4 w-4 mr-1 animate-spin" /> Drawing...</>
-                              ) : (
-                                <><Trophy className="h-4 w-4 mr-1" /> Draw Winner</>
-                              )}
+                              <Trophy className="h-4 w-4 mr-1" /> Draw Winner
                             </Button>
                           </>
                         )}
@@ -636,6 +635,18 @@ const RaffleAdminPage = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Draw Overlay */}
+      <AnimatePresence>
+        {drawingRaffleId && (
+          <RaffleDraw
+            raffleName={raffles.find(r => r.id === drawingRaffleId)?.title || "Raffle"}
+            tickets={(tickets[drawingRaffleId] || []).filter(t => t.payment_status === "paid")}
+            onComplete={handleDrawComplete}
+            onClose={closeDrawOverlay}
+          />
+        )}
+      </AnimatePresence>
       <Footer />
     </div>
   );
