@@ -202,6 +202,30 @@ export function TeamChat({ teamSlug }: { teamSlug: string }) {
     toast.success("Channel created!");
   }
 
+  async function deleteMessage(msgId: string) {
+    const { error } = await supabase.from("hub_messages").delete().eq("id", msgId);
+    if (error) { toast.error("Failed to delete message"); return; }
+    setMessages((prev) => prev.filter((m) => m.id !== msgId));
+    setMenuOpenId(null);
+  }
+
+  async function saveEdit(msgId: string) {
+    if (!editText.trim()) return;
+    const { error } = await supabase.from("hub_messages").update({ content: editText.trim() }).eq("id", msgId);
+    if (error) { toast.error("Failed to edit message"); return; }
+    setMessages((prev) => prev.map((m) => m.id === msgId ? { ...m, content: editText.trim() } : m));
+    setEditingId(null);
+    setEditText("");
+  }
+
+  function startEdit(msg: Message) {
+    // Strip image tags for editing text portion
+    const textOnly = msg.content.replace(/\[img:[^\]]+\]/g, "").trim();
+    setEditText(textOnly || msg.content);
+    setEditingId(msg.id);
+    setMenuOpenId(null);
+  }
+
   if (!user) {
     return (
       <div className="text-center py-16">
