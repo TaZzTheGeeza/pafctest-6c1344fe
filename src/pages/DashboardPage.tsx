@@ -16,9 +16,8 @@ import { ManageSubmissionsForm } from "@/components/ManageSubmissionsForm";
 import { PlayerStatsForm } from "@/components/PlayerStatsForm";
 import { useUserAgeGroups } from "@/hooks/useUserAgeGroups";
 import { faTeamConfigs } from "@/lib/faFixtureConfig";
-import { useTeamFixtures, type FAFixture } from "@/hooks/useTeamFixtures";
-import { useTeamRoster } from "@/hooks/useTeamRoster";
-import { uploadPotmPhoto } from "@/lib/potmPhoto";
+import { POTMForm } from "@/pages/CoachPanelPage";
+import { MatchReportForm } from "@/pages/CoachPanelPage";
 import { Upload, CheckCircle, AlertTriangle } from "lucide-react";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
@@ -438,12 +437,12 @@ export default function DashboardPage() {
           {/* Coach Tabs */}
           {activeSection === "potm" && showCoachTools && (
             <div className="max-w-2xl mx-auto">
-              <CoachPanelEmbed ageGroups={effectiveAgeGroups} tab="potm" />
+              <POTMForm ageGroups={effectiveAgeGroups} />
             </div>
           )}
           {activeSection === "report" && showCoachTools && (
             <div className="max-w-2xl mx-auto">
-              <CoachPanelEmbed ageGroups={effectiveAgeGroups} tab="report" />
+              <MatchReportForm ageGroups={effectiveAgeGroups} />
             </div>
           )}
           {activeSection === "stats" && showCoachTools && (
