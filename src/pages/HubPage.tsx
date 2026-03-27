@@ -8,13 +8,14 @@ import { PaymentCenter } from "@/components/hub/PaymentCenter";
 import { NotificationCenter } from "@/components/hub/NotificationCenter";
 import { TeamMemberManager } from "@/components/hub/TeamMemberManager";
 import { MessageSquare, CreditCard, Bell, CalendarCheck, Users, Shield, ChevronDown, Car, TrendingUp, UserPlus, User, FileText, ChevronRight } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FixtureAvailability } from "@/components/hub/FixtureAvailability";
 import { CarpoolBoard } from "@/components/hub/CarpoolBoard";
 import { AttendanceStats } from "@/components/hub/AttendanceStats";
 import { GuardianManager } from "@/components/hub/GuardianManager";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const TEAMS = [
   { slug: "u7s", name: "U7" },
@@ -87,6 +88,7 @@ export default function HubPage() {
   const [loading, setLoading] = useState(true);
   const [showTeamPicker, setShowTeamPicker] = useState(false);
   const { user, isAdmin, isCoach } = useAuth();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const tab = searchParams.get("tab");
@@ -103,7 +105,6 @@ export default function HubPage() {
   async function loadMyTeams() {
     setLoading(true);
     if (isAdmin || isCoach) {
-      // Admins/coaches see all teams
       setMyTeams(TEAMS.map((t) => t.slug));
       if (!activeTeam) setActiveTeam(TEAMS[0].slug);
       setLoading(false);
@@ -129,18 +130,49 @@ export default function HubPage() {
 
   const activeTeamName = TEAMS.find((t) => t.slug === activeTeam)?.name || activeTeam;
 
+  const allTabs = [
+    ...tabs,
+    ...((isAdmin || isCoach) ? [{ id: "members", label: "Members", icon: Users }] : []),
+  ];
+
+  const renderContent = () => (
+    <>
+      {activeTab === "chat" && activeTeam && <TeamChat teamSlug={activeTeam} />}
+      {activeTab === "payments" && activeTeam && <PaymentCenter teamSlug={activeTeam} />}
+      {activeTab === "notifications" && <NotificationCenter />}
+      {activeTab === "availability" && activeTeam && <FixtureAvailability teamSlug={activeTeam} />}
+      {activeTab === "carpool" && activeTeam && <CarpoolBoard teamSlug={activeTeam} />}
+      {activeTab === "attendance" && activeTeam && (isCoach || isAdmin) && <AttendanceStats teamSlug={activeTeam} />}
+      {activeTab === "guardian" && activeTeam && <GuardianManager teamSlug={activeTeam} teamName={activeTeamName || ""} />}
+      {activeTab === "members" && activeTeam && (isAdmin || isCoach) && <TeamMemberManager teamSlug={activeTeam} teamName={activeTeamName || ""} />}
+      {activeTab === "player" && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {playerHubItems.map((item) => (
+            <Link
+              key={item.title}
+              to={item.path}
+              className={`group relative flex flex-col bg-card border ${item.borderColor} rounded-xl p-6 hover:border-primary/40 transition-all hover:shadow-lg hover:shadow-primary/5`}
+            >
+              <div className={`${item.bgColor} w-12 h-12 rounded-lg flex items-center justify-center mb-4`}>
+                <item.icon className={`h-6 w-6 ${item.color}`} />
+              </div>
+              <h3 className="font-display font-bold text-sm mb-2 group-hover:text-primary transition-colors">{item.title}</h3>
+              <p className="text-xs text-muted-foreground leading-relaxed flex-1">{item.description}</p>
+              <div className="flex items-center gap-1 text-xs text-muted-foreground group-hover:text-primary transition-colors mt-4 font-display tracking-wider">
+                View <ChevronRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </Link>
+          ))}
+        </div>
+      )}
+    </>
+  );
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
       <main className="flex-1 pt-28 pb-16">
         <div className="container mx-auto px-4">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-            <h1 className="text-4xl md:text-5xl font-bold font-display text-center mb-2">
-              <span className="text-gold-gradient">PAFC</span> Hub
-            </h1>
-            <p className="text-muted-foreground text-center mb-8">Your private team space for chat, payments & notifications</p>
-          </motion.div>
-
           {!user ? (
             <div className="max-w-md mx-auto bg-card border border-border rounded-xl p-8 text-center">
               <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
@@ -159,18 +191,21 @@ export default function HubPage() {
               <p className="text-sm text-muted-foreground mb-4">You haven't been added to a team yet. Ask your coach or club admin to add you.</p>
             </div>
           ) : (
-            <>
-              {/* Team Selector + Admin Manager */}
-              <div className="max-w-4xl mx-auto mb-6">
-                <div className="flex flex-wrap items-center gap-3">
-                  <div className="relative">
+            <div className="flex gap-0 md:gap-6">
+              {/* Sidebar */}
+              <TooltipProvider delayDuration={100}>
+                <aside className="shrink-0 w-14 md:w-56 bg-card border border-border rounded-xl overflow-hidden">
+                  {/* Team Picker */}
+                  <div className="relative border-b border-border">
                     <button
                       onClick={() => setShowTeamPicker(!showTeamPicker)}
-                      className="flex items-center gap-2 bg-card border border-border rounded-lg px-4 py-2.5 hover:border-primary/50 transition-colors"
+                      className="w-full flex items-center gap-2 px-3 md:px-4 py-3 hover:bg-secondary/50 transition-colors"
                     >
-                      <Users className="h-4 w-4 text-primary" />
-                      <span className="font-display text-sm font-bold text-foreground">{activeTeamName}</span>
-                      <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${showTeamPicker ? "rotate-180" : ""}`} />
+                      <Users className="h-5 w-5 text-primary shrink-0" />
+                      <span className="hidden md:block font-display text-sm font-bold text-foreground truncate flex-1 text-left">
+                        {activeTeamName}
+                      </span>
+                      <ChevronDown className={`hidden md:block h-4 w-4 text-muted-foreground transition-transform ${showTeamPicker ? "rotate-180" : ""}`} />
                     </button>
                     {showTeamPicker && (
                       <div className="absolute top-full left-0 mt-1 bg-card border border-border rounded-xl shadow-xl shadow-black/20 p-2 min-w-[200px] z-50">
@@ -190,79 +225,48 @@ export default function HubPage() {
                       </div>
                     )}
                   </div>
-                </div>
-              </div>
 
-              {/* Tab Navigation */}
-              <div className="max-w-4xl mx-auto mb-6">
-                <Select value={activeTab} onValueChange={selectTab}>
-                  <SelectTrigger className="w-full max-w-xs mx-auto bg-card border-border font-display tracking-wider">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {tabs.map((tab) => {
+                  {/* Tab Items */}
+                  <nav className="p-1.5 md:p-2 space-y-0.5">
+                    {allTabs.map((tab) => {
                       const Icon = tab.icon;
-                      return (
-                        <SelectItem key={tab.id} value={tab.id} className="font-display tracking-wider">
-                          <div className="flex items-center gap-2">
-                            <Icon className="h-4 w-4" />
-                            {tab.label}
-                          </div>
-                        </SelectItem>
+                      const isActive = activeTab === tab.id;
+                      const btn = (
+                        <button
+                          key={tab.id}
+                          onClick={() => selectTab(tab.id)}
+                          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-display tracking-wider transition-all ${
+                            isActive
+                              ? "bg-primary/15 text-primary border border-primary/20"
+                              : "text-muted-foreground hover:text-foreground hover:bg-secondary/50 border border-transparent"
+                          }`}
+                        >
+                          <Icon className={`h-4 w-4 shrink-0 ${isActive ? "text-primary" : ""}`} />
+                          <span className="hidden md:block truncate">{tab.label}</span>
+                        </button>
                       );
-                    })}
-                    {(isAdmin || isCoach) && (
-                      <SelectItem value="members" className="font-display tracking-wider">
-                        <div className="flex items-center gap-2">
-                          <Users className="h-4 w-4" />
-                          Manage Members
-                        </div>
-                      </SelectItem>
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
 
-              {/* Tab Content */}
-              <div className="max-w-4xl mx-auto">
-                {activeTab === "chat" && activeTeam && <TeamChat teamSlug={activeTeam} />}
-                {activeTab === "payments" && activeTeam && <PaymentCenter teamSlug={activeTeam} />}
-                {activeTab === "notifications" && <NotificationCenter />}
-                {activeTab === "availability" && activeTeam && (
-                  <FixtureAvailability teamSlug={activeTeam} />
-                )}
-                {activeTab === "carpool" && activeTeam && <CarpoolBoard teamSlug={activeTeam} />}
-                {activeTab === "attendance" && activeTeam && (isCoach || isAdmin) && <AttendanceStats teamSlug={activeTeam} />}
-                {activeTab === "guardian" && activeTeam && <GuardianManager teamSlug={activeTeam} teamName={activeTeamName || ""} />}
-                {activeTab === "members" && activeTeam && (isAdmin || isCoach) && (
-                  <TeamMemberManager teamSlug={activeTeam} teamName={activeTeamName || ""} />
-                )}
-                {activeTab === "player" && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {playerHubItems.map((item) => (
-                      <Link
-                        key={item.title}
-                        to={item.path}
-                        className={`group relative flex flex-col bg-card border ${item.borderColor} rounded-xl p-6 hover:border-primary/40 transition-all hover:shadow-lg hover:shadow-primary/5`}
-                      >
-                        <div className={`${item.bgColor} w-12 h-12 rounded-lg flex items-center justify-center mb-4`}>
-                          <item.icon className={`h-6 w-6 ${item.color}`} />
-                        </div>
-                        <h3 className="font-display font-bold text-sm mb-2 group-hover:text-primary transition-colors">
-                          {item.title}
-                        </h3>
-                        <p className="text-xs text-muted-foreground leading-relaxed flex-1">
-                          {item.description}
-                        </p>
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground group-hover:text-primary transition-colors mt-4 font-display tracking-wider">
-                          View <ChevronRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                )}
+                      if (isMobile) {
+                        return (
+                          <Tooltip key={tab.id}>
+                            <TooltipTrigger asChild>{btn}</TooltipTrigger>
+                            <TooltipContent side="right" className="font-display text-xs">
+                              {tab.label}
+                            </TooltipContent>
+                          </Tooltip>
+                        );
+                      }
+                      return btn;
+                    })}
+                  </nav>
+                </aside>
+              </TooltipProvider>
+
+              {/* Main Content */}
+              <div className="flex-1 min-w-0">
+                {renderContent()}
               </div>
-            </>
+            </div>
           )}
         </div>
       </main>
