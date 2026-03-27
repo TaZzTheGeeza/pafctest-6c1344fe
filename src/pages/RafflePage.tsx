@@ -7,11 +7,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Trophy, Ticket, Clock, Gift, Loader2, Users } from "lucide-react";
+import { Trophy, Ticket, Clock, Gift, Loader2, Users, Play, Radio } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useSearchParams } from "react-router-dom";
 import NumberPicker from "@/components/raffle/NumberPicker";
+import { AnimatePresence } from "framer-motion";
+import RaffleDraw from "@/components/raffle/RaffleDraw";
 
 interface Raffle {
   id: string;
@@ -28,12 +30,15 @@ interface Raffle {
   winner_ticket_id: string | null;
   image_url: string | null;
   created_at: string;
+  draw_started_at?: string | null;
+  drawn_ticket_number?: number | null;
 }
 
 interface RaffleTicket {
   id: string;
   ticket_number: number;
   buyer_name: string;
+  buyer_email: string;
   payment_status: string;
 }
 
@@ -45,6 +50,10 @@ const RafflePage = () => {
   const [purchasing, setPurchasing] = useState<string | null>(null);
   const [searchParams] = useSearchParams();
 
+  // Draw overlay state
+  const [liveDrawRaffleId, setLiveDrawRaffleId] = useState<string | null>(null);
+  const [liveDrawAutoStart, setLiveDrawAutoStart] = useState(false);
+
   useEffect(() => {
     fetchRaffles();
     if (searchParams.get("success") === "true") {
@@ -54,6 +63,47 @@ const RafflePage = () => {
       toast.error("Payment cancelled. No tickets were purchased.");
     }
   }, [searchParams]);
+
+  // Subscribe to realtime changes on raffles for live draw
+  useEffect(() => {
+    const channel = supabase
+      .channel("raffle-draw-live")
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "raffles" },
+        (payload) => {
+          const updated = payload.new as any;
+
+          // If draw just started and we're not already watching
+          if (updated.draw_started_at && updated.status === "active" && !liveDrawRaffleId) {
+            // Show live draw overlay automatically
+            setLiveDrawRaffleId(updated.id);
+            setLiveDrawAutoStart(true);
+          }
+
+          // Update local raffle data
+          setRaffles((prev) =>
+            prev.map((r) =>
+              r.id === updated.id
+                ? {
+                    ...r,
+                    status: updated.status,
+                    winner_name: updated.winner_name,
+                    winner_ticket_id: updated.winner_ticket_id,
+                    draw_started_at: updated.draw_started_at,
+                    drawn_ticket_number: updated.drawn_ticket_number,
+                  }
+                : r
+            )
+          );
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [liveDrawRaffleId]);
 
   const fetchRaffles = async () => {
     const { data, error } = await supabase
@@ -72,7 +122,7 @@ const RafflePage = () => {
     for (const raffle of data || []) {
       const { data: ticketData } = await supabase
         .from("raffle_tickets")
-        .select("id, ticket_number, buyer_name, payment_status")
+        .select("id, ticket_number, buyer_name, buyer_email, payment_status")
         .eq("raffle_id", raffle.id)
         .eq("payment_status", "paid")
         .order("ticket_number", { ascending: true });
@@ -139,6 +189,29 @@ const RafflePage = () => {
     return new Intl.NumberFormat("en-GB", { style: "currency", currency: currency.toUpperCase() }).format(cents / 100);
   };
 
+  const openReplay = (raffleId: string) => {
+    setLiveDrawRaffleId(raffleId);
+    setLiveDrawAutoStart(false);
+  };
+
+  const getPresetWinner = (raffle: Raffle): RaffleTicket | null => {
+    if (!raffle.winner_ticket_id) return null;
+    const raffleTickets = tickets[raffle.id] || [];
+    const winnerTicket = raffleTickets.find(t => t.id === raffle.winner_ticket_id);
+    if (winnerTicket) return winnerTicket;
+    // Fallback: construct from raffle data
+    if (raffle.winner_name && (raffle as any).drawn_ticket_number) {
+      return {
+        id: raffle.winner_ticket_id,
+        ticket_number: (raffle as any).drawn_ticket_number,
+        buyer_name: raffle.winner_name,
+        buyer_email: "",
+        payment_status: "paid",
+      };
+    }
+    return null;
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -176,6 +249,7 @@ const RafflePage = () => {
                 const isDrawn = raffle.status === "drawn";
                 const hasNumberPicker = raffle.number_range && raffle.number_range > 0;
                 const selectedNumbers = purchaseForm[raffle.id]?.selectedNumbers || [];
+                const hasDrawData = isDrawn && raffle.winner_name && raffle.winner_ticket_id;
 
                 return (
                   <Card key={raffle.id} className="bg-card border-border overflow-hidden">
@@ -230,14 +304,47 @@ const RafflePage = () => {
                       </div>
 
                       {isDrawn && raffle.winner_name && (
-                        <div className="bg-primary/10 border border-primary/30 rounded-lg p-4 text-center">
+                        <div className="bg-primary/10 border border-primary/30 rounded-lg p-4 text-center space-y-3">
                           <Trophy className="h-8 w-8 text-primary mx-auto mb-2" />
                           <p className="font-display text-lg font-bold text-primary">Winner: {raffle.winner_name}</p>
                           <p className="text-sm text-muted-foreground">Congratulations!</p>
+                          {hasDrawData && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => openReplay(raffle.id)}
+                              className="mt-2 font-display border-primary/30 text-primary hover:bg-primary/10"
+                            >
+                              <Play className="h-4 w-4 mr-2" />
+                              Watch the Draw
+                            </Button>
+                          )}
                         </div>
                       )}
 
-                      {!isDrawn && (
+                      {/* Live draw indicator - when draw_started_at is set but not yet drawn */}
+                      {!isDrawn && (raffle as any).draw_started_at && (
+                        <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 text-center space-y-3">
+                          <div className="flex items-center justify-center gap-2">
+                            <Radio className="h-5 w-5 text-red-500 animate-pulse" />
+                            <p className="font-display text-lg font-bold text-red-500">DRAW IN PROGRESS</p>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setLiveDrawRaffleId(raffle.id);
+                              setLiveDrawAutoStart(true);
+                            }}
+                            className="font-display border-red-500/30 text-red-500 hover:bg-red-500/10"
+                          >
+                            <Play className="h-4 w-4 mr-2" />
+                            Watch Live
+                          </Button>
+                        </div>
+                      )}
+
+                      {!isDrawn && !(raffle as any).draw_started_at && (
                         <>
                           <Separator />
                           <div>
@@ -336,6 +443,27 @@ const RafflePage = () => {
           )}
         </div>
       </main>
+
+      {/* Live / Replay Draw Overlay */}
+      <AnimatePresence>
+        {liveDrawRaffleId && (
+          <RaffleDraw
+            raffleName={raffles.find(r => r.id === liveDrawRaffleId)?.title || "Raffle"}
+            tickets={(tickets[liveDrawRaffleId] || []).filter(t => t.payment_status === "paid")}
+            onComplete={() => {
+              // Viewer mode - no DB update needed
+            }}
+            onClose={() => {
+              setLiveDrawRaffleId(null);
+              setLiveDrawAutoStart(false);
+            }}
+            mode="viewer"
+            presetWinner={getPresetWinner(raffles.find(r => r.id === liveDrawRaffleId)!)}
+            autoStart={liveDrawAutoStart}
+          />
+        )}
+      </AnimatePresence>
+
       <Footer />
     </div>
   );

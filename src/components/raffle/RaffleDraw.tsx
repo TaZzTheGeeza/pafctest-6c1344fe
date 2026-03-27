@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Trophy, X, Sparkles } from "lucide-react";
+import { Trophy, X, Sparkles, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -16,6 +16,12 @@ interface RaffleDrawProps {
   tickets: RaffleTicket[];
   onComplete: (winner: RaffleTicket) => void;
   onClose: () => void;
+  /** "admin" = interactive draw, "viewer" = auto-plays with predetermined winner */
+  mode?: "admin" | "viewer";
+  /** Pre-determined winner for viewer/replay mode */
+  presetWinner?: RaffleTicket | null;
+  /** Auto-start the draw (for live viewers) */
+  autoStart?: boolean;
 }
 
 // Confetti particle
@@ -76,7 +82,6 @@ const TumblerColumn = ({
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    // Always spin
     intervalRef.current = setInterval(() => {
       setDisplayDigit(String(Math.floor(Math.random() * 10)));
     }, 60);
@@ -88,7 +93,6 @@ const TumblerColumn = ({
 
   useEffect(() => {
     if (isRevealed) {
-      // Stop spinning after a staggered delay
       const timeout = setTimeout(() => {
         if (intervalRef.current) clearInterval(intervalRef.current);
         setDisplayDigit(targetDigit);
@@ -153,10 +157,8 @@ const NameScroller = ({
 
   useEffect(() => {
     if (isRevealed) {
-      // Slow down then stop
       const slowDown = setTimeout(() => {
         if (intervalRef.current) clearInterval(intervalRef.current);
-        // Slow cycle
         let count = 0;
         const slow = setInterval(() => {
           count++;
@@ -196,7 +198,15 @@ const NameScroller = ({
   );
 };
 
-const RaffleDraw = ({ raffleName, tickets, onComplete, onClose }: RaffleDrawProps) => {
+const RaffleDraw = ({
+  raffleName,
+  tickets,
+  onComplete,
+  onClose,
+  mode = "admin",
+  presetWinner = null,
+  autoStart = false,
+}: RaffleDrawProps) => {
   const [phase, setPhase] = useState<"intro" | "spinning" | "revealing" | "winner">("intro");
   const [winner, setWinner] = useState<RaffleTicket | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
@@ -207,24 +217,35 @@ const RaffleDraw = ({ raffleName, tickets, onComplete, onClose }: RaffleDrawProp
     : ["0", "0", "0"];
 
   const startDraw = useCallback(() => {
-    // Pick the winner immediately but don't reveal yet
-    const winnerIndex = Math.floor(Math.random() * tickets.length);
-    setWinner(tickets[winnerIndex]);
+    let chosen: RaffleTicket;
+    if (mode === "viewer" && presetWinner) {
+      chosen = presetWinner;
+    } else {
+      const winnerIndex = Math.floor(Math.random() * tickets.length);
+      chosen = tickets[winnerIndex];
+    }
+    setWinner(chosen);
     setPhase("spinning");
 
-    // After dramatic spin, start revealing
     setTimeout(() => setPhase("revealing"), 3000);
 
-    // After reveal animation, show winner
+    const digits = String(chosen.ticket_number).padStart(3, "0").split("");
     setTimeout(() => {
       setPhase("winner");
       setShowConfetti(true);
-    }, 3000 + ticketDigits.length * 400 + 1500);
-  }, [tickets]);
+    }, 3000 + digits.length * 400 + 1500);
+  }, [tickets, mode, presetWinner]);
+
+  // Auto-start for live viewers and replays
+  useEffect(() => {
+    if (autoStart && phase === "intro") {
+      const timeout = setTimeout(() => startDraw(), 1500);
+      return () => clearTimeout(timeout);
+    }
+  }, [autoStart, phase, startDraw]);
 
   useEffect(() => {
     if (phase === "winner" && winner) {
-      // Delay the callback so the animation plays fully
       const timeout = setTimeout(() => {
         onComplete(winner);
       }, 4000);
@@ -254,7 +275,7 @@ const RaffleDraw = ({ raffleName, tickets, onComplete, onClose }: RaffleDrawProp
       </div>
 
       {/* Close button */}
-      {phase === "winner" && (
+      {(phase === "winner" || mode === "viewer") && (
         <Button
           variant="ghost"
           size="icon"
@@ -276,6 +297,19 @@ const RaffleDraw = ({ raffleName, tickets, onComplete, onClose }: RaffleDrawProp
           {raffleName}
         </motion.p>
 
+        {/* Viewer badge */}
+        {mode === "viewer" && phase === "intro" && !autoStart && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="mb-4"
+          >
+            <span className="inline-flex items-center gap-1.5 bg-primary/20 text-primary text-xs font-display tracking-wider px-3 py-1 rounded-full">
+              <Play className="h-3 w-3" /> REPLAY
+            </span>
+          </motion.div>
+        )}
+
         {/* Phase: Intro */}
         <AnimatePresence mode="wait">
           {phase === "intro" && (
@@ -294,21 +328,23 @@ const RaffleDraw = ({ raffleName, tickets, onComplete, onClose }: RaffleDrawProp
                   <Trophy className="h-20 w-20 text-primary mx-auto" />
                 </motion.div>
                 <h2 className="font-display text-4xl sm:text-5xl font-black text-foreground">
-                  Ready to Draw?
+                  {autoStart ? "Draw Starting..." : "Ready to Draw?"}
                 </h2>
                 <p className="text-muted-foreground text-lg">
                   <span className="text-primary font-bold">{tickets.length}</span> tickets from{" "}
                   <span className="text-primary font-bold">{participantNames.length}</span> participants
                 </p>
               </div>
-              <Button
-                onClick={startDraw}
-                size="lg"
-                className="bg-gold-gradient text-primary-foreground font-display text-xl px-12 py-6 rounded-2xl shadow-xl hover:shadow-2xl transition-shadow"
-              >
-                <Sparkles className="h-5 w-5 mr-3" />
-                DRAW THE WINNER
-              </Button>
+              {!autoStart && (
+                <Button
+                  onClick={startDraw}
+                  size="lg"
+                  className="bg-gold-gradient text-primary-foreground font-display text-xl px-12 py-6 rounded-2xl shadow-xl hover:shadow-2xl transition-shadow"
+                >
+                  <Sparkles className="h-5 w-5 mr-3" />
+                  {mode === "viewer" ? "WATCH THE DRAW" : "DRAW THE WINNER"}
+                </Button>
+              )}
             </motion.div>
           )}
 
