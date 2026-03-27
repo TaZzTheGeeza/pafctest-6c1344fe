@@ -6,7 +6,6 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -14,26 +13,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Trophy, Users, Calendar, MapPin, ClipboardList, Megaphone, Shield, Clock, PoundSterling, CheckCircle, Loader2, AlertTriangle, Phone, Mail, Award, Utensils, Dog, Info } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { TournamentEntryForm } from "@/components/tournament/TournamentEntryForm";
 import pitchLayout from "@/assets/tournament/pitch-layout.png";
 import venueDirections from "@/assets/tournament/venue-directions.jpeg";
 import { TournamentBracket } from "@/components/TournamentBracket";
 import { toast } from "sonner";
-import { z } from "zod";
-
-const registrationSchema = z.object({
-  team_name: z.string().trim().min(1, "Team name is required").max(100),
-  manager_name: z.string().trim().min(1, "Manager name is required").max(100),
-  manager_email: z.string().trim().email("Invalid email").max(255),
-  manager_phone: z.string().trim().max(20).optional(),
-  player_count: z.number().min(1).max(30).optional(),
-});
 
 const TournamentPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [regForm, setRegForm] = useState({
-    team_name: "", manager_name: "", manager_email: "", manager_phone: "", player_count: "", age_group_id: ""
-  });
-  const [submitting, setSubmitting] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [activeSection, setActiveSection] = useState("overview");
@@ -149,52 +136,8 @@ const TournamentPage = () => {
     }
   };
 
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!regForm.age_group_id) { toast.error("Please select an age group"); return; }
 
-    const parsed = registrationSchema.safeParse({
-      ...regForm,
-      player_count: regForm.player_count ? parseInt(regForm.player_count) : undefined,
-    });
-    if (!parsed.success) { toast.error(parsed.error.errors[0].message); return; }
 
-    setSubmitting(true);
-
-    // Insert team as pending
-    const { data: newTeam, error } = await supabase.from("tournament_teams").insert({
-      age_group_id: regForm.age_group_id,
-      team_name: parsed.data.team_name,
-      manager_name: parsed.data.manager_name,
-      manager_email: parsed.data.manager_email,
-      manager_phone: parsed.data.manager_phone || null,
-      player_count: parsed.data.player_count || null,
-      status: "pending",
-    }).select().single();
-
-    if (error || !newTeam) {
-      setSubmitting(false);
-      toast.error("Registration failed");
-      return;
-    }
-
-    // Create Stripe checkout session
-    try {
-      const { data, error: fnError } = await supabase.functions.invoke("create-tournament-checkout", {
-        body: { team_id: newTeam.id },
-      });
-
-      if (fnError) throw fnError;
-      if (data?.url) {
-        window.location.href = data.url;
-      } else {
-        throw new Error("No checkout URL received");
-      }
-    } catch (err) {
-      toast.error("Failed to start payment. Please try again.");
-      setSubmitting(false);
-    }
-  };
 
   const getStandings = (groupId: string) => {
     const groupTeams = teams?.filter(t => t.group_id === groupId) || [];
@@ -688,55 +631,20 @@ const TournamentPage = () => {
 
               {/* REGISTER */}
               <TabsContent value="register">
-                <Card className="max-w-lg mx-auto">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><Shield className="h-5 w-5 text-primary" />Register Your Team</CardTitle>
-                    <CardDescription>
-                      Fill in your details and pay the £40 entry fee to secure your place. Once payment is confirmed, your team will be automatically assigned to a group.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <form onSubmit={handleRegister} className="space-y-4">
-                      <div>
-                        <Label>Age Group *</Label>
-                        <Select value={regForm.age_group_id} onValueChange={v => setRegForm(f => ({ ...f, age_group_id: v }))}>
-                          <SelectTrigger><SelectValue placeholder="Select age group" /></SelectTrigger>
-                          <SelectContent>
-                            {ageGroups?.map(ag => <SelectItem key={ag.id} value={ag.id}>{ag.age_group}</SelectItem>)}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label>Team Name *</Label>
-                        <Input value={regForm.team_name} onChange={e => setRegForm(f => ({ ...f, team_name: e.target.value }))} maxLength={100} required />
-                      </div>
-                      <div>
-                        <Label>Manager Name *</Label>
-                        <Input value={regForm.manager_name} onChange={e => setRegForm(f => ({ ...f, manager_name: e.target.value }))} maxLength={100} required />
-                      </div>
-                      <div>
-                        <Label>Manager Email *</Label>
-                        <Input type="email" value={regForm.manager_email} onChange={e => setRegForm(f => ({ ...f, manager_email: e.target.value }))} maxLength={255} required />
-                      </div>
-                      <div>
-                        <Label>Manager Phone</Label>
-                        <Input value={regForm.manager_phone} onChange={e => setRegForm(f => ({ ...f, manager_phone: e.target.value }))} maxLength={20} />
-                      </div>
-                      <div>
-                        <Label>Number of Players</Label>
-                        <Input type="number" min={1} max={30} value={regForm.player_count} onChange={e => setRegForm(f => ({ ...f, player_count: e.target.value }))} />
-                      </div>
-                      <Button type="submit" className="w-full" disabled={submitting}>
-                        {submitting ? (
-                          <><Loader2 className="h-4 w-4 animate-spin mr-2" />Processing...</>
-                        ) : (
-                          <>Register & Pay £40</>
-                        )}
-                      </Button>
-                      <p className="text-xs text-muted-foreground text-center">You'll be redirected to Stripe to complete payment securely.</p>
-                    </form>
-                  </CardContent>
-                </Card>
+                {ageGroups && ageGroups.length > 0 ? (
+                  <TournamentEntryForm
+                    ageGroups={ageGroups}
+                    onSuccess={() => {
+                      refetchTeams();
+                    }}
+                  />
+                ) : (
+                  <Card className="max-w-lg mx-auto text-center">
+                    <CardContent className="pt-6">
+                      <p className="text-muted-foreground">Registration not yet open — check back soon!</p>
+                    </CardContent>
+                  </Card>
+                )}
               </TabsContent>
             </Tabs>
           )}
