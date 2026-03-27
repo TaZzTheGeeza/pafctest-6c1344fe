@@ -65,7 +65,7 @@ export function SafeguardingReportForm() {
 
       if (error) throw error;
 
-      setReferenceNumber(data.reference_number);
+      setReferenceNumber((data as any)?.reference_number);
       toast.success("Your report has been submitted securely.");
     } catch (err) {
       console.error("Report submission error:", err);
