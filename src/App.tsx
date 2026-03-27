@@ -39,6 +39,8 @@ import HubPage from "./pages/HubPage.tsx";
 import InstallPage from "./pages/InstallPage.tsx";
 import AdminPanelPage from "./pages/AdminPanelPage.tsx";
 import AdminPlayerProfilePage from "./pages/AdminPlayerProfilePage.tsx";
+import MyProfilePage from "./pages/MyProfilePage.tsx";
+import BulkDocumentUploadPage from "./pages/BulkDocumentUploadPage.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -80,6 +82,8 @@ function AppContent() {
         <Route path="/install" element={<InstallPage />} />
         <Route path="/admin" element={<RoleGate requiredRole="admin"><AdminPanelPage /></RoleGate>} />
         <Route path="/admin/player/:userId" element={<RoleGate requiredRole="admin"><AdminPlayerProfilePage /></RoleGate>} />
+        <Route path="/admin/bulk-documents" element={<RoleGate requiredRole="admin"><BulkDocumentUploadPage /></RoleGate>} />
+        <Route path="/my-profile" element={<RoleGate requiredRole="player"><MyProfilePage /></RoleGate>} />
         <Route path="/auth" element={<AuthPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>

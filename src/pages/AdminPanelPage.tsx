@@ -35,6 +35,7 @@ const ADMIN_LINKS = [
   { label: "PAFC Hub", path: "/hub", icon: MessageSquare, desc: "Team chat, payments, availability" },
   { label: "Results", path: "/results", icon: BarChart3, desc: "Match results & stats" },
   { label: "Club Documents", path: "/club-documents", icon: FileText, desc: "Manage club docs" },
+  { label: "Bulk Doc Upload", path: "/admin/bulk-documents", icon: FileText, desc: "Upload docs for multiple players" },
 ];
 
 export default function AdminPanelPage() {
