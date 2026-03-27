@@ -98,7 +98,7 @@ export default function ProductPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <main className="flex-1 pt-24 pb-16">
+      <main className="flex-1 pt-28 pb-16">
         <div className="container mx-auto px-4">
           <Button variant="ghost" className="mb-6 text-muted-foreground" asChild>
             <Link to="/shop"><ArrowLeft className="w-4 h-4 mr-2" />Back to Shop</Link>

@@ -85,7 +85,7 @@ function TeamDetail({ team }: { team: TeamData }) {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <main className="flex-1 pt-24 pb-16">
+      <main className="flex-1 pt-28 pb-16">
         <div className="container mx-auto px-4">
           <Link to="/teams" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary transition-colors mb-8">
             ← All Teams
@@ -353,7 +353,7 @@ export default function TeamsPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <main className="flex-1 pt-24 pb-16">
+      <main className="flex-1 pt-28 pb-16">
         <div className="container mx-auto px-4">
           {/* Hero */}
           <motion.div

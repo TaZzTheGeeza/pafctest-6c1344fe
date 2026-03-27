@@ -216,7 +216,7 @@ const TournamentAdminPage = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <main className="flex-1 pt-20 pb-12">
+      <main className="flex-1 pt-28 pb-12">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between mb-6">
             <h1 className="font-display text-2xl font-bold text-primary flex items-center gap-2"><Trophy className="h-6 w-6" />Tournament Admin</h1>

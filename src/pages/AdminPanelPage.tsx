@@ -189,7 +189,7 @@ export default function AdminPanelPage() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
-      <main className="flex-1 pt-24 pb-16">
+      <main className="flex-1 pt-28 pb-16">
         <div className="max-w-6xl mx-auto px-4">
           {/* Header */}
           <div className="mb-8">

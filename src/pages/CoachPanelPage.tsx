@@ -567,7 +567,7 @@ export default function CoachPanelPage() {
     return (
       <div className="min-h-screen flex flex-col">
         <Navbar />
-        <main className="flex-1 pt-24 pb-16 flex items-center justify-center">
+        <main className="flex-1 pt-28 pb-16 flex items-center justify-center">
           <div className="text-center px-4">
             <ShieldX className="h-16 w-16 text-destructive mx-auto mb-4" />
             <h1 className="text-2xl font-bold font-display text-foreground mb-2">Access Denied</h1>
@@ -586,7 +586,7 @@ export default function CoachPanelPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <main className="flex-1 pt-24 pb-16">
+      <main className="flex-1 pt-28 pb-16">
         <div className="container mx-auto px-4">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
             <div className="flex items-center justify-center gap-3 mb-2">

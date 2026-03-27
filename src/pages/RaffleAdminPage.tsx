@@ -314,7 +314,7 @@ const RaffleAdminPage = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <main className="flex-1 pt-20 pb-12">
+      <main className="flex-1 pt-28 pb-12">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between mb-8">
             <div>
