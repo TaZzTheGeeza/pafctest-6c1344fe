@@ -635,6 +635,18 @@ const RaffleAdminPage = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Draw Overlay */}
+      <AnimatePresence>
+        {drawingRaffleId && (
+          <RaffleDraw
+            raffleName={raffles.find(r => r.id === drawingRaffleId)?.title || "Raffle"}
+            tickets={(tickets[drawingRaffleId] || []).filter(t => t.payment_status === "paid")}
+            onComplete={handleDrawComplete}
+            onClose={closeDrawOverlay}
+          />
+        )}
+      </AnimatePresence>
       <Footer />
     </div>
   );
