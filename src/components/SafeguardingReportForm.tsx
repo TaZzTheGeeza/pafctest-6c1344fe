@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Shield, Send, Eye, EyeOff } from "lucide-react";
+import { Shield, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -20,7 +19,6 @@ const categories = [
 ];
 
 export function SafeguardingReportForm() {
-  const [isAnonymous, setIsAnonymous] = useState(false);
   const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
   const [peopleInvolved, setPeopleInvolved] = useState("");
@@ -39,18 +37,18 @@ export function SafeguardingReportForm() {
       return;
     }
 
-    if (!isAnonymous && !reporterName.trim()) {
-      toast.error("Please provide your name, or choose to report anonymously.");
+    if (!reporterName.trim()) {
+      toast.error("Please provide your name.");
       return;
     }
 
     setSubmitting(true);
     try {
       const insertData: Record<string, unknown> = {
-        is_anonymous: isAnonymous,
-        reporter_name: isAnonymous ? null : reporterName.trim() || null,
-        reporter_email: isAnonymous ? null : reporterEmail.trim() || null,
-        reporter_phone: isAnonymous ? null : reporterPhone.trim() || null,
+        is_anonymous: false,
+        reporter_name: reporterName.trim() || null,
+        reporter_email: reporterEmail.trim() || null,
+        reporter_phone: reporterPhone.trim() || null,
         category,
         description: description.trim(),
         people_involved: peopleInvolved.trim() || null,
@@ -92,8 +90,7 @@ export function SafeguardingReportForm() {
           <p className="text-2xl font-display font-bold text-primary">{referenceNumber}</p>
         </div>
         <p className="text-xs text-muted-foreground">
-          Our Club Welfare Officer will review this report and may reach out if further information is needed
-          {isAnonymous ? "." : " using the contact details you provided."}
+          Our Club Welfare Officer will review this report and may reach out using the contact details you provided.
         </p>
         <Button
           className="mt-6"
@@ -107,7 +104,7 @@ export function SafeguardingReportForm() {
             setReporterName("");
             setReporterEmail("");
             setReporterPhone("");
-            setIsAnonymous(false);
+            
           }}
         >
           Submit Another Report
@@ -123,68 +120,46 @@ export function SafeguardingReportForm() {
         <h3 className="font-display text-lg font-bold">Report a Concern</h3>
       </div>
       <p className="text-xs text-muted-foreground">
-        All reports are treated with the strictest confidence. You may choose to remain anonymous.
+        All reports are treated with the strictest confidence.
       </p>
 
-      {/* Anonymous toggle */}
-      <div className="flex items-center justify-between bg-muted/50 rounded-lg p-4">
-        <div className="flex items-center gap-2">
-          {isAnonymous ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
-          <Label htmlFor="anonymous-toggle" className="text-sm font-medium cursor-pointer">
-            Report anonymously
-          </Label>
+      {/* Contact details */}
+      <div className="space-y-4">
+        <div>
+          <Label htmlFor="reporter-name" className="text-sm">Your Name *</Label>
+          <Input
+            id="reporter-name"
+            value={reporterName}
+            onChange={(e) => setReporterName(e.target.value)}
+            placeholder="Full name"
+            maxLength={100}
+          />
         </div>
-        <Switch
-          id="anonymous-toggle"
-          checked={isAnonymous}
-          onCheckedChange={setIsAnonymous}
-        />
-      </div>
-
-      {/* Contact details (hidden if anonymous) */}
-      {!isAnonymous && (
-        <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: "auto" }}
-          exit={{ opacity: 0, height: 0 }}
-          className="space-y-4"
-        >
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="reporter-name" className="text-sm">Your Name *</Label>
+            <Label htmlFor="reporter-email" className="text-sm">Email</Label>
             <Input
-              id="reporter-name"
-              value={reporterName}
-              onChange={(e) => setReporterName(e.target.value)}
-              placeholder="Full name"
-              maxLength={100}
+              id="reporter-email"
+              type="email"
+              value={reporterEmail}
+              onChange={(e) => setReporterEmail(e.target.value)}
+              placeholder="your@email.com"
+              maxLength={255}
             />
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="reporter-email" className="text-sm">Email</Label>
-              <Input
-                id="reporter-email"
-                type="email"
-                value={reporterEmail}
-                onChange={(e) => setReporterEmail(e.target.value)}
-                placeholder="your@email.com"
-                maxLength={255}
-              />
-            </div>
-            <div>
-              <Label htmlFor="reporter-phone" className="text-sm">Phone</Label>
-              <Input
-                id="reporter-phone"
-                type="tel"
-                value={reporterPhone}
-                onChange={(e) => setReporterPhone(e.target.value)}
-                placeholder="Phone number"
-                maxLength={20}
-              />
-            </div>
+          <div>
+            <Label htmlFor="reporter-phone" className="text-sm">Phone</Label>
+            <Input
+              id="reporter-phone"
+              type="tel"
+              value={reporterPhone}
+              onChange={(e) => setReporterPhone(e.target.value)}
+              placeholder="Phone number"
+              maxLength={20}
+            />
           </div>
-        </motion.div>
-      )}
+        </div>
+      </div>
 
       {/* Category */}
       <div>
