@@ -24,7 +24,7 @@ export function HeroSection() {
           <motion.img
             src={clubLogo}
             alt="Peterborough Athletic FC Crest"
-            className="w-20 h-20 md:w-24 md:h-24 rounded-full object-cover mb-3 border-2 border-primary shadow-[0_0_40px_rgba(160,130,50,0.3)]"
+            className="w-20 h-20 md:w-24 md:h-24 object-contain mb-3 drop-shadow-[0_0_20px_rgba(160,130,50,0.4)]"
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.2 }}
