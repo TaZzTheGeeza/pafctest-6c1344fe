@@ -487,15 +487,11 @@ const RaffleAdminPage = () => {
                             </Button>
                             <Button
                               size="sm"
-                              onClick={() => drawWinner(raffle.id)}
-                              disabled={drawing === raffle.id || paidTickets.length === 0}
+                              onClick={() => openDrawOverlay(raffle.id)}
+                              disabled={paidTickets.length === 0}
                               className="bg-gold-gradient text-primary-foreground"
                             >
-                              {drawing === raffle.id ? (
-                                <><Shuffle className="h-4 w-4 mr-1 animate-spin" /> Drawing...</>
-                              ) : (
-                                <><Trophy className="h-4 w-4 mr-1" /> Draw Winner</>
-                              )}
+                              <Trophy className="h-4 w-4 mr-1" /> Draw Winner
                             </Button>
                           </>
                         )}
