@@ -14,7 +14,7 @@ export function HeroSection() {
       />
       <div className="absolute inset-0 bg-gradient-to-b from-background/85 via-background/65 to-background" />
 
-      <div className="relative z-10 container mx-auto px-4 text-center pt-16">
+      <div className="relative z-10 container mx-auto px-4 text-center pt-24 md:pt-16">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
