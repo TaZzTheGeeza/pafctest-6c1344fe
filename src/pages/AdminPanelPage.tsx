@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { toast } from "sonner";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Users, Shield, ShieldCheck, ShieldAlert, UserCog, Trash2,
   Search, ChevronDown, Trophy, Ticket, BarChart3, FileText,
@@ -269,13 +269,14 @@ function UserRow({
   onRemoveRole: (userId: string, role: AppRole) => void;
 }) {
   const [showAddMenu, setShowAddMenu] = useState(false);
+  const navigate = useNavigate();
   const isCurrentUser = user.id === currentUserId;
   const availableRoles = (["admin", "coach", "player", "user"] as AppRole[]).filter(
     (r) => !user.roles.includes(r)
   );
 
   return (
-    <div className="px-5 py-4 hover:bg-secondary/20 transition-colors">
+    <div className="px-5 py-4 hover:bg-secondary/20 transition-colors cursor-pointer" onClick={() => navigate(`/admin/player/${user.id}`)}>
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
         {/* User Info */}
         <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -294,7 +295,7 @@ function UserRow({
         </div>
 
         {/* Roles */}
-        <div className="flex flex-wrap items-center gap-1.5">
+        <div className="flex flex-wrap items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
           {user.roles.length === 0 && (
             <span className="text-xs text-muted-foreground italic">No roles</span>
           )}
