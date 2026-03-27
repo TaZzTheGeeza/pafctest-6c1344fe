@@ -8,7 +8,7 @@ import { Link, useNavigate } from "react-router-dom";
 import {
   Users, Shield, ShieldCheck, ShieldAlert, UserCog, Trash2,
   Search, ChevronDown, Trophy, Ticket, BarChart3, FileText,
-  MessageSquare, Settings, Eye, Plus, Loader2, Crown, Swords
+  MessageSquare, Settings, Eye, Plus, Loader2, Crown, Swords, ShoppingBag
 } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -48,9 +48,12 @@ export default function AdminPanelPage() {
   const [addingRole, setAddingRole] = useState<string | null>(null);
   const [registrationOpen, setRegistrationOpen] = useState(false);
   const [togglingReg, setTogglingReg] = useState(false);
+  const [shopOpen, setShopOpen] = useState(true);
+  const [togglingShop, setTogglingShop] = useState(false);
 
   useEffect(() => {
     loadRegistrationSetting();
+    loadShopSetting();
   }, []);
 
   async function loadRegistrationSetting() {
@@ -60,6 +63,31 @@ export default function AdminPanelPage() {
       .eq("key", "registration_open")
       .single();
     if (data) setRegistrationOpen((data as any).value === "true");
+  }
+
+  async function loadShopSetting() {
+    const { data } = await supabase
+      .from("site_settings" as any)
+      .select("value")
+      .eq("key", "shop_open")
+      .single();
+    if (data) setShopOpen((data as any).value === "true");
+  }
+
+  async function toggleShop() {
+    setTogglingShop(true);
+    const newVal = !shopOpen;
+    const { error } = await supabase
+      .from("site_settings" as any)
+      .update({ value: newVal ? "true" : "false", updated_at: new Date().toISOString() } as any)
+      .eq("key", "shop_open");
+    if (error) {
+      toast.error("Failed to update shop setting");
+    } else {
+      setShopOpen(newVal);
+      toast.success(`Club Shop ${newVal ? "opened" : "closed"}`);
+    }
+    setTogglingShop(false);
   }
 
   async function toggleRegistration() {
@@ -196,8 +224,8 @@ export default function AdminPanelPage() {
             ))}
           </div>
 
-          {/* Registration Toggle */}
-          <div className="mb-8">
+          {/* Site Toggles */}
+          <div className="mb-8 grid grid-cols-1 md:grid-cols-2 gap-3">
             <div className="bg-card border border-border rounded-xl p-5 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-primary/10">
@@ -216,6 +244,26 @@ export default function AdminPanelPage() {
                 className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${registrationOpen ? "bg-primary" : "bg-muted"}`}
               >
                 <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${registrationOpen ? "translate-x-6" : "translate-x-1"}`} />
+              </button>
+            </div>
+            <div className="bg-card border border-border rounded-xl p-5 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <ShoppingBag className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm font-display font-semibold text-foreground">Club Shop</p>
+                  <p className="text-[10px] text-muted-foreground">
+                    {shopOpen ? "Shop is currently OPEN" : "Shop is CLOSED (browse only)"}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={toggleShop}
+                disabled={togglingShop}
+                className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${shopOpen ? "bg-primary" : "bg-muted"}`}
+              >
+                <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${shopOpen ? "translate-x-6" : "translate-x-1"}`} />
               </button>
             </div>
           </div>

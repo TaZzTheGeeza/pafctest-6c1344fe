@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Loader2, ShoppingBag } from "lucide-react";
+import { ArrowLeft, Loader2, ShoppingBag, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ShopifyProduct, storefrontApiRequest, PRODUCT_BY_HANDLE_QUERY } from "@/lib/shopify";
 import { useCartStore } from "@/stores/cartStore";
 import { toast } from "sonner";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function ProductPage() {
   const { handle } = useParams<{ handle: string }>();
@@ -17,6 +18,18 @@ export default function ProductPage() {
   const [selectedImage, setSelectedImage] = useState(0);
   const addItem = useCartStore(state => state.addItem);
   const isCartLoading = useCartStore(state => state.isLoading);
+  const [shopOpen, setShopOpen] = useState(true);
+
+  useEffect(() => {
+    supabase
+      .from("site_settings" as any)
+      .select("value")
+      .eq("key", "shop_open")
+      .single()
+      .then(({ data }) => {
+        if (data) setShopOpen((data as any).value === "true");
+      });
+  }, []);
 
   useEffect(() => {
     async function fetchProduct() {
@@ -158,14 +171,21 @@ export default function ProductPage() {
                 )
               ))}
 
-              <Button
-                onClick={handleAddToCart}
-                disabled={isCartLoading || !selectedVariant?.availableForSale}
-                className="w-full bg-gold-gradient text-primary-foreground font-display tracking-wider hover:opacity-90"
-                size="lg"
-              >
-                {isCartLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : !selectedVariant?.availableForSale ? "Sold Out" : "Add to Cart"}
-              </Button>
+              {shopOpen ? (
+                <Button
+                  onClick={handleAddToCart}
+                  disabled={isCartLoading || !selectedVariant?.availableForSale}
+                  className="w-full bg-gold-gradient text-primary-foreground font-display tracking-wider hover:opacity-90"
+                  size="lg"
+                >
+                  {isCartLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : !selectedVariant?.availableForSale ? "Sold Out" : "Add to Cart"}
+                </Button>
+              ) : (
+                <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4 text-amber-400 shrink-0" />
+                  <p className="text-xs text-amber-200 font-display">Shop is currently closed for orders.</p>
+                </div>
+              )}
             </div>
           </motion.div>
         </div>

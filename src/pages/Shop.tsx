@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ShoppingBag, Loader2 } from "lucide-react";
+import { ShoppingBag, Loader2, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ShopifyProduct, storefrontApiRequest, STOREFRONT_PRODUCTS_QUERY } from "@/lib/shopify";
 import { useCartStore } from "@/stores/cartStore";
 import { toast } from "sonner";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { supabase } from "@/integrations/supabase/client";
 
 const CATEGORIES = [
   { label: "All", tag: null },
@@ -20,8 +21,20 @@ export default function ShopPage() {
   const [products, setProducts] = useState<ShopifyProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [shopOpen, setShopOpen] = useState(true);
   const addItem = useCartStore(state => state.addItem);
   const isCartLoading = useCartStore(state => state.isLoading);
+
+  useEffect(() => {
+    supabase
+      .from("site_settings" as any)
+      .select("value")
+      .eq("key", "shop_open")
+      .single()
+      .then(({ data }) => {
+        if (data) setShopOpen((data as any).value === "true");
+      });
+  }, []);
 
   useEffect(() => {
     async function fetchProducts() {
@@ -73,7 +86,15 @@ export default function ShopPage() {
             </p>
           </motion.div>
 
-          {/* Category Tabs */}
+          {!shopOpen && (
+            <div className="max-w-lg mx-auto mb-8 bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 flex items-center gap-3">
+              <AlertTriangle className="h-5 w-5 text-amber-400 shrink-0" />
+              <p className="text-sm text-amber-200 font-display">
+                The club shop is currently closed for orders. You can still browse our products.
+              </p>
+            </div>
+          )}
+
           <div className="flex justify-center gap-2 mb-10 flex-wrap">
             {CATEGORIES.map((cat) => (
               <button
@@ -140,14 +161,16 @@ export default function ShopPage() {
                       <p className="text-primary font-bold mt-1">
                         £{parseFloat(price.amount).toFixed(2)}
                       </p>
-                      <Button
-                        onClick={() => handleAddToCart(product)}
-                        disabled={isCartLoading}
-                        className="w-full mt-3 bg-gold-gradient text-primary-foreground font-display text-xs tracking-wider hover:opacity-90"
-                        size="sm"
-                      >
-                        {isCartLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Add to Cart"}
-                      </Button>
+                      {shopOpen && (
+                        <Button
+                          onClick={() => handleAddToCart(product)}
+                          disabled={isCartLoading}
+                          className="w-full mt-3 bg-gold-gradient text-primary-foreground font-display text-xs tracking-wider hover:opacity-90"
+                          size="sm"
+                        >
+                          {isCartLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Add to Cart"}
+                        </Button>
+                      )}
                     </div>
                   </motion.div>
                 );
