@@ -191,24 +191,24 @@ export default function HubPage() {
               <p className="text-sm text-muted-foreground mb-4">You haven't been added to a team yet. Ask your coach or club admin to add you.</p>
             </div>
           ) : (
-            <div className="max-w-5xl mx-auto">
-              {/* Segmented Header — team + tabs in one row */}
-              <div className="bg-card border border-border rounded-2xl p-1.5 mb-6">
-                {/* Top row: team picker */}
-                <div className="flex items-center gap-2 px-2 pb-2 border-b border-border mb-2">
-                  <div className="relative flex-1">
+            <div className="flex gap-0 md:gap-6">
+              {/* Sidebar */}
+              <TooltipProvider delayDuration={100}>
+                <aside className="shrink-0 w-14 md:w-56 bg-card border border-border rounded-xl overflow-hidden">
+                  {/* Team Picker */}
+                  <div className="relative border-b border-border">
                     <button
                       onClick={() => setShowTeamPicker(!showTeamPicker)}
-                      className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+                      className="w-full flex items-center gap-2 px-3 md:px-4 py-3 hover:bg-secondary/50 transition-colors"
                     >
-                      <div className="w-7 h-7 rounded-full bg-primary/15 flex items-center justify-center">
-                        <Users className="h-3.5 w-3.5 text-primary" />
-                      </div>
-                      <span className="font-display text-sm font-bold text-foreground tracking-wider">{activeTeamName}</span>
-                      <ChevronDown className={`h-3 w-3 text-muted-foreground transition-transform ${showTeamPicker ? "rotate-180" : ""}`} />
+                      <Users className="h-5 w-5 text-primary shrink-0" />
+                      <span className="hidden md:block font-display text-sm font-bold text-foreground truncate flex-1 text-left">
+                        {activeTeamName}
+                      </span>
+                      <ChevronDown className={`hidden md:block h-4 w-4 text-muted-foreground transition-transform ${showTeamPicker ? "rotate-180" : ""}`} />
                     </button>
                     {showTeamPicker && (
-                      <div className="absolute top-full left-0 mt-2 bg-card border border-border rounded-xl shadow-xl shadow-black/20 p-2 min-w-[200px] z-50">
+                      <div className="absolute top-full left-0 mt-1 bg-card border border-border rounded-xl shadow-xl shadow-black/20 p-2 min-w-[200px] z-50">
                         <p className="text-[10px] font-display tracking-wider text-muted-foreground uppercase px-2 py-1">Your Teams</p>
                         {myTeams.map((slug) => {
                           const team = TEAMS.find((t) => t.slug === slug);
@@ -225,33 +225,47 @@ export default function HubPage() {
                       </div>
                     )}
                   </div>
-                </div>
 
-                {/* Segmented tab row */}
-                <div className="flex items-center gap-0.5 overflow-x-auto scrollbar-hide px-0.5">
-                  {allTabs.map((tab) => {
-                    const Icon = tab.icon;
-                    const isActive = activeTab === tab.id;
-                    return (
-                      <button
-                        key={tab.id}
-                        onClick={() => selectTab(tab.id)}
-                        className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-display tracking-wider whitespace-nowrap transition-all ${
-                          isActive
-                            ? "bg-primary text-primary-foreground shadow-sm"
-                            : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
-                        }`}
-                      >
-                        <Icon className="h-3.5 w-3.5" />
-                        {tab.label}
-                      </button>
-                    );
-                  })}
-                </div>
+                  {/* Tab Items */}
+                  <nav className="p-1.5 md:p-2 space-y-0.5">
+                    {allTabs.map((tab) => {
+                      const Icon = tab.icon;
+                      const isActive = activeTab === tab.id;
+                      const btn = (
+                        <button
+                          key={tab.id}
+                          onClick={() => selectTab(tab.id)}
+                          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-display tracking-wider transition-all ${
+                            isActive
+                              ? "bg-primary/15 text-primary border border-primary/20"
+                              : "text-muted-foreground hover:text-foreground hover:bg-secondary/50 border border-transparent"
+                          }`}
+                        >
+                          <Icon className={`h-4 w-4 shrink-0 ${isActive ? "text-primary" : ""}`} />
+                          <span className="hidden md:block truncate">{tab.label}</span>
+                        </button>
+                      );
+
+                      if (isMobile) {
+                        return (
+                          <Tooltip key={tab.id}>
+                            <TooltipTrigger asChild>{btn}</TooltipTrigger>
+                            <TooltipContent side="right" className="font-display text-xs">
+                              {tab.label}
+                            </TooltipContent>
+                          </Tooltip>
+                        );
+                      }
+                      return btn;
+                    })}
+                  </nav>
+                </aside>
+              </TooltipProvider>
+
+              {/* Main Content */}
+              <div className="flex-1 min-w-0">
+                {renderContent()}
               </div>
-
-              {/* Content */}
-              {renderContent()}
             </div>
           )}
         </div>
