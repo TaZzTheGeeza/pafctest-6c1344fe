@@ -48,9 +48,12 @@ export default function AdminPanelPage() {
   const [addingRole, setAddingRole] = useState<string | null>(null);
   const [registrationOpen, setRegistrationOpen] = useState(false);
   const [togglingReg, setTogglingReg] = useState(false);
+  const [shopOpen, setShopOpen] = useState(true);
+  const [togglingShop, setTogglingShop] = useState(false);
 
   useEffect(() => {
     loadRegistrationSetting();
+    loadShopSetting();
   }, []);
 
   async function loadRegistrationSetting() {
@@ -60,6 +63,31 @@ export default function AdminPanelPage() {
       .eq("key", "registration_open")
       .single();
     if (data) setRegistrationOpen((data as any).value === "true");
+  }
+
+  async function loadShopSetting() {
+    const { data } = await supabase
+      .from("site_settings" as any)
+      .select("value")
+      .eq("key", "shop_open")
+      .single();
+    if (data) setShopOpen((data as any).value === "true");
+  }
+
+  async function toggleShop() {
+    setTogglingShop(true);
+    const newVal = !shopOpen;
+    const { error } = await supabase
+      .from("site_settings" as any)
+      .update({ value: newVal ? "true" : "false", updated_at: new Date().toISOString() } as any)
+      .eq("key", "shop_open");
+    if (error) {
+      toast.error("Failed to update shop setting");
+    } else {
+      setShopOpen(newVal);
+      toast.success(`Club Shop ${newVal ? "opened" : "closed"}`);
+    }
+    setTogglingShop(false);
   }
 
   async function toggleRegistration() {
