@@ -141,10 +141,18 @@ export default function PlayerRegistrationPage() {
 
       if (error) throw error;
 
-      toast.success("Registration submitted!", {
-        description: "We'll be in touch when registration opens for the 2026/27 season.",
-      });
-      setSubmitted(true);
+      // Redirect to Stripe for £40 payment
+      toast.info("Redirecting to payment...");
+      const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke(
+        "create-registration-checkout",
+        { body: { email: form.email, childName: form.childName } }
+      );
+
+      if (checkoutError || !checkoutData?.url) {
+        throw new Error(checkoutError?.message || "Failed to create payment session");
+      }
+
+      window.location.href = checkoutData.url;
     } catch (err) {
       toast.error("Something went wrong. Please try again.");
       console.error(err);
