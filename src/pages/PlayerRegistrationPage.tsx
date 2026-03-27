@@ -191,24 +191,29 @@ export default function PlayerRegistrationPage() {
             <p className="text-muted-foreground text-center mb-4">Register your interest for the 2026/27 season</p>
           </motion.div>
 
-          {/* Season Status Banner */}
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="max-w-2xl mx-auto mb-8"
-          >
-            <div className="bg-primary/10 border border-primary/30 rounded-lg p-6 flex items-start gap-4">
-              <Clock className="h-6 w-6 text-primary shrink-0 mt-0.5" />
-              <div>
-                <h3 className="font-display font-bold text-sm mb-1">Registration Currently Closed</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  All team registrations are currently closed for the 2025/26 season. You can register your interest below and we will contact you when registration opens for the <strong className="text-foreground">2026/27 season</strong>.
+          {registrationOpen === null ? (
+            <div className="max-w-2xl mx-auto text-center py-12">
+              <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full mx-auto" />
+            </div>
+          ) : !registrationOpen && !submitted ? (
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="max-w-2xl mx-auto"
+            >
+              <div className="bg-card border border-border rounded-lg p-12 text-center">
+                <Clock className="h-16 w-16 text-primary mx-auto mb-4" />
+                <h2 className="font-display text-2xl font-bold mb-2">Registration Currently Closed</h2>
+                <p className="text-muted-foreground mb-2">
+                  Player registration is not currently open.
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Please check back later or contact the club for more information.
                 </p>
               </div>
-            </div>
-          </motion.div>
-
+            </motion.div>
+          ) : (
           <div className="max-w-2xl mx-auto">
             {submitted ? (
               <motion.div
