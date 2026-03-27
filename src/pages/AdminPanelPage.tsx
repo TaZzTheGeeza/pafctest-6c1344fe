@@ -295,7 +295,7 @@ function UserRow({
         </div>
 
         {/* Roles */}
-        <div className="flex flex-wrap items-center gap-1.5">
+        <div className="flex flex-wrap items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
           {user.roles.length === 0 && (
             <span className="text-xs text-muted-foreground italic">No roles</span>
           )}
