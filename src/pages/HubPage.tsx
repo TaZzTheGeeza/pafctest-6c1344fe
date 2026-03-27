@@ -162,7 +162,7 @@ export default function HubPage() {
             <>
               {/* Team Selector + Admin Manager */}
               <div className="max-w-4xl mx-auto mb-6">
-                <div className="flex flex-wrap items-center gap-3 justify-between">
+                <div className="flex flex-wrap items-center gap-3">
                   <div className="relative">
                     <button
                       onClick={() => setShowTeamPicker(!showTeamPicker)}
@@ -190,16 +190,6 @@ export default function HubPage() {
                       </div>
                     )}
                   </div>
-
-                  {/* Admin: Manage Members tab */}
-                  {(isAdmin || isCoach) && (
-                    <button
-                      onClick={() => selectTab("members")}
-                      className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-display tracking-wider transition-colors ${activeTab === "members" ? "bg-primary text-primary-foreground" : "bg-card border border-border text-muted-foreground hover:text-foreground"}`}
-                    >
-                      <Users className="h-4 w-4" /> Manage Members
-                    </button>
-                  )}
                 </div>
               </div>
 
