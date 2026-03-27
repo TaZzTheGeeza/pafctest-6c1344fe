@@ -738,6 +738,7 @@ export type Database = {
           medical_conditions: string | null
           parent_name: string
           phone: string
+          photo_url: string | null
           preferred_age_group: string
           previous_club: string | null
           relationship_to_child: string | null
@@ -763,6 +764,7 @@ export type Database = {
           medical_conditions?: string | null
           parent_name: string
           phone: string
+          photo_url?: string | null
           preferred_age_group: string
           previous_club?: string | null
           relationship_to_child?: string | null
@@ -788,6 +790,7 @@ export type Database = {
           medical_conditions?: string | null
           parent_name?: string
           phone?: string
+          photo_url?: string | null
           preferred_age_group?: string
           previous_club?: string | null
           relationship_to_child?: string | null
