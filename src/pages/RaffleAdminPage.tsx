@@ -147,17 +147,18 @@ const RaffleAdminPage = () => {
       prize_description: newRaffle.prize_description,
       ticket_price_cents: Math.round(parseFloat(newRaffle.ticket_price) * 100),
       max_tickets: newRaffle.max_tickets ? parseInt(newRaffle.max_tickets) : null,
+      number_range: newRaffle.number_range ? parseInt(newRaffle.number_range) : null,
       draw_date: newRaffle.draw_date || null,
       status: "draft",
       image_url: imageUrl,
-    });
+    } as any);
 
     if (error) {
       toast.error("Failed to create raffle: " + error.message);
     } else {
       toast.success("Raffle created! Set it to 'Active' when ready.");
       setShowCreate(false);
-      setNewRaffle({ title: "", description: "", prize_description: "", ticket_price: "", max_tickets: "", draw_date: "" });
+      setNewRaffle({ title: "", description: "", prize_description: "", ticket_price: "", max_tickets: "", draw_date: "", number_range: "" });
       setImageFile(null);
       setImagePreview(null);
       fetchRaffles();
@@ -190,6 +191,7 @@ const RaffleAdminPage = () => {
       ticket_price: (raffle.ticket_price_cents / 100).toFixed(2),
       max_tickets: raffle.max_tickets?.toString() || "",
       draw_date: raffle.draw_date ? raffle.draw_date.split("T")[0] : "",
+      number_range: (raffle as any).number_range?.toString() || "",
     });
     setEditImagePreview(raffle.image_url);
     setEditImageFile(null);
@@ -251,9 +253,10 @@ const RaffleAdminPage = () => {
         prize_description: editForm.prize_description,
         ticket_price_cents: Math.round(parseFloat(editForm.ticket_price) * 100),
         max_tickets: editForm.max_tickets ? parseInt(editForm.max_tickets) : null,
+        number_range: editForm.number_range ? parseInt(editForm.number_range) : null,
         draw_date: editForm.draw_date || null,
         image_url: imageUrl,
-      })
+      } as any)
       .eq("id", editingRaffle.id);
 
     if (error) {
