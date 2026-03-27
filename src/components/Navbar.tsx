@@ -161,14 +161,9 @@ export function Navbar() {
           <div className="flex items-center gap-3">
             <NotificationBell />
             <span className="hidden lg:block"><CartDrawer /></span>
-            {isAdmin && (
-              <Link to="/admin" className="font-display text-[10px] tracking-[0.15em] uppercase text-red-400 hover:text-red-300 transition-colors flex items-center gap-1.5">
-                <Settings className="h-3 w-3" /> Admin
-              </Link>
-            )}
-            {(isCoach || isAdmin) && (
-              <Link to="/coach-panel" className="font-display text-[10px] tracking-[0.15em] uppercase text-primary hover:text-primary/80 transition-colors flex items-center gap-1.5">
-                <ClipboardList className="h-3 w-3" /> Coach Panel
+             {(isAdmin || isCoach) && (
+              <Link to="/dashboard" className="font-display text-[10px] tracking-[0.15em] uppercase text-primary hover:text-primary/80 transition-colors flex items-center gap-1.5">
+                <Settings className="h-3 w-3" /> Dashboard
               </Link>
             )}
             {user ? (
@@ -281,14 +276,9 @@ export function Navbar() {
                 <ShoppingBag className="h-4 w-4" /> Shop
               </Link>
             </div>
-            {isAdmin && (
-              <Link to="/admin" onClick={() => setIsOpen(false)} className="flex items-center justify-center gap-2 w-full font-display text-sm tracking-wider py-2.5 rounded-md border border-red-500/50 text-red-400 hover:bg-red-500 hover:text-white transition-all mt-2">
-                <Settings className="h-4 w-4" /> Admin Panel
-              </Link>
-            )}
-            {(isCoach || isAdmin) && (
-              <Link to="/coach-panel" onClick={() => setIsOpen(false)} className="flex items-center justify-center gap-2 w-full font-display text-sm tracking-wider py-2.5 rounded-md border border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground transition-all mt-2">
-                <ClipboardList className="h-4 w-4" /> Coach Panel
+            {(isAdmin || isCoach) && (
+              <Link to="/dashboard" onClick={() => setIsOpen(false)} className="flex items-center justify-center gap-2 w-full font-display text-sm tracking-wider py-2.5 rounded-md border border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground transition-all mt-2">
+                <Settings className="h-4 w-4" /> Dashboard
               </Link>
             )}
             {user ? (
