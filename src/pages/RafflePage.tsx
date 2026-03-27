@@ -32,6 +32,7 @@ interface Raffle {
   created_at: string;
   draw_started_at?: string | null;
   drawn_ticket_number?: number | null;
+  draw_video_url?: string | null;
 }
 
 interface RaffleTicket {
