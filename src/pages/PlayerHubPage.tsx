@@ -14,6 +14,16 @@ import {
 
 const hubItems = [
   {
+    title: "My Profile",
+    description: "View your stats, documents, availability history, and POTM awards — all in one place.",
+    icon: UserPlus,
+    path: "/my-profile",
+    color: "text-primary",
+    bgColor: "bg-primary/10",
+    borderColor: "border-primary/20",
+    restricted: true,
+  },
+  {
     title: "Player Registration",
     description: "Register your child's interest for the upcoming season. Submit details and preferred age group.",
     icon: UserPlus,
