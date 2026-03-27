@@ -21,6 +21,11 @@ export function HeroSection() {
           transition={{ duration: 0.8 }}
           className="flex flex-col items-center"
         >
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold font-display mb-1">
+            <span className="text-gold-gradient">Peterborough</span>
+            <br />
+            <span className="text-foreground">Athletic FC</span>
+          </h1>
           <motion.img
             src={clubLogo}
             alt="Peterborough Athletic FC Crest"
@@ -29,11 +34,6 @@ export function HeroSection() {
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           />
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold font-display mb-1">
-            <span className="text-gold-gradient">Peterborough</span>
-            <br />
-            <span className="text-foreground">Athletic FC</span>
-          </h1>
           <p className="text-xs md:text-sm font-display text-primary tracking-[0.3em] mb-2">The Lions · Est. 2020</p>
           <p className="text-sm md:text-base text-muted-foreground max-w-xl mx-auto mb-3 font-body">
             Proudly FA Accredited · Grassroots Football for All · Powered by Community
