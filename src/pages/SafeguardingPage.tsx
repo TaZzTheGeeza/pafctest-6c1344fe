@@ -89,13 +89,8 @@ export default function SafeguardingPage() {
                   My aim is to make sure every child feels safe, valued, and able to enjoy their time at the club. Whether you have a concern, a question, or simply need someone to talk to, please don't hesitate to get in touch. I am always happy to help and to be a friendly, approachable face if you would like a chat.
                 </p>
               </div>
-              <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <a href="mailto:welfare@peterboroughathleticfc.co.uk">
-                  <Button variant="outline" className="font-display tracking-wider">
-                    <Mail className="w-4 h-4 mr-2" />
-                    Email Welfare Officer
-                  </Button>
-                </a>
+              <div className="mt-6">
+                <SafeguardingReportForm />
               </div>
             </div>
           </motion.div>
@@ -155,18 +150,6 @@ export default function SafeguardingPage() {
             </div>
           </motion.div>
 
-          {/* Report a Concern */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.5 }}
-            className="max-w-2xl mx-auto mb-16"
-          >
-            <h2 className="font-display text-2xl font-bold text-center mb-8">
-              Report a <span className="text-gold-gradient">Concern</span>
-            </h2>
-            <SafeguardingReportForm />
-          </motion.div>
 
           {/* FA Resources */}
           <div className="max-w-2xl mx-auto">
