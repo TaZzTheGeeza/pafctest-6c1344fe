@@ -329,10 +329,6 @@ const TournamentPage = () => {
                         <p><strong>First Match:</strong> 9:30 AM</p>
                       </div>
                       <div className="flex items-start gap-2">
-                        <ClipboardList className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                        <p><strong>Team Sheets:</strong> Must be completed and handed in at Registration or emailed in advance to <a href="mailto:peterboroughath@gmail.com" className="text-primary hover:underline">peterboroughath@gmail.com</a></p>
-                      </div>
-                      <div className="flex items-start gap-2">
                         <PoundSterling className="h-4 w-4 text-primary mt-0.5 shrink-0" />
                         <p><strong>Entry Fee:</strong> £40 per team</p>
                       </div>
