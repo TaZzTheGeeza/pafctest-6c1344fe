@@ -8,7 +8,7 @@ import { Link, useNavigate } from "react-router-dom";
 import {
   Users, Shield, ShieldCheck, ShieldAlert, UserCog, Trash2,
   Search, ChevronDown, Trophy, Ticket, BarChart3, FileText,
-  MessageSquare, Settings, Eye, Plus, Loader2, Crown, Swords
+  MessageSquare, Settings, Eye, Plus, Loader2, Crown, Swords, ShoppingBag
 } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 
