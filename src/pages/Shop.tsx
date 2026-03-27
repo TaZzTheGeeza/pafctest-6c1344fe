@@ -161,14 +161,16 @@ export default function ShopPage() {
                       <p className="text-primary font-bold mt-1">
                         £{parseFloat(price.amount).toFixed(2)}
                       </p>
-                      <Button
-                        onClick={() => handleAddToCart(product)}
-                        disabled={isCartLoading}
-                        className="w-full mt-3 bg-gold-gradient text-primary-foreground font-display text-xs tracking-wider hover:opacity-90"
-                        size="sm"
-                      >
-                        {isCartLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Add to Cart"}
-                      </Button>
+                      {shopOpen && (
+                        <Button
+                          onClick={() => handleAddToCart(product)}
+                          disabled={isCartLoading}
+                          className="w-full mt-3 bg-gold-gradient text-primary-foreground font-display text-xs tracking-wider hover:opacity-90"
+                          size="sm"
+                        >
+                          {isCartLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Add to Cart"}
+                        </Button>
+                      )}
                     </div>
                   </motion.div>
                 );
