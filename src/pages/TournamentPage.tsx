@@ -689,55 +689,20 @@ const TournamentPage = () => {
 
               {/* REGISTER */}
               <TabsContent value="register">
-                <Card className="max-w-lg mx-auto">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><Shield className="h-5 w-5 text-primary" />Register Your Team</CardTitle>
-                    <CardDescription>
-                      Fill in your details and pay the £40 entry fee to secure your place. Once payment is confirmed, your team will be automatically assigned to a group.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <form onSubmit={handleRegister} className="space-y-4">
-                      <div>
-                        <Label>Age Group *</Label>
-                        <Select value={regForm.age_group_id} onValueChange={v => setRegForm(f => ({ ...f, age_group_id: v }))}>
-                          <SelectTrigger><SelectValue placeholder="Select age group" /></SelectTrigger>
-                          <SelectContent>
-                            {ageGroups?.map(ag => <SelectItem key={ag.id} value={ag.id}>{ag.age_group}</SelectItem>)}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label>Team Name *</Label>
-                        <Input value={regForm.team_name} onChange={e => setRegForm(f => ({ ...f, team_name: e.target.value }))} maxLength={100} required />
-                      </div>
-                      <div>
-                        <Label>Manager Name *</Label>
-                        <Input value={regForm.manager_name} onChange={e => setRegForm(f => ({ ...f, manager_name: e.target.value }))} maxLength={100} required />
-                      </div>
-                      <div>
-                        <Label>Manager Email *</Label>
-                        <Input type="email" value={regForm.manager_email} onChange={e => setRegForm(f => ({ ...f, manager_email: e.target.value }))} maxLength={255} required />
-                      </div>
-                      <div>
-                        <Label>Manager Phone</Label>
-                        <Input value={regForm.manager_phone} onChange={e => setRegForm(f => ({ ...f, manager_phone: e.target.value }))} maxLength={20} />
-                      </div>
-                      <div>
-                        <Label>Number of Players</Label>
-                        <Input type="number" min={1} max={30} value={regForm.player_count} onChange={e => setRegForm(f => ({ ...f, player_count: e.target.value }))} />
-                      </div>
-                      <Button type="submit" className="w-full" disabled={submitting}>
-                        {submitting ? (
-                          <><Loader2 className="h-4 w-4 animate-spin mr-2" />Processing...</>
-                        ) : (
-                          <>Register & Pay £40</>
-                        )}
-                      </Button>
-                      <p className="text-xs text-muted-foreground text-center">You'll be redirected to Stripe to complete payment securely.</p>
-                    </form>
-                  </CardContent>
-                </Card>
+                {ageGroups && ageGroups.length > 0 ? (
+                  <TournamentEntryForm
+                    ageGroups={ageGroups}
+                    onSuccess={() => {
+                      refetchTeams();
+                    }}
+                  />
+                ) : (
+                  <Card className="max-w-lg mx-auto text-center">
+                    <CardContent className="pt-6">
+                      <p className="text-muted-foreground">Registration not yet open — check back soon!</p>
+                    </CardContent>
+                  </Card>
+                )}
               </TabsContent>
             </Tabs>
           )}
