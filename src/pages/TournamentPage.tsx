@@ -328,6 +328,7 @@ const TournamentPage = () => {
                   </Card>
                 )}
 
+                {/* Schedule & Age Groups */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2">
@@ -358,19 +359,181 @@ const TournamentPage = () => {
                   </CardContent>
                 </Card>
 
+                {/* Registration & Match Format */}
                 <div className="grid md:grid-cols-2 gap-6">
                   <Card>
-                    <CardHeader><CardTitle className="text-lg flex items-center gap-2"><ClipboardList className="h-5 w-5 text-primary" />Tournament Info</CardTitle></CardHeader>
+                    <CardHeader><CardTitle className="text-lg flex items-center gap-2"><ClipboardList className="h-5 w-5 text-primary" />Registration</CardTitle></CardHeader>
+                    <CardContent className="space-y-3 text-sm">
+                      <div className="flex items-start gap-2">
+                        <Clock className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                        <p><strong>Registration:</strong> From 8:30 AM at the Registration Gazebo</p>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <Calendar className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                        <p><strong>First Match:</strong> 9:30 AM</p>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <ClipboardList className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                        <p><strong>Team Sheets:</strong> Must be completed and handed in at Registration or emailed in advance to <a href="mailto:peterboroughath@gmail.com" className="text-primary hover:underline">peterboroughath@gmail.com</a></p>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <PoundSterling className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                        <p><strong>Entry Fee:</strong> £40 per team</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Trophy className="h-5 w-5 text-primary" />Match Format</CardTitle></CardHeader>
+                    <CardContent className="space-y-3 text-sm">
+                      <p><strong>Duration:</strong> Two 7-minute halves · 1-minute half time</p>
+                      <p><strong>5v5:</strong> U7 & U8 (max 10 players per team)</p>
+                      <p><strong>7v7:</strong> U9, U10, U11, U12, U13 & U14 (max 10 players per team)</p>
+                      <p><strong>Progression:</strong> Top 2 from each group → Semi-Finals → Final</p>
+                      <p><strong>Tiebreaker:</strong> Goal difference, then 3 penalties each</p>
+                      <p className="text-muted-foreground">No 3rd/4th place play-off</p>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Awards & First Aid */}
+                <div className="grid md:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Award className="h-5 w-5 text-primary" />Awards</CardTitle></CardHeader>
                     <CardContent className="space-y-2 text-sm">
-                      {activeTournament.entry_fee_cents && activeTournament.entry_fee_cents > 0 && <p><strong>Entry Fee:</strong> £{(activeTournament.entry_fee_cents / 100).toFixed(2)} per team</p>}
-                      <p><strong>Registered Teams:</strong> {teams?.length || 0}</p>
-                      {activeTournament.rules && <div><strong>Rules:</strong><p className="mt-1 text-muted-foreground whitespace-pre-wrap">{activeTournament.rules}</p></div>}
+                      <p>🏆 <strong>Winners:</strong> Trophy + 10 Winner Medals</p>
+                      <p>🥈 <strong>Runners-up:</strong> 10 Runner-Up Medals</p>
+                      <p className="text-muted-foreground">No other placement awards given</p>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Shield className="h-5 w-5 text-primary" />First Aid & Help</CardTitle></CardHeader>
+                    <CardContent className="space-y-2 text-sm">
+                      <p>🏥 First Aid available at the Registration Gazebo</p>
+                      <p>👨‍⚕️ Several first aiders on site</p>
+                      <p>👦 Lost children — bring to Registration Gazebo</p>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Rules Accordion */}
+                <Card>
+                  <CardHeader><CardTitle className="text-lg flex items-center gap-2"><ClipboardList className="h-5 w-5 text-primary" />Full Tournament Rules</CardTitle></CardHeader>
+                  <CardContent>
+                    <Accordion type="single" collapsible>
+                      <AccordionItem value="match-rules">
+                        <AccordionTrigger className="text-sm font-semibold">⚽ Match Day Rules</AccordionTrigger>
+                        <AccordionContent className="space-y-2 text-sm text-muted-foreground">
+                          <p>• Kit clashes: Away team must wear bibs</p>
+                          <p>• Home team supplies match ball (Size 3 for U7–U10, Size 4 for U11–U14)</p>
+                          <p>• Shin pads are mandatory</p>
+                          <p>• Roll-on, roll-off substitutions (unlimited)</p>
+                          <p>• No offside rule for any age group</p>
+                          <p>• All free kicks are direct</p>
+                          <p>• Goalkeepers CAN kick from hands</p>
+                          <p>• Back pass rule in place for all age groups</p>
+                          <p>• Kick-off decided by Rock-Paper-Scissors</p>
+                        </AccordionContent>
+                      </AccordionItem>
+                      <AccordionItem value="younger-rules">
+                        <AccordionTrigger className="text-sm font-semibold">👦 U7–U10 Specific Rules</AccordionTrigger>
+                        <AccordionContent className="space-y-2 text-sm text-muted-foreground">
+                          <p>• Must take kick ins or dribble ins</p>
+                          <p>• No shooting direct from a kick in</p>
+                          <p>• No deliberate heading</p>
+                          <p>• Must retreat to halfway line on opposition goal kicks</p>
+                        </AccordionContent>
+                      </AccordionItem>
+                      <AccordionItem value="eligibility">
+                        <AccordionTrigger className="text-sm font-semibold">📋 Player Eligibility</AccordionTrigger>
+                        <AccordionContent className="space-y-2 text-sm text-muted-foreground">
+                          <p>• Players must play in the age group they played in for 2025/26 season</p>
+                          <p>• Only registered players from 2025/26 can play</p>
+                          <p>• Maximum 2 guest players allowed per team (proof of age required)</p>
+                          <p>• No player may play for more than one team on the day</p>
+                          <p>• Max squad size: 10 players per team</p>
+                          <p>• A child who has not reached age 6 shall not play</p>
+                        </AccordionContent>
+                      </AccordionItem>
+                      <AccordionItem value="discipline">
+                        <AccordionTrigger className="text-sm font-semibold">🟨 Discipline & Conduct</AccordionTrigger>
+                        <AccordionContent className="space-y-2 text-sm text-muted-foreground">
+                          <p>• Yellow and red card system in place</p>
+                          <p>• Red card (straight or 2 yellows) = suspended for rest of tournament</p>
+                          <p>• Zero-tolerance approach to abusive, aggressive, or threatening behaviour</p>
+                          <p>• Referee decisions are final and must be respected</p>
+                          <p>• FA Respect and Safeguarding Codes of Conduct apply</p>
+                          <p>• Serious incidents reported to authorities including police if necessary</p>
+                        </AccordionContent>
+                      </AccordionItem>
+                      <AccordionItem value="results">
+                        <AccordionTrigger className="text-sm font-semibold">📊 Results & Updates</AccordionTrigger>
+                        <AccordionContent className="space-y-2 text-sm text-muted-foreground">
+                          <p>• Referees bring result slips to Registration Gazebo after each match</p>
+                          <p>• Results entered and league tables updated live</p>
+                          <p>• Each age group will have a WhatsApp group for results & table updates</p>
+                        </AccordionContent>
+                      </AccordionItem>
+                    </Accordion>
+                  </CardContent>
+                </Card>
+
+                {/* Venue & Directions */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2"><MapPin className="h-5 w-5 text-primary" />Venue & Directions</CardTitle>
+                    <CardDescription>Itter Park, Itter Crescent, Peterborough, PE4 6SW</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-sm font-semibold mb-2">Pitch Layout</p>
+                        <img src={pitchLayout} alt="PAFC Tourney pitch layout showing 4 pitches, registration gazebo, and first aid area" className="rounded-lg border border-border w-full" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold mb-2">Directions & Parking</p>
+                        <img src={venueDirections} alt="Map showing directions from Paston & Gunthorpe Community Association to Itter Park" className="rounded-lg border border-border w-full" />
+                      </div>
+                    </div>
+                    <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-3 flex items-start gap-2">
+                      <AlertTriangle className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
+                      <p className="text-sm text-destructive"><strong>Important:</strong> Do NOT park in front of or block the Main Gate on Itter Crescent — this must be kept clear for emergency vehicle access.</p>
+                    </div>
+                    <p className="text-sm text-muted-foreground">Some parking available near the event address. A parking steward will be on location. Extra parking details included in tournament documents.</p>
+                  </CardContent>
+                </Card>
+
+                {/* Reminders */}
+                <Card>
+                  <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Info className="h-5 w-5 text-primary" />Reminders</CardTitle></CardHeader>
+                  <CardContent>
+                    <div className="grid sm:grid-cols-2 gap-2 text-sm">
+                      <p>💧 Bring water & weather gear (sunscreen)</p>
+                      <p>🚧 Keep touchlines clear for players & referees</p>
+                      <p>🗑️ Use bins or black sacks provided for litter</p>
+                      <p>🐕 Dogs must be on leads & cleaned up after</p>
+                      <p>🤝 Respect all players, officials, and staff</p>
+                      <p>🍔 Food, drink & ice cream vendor on sale</p>
+                      <p>🎪 Bouncy castles & attractions over the weekends</p>
+                      <p>🚫 No changing facilities available</p>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Contact & Quick Stats */}
+                <div className="grid md:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Phone className="h-5 w-5 text-primary" />Contact</CardTitle></CardHeader>
+                    <CardContent className="space-y-2 text-sm">
+                      <p className="flex items-center gap-2"><Mail className="h-4 w-4 text-primary" /><a href="mailto:peterboroughath@gmail.com" className="text-primary hover:underline">peterboroughath@gmail.com</a></p>
+                      <p className="flex items-center gap-2"><Phone className="h-4 w-4 text-primary" /><a href="tel:07377544501" className="text-primary hover:underline">07377 544501</a></p>
                     </CardContent>
                   </Card>
 
                   <Card>
                     <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Users className="h-5 w-5 text-primary" />Quick Stats</CardTitle></CardHeader>
-                    <CardContent className="space-y-3">
+                    <CardContent>
                       <div className="grid grid-cols-2 gap-3">
                         <div className="text-center rounded-lg bg-muted p-3">
                           <p className="text-2xl font-bold text-primary">{ageGroups?.length || 0}</p>
