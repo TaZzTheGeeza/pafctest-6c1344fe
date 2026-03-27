@@ -20,6 +20,7 @@ import { toast } from "sonner";
 const TournamentAdminPage = () => {
   const queryClient = useQueryClient();
   const [selectedTournament, setSelectedTournament] = useState<string>("");
+  const [expandedTeams, setExpandedTeams] = useState<Set<string>>(new Set());
   const [showCreateTournament, setShowCreateTournament] = useState(false);
   const [showAddAgeGroup, setShowAddAgeGroup] = useState(false);
   const [showAddMatch, setShowAddMatch] = useState(false);
