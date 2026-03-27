@@ -8,6 +8,7 @@ import { PaymentCenter } from "@/components/hub/PaymentCenter";
 import { NotificationCenter } from "@/components/hub/NotificationCenter";
 import { TeamMemberManager } from "@/components/hub/TeamMemberManager";
 import { MessageSquare, CreditCard, Bell, CalendarCheck, Users, Shield, ChevronDown, Car, TrendingUp, UserPlus, User, FileText, ChevronRight } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FixtureAvailability } from "@/components/hub/FixtureAvailability";
 import { CarpoolBoard } from "@/components/hub/CarpoolBoard";
 import { AttendanceStats } from "@/components/hub/AttendanceStats";
@@ -161,7 +162,7 @@ export default function HubPage() {
             <>
               {/* Team Selector + Admin Manager */}
               <div className="max-w-4xl mx-auto mb-6">
-                <div className="flex flex-wrap items-center gap-3 justify-between">
+                <div className="flex flex-wrap items-center gap-3">
                   <div className="relative">
                     <button
                       onClick={() => setShowTeamPicker(!showTeamPicker)}
@@ -189,30 +190,37 @@ export default function HubPage() {
                       </div>
                     )}
                   </div>
-
-                  {/* Admin: Manage Members tab */}
-                  {(isAdmin || isCoach) && (
-                    <button
-                      onClick={() => selectTab("members")}
-                      className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-display tracking-wider transition-colors ${activeTab === "members" ? "bg-primary text-primary-foreground" : "bg-card border border-border text-muted-foreground hover:text-foreground"}`}
-                    >
-                      <Users className="h-4 w-4" /> Manage Members
-                    </button>
-                  )}
                 </div>
               </div>
 
               {/* Tab Navigation */}
-              <div className="max-w-4xl mx-auto flex flex-wrap gap-2 mb-6 justify-center">
-                {tabs.map((tab) => {
-                  const Icon = tab.icon;
-                  return (
-                    <button key={tab.id} onClick={() => selectTab(tab.id)} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-display tracking-wider transition-colors ${activeTab === tab.id ? "bg-primary text-primary-foreground" : "bg-card border border-border text-muted-foreground hover:text-foreground hover:border-primary/30"}`}>
-                      <Icon className="h-4 w-4" />
-                      {tab.label}
-                    </button>
-                  );
-                })}
+              <div className="max-w-4xl mx-auto mb-6">
+                <Select value={activeTab} onValueChange={selectTab}>
+                  <SelectTrigger className="w-full max-w-xs mx-auto bg-card border-border font-display tracking-wider">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {tabs.map((tab) => {
+                      const Icon = tab.icon;
+                      return (
+                        <SelectItem key={tab.id} value={tab.id} className="font-display tracking-wider">
+                          <div className="flex items-center gap-2">
+                            <Icon className="h-4 w-4" />
+                            {tab.label}
+                          </div>
+                        </SelectItem>
+                      );
+                    })}
+                    {(isAdmin || isCoach) && (
+                      <SelectItem value="members" className="font-display tracking-wider">
+                        <div className="flex items-center gap-2">
+                          <Users className="h-4 w-4" />
+                          Manage Members
+                        </div>
+                      </SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Tab Content */}
