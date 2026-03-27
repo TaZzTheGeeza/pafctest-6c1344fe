@@ -150,11 +150,11 @@ export function Navbar() {
       {/* Top utility bar */}
       <div className="bg-secondary border-b border-border/50">
         <div className="container mx-auto px-4 flex items-center justify-between h-8">
-          <div className="flex items-center gap-3">
-            <Link to="/tournament" className="font-display text-[10px] tracking-[0.15em] uppercase text-primary hover:text-primary/80 transition-colors flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
+            <Link to="/tournament" className="font-display text-[10px] tracking-[0.15em] uppercase bg-primary/15 text-primary hover:bg-primary/25 transition-colors flex items-center gap-1.5 px-2.5 py-1 rounded-md font-semibold">
               <Trophy className="h-3 w-3" /> Tournament
             </Link>
-            <Link to="/shop" className="font-display text-[10px] tracking-[0.15em] uppercase text-primary hover:text-primary/80 transition-colors flex items-center gap-1.5">
+            <Link to="/shop" className="font-display text-[10px] tracking-[0.15em] uppercase bg-primary/15 text-primary hover:bg-primary/25 transition-colors flex items-center gap-1.5 px-2.5 py-1 rounded-md font-semibold">
               <ShoppingBag className="h-3 w-3" /> Shop
             </Link>
           </div>
