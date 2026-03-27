@@ -1,4 +1,5 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -17,8 +18,17 @@ const ageGroups = [
 ];
 
 export default function PlayerRegistrationPage() {
-  const [submitted, setSubmitted] = useState(false);
+  const [searchParams] = useSearchParams();
+  const paymentStatus = searchParams.get("status");
+  const [submitted, setSubmitted] = useState(paymentStatus === "success");
+  const [paymentCancelled, setPaymentCancelled] = useState(paymentStatus === "cancelled");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (paymentStatus === "cancelled") {
+      toast.error("Payment was cancelled. Your registration has been saved — please complete payment to finish registration.");
+    }
+  }, [paymentStatus]);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
