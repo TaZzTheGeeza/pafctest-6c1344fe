@@ -300,20 +300,29 @@ const TournamentPage = () => {
             </Card>
           ) : (
             <Tabs value={activeSection} onValueChange={setActiveSection} className="space-y-6">
-              <div className="max-w-sm mx-auto">
-                <Label htmlFor="tournament-section" className="sr-only">Tournament section</Label>
-                <Select value={activeSection} onValueChange={setActiveSection}>
-                  <SelectTrigger id="tournament-section" className="font-display tracking-[0.15em] uppercase">
-                    <SelectValue placeholder="Select section" />
-                  </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="overview">Overview</SelectItem>
-                      <SelectItem value="groups">Groups</SelectItem>
-                      <SelectItem value="fixtures">Fixtures</SelectItem>
-                      <SelectItem value="knockout">Knockout</SelectItem>
-                      <SelectItem value="register">Register</SelectItem>
-                    </SelectContent>
-                </Select>
+              <div className="flex flex-col sm:flex-row items-center gap-3 max-w-lg mx-auto">
+                <div className="flex-1 w-full">
+                  <Label htmlFor="tournament-section" className="sr-only">Tournament section</Label>
+                  <Select value={activeSection} onValueChange={setActiveSection}>
+                    <SelectTrigger id="tournament-section" className="font-display tracking-[0.15em] uppercase">
+                      <SelectValue placeholder="Select section" />
+                    </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="overview">Overview</SelectItem>
+                        <SelectItem value="groups">Groups</SelectItem>
+                        <SelectItem value="fixtures">Fixtures</SelectItem>
+                        <SelectItem value="knockout">Knockout</SelectItem>
+                        <SelectItem value="register">Enter Your Team</SelectItem>
+                      </SelectContent>
+                  </Select>
+                </div>
+                <Button
+                  onClick={() => setActiveSection("register")}
+                  size="lg"
+                  className="w-full sm:w-auto font-display tracking-wider text-sm animate-pulse hover:animate-none"
+                >
+                  ⚽ Enter Your Team!
+                </Button>
               </div>
 
               {/* OVERVIEW */}
