@@ -310,7 +310,24 @@ const RafflePage = () => {
                           <Trophy className="h-8 w-8 text-primary mx-auto mb-2" />
                           <p className="font-display text-lg font-bold text-primary">Winner: {raffle.winner_name}</p>
                           <p className="text-sm text-muted-foreground">Congratulations!</p>
-                          {hasDrawData && (
+
+                          {/* Video player if video is available */}
+                          {(raffle as any).draw_video_url && (
+                            <div className="mt-4 rounded-lg overflow-hidden border border-primary/20">
+                              <video
+                                controls
+                                className="w-full max-h-[400px]"
+                                poster=""
+                                preload="metadata"
+                              >
+                                <source src={(raffle as any).draw_video_url} type="video/webm" />
+                                Your browser does not support the video tag.
+                              </video>
+                            </div>
+                          )}
+
+                          {/* Fallback: animation replay if no video yet */}
+                          {!(raffle as any).draw_video_url && hasDrawData && (
                             <Button
                               variant="outline"
                               size="sm"
