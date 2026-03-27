@@ -51,7 +51,7 @@ const RaffleAdminPage = () => {
   const [creating, setCreating] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
   const [viewingRaffle, setViewingRaffle] = useState<string | null>(null);
-  const [drawingOverlay, setDrawingOverlay] = useState<string | null>(null);
+  
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
