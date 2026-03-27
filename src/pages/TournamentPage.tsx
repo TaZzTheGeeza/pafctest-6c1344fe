@@ -53,9 +53,13 @@ const TournamentPage = () => {
     queryKey: ["tournament-age-groups", activeTournament?.id],
     queryFn: async () => {
       if (!activeTournament) return [];
-      const { data, error } = await supabase.from("tournament_age_groups").select("*").eq("tournament_id", activeTournament.id).order("age_group");
+      const { data, error } = await supabase.from("tournament_age_groups").select("*").eq("tournament_id", activeTournament.id);
       if (error) throw error;
-      return data;
+      return (data || []).sort((a, b) => {
+        const numA = parseInt(a.age_group.replace(/\D/g, "")) || 0;
+        const numB = parseInt(b.age_group.replace(/\D/g, "")) || 0;
+        return numA - numB;
+      });
     },
     enabled: !!activeTournament,
   });
