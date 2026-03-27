@@ -204,12 +204,12 @@ export default function PlayerRegistrationPage() {
                 className="bg-card border border-border rounded-lg p-12 text-center"
               >
                 <CheckCircle className="h-16 w-16 text-primary mx-auto mb-4" />
-                <h2 className="font-display text-2xl font-bold mb-2">Thank You!</h2>
+                <h2 className="font-display text-2xl font-bold mb-2">Registration Complete!</h2>
                 <p className="text-muted-foreground mb-2">
-                  Your registration has been submitted successfully.
+                  Your registration and payment have been received successfully.
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  We'll be in touch when registration opens for the 2026/27 season.
+                  We'll be in touch with next steps for the 2026/27 season.
                 </p>
               </motion.div>
             ) : (
