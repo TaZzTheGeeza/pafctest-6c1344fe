@@ -204,16 +204,33 @@ export default function HubPage() {
               </div>
 
               {/* Tab Navigation */}
-              <div className="max-w-4xl mx-auto flex flex-wrap gap-2 mb-6 justify-center">
-                {tabs.map((tab) => {
-                  const Icon = tab.icon;
-                  return (
-                    <button key={tab.id} onClick={() => selectTab(tab.id)} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-display tracking-wider transition-colors ${activeTab === tab.id ? "bg-primary text-primary-foreground" : "bg-card border border-border text-muted-foreground hover:text-foreground hover:border-primary/30"}`}>
-                      <Icon className="h-4 w-4" />
-                      {tab.label}
-                    </button>
-                  );
-                })}
+              <div className="max-w-4xl mx-auto mb-6">
+                <Select value={activeTab} onValueChange={selectTab}>
+                  <SelectTrigger className="w-full max-w-xs mx-auto bg-card border-border font-display tracking-wider">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {tabs.map((tab) => {
+                      const Icon = tab.icon;
+                      return (
+                        <SelectItem key={tab.id} value={tab.id} className="font-display tracking-wider">
+                          <div className="flex items-center gap-2">
+                            <Icon className="h-4 w-4" />
+                            {tab.label}
+                          </div>
+                        </SelectItem>
+                      );
+                    })}
+                    {(isAdmin || isCoach) && (
+                      <SelectItem value="members" className="font-display tracking-wider">
+                        <div className="flex items-center gap-2">
+                          <Users className="h-4 w-4" />
+                          Manage Members
+                        </div>
+                      </SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Tab Content */}
