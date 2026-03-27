@@ -14,6 +14,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Trophy, Users, Calendar, MapPin, ClipboardList, Megaphone, Shield, Clock, PoundSterling, CheckCircle, Loader2, AlertTriangle, Phone, Mail, Award, Utensils, Dog, Info } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { TournamentEntryForm } from "@/components/tournament/TournamentEntryForm";
 import pitchLayout from "@/assets/tournament/pitch-layout.png";
 import venueDirections from "@/assets/tournament/venue-directions.jpeg";
 import { TournamentBracket } from "@/components/TournamentBracket";
