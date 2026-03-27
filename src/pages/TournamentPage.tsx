@@ -292,12 +292,12 @@ const TournamentPage = () => {
             </Card>
           ) : (
             <Tabs defaultValue="overview" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-3 md:grid-cols-5 gap-1 h-auto">
-                <TabsTrigger value="overview">Overview</TabsTrigger>
-                <TabsTrigger value="groups">Groups</TabsTrigger>
-                <TabsTrigger value="fixtures">Fixtures</TabsTrigger>
-                <TabsTrigger value="knockout">Knockout</TabsTrigger>
-                <TabsTrigger value="register">Register</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-2 gap-1 h-auto min-h-0 bg-muted/80 p-1">
+                <TabsTrigger value="overview" className="min-h-10 whitespace-normal text-center">Overview</TabsTrigger>
+                <TabsTrigger value="groups" className="min-h-10 whitespace-normal text-center">Groups</TabsTrigger>
+                <TabsTrigger value="fixtures" className="min-h-10 whitespace-normal text-center">Fixtures</TabsTrigger>
+                <TabsTrigger value="knockout" className="min-h-10 whitespace-normal text-center">Knockout</TabsTrigger>
+                <TabsTrigger value="register" className="min-h-10 whitespace-normal text-center col-span-2">Register</TabsTrigger>
               </TabsList>
 
               {/* OVERVIEW */}
