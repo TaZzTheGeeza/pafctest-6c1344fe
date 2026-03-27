@@ -1,0 +1,1 @@
+ALTER TABLE public.raffles ADD COLUMN number_range integer NULL DEFAULT NULL;

@@ -13,10 +13,16 @@ serve(async (req) => {
   }
 
   try {
-    const { raffleId, quantity, buyerName, buyerEmail, buyerPhone } = await req.json();
+    const { raffleId, quantity, buyerName, buyerEmail, buyerPhone, chosenNumbers } = await req.json();
 
-    if (!raffleId || !quantity || !buyerName || !buyerEmail) {
-      throw new Error("Missing required fields: raffleId, quantity, buyerName, buyerEmail");
+    if (!raffleId || !buyerName || !buyerEmail) {
+      throw new Error("Missing required fields: raffleId, buyerName, buyerEmail");
+    }
+
+    // Must have either chosenNumbers or quantity
+    const ticketCount = chosenNumbers?.length || quantity;
+    if (!ticketCount || ticketCount < 1) {
+      throw new Error("Must provide chosenNumbers or quantity");
     }
 
     const supabaseAdmin = createClient(
@@ -36,6 +42,29 @@ serve(async (req) => {
       throw new Error("Raffle not found or not active");
     }
 
+    // Validate chosen numbers are within range
+    if (chosenNumbers && chosenNumbers.length > 0) {
+      const range = raffle.number_range || raffle.max_tickets || 100;
+      for (const num of chosenNumbers) {
+        if (num < 1 || num > range) {
+          throw new Error(`Number ${num} is outside the valid range (1-${range})`);
+        }
+      }
+
+      // Check none of the chosen numbers are already taken
+      const { data: existingTickets } = await supabaseAdmin
+        .from("raffle_tickets")
+        .select("ticket_number")
+        .eq("raffle_id", raffleId)
+        .in("payment_status", ["paid", "pending"])
+        .in("ticket_number", chosenNumbers);
+
+      if (existingTickets && existingTickets.length > 0) {
+        const taken = existingTickets.map(t => t.ticket_number).join(", ");
+        throw new Error(`Numbers already taken: ${taken}`);
+      }
+    }
+
     // Check ticket availability
     const { count: soldCount } = await supabaseAdmin
       .from("raffle_tickets")
@@ -43,32 +72,36 @@ serve(async (req) => {
       .eq("raffle_id", raffleId)
       .eq("payment_status", "paid");
 
-    if (raffle.max_tickets && (soldCount || 0) + quantity > raffle.max_tickets) {
+    if (raffle.max_tickets && (soldCount || 0) + ticketCount > raffle.max_tickets) {
       throw new Error("Not enough tickets available");
     }
 
-    // Get next ticket numbers
-    const { data: lastTicket } = await supabaseAdmin
-      .from("raffle_tickets")
-      .select("ticket_number")
-      .eq("raffle_id", raffleId)
-      .order("ticket_number", { ascending: false })
-      .limit(1);
+    // Determine ticket numbers
+    let ticketNumbers: number[];
+    if (chosenNumbers && chosenNumbers.length > 0) {
+      ticketNumbers = chosenNumbers;
+    } else {
+      // Auto-assign: get next available numbers
+      const { data: lastTicket } = await supabaseAdmin
+        .from("raffle_tickets")
+        .select("ticket_number")
+        .eq("raffle_id", raffleId)
+        .order("ticket_number", { ascending: false })
+        .limit(1);
 
-    const startNumber = (lastTicket && lastTicket.length > 0 ? lastTicket[0].ticket_number : 0) + 1;
+      const startNumber = (lastTicket && lastTicket.length > 0 ? lastTicket[0].ticket_number : 0) + 1;
+      ticketNumbers = Array.from({ length: ticketCount }, (_, i) => startNumber + i);
+    }
 
     // Create pending tickets
-    const tickets = [];
-    for (let i = 0; i < quantity; i++) {
-      tickets.push({
-        raffle_id: raffleId,
-        buyer_name: buyerName,
-        buyer_email: buyerEmail,
-        buyer_phone: buyerPhone || null,
-        ticket_number: startNumber + i,
-        payment_status: "pending",
-      });
-    }
+    const tickets = ticketNumbers.map(num => ({
+      raffle_id: raffleId,
+      buyer_name: buyerName,
+      buyer_email: buyerEmail,
+      buyer_phone: buyerPhone || null,
+      ticket_number: num,
+      payment_status: "pending",
+    }));
 
     const { data: insertedTickets, error: insertError } = await supabaseAdmin
       .from("raffle_tickets")
@@ -82,7 +115,7 @@ serve(async (req) => {
       apiVersion: "2025-08-27.basil",
     });
 
-    const totalAmount = raffle.ticket_price_cents * quantity;
+    const numbersLabel = ticketNumbers.join(", ");
 
     const session = await stripe.checkout.sessions.create({
       customer_email: buyerEmail,
@@ -91,12 +124,12 @@ serve(async (req) => {
           price_data: {
             currency: raffle.currency || "gbp",
             product_data: {
-              name: `${raffle.title} - Raffle Ticket${quantity > 1 ? "s" : ""}`,
-              description: `${quantity} ticket${quantity > 1 ? "s" : ""} (Numbers: ${startNumber}-${startNumber + quantity - 1})`,
+              name: `${raffle.title} - Raffle Ticket${ticketCount > 1 ? "s" : ""}`,
+              description: `${ticketCount} ticket${ticketCount > 1 ? "s" : ""} (Numbers: ${numbersLabel})`,
             },
             unit_amount: raffle.ticket_price_cents,
           },
-          quantity: quantity,
+          quantity: ticketCount,
         },
       ],
       mode: "payment",
@@ -108,8 +141,8 @@ serve(async (req) => {
       },
     });
 
-    // Store the payment intent reference
-    if (session.payment_intent) {
+    // Store the session reference
+    if (session.id) {
       for (const ticket of insertedTickets!) {
         await supabaseAdmin
           .from("raffle_tickets")
@@ -118,7 +151,7 @@ serve(async (req) => {
       }
     }
 
-    return new Response(JSON.stringify({ url: session.url, ticketNumbers: tickets.map(t => t.ticket_number) }), {
+    return new Response(JSON.stringify({ url: session.url, ticketNumbers }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
