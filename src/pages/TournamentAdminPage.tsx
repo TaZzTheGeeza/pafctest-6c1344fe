@@ -290,50 +290,84 @@ const TournamentAdminPage = () => {
                   const agTeams = teams?.filter(t => t.age_group_id === ag.id) || [];
                   if (agTeams.length === 0) return null;
                   const agGroups = groups?.filter(g => g.age_group_id === ag.id) || [];
+                  const confirmedCount = agTeams.filter(t => t.status === "confirmed").length;
+                  const pendingCount = agTeams.filter(t => t.status === "pending").length;
                   return (
                     <Card key={ag.id}>
-                      <CardHeader><CardTitle className="text-base">{ag.age_group} — {agTeams.length} teams</CardTitle></CardHeader>
-                      <CardContent>
+                      <CardHeader>
+                        <CardTitle className="text-base flex items-center gap-2">
+                          {ag.age_group} — {agTeams.length} teams
+                          <Badge variant="default" className="text-[10px]">{confirmedCount} confirmed</Badge>
+                          {pendingCount > 0 && <Badge variant="secondary" className="text-[10px]">{pendingCount} pending</Badge>}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-2">
                         <Table>
                           <TableHeader>
                             <TableRow>
+                              <TableHead className="w-8"></TableHead>
                               <TableHead>Team</TableHead>
+                              <TableHead>Club</TableHead>
                               <TableHead>Manager</TableHead>
-                              <TableHead>Email</TableHead>
+                              <TableHead>Players</TableHead>
                               <TableHead>Status</TableHead>
                               <TableHead>Group</TableHead>
                               <TableHead>Actions</TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
-                            {agTeams.map(team => (
-                              <TableRow key={team.id}>
-                                <TableCell className="font-medium">{team.team_name}</TableCell>
-                                <TableCell>{team.manager_name}</TableCell>
-                                <TableCell className="text-xs">{team.manager_email}</TableCell>
-                                <TableCell>
-                                  <Badge variant={team.status === "confirmed" ? "default" : team.status === "rejected" ? "destructive" : "secondary"}>{team.status}</Badge>
-                                </TableCell>
-                                <TableCell>
-                                  <Select value={team.group_id || ""} onValueChange={v => assignTeamToGroup(team.id, v || null)}>
-                                    <SelectTrigger className="h-8 w-24"><SelectValue placeholder="—" /></SelectTrigger>
-                                    <SelectContent>
-                                      {agGroups.map(g => <SelectItem key={g.id} value={g.id}>Group {g.group_name}</SelectItem>)}
-                                    </SelectContent>
-                                  </Select>
-                                </TableCell>
-                                <TableCell>
-                                  <div className="flex gap-1">
-                                    {team.status !== "confirmed" && (
-                                      <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setTeamStatus(team.id, "confirmed")}><Check className="h-4 w-4 text-green-500" /></Button>
-                                    )}
-                                    {team.status !== "rejected" && (
-                                      <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setTeamStatus(team.id, "rejected")}><X className="h-4 w-4 text-red-500" /></Button>
-                                    )}
-                                  </div>
-                                </TableCell>
-                              </TableRow>
-                            ))}
+                            {agTeams.map(team => {
+                              const isExpanded = expandedTeams.has(team.id);
+                              const toggleExpand = () => {
+                                setExpandedTeams(prev => {
+                                  const next = new Set(prev);
+                                  if (next.has(team.id)) next.delete(team.id);
+                                  else next.add(team.id);
+                                  return next;
+                                });
+                              };
+                              return (
+                                <>
+                                  <TableRow key={team.id} className="cursor-pointer hover:bg-muted/50" onClick={toggleExpand}>
+                                    <TableCell className="w-8">
+                                      {isExpanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+                                    </TableCell>
+                                    <TableCell className="font-medium">{team.team_name}</TableCell>
+                                    <TableCell className="text-xs">{team.club_name || "—"}</TableCell>
+                                    <TableCell className="text-xs">{team.manager_name}</TableCell>
+                                    <TableCell className="text-xs">{team.player_count || "—"}</TableCell>
+                                    <TableCell>
+                                      <Badge variant={team.status === "confirmed" ? "default" : team.status === "rejected" ? "destructive" : "secondary"}>{team.status}</Badge>
+                                    </TableCell>
+                                    <TableCell onClick={e => e.stopPropagation()}>
+                                      <Select value={team.group_id || ""} onValueChange={v => assignTeamToGroup(team.id, v || null)}>
+                                        <SelectTrigger className="h-8 w-24"><SelectValue placeholder="—" /></SelectTrigger>
+                                        <SelectContent>
+                                          {agGroups.map(g => <SelectItem key={g.id} value={g.id}>Group {g.group_name}</SelectItem>)}
+                                        </SelectContent>
+                                      </Select>
+                                    </TableCell>
+                                    <TableCell onClick={e => e.stopPropagation()}>
+                                      <div className="flex gap-1">
+                                        {team.status !== "confirmed" && (
+                                          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setTeamStatus(team.id, "confirmed")}><Check className="h-4 w-4 text-green-500" /></Button>
+                                        )}
+                                        {team.status !== "rejected" && (
+                                          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setTeamStatus(team.id, "rejected")}><X className="h-4 w-4 text-red-500" /></Button>
+                                        )}
+                                      </div>
+                                    </TableCell>
+                                  </TableRow>
+                                  {isExpanded && (
+                                    <TableRow key={`${team.id}-detail`}>
+                                      <TableCell colSpan={8} className="p-0">
+                                        <AdminTeamDetail teamId={team.id} team={team} />
+                                      </TableCell>
+                                    </TableRow>
+                                  )}
+                                </>
+                              );
+                            })}
                           </TableBody>
                         </Table>
                       </CardContent>
