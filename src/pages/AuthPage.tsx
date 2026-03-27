@@ -67,7 +67,7 @@ export default function AuthPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <main className="flex-1 pt-24 pb-16 flex items-center justify-center">
+      <main className="flex-1 pt-28 pb-16 flex items-center justify-center">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
