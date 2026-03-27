@@ -438,12 +438,12 @@ export default function DashboardPage() {
           {/* Coach Tabs */}
           {activeSection === "potm" && showCoachTools && (
             <div className="max-w-2xl mx-auto">
-              <POTMTab ageGroups={effectiveAgeGroups} />
+              <CoachPanelEmbed ageGroups={effectiveAgeGroups} tab="potm" />
             </div>
           )}
           {activeSection === "report" && showCoachTools && (
             <div className="max-w-2xl mx-auto">
-              <MatchReportTab ageGroups={effectiveAgeGroups} />
+              <CoachPanelEmbed ageGroups={effectiveAgeGroups} tab="report" />
             </div>
           )}
           {activeSection === "stats" && showCoachTools && (
