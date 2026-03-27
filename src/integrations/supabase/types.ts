@@ -914,6 +914,7 @@ export type Database = {
           id: string
           image_url: string | null
           max_tickets: number | null
+          number_range: number | null
           prize_description: string
           status: string
           stripe_price_id: string | null
@@ -932,6 +933,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           max_tickets?: number | null
+          number_range?: number | null
           prize_description: string
           status?: string
           stripe_price_id?: string | null
@@ -950,6 +952,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           max_tickets?: number | null
+          number_range?: number | null
           prize_description?: string
           status?: string
           stripe_price_id?: string | null
