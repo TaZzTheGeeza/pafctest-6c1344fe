@@ -63,6 +63,7 @@ function AppContent() {
   useCartSync();
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <AnnouncementBanner />
       <Routes>
         <Route path="/" element={<Index />} />
