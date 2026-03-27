@@ -304,7 +304,6 @@ const TournamentPage = () => {
                   </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="overview">Overview</SelectItem>
-                      <SelectItem value="info">Venue & Rules</SelectItem>
                       <SelectItem value="groups">Groups</SelectItem>
                       <SelectItem value="fixtures">Fixtures</SelectItem>
                       <SelectItem value="knockout">Knockout</SelectItem>
