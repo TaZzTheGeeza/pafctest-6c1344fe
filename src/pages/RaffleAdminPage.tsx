@@ -283,12 +283,19 @@ const RaffleAdminPage = () => {
 
   const [drawingRaffleId, setDrawingRaffleId] = useState<string | null>(null);
 
-  const openDrawOverlay = (raffleId: string) => {
+  const openDrawOverlay = async (raffleId: string) => {
     const paidTickets = (tickets[raffleId] || []).filter(t => t.payment_status === "paid");
     if (paidTickets.length === 0) {
       toast.error("No paid tickets to draw from");
       return;
     }
+
+    // Broadcast draw_started_at so live viewers see it
+    await supabase
+      .from("raffles")
+      .update({ draw_started_at: new Date().toISOString() } as any)
+      .eq("id", raffleId);
+
     setDrawingRaffleId(raffleId);
   };
 
@@ -301,7 +308,8 @@ const RaffleAdminPage = () => {
         status: "drawn",
         winner_ticket_id: winner.id,
         winner_name: winner.buyer_name,
-      })
+        drawn_ticket_number: winner.ticket_number,
+      } as any)
       .eq("id", drawingRaffleId);
 
     if (error) {
