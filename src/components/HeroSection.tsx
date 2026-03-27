@@ -47,18 +47,10 @@ export function HeroSection() {
               className="bg-gold-gradient text-primary-foreground font-display tracking-wider hover:opacity-90 transition-opacity"
               asChild
             >
-              <Link to="/teams">
-                <Users className="w-5 h-5 mr-2" />
-                Our Teams
+              <Link to="/tournament">
+                <Trophy className="w-5 h-5 mr-2" />
+                Tournament
               </Link>
-            </Button>
-            <Button
-              size="lg"
-              className="bg-gold-gradient text-primary-foreground font-display tracking-wider hover:opacity-90 transition-opacity"
-              onClick={() => document.getElementById("fixtures")?.scrollIntoView({ behavior: "smooth" })}
-            >
-              <Trophy className="w-5 h-5 mr-2" />
-              Fixtures
             </Button>
             <Button
               variant="outline"
