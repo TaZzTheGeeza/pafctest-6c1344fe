@@ -7,14 +7,15 @@ interface Result {
   homeScore: number;
   awayScore: number;
   competition: string;
+  ageGroup: string;
 }
 
 const recentResults: Result[] = [
-  { date: "15 Mar 2026", home: "Peterborough Athletic", away: "Stamford Lions", homeScore: 3, awayScore: 1, competition: "League" },
-  { date: "8 Mar 2026", home: "Bourne Town", away: "Peterborough Athletic", homeScore: 0, awayScore: 2, competition: "League" },
-  { date: "1 Mar 2026", home: "Peterborough Athletic", away: "Spalding Utd", homeScore: 1, awayScore: 1, competition: "Cup" },
-  { date: "22 Feb 2026", home: "Deeping Rangers", away: "Peterborough Athletic", homeScore: 2, awayScore: 4, competition: "League" },
-  { date: "15 Feb 2026", home: "Peterborough Athletic", away: "Wisbech Town", homeScore: 2, awayScore: 0, competition: "League" },
+  { date: "22 Mar 2026", home: "Peterborough Athletic U14", away: "Leverington Sports FC U14", homeScore: 3, awayScore: 3, competition: "League", ageGroup: "U14" },
+  { date: "22 Mar 2026", home: "Peterborough Athletic U13 Black", away: "Oundle Town FC U13", homeScore: 4, awayScore: 0, competition: "League", ageGroup: "U13" },
+  { date: "15 Mar 2026", home: "Parkside Athletic U13", away: "Peterborough Athletic U13 Gold", homeScore: 1, awayScore: 4, competition: "League", ageGroup: "U13" },
+  { date: "15 Mar 2026", home: "Park Farm Pumas U14 Black", away: "Peterborough Athletic U14", homeScore: 2, awayScore: 1, competition: "League", ageGroup: "U14" },
+  { date: "8 Mar 2026", home: "Peterborough Athletic U13 Gold", away: "Yaxley FC U13 Blues", homeScore: 2, awayScore: 1, competition: "League", ageGroup: "U13" },
 ];
 
 export function ResultsSection() {
@@ -35,7 +36,7 @@ export function ResultsSection() {
 
         <div className="max-w-3xl mx-auto space-y-3">
           {recentResults.map((result, i) => {
-            const isHome = result.home === "Peterborough Athletic";
+            const isHome = result.home.includes("Peterborough Athletic");
             const won = isHome
               ? result.homeScore > result.awayScore
               : result.awayScore > result.homeScore;

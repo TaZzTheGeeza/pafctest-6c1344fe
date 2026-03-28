@@ -4,16 +4,15 @@ import { Clock, ChevronRight, Calendar } from "lucide-react";
 import clubLogo from "@/assets/club-logo.jpg";
 
 // Opponent logos
-import thurlbyTigersLogo from "@/assets/opponents/thurlby-tigers.png";
-import oneTouchLogo from "@/assets/opponents/one-touch-football.png";
-import whittleseyLogo from "@/assets/opponents/whittlesey-junior.png";
 import deepingRangersLogo from "@/assets/opponents/deeping-rangers.png";
-import nethertonLogo from "@/assets/opponents/netherton-united.png";
+import deepingUnitedLogo from "@/assets/opponents/deeping-united.png";
 import gladstoneKnightsLogo from "@/assets/opponents/gladstone-knights.png";
-import yaxleyLogo from "@/assets/opponents/yaxley-fc.png";
-import neneValleyLogo from "@/assets/opponents/nene-valley.png";
 import moultonChapelLogo from "@/assets/opponents/moulton-chapel.png";
+import neneValleyLogo from "@/assets/opponents/nene-valley.png";
+import oneTouchLogo from "@/assets/opponents/one-touch-football.png";
 import parkFarmPumasLogo from "@/assets/opponents/park-farm-pumas.png";
+import stangroundCardeaLogo from "@/assets/opponents/stanground-cardea.png";
+import yaxleyLogo from "@/assets/opponents/yaxley-fc.png";
 
 interface Fixture {
   team: string;
@@ -26,16 +25,16 @@ interface Fixture {
 }
 
 const upcomingFixtures: Fixture[] = [
-  { team: "U7s", teamSlug: "u7s", opponent: "Thurlby Tigers U7 Yellow", opponentLogo: thurlbyTigersLogo, venue: "Home", date: "Sat 28 March", kickoff: "09:30" },
-  { team: "U8s Black", teamSlug: "u8s-black", opponent: "One Touch Football U8 Red", opponentLogo: oneTouchLogo, venue: "Home", date: "Sat 28 March", kickoff: "10:30" },
-  { team: "U8s Gold", teamSlug: "u8s-gold", opponent: "Whittlesey Jnr U8 Blue", opponentLogo: whittleseyLogo, venue: "Home", date: "Sat 28 March", kickoff: "09:30" },
-  { team: "U9s", teamSlug: "u9s", opponent: "Deeping Rangers U9 Claret", opponentLogo: deepingRangersLogo, venue: "Home", date: "Sat 28 March", kickoff: "09:30" },
-  { team: "U10s", teamSlug: "u10s", opponent: "Netherton Utd U10 Red", opponentLogo: nethertonLogo, venue: "Home", date: "Sat 28 March", kickoff: "10:30" },
-  { team: "U11s Black", teamSlug: "u11s-black", opponent: "Gladstone Knights U11", opponentLogo: gladstoneKnightsLogo, venue: "Away", date: "Sun 29 March", kickoff: "12:00" },
   { team: "U11s Gold", teamSlug: "u11s-gold", opponent: "Yaxley FC U11 Blues", opponentLogo: yaxleyLogo, venue: "Home", date: "Sun 29 March", kickoff: "10:00" },
-  { team: "U13s Black", teamSlug: "u13s-black", opponent: "Nene Valley U13", opponentLogo: neneValleyLogo, venue: "Home", date: "Sun 29 March", kickoff: "12:00" },
-  { team: "U13s Gold", teamSlug: "u13s-gold", opponent: "Moulton Chapel U13", opponentLogo: moultonChapelLogo, venue: "Home", date: "Sun 03 May", kickoff: "10:00" },
+  { team: "U11s Black", teamSlug: "u11s-black", opponent: "Gladstone Knights FC U11", opponentLogo: gladstoneKnightsLogo, venue: "Away", date: "Sun 29 March", kickoff: "12:00" },
+  { team: "U13s Black", teamSlug: "u13s-black", opponent: "Nene Valley FC U13", opponentLogo: neneValleyLogo, venue: "Home", date: "Sun 29 March", kickoff: "12:00" },
+  { team: "U7s", teamSlug: "u7s", opponent: "Deeping United U7 Green", opponentLogo: deepingUnitedLogo, venue: "Away", date: "Sat 11 April", kickoff: "09:30" },
+  { team: "U8s Black", teamSlug: "u8s-black", opponent: "Deeping Rangers FC U8 Claret", opponentLogo: deepingRangersLogo, venue: "Home", date: "Sat 11 April", kickoff: "10:30" },
+  { team: "U8s Gold", teamSlug: "u8s-gold", opponent: "Deeping United U8 Blue", opponentLogo: deepingUnitedLogo, venue: "Home", date: "Sat 11 April", kickoff: "09:30" },
+  { team: "U9s", teamSlug: "u9s", opponent: "Stanground Cardea Sports U9 Purples", opponentLogo: stangroundCardeaLogo, venue: "Away", date: "Sat 11 April", kickoff: "09:30" },
+  { team: "U10s", teamSlug: "u10s", opponent: "One Touch Football U10 Red", opponentLogo: oneTouchLogo, venue: "Home", date: "Sat 11 April", kickoff: "10:30" },
   { team: "U14s", teamSlug: "u14s", opponent: "Park Farm Pumas U14 Black", opponentLogo: parkFarmPumasLogo, venue: "Home", date: "Sun 12 April", kickoff: "14:00" },
+  { team: "U13s Gold", teamSlug: "u13s-gold", opponent: "Moulton Chapel FC U13", opponentLogo: moultonChapelLogo, venue: "Home", date: "Sat 03 May", kickoff: "10:00" },
 ];
 
 export function FixturesSection() {
