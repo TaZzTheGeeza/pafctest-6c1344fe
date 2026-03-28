@@ -1,11 +1,13 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ShoppingBag, Trophy, Users, ChevronRight, Smartphone } from "lucide-react";
+import { ShoppingBag, Trophy, ChevronRight, Smartphone, Plus, Minus } from "lucide-react";
 import heroBg from "@/assets/hero-bg.jpg";
-import clubLogo from "@/assets/club-logo.jpg";
 
 export function HeroSection() {
+  const [scale, setScale] = useState(1);
+
   return (
     <section className="relative min-h-[90vh] flex items-end justify-center overflow-hidden">
       <div
@@ -13,6 +15,17 @@ export function HeroSection() {
         style={{ backgroundImage: `url(${heroBg})` }}
       />
       <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/30 to-background/95" />
+
+      {/* Resize controls */}
+      <div className="absolute top-4 right-4 z-20 flex items-center gap-2 bg-background/80 backdrop-blur rounded-full px-3 py-1.5 border border-border shadow-lg">
+        <button onClick={() => setScale(s => Math.max(0.4, s - 0.05))} className="p-1 hover:bg-muted rounded-full transition-colors">
+          <Minus className="w-4 h-4 text-foreground" />
+        </button>
+        <span className="text-xs font-mono text-muted-foreground min-w-[3ch] text-center">{Math.round(scale * 100)}%</span>
+        <button onClick={() => setScale(s => Math.min(2, s + 0.05))} className="p-1 hover:bg-muted rounded-full transition-colors">
+          <Plus className="w-4 h-4 text-foreground" />
+        </button>
+      </div>
 
       <motion.div
         className="relative z-10 container mx-auto px-4 text-center pb-16 flex flex-col items-center"
@@ -22,8 +35,8 @@ export function HeroSection() {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
-        whileDrag={{ scale: 1.02, cursor: "grabbing" }}
-        style={{ cursor: "grab" }}
+        whileDrag={{ scale: scale * 1.02, cursor: "grabbing" }}
+        style={{ cursor: "grab", scale }}
       >
           <h1 className="text-6xl md:text-8xl lg:text-9xl font-bold font-display mb-2 mt-8 tracking-tight pointer-events-none select-none">
             <span className="text-gold-gradient text-center">PETERBOROUGH</span>
