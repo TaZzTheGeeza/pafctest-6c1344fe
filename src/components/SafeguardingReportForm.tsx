@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { DateInput } from "@/components/ui/date-input";
 
 const categories = [
   { value: "bullying", label: "Bullying" },
@@ -205,11 +206,11 @@ export function SafeguardingReportForm() {
       {/* Incident date */}
       <div>
         <Label htmlFor="incident-date" className="text-sm">Date of incident</Label>
-        <Input
+        <DateInput
           id="incident-date"
-          type="date"
           value={incidentDate}
-          onChange={(e) => setIncidentDate(e.target.value)}
+          onChange={setIncidentDate}
+          placeholder="Select incident date"
         />
       </div>
 

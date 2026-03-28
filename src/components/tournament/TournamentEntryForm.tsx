@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Shield, Loader2, ChevronRight, ChevronLeft, Users, ClipboardList, UserPlus } from "lucide-react";
+import { DateInput } from "@/components/ui/date-input";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -350,10 +351,10 @@ export function TournamentEntryForm({ ageGroups, onSuccess }: TournamentEntryFor
                     maxLength={100}
                     className="flex-1"
                   />
-                  <Input
-                    type="date"
+                  <DateInput
                     value={player.date_of_birth}
-                    onChange={e => updatePlayer(i, "date_of_birth", e.target.value)}
+                    onChange={val => updatePlayer(i, "date_of_birth", val)}
+                    placeholder="DOB"
                     className="w-[160px]"
                   />
                 </div>

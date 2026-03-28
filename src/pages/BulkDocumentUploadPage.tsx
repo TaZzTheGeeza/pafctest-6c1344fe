@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { toast } from "sonner";
+import { DateInput } from "@/components/ui/date-input";
 import {
   ArrowLeft, Upload, FileText, Loader2, CheckCircle2,
   Users, X
@@ -157,13 +158,7 @@ export default function BulkDocumentUploadPage() {
                   >
                     {DOC_TYPES.map(dt => <option key={dt.value} value={dt.value}>{dt.label}</option>)}
                   </select>
-                  <input
-                    type="date"
-                    value={docExpiry}
-                    onChange={e => setDocExpiry(e.target.value)}
-                    placeholder="Expiry date"
-                    className="bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground"
-                  />
+                  <DateInput value={docExpiry} onChange={setDocExpiry} placeholder="Expiry date" />
                 </div>
                 <textarea
                   value={docNotes}

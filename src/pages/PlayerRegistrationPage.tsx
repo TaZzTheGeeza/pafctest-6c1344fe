@@ -11,6 +11,7 @@ import { UserPlus, Clock, Send, CheckCircle, AlertCircle, Camera, X } from "luci
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import clubLogo from "@/assets/club-logo.jpg";
+import { DateInput } from "@/components/ui/date-input";
 
 const ageGroups = [
   "U7", "U8 Black", "U8 Gold", "U9", "U10",
@@ -253,7 +254,7 @@ export default function PlayerRegistrationPage() {
                         </div>
                         <div>
                           <label className="text-xs text-muted-foreground mb-1 block">Date of Birth *</label>
-                          <Input name="childDob" type="date" value={form.childDob} onChange={handleChange} required />
+                          <DateInput value={form.childDob} onChange={(val) => setForm(f => ({ ...f, childDob: val }))} placeholder="Select date of birth" required />
                         </div>
                       </div>
                       <div>

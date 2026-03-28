@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Plus, Trophy, Ticket, Loader2, Shuffle, Eye, Trash2, ImagePlus, X, Pencil } from "lucide-react";
 import RichTextEditor from "@/components/RichTextEditor";
 import { supabase } from "@/integrations/supabase/client";
+import { DateInput } from "@/components/ui/date-input";
 import { toast } from "sonner";
 import { AnimatePresence } from "framer-motion";
 import RaffleDraw from "@/components/raffle/RaffleDraw";
@@ -426,7 +427,7 @@ const RaffleAdminPage = () => {
                     </div>
                     <div>
                       <Label>Draw Date (optional)</Label>
-                      <Input type="date" value={newRaffle.draw_date} onChange={(e) => setNewRaffle(p => ({ ...p, draw_date: e.target.value }))} />
+                      <DateInput value={newRaffle.draw_date} onChange={(val) => setNewRaffle(p => ({ ...p, draw_date: val }))} placeholder="Select draw date" />
                     </div>
                   </div>
                   <div>
@@ -648,7 +649,7 @@ const RaffleAdminPage = () => {
               </div>
               <div>
                 <Label>Draw Date (optional)</Label>
-                <Input type="date" value={editForm.draw_date} onChange={(e) => setEditForm(p => ({ ...p, draw_date: e.target.value }))} />
+                <DateInput value={editForm.draw_date} onChange={(val) => setEditForm(p => ({ ...p, draw_date: val }))} placeholder="Select draw date" />
               </div>
             </div>
             <div>
