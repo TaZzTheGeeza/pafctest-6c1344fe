@@ -31,6 +31,9 @@ function FixtureSelect({ ageGroup, value, onChange, label = "Match (Opponent)" }
 }) {
   const slug = AGE_GROUP_TO_SLUG[ageGroup];
   const { data, isLoading } = useTeamFixtures(slug);
+  const [isManual, setIsManual] = useState(false);
+  const [manualOpponent, setManualOpponent] = useState("");
+  const [manualDate, setManualDate] = useState("");
 
   const allFixtures = [...(data?.results || []), ...(data?.fixtures || [])];
   
@@ -51,48 +54,96 @@ function FixtureSelect({ ageGroup, value, onChange, label = "Match (Opponent)" }
   }
 
   return (
-    <div>
-      <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">{label}</label>
-      <select
-        value={value}
-        onChange={(e) => {
-          const selected = allFixtures.find((f) => `${f.date}|${getOpponent(f)}` === e.target.value);
-          if (selected) {
-            onChange(getOpponent(selected), selected.date);
-          } else {
-            onChange("", "");
-          }
-        }}
-        className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground"
-      >
-        <option value="">{isLoading ? "Loading fixtures..." : "Select a fixture"}</option>
-        {data?.results && data.results.length > 0 && (
-          <optgroup label="Results">
-            {data.results.map((f, i) => {
-              const opp = getOpponent(f);
-              const key = `${f.date}|${opp}`;
-              return (
-                <option key={`r-${i}`} value={key}>
-                  {f.date} — vs {opp} ({f.homeScore}-{f.awayScore})
-                </option>
-              );
-            })}
-          </optgroup>
-        )}
-        {data?.fixtures && data.fixtures.length > 0 && (
-          <optgroup label="Upcoming Fixtures">
-            {data.fixtures.map((f, i) => {
-              const opp = getOpponent(f);
-              const key = `${f.date}|${opp}`;
-              return (
-                <option key={`f-${i}`} value={key}>
-                  {f.date} — vs {opp}
-                </option>
-              );
-            })}
-          </optgroup>
-        )}
-      </select>
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <label className="block text-xs font-display tracking-wider text-muted-foreground">{label}</label>
+        <button
+          type="button"
+          onClick={() => {
+            setIsManual(!isManual);
+            if (!isManual) {
+              onChange("", "");
+            } else {
+              setManualOpponent("");
+              setManualDate("");
+            }
+          }}
+          className="text-xs font-display text-primary hover:text-gold-light transition-colors"
+        >
+          {isManual ? "Select from fixtures" : "Enter manually"}
+        </button>
+      </div>
+
+      {isManual ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <div>
+            <label className="block text-[10px] font-display tracking-wider text-muted-foreground mb-0.5">Opponent *</label>
+            <input
+              type="text"
+              value={manualOpponent}
+              onChange={(e) => {
+                setManualOpponent(e.target.value);
+                onChange(e.target.value, manualDate);
+              }}
+              placeholder="e.g. Yaxley FC"
+              className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground"
+            />
+          </div>
+          <div>
+            <label className="block text-[10px] font-display tracking-wider text-muted-foreground mb-0.5">Match Date *</label>
+            <input
+              type="date"
+              value={manualDate}
+              onChange={(e) => {
+                setManualDate(e.target.value);
+                onChange(manualOpponent, e.target.value);
+              }}
+              className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground"
+            />
+          </div>
+        </div>
+      ) : (
+        <select
+          value={value}
+          onChange={(e) => {
+            const selected = allFixtures.find((f) => `${f.date}|${getOpponent(f)}` === e.target.value);
+            if (selected) {
+              onChange(getOpponent(selected), selected.date);
+            } else {
+              onChange("", "");
+            }
+          }}
+          className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground"
+        >
+          <option value="">{isLoading ? "Loading fixtures..." : "Select a fixture"}</option>
+          {data?.results && data.results.length > 0 && (
+            <optgroup label="Results">
+              {data.results.map((f, i) => {
+                const opp = getOpponent(f);
+                const key = `${f.date}|${opp}`;
+                return (
+                  <option key={`r-${i}`} value={key}>
+                    {f.date} — vs {opp} ({f.homeScore}-{f.awayScore})
+                  </option>
+                );
+              })}
+            </optgroup>
+          )}
+          {data?.fixtures && data.fixtures.length > 0 && (
+            <optgroup label="Upcoming Fixtures">
+              {data.fixtures.map((f, i) => {
+                const opp = getOpponent(f);
+                const key = `${f.date}|${opp}`;
+                return (
+                  <option key={`f-${i}`} value={key}>
+                    {f.date} — vs {opp}
+                  </option>
+                );
+              })}
+            </optgroup>
+          )}
+        </select>
+      )}
     </div>
   );
 }
