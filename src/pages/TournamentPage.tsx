@@ -14,6 +14,8 @@ import { Badge } from "@/components/ui/badge";
 import { Trophy, Users, Calendar, MapPin, ClipboardList, Megaphone, Shield, Clock, PoundSterling, CheckCircle, Loader2, AlertTriangle, Phone, Mail, Award, Utensils, Dog, Info } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { TournamentEntryForm } from "@/components/tournament/TournamentEntryForm";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import pitchLayout from "@/assets/tournament/pitch-layout.png";
 import venueDirections from "@/assets/tournament/venue-directions.jpeg";
 import { TournamentBracket } from "@/components/TournamentBracket";
@@ -477,9 +479,20 @@ const TournamentPage = () => {
                 <div className="grid md:grid-cols-2 gap-6">
                   <Card>
                     <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Phone className="h-5 w-5 text-primary" />Contact</CardTitle></CardHeader>
-                    <CardContent className="space-y-2 text-sm">
+                    <CardContent className="space-y-3 text-sm">
                       <p className="flex items-center gap-2"><Mail className="h-4 w-4 text-primary" /><a href="mailto:peterboroughath@gmail.com" className="text-primary hover:underline">peterboroughath@gmail.com</a></p>
                       <p className="flex items-center gap-2"><Phone className="h-4 w-4 text-primary" /><a href="tel:07377544501" className="text-primary hover:underline">07377 544501</a></p>
+                      <div className="border-t border-border pt-3 mt-3">
+                        <p className="font-semibold mb-2 text-foreground">Quick Enquiry</p>
+                        <form onSubmit={(e) => { e.preventDefault(); const form = e.target as HTMLFormElement; const name = (form.elements.namedItem('eq_name') as HTMLInputElement).value; const email = (form.elements.namedItem('eq_email') as HTMLInputElement).value; const msg = (form.elements.namedItem('eq_msg') as HTMLTextAreaElement).value; window.location.href = `mailto:peterboroughath@gmail.com?subject=Tournament Enquiry from ${encodeURIComponent(name)}&body=${encodeURIComponent(msg)}%0A%0AFrom: ${encodeURIComponent(name)} (${encodeURIComponent(email)})`; toast.success("Opening your email client..."); }} className="space-y-2">
+                          <Input name="eq_name" placeholder="Your name" required className="h-8 text-xs" />
+                          <Input name="eq_email" type="email" placeholder="Your email" required className="h-8 text-xs" />
+                          <Textarea name="eq_msg" placeholder="Your question..." required rows={3} className="text-xs min-h-[60px]" />
+                          <Button type="submit" size="sm" className="w-full bg-gold-gradient text-primary-foreground font-display text-xs">
+                            <Mail className="h-3 w-3 mr-1" /> Send Enquiry
+                          </Button>
+                        </form>
+                      </div>
                     </CardContent>
                   </Card>
 
