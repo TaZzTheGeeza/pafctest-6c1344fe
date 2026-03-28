@@ -308,10 +308,14 @@ export function POTMForm({ ageGroups }: { ageGroups: string[] }) {
         onChange={(opponent, date) => {
           setFixtureKey(`${date}|${opponent}`);
           setMatchDescription(opponent);
-          // Convert DD/MM/YY or DD/MM/YYYY to YYYY-MM-DD
-          const [dd, mm, yy] = date.split("/");
-          const fullYear = yy.length === 4 ? yy : `20${yy}`;
-          setMatchDate(`${fullYear}-${mm}-${dd}`);
+          // Handle both YYYY-MM-DD (manual) and DD/MM/YY (FA fixture) formats
+          if (date.includes("-")) {
+            setMatchDate(date);
+          } else if (date.includes("/")) {
+            const [dd, mm, yy] = date.split("/");
+            const fullYear = yy.length === 4 ? yy : `20${yy}`;
+            setMatchDate(`${fullYear}-${mm}-${dd}`);
+          }
         }}
       />
 
