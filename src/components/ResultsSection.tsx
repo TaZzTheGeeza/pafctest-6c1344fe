@@ -11,11 +11,11 @@ interface Result {
 }
 
 const recentResults: Result[] = [
-  { date: "22 Mar 2026", home: "Peterborough Athletic U14", away: "Leverington Sports FC U14", homeScore: 3, awayScore: 3, competition: "League", ageGroup: "U14" },
-  { date: "22 Mar 2026", home: "Peterborough Athletic U13 Black", away: "Oundle Town FC U13", homeScore: 4, awayScore: 0, competition: "League", ageGroup: "U13" },
+  { date: "22 Mar 2026", home: "Thurlby Tigers FC U13 White", away: "Peterborough Athletic U13 Black", homeScore: 4, awayScore: 1, competition: "League", ageGroup: "U13" },
+  { date: "22 Mar 2026", home: "Thorney FC U14 Oranges", away: "Peterborough Athletic U14", homeScore: 0, awayScore: 8, competition: "League", ageGroup: "U14" },
   { date: "15 Mar 2026", home: "Parkside Athletic U13", away: "Peterborough Athletic U13 Gold", homeScore: 1, awayScore: 4, competition: "League", ageGroup: "U13" },
-  { date: "15 Mar 2026", home: "Park Farm Pumas U14 Black", away: "Peterborough Athletic U14", homeScore: 2, awayScore: 1, competition: "League", ageGroup: "U14" },
-  { date: "8 Mar 2026", home: "Peterborough Athletic U13 Gold", away: "Yaxley FC U13 Blues", homeScore: 2, awayScore: 1, competition: "League", ageGroup: "U13" },
+  { date: "15 Mar 2026", home: "Peterborough Athletic U14", away: "Hampton Rangers U14 Black", homeScore: 7, awayScore: 2, competition: "League", ageGroup: "U14" },
+  { date: "8 Mar 2026", home: "Hampton United U13 Blues", away: "Peterborough Athletic U13 Gold", homeScore: 3, awayScore: 9, competition: "League", ageGroup: "U13" },
 ];
 
 export function ResultsSection() {
