@@ -557,9 +557,13 @@ export function MatchReportForm({ ageGroups }: { ageGroups: string[] }) {
         value={fixtureKey}
         onChange={(opp, date) => {
           setFixtureKey(`${date}|${opp}`);
-          const [dd, mm, yy] = date.split("/");
-          const fullYear = yy.length === 4 ? yy : `20${yy}`;
-          setMatchDate(`${fullYear}-${mm}-${dd}`);
+          if (date.includes("-")) {
+            setMatchDate(date);
+          } else if (date.includes("/")) {
+            const [dd, mm, yy] = date.split("/");
+            const fullYear = yy.length === 4 ? yy : `20${yy}`;
+            setMatchDate(`${fullYear}-${mm}-${dd}`);
+          }
           setOpponent(opp);
         }}
         label="Opponent *"
