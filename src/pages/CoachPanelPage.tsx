@@ -91,14 +91,13 @@ function FixtureSelect({ ageGroup, value, onChange, label = "Match (Opponent)" }
           </div>
           <div>
             <label className="block text-[10px] font-display tracking-wider text-muted-foreground mb-0.5">Match Date *</label>
-            <input
-              type="date"
+            <DateInput
               value={manualDate}
-              onChange={(e) => {
-                setManualDate(e.target.value);
-                onChange(manualOpponent, e.target.value);
+              onChange={(val) => {
+                setManualDate(val);
+                onChange(manualOpponent, val);
               }}
-              className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground"
+              placeholder="Select match date"
             />
           </div>
         </div>

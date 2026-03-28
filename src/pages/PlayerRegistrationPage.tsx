@@ -253,7 +253,7 @@ export default function PlayerRegistrationPage() {
                         </div>
                         <div>
                           <label className="text-xs text-muted-foreground mb-1 block">Date of Birth *</label>
-                          <Input name="childDob" type="date" value={form.childDob} onChange={handleChange} required />
+                          <DateInput value={form.childDob} onChange={(val) => setForm(f => ({ ...f, childDob: val }))} placeholder="Select date of birth" required />
                         </div>
                       </div>
                       <div>

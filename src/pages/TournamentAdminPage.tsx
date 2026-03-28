@@ -451,7 +451,7 @@ const TournamentAdminPage = () => {
             <div><Label>Name *</Label><Input value={tournamentForm.name} onChange={e => setTournamentForm(f => ({ ...f, name: e.target.value }))} /></div>
             <div><Label>Description</Label><Textarea value={tournamentForm.description} onChange={e => setTournamentForm(f => ({ ...f, description: e.target.value }))} /></div>
             <div><Label>Venue</Label><Input value={tournamentForm.venue} onChange={e => setTournamentForm(f => ({ ...f, venue: e.target.value }))} /></div>
-            <div><Label>Date</Label><Input type="date" value={tournamentForm.tournament_date} onChange={e => setTournamentForm(f => ({ ...f, tournament_date: e.target.value }))} /></div>
+            <div><Label>Date</Label><DateInput value={tournamentForm.tournament_date} onChange={val => setTournamentForm(f => ({ ...f, tournament_date: val }))} placeholder="Select date" /></div>
             <div><Label>Entry Fee (£)</Label><Input type="number" step="0.01" value={tournamentForm.entry_fee} onChange={e => setTournamentForm(f => ({ ...f, entry_fee: e.target.value }))} /></div>
             <div><Label>Rules</Label><Textarea value={tournamentForm.rules} onChange={e => setTournamentForm(f => ({ ...f, rules: e.target.value }))} /></div>
             <Button onClick={createTournament} className="w-full">Create Tournament</Button>

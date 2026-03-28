@@ -245,7 +245,7 @@ export function PaymentCenter({ teamSlug }: { teamSlug: string }) {
                 </div>
                 <div>
                   <label className="text-xs text-muted-foreground font-display">Due Date</label>
-                  <input type="date" value={form.due_date} onChange={(e) => setForm({ ...form, due_date: e.target.value })} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground" />
+                  <DateInput value={form.due_date} onChange={(val) => setForm({ ...form, due_date: val })} placeholder="Select due date" />
                 </div>
               </div>
               <button type="submit" className="bg-primary text-primary-foreground rounded-lg px-4 py-2 text-sm font-display tracking-wider hover:bg-primary/90 transition-colors">Create Request</button>

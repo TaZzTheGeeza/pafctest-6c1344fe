@@ -205,11 +205,11 @@ export function SafeguardingReportForm() {
       {/* Incident date */}
       <div>
         <Label htmlFor="incident-date" className="text-sm">Date of incident</Label>
-        <Input
+        <DateInput
           id="incident-date"
-          type="date"
           value={incidentDate}
-          onChange={(e) => setIncidentDate(e.target.value)}
+          onChange={setIncidentDate}
+          placeholder="Select incident date"
         />
       </div>
 

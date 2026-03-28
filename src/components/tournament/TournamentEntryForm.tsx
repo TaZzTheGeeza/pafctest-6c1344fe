@@ -350,10 +350,10 @@ export function TournamentEntryForm({ ageGroups, onSuccess }: TournamentEntryFor
                     maxLength={100}
                     className="flex-1"
                   />
-                  <Input
-                    type="date"
+                  <DateInput
                     value={player.date_of_birth}
-                    onChange={e => updatePlayer(i, "date_of_birth", e.target.value)}
+                    onChange={val => updatePlayer(i, "date_of_birth", val)}
+                    placeholder="DOB"
                     className="w-[160px]"
                   />
                 </div>
