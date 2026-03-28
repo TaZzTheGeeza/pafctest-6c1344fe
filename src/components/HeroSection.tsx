@@ -20,7 +20,7 @@ export function HeroSection() {
           transition={{ duration: 0.8 }}
           className="flex flex-col items-center"
         >
-          <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold font-display mb-2 mt-8 tracking-tight">
+          <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold font-display mb-2 mt-8 tracking-tight">
             <span className="text-gold-gradient text-center">PETERBOROUGH</span>
             <br />
             <span className="text-foreground">Athletic FC</span>
