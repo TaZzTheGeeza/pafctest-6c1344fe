@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useTeamRoster, getAgeGroup } from "@/hooks/useTeamRoster";
 import type { FAFixture } from "@/hooks/useTeamFixtures";
 import { uploadPotmPhoto } from "@/lib/potmPhoto";
+import { POTMCardPreview } from "./POTMCardPreview";
 
 interface POTMEntry {
   playerId: string;
@@ -190,15 +191,35 @@ export function POTMTab({
                 className="hidden"
               />
               {entry.photoPreview ? (
-                <div className="relative inline-block mt-1">
-                  <img src={entry.photoPreview} alt="POTM preview" className="h-20 w-20 object-cover rounded-lg border border-border" />
-                  <button
-                    type="button"
-                    onClick={() => clearPhoto(i)}
-                    className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-0.5"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
+                <div className="space-y-3 mt-1">
+                  <div className="flex items-start gap-3">
+                    <div className="relative">
+                      <img src={entry.photoPreview} alt="POTM preview" className="h-20 w-20 object-cover rounded-lg border border-border" />
+                      <button
+                        type="button"
+                        onClick={() => clearPhoto(i)}
+                        className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-0.5"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-8 text-xs"
+                      onClick={() => fileInputRefs.current[i]?.click()}
+                    >
+                      <Camera className="h-3.5 w-3.5 mr-1" />
+                      Change
+                    </Button>
+                  </div>
+                  <POTMCardPreview
+                    photoPreview={entry.photoPreview}
+                    playerName={player?.first_name || "Player Name"}
+                    shirtNumber={player?.shirt_number}
+                    ageGroup={getAgeGroup(teamSlug)}
+                  />
                 </div>
               ) : (
                 <Button
