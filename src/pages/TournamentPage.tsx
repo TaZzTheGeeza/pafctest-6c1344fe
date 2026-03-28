@@ -479,9 +479,8 @@ const TournamentPage = () => {
                 <div className="grid md:grid-cols-2 gap-6">
                   <Card>
                     <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Phone className="h-5 w-5 text-primary" />Contact</CardTitle></CardHeader>
-                    <CardContent className="space-y-3 text-sm">
+                    <CardContent className="text-sm">
                       <div>
-                      <div className="border-t border-border pt-3 mt-3">
                         <p className="font-semibold mb-2 text-foreground">Quick Enquiry</p>
                         <form onSubmit={(e) => { e.preventDefault(); const form = e.target as HTMLFormElement; const name = (form.elements.namedItem('eq_name') as HTMLInputElement).value; const email = (form.elements.namedItem('eq_email') as HTMLInputElement).value; const msg = (form.elements.namedItem('eq_msg') as HTMLTextAreaElement).value; window.location.href = `mailto:peterboroughath@gmail.com?subject=Tournament Enquiry from ${encodeURIComponent(name)}&body=${encodeURIComponent(msg)}%0A%0AFrom: ${encodeURIComponent(name)} (${encodeURIComponent(email)})`; toast.success("Opening your email client..."); }} className="space-y-2">
                           <Input name="eq_name" placeholder="Your name" required className="h-8 text-xs" />
