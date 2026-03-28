@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Plus, Trophy, Ticket, Loader2, Shuffle, Eye, Trash2, ImagePlus, X, Pencil } from "lucide-react";
 import RichTextEditor from "@/components/RichTextEditor";
 import { supabase } from "@/integrations/supabase/client";
+import { DateInput } from "@/components/ui/date-input";
 import { toast } from "sonner";
 import { AnimatePresence } from "framer-motion";
 import RaffleDraw from "@/components/raffle/RaffleDraw";

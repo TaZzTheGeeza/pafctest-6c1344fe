@@ -11,6 +11,7 @@ import { UserPlus, Clock, Send, CheckCircle, AlertCircle, Camera, X } from "luci
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import clubLogo from "@/assets/club-logo.jpg";
+import { DateInput } from "@/components/ui/date-input";
 
 const ageGroups = [
   "U7", "U8 Black", "U8 Gold", "U9", "U10",

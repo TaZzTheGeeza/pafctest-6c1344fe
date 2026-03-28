@@ -5,6 +5,7 @@ import { CreditCard, Plus, Check, Clock, RefreshCw, ExternalLink, Loader2 } from
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { useSearchParams } from "react-router-dom";
+import { DateInput } from "@/components/ui/date-input";
 
 interface PaymentRequest {
   id: string;

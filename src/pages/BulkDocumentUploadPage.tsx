@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { toast } from "sonner";
+import { DateInput } from "@/components/ui/date-input";
 import {
   ArrowLeft, Upload, FileText, Loader2, CheckCircle2,
   Users, X

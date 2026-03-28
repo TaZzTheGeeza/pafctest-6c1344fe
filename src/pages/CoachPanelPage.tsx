@@ -14,6 +14,7 @@ import { useTeamFixtures, type FAFixture } from "@/hooks/useTeamFixtures";
 import { useTeamRoster } from "@/hooks/useTeamRoster";
 import { faTeamConfigs } from "@/lib/faFixtureConfig";
 import { uploadPotmPhoto } from "@/lib/potmPhoto";
+import { DateInput } from "@/components/ui/date-input";
 
 const ALL_AGE_GROUPS = [
   "U7", "U8 Black", "U8 Gold", "U9", "U10",

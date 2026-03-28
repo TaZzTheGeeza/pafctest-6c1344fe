@@ -11,6 +11,7 @@ import {
   Activity, Award, Star, X
 } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
+import { DateInput } from "@/components/ui/date-input";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
 
