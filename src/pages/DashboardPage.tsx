@@ -555,12 +555,44 @@ function UserRow({
   const [loadingMemberships, setLoadingMemberships] = useState(false);
   const [addingTeamSlug, setAddingTeamSlug] = useState<string | null>(null);
   const [selectedRole, setSelectedRole] = useState<string>("member");
+  const [isDocUploader, setIsDocUploader] = useState<boolean | null>(null);
+  const [togglingDocUploader, setTogglingDocUploader] = useState(false);
   const navigate = useNavigate();
   const isCurrentUser = user.id === currentUserId;
   const availableRoles = (["admin", "coach", "player", "user"] as AppRole[]).filter(
     (r) => !user.roles.includes(r)
   );
   const isCoachUser = user.roles.includes("coach");
+
+  async function checkDocUploaderStatus() {
+    const { data } = await supabase
+      .from("document_upload_permissions")
+      .select("id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    setIsDocUploader(!!data);
+  }
+
+  async function toggleDocUploader() {
+    setTogglingDocUploader(true);
+    if (isDocUploader) {
+      await supabase.from("document_upload_permissions").delete().eq("user_id", user.id);
+      setIsDocUploader(false);
+      toast.success("Document upload permission removed");
+    } else {
+      const { error } = await supabase.from("document_upload_permissions").insert({ user_id: user.id, granted_by: currentUserId });
+      if (error) {
+        if (error.code === "23505") toast.info("Already has upload permission");
+        else toast.error("Failed to grant permission");
+      } else {
+        setIsDocUploader(true);
+        toast.success("Document upload permission granted");
+      }
+    }
+    setTogglingDocUploader(false);
+  }
+
+  useEffect(() => { checkDocUploaderStatus(); }, [user.id]);
 
   async function loadAssignedTeams() {
     setLoadingTeams(true);
@@ -739,6 +771,22 @@ function UserRow({
               <Shield className="h-3 w-3" /> Hub Teams
               <ChevronDown className={`h-3 w-3 transition-transform ${showTeamMembership ? "rotate-180" : ""}`} />
             </button>
+
+            {/* Doc Uploader Toggle */}
+            {isDocUploader !== null && (
+              <button
+                onClick={(e) => { e.stopPropagation(); toggleDocUploader(); }}
+                disabled={togglingDocUploader}
+                className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-display border transition-colors ${
+                  isDocUploader
+                    ? "bg-violet-500/20 text-violet-400 border-violet-500/30"
+                    : "border-border text-muted-foreground hover:border-violet-500/30 hover:text-violet-400"
+                }`}
+              >
+                {togglingDocUploader ? <Loader2 className="h-3 w-3 animate-spin" /> : <FileText className="h-3 w-3" />}
+                {isDocUploader ? "Doc Uploader ✓" : "Doc Uploader"}
+              </button>
+            )}
           </div>
         </div>
       </div>
