@@ -43,6 +43,7 @@ import AdminPlayerProfilePage from "./pages/AdminPlayerProfilePage.tsx";
 import MyProfilePage from "./pages/MyProfilePage.tsx";
 import BulkDocumentUploadPage from "./pages/BulkDocumentUploadPage.tsx";
 import SafeguardingReportsPage from "./pages/SafeguardingReportsPage.tsx";
+import PafcTvPage from "./pages/PafcTvPage.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -84,6 +85,7 @@ function AppContent() {
         <Route path="/player-hub" element={<PlayerHubRedirect />} />
         <Route path="/raffle" element={<RafflePage />} />
         <Route path="/raffle-admin" element={<RoleGate requiredRole="admin"><RaffleAdminPage /></RoleGate>} />
+        <Route path="/pafc-tv" element={<PafcTvPage />} />
         <Route path="/tournament" element={<TournamentPage />} />
         <Route path="/tournament-admin" element={<TournamentAdminPage />} />
         <Route path="/tournament/team/:teamId" element={<TeamProfilePage />} />

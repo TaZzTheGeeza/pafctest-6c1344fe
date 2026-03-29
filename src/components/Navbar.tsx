@@ -116,13 +116,20 @@ function NavItemRenderer({ item, location }: { item: NavItem; location: ReturnTy
     );
   }
 
+  const isPafcTv = item.label === "PAFC TV";
+
   return (
     <Link
       to={item.path}
-      className={`font-display text-[11px] tracking-[0.15em] uppercase px-3 py-2 transition-colors ${
-        location.pathname === item.path ? "text-primary" : "text-muted-foreground hover:text-foreground"
+      className={`font-display text-[11px] tracking-[0.15em] uppercase px-3 py-2 transition-colors flex items-center gap-1.5 ${
+        isPafcTv
+          ? "text-destructive hover:text-destructive/80 font-bold"
+          : location.pathname === item.path
+            ? "text-primary"
+            : "text-muted-foreground hover:text-foreground"
       }`}
     >
+      {isPafcTv && <Youtube className="h-4 w-4" />}
       {item.label}
     </Link>
   );
