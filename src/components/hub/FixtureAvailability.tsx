@@ -3,7 +3,7 @@ import { useTeamFixtures, type FAFixture } from "@/hooks/useTeamFixtures";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Check, X, HelpCircle, Loader2, MapPin, Clock, Users, Navigation } from "lucide-react";
+import { Check, X, HelpCircle, Loader2, MapPin, Clock, Users, Navigation, ChevronDown, ChevronUp } from "lucide-react";
 import { format } from "date-fns";
 
 interface Props {
