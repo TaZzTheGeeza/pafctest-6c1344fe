@@ -9,7 +9,7 @@ import {
   Users, Shield, ShieldCheck, ShieldAlert, UserCog, Trash2,
   Search, ChevronDown, Trophy, Ticket, BarChart3, FileText,
   MessageSquare, Settings, Eye, Plus, Loader2, Crown, Swords, ShoppingBag,
-  Star, LayoutDashboard, Mail, Clock, ExternalLink
+  Star, LayoutDashboard, Mail, Clock, ExternalLink, Pencil, Check, X as XIcon
 } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 import { ManageSubmissionsForm } from "@/components/ManageSubmissionsForm";
@@ -594,6 +594,19 @@ function UserRow({
 
   useEffect(() => { checkDocUploaderStatus(); }, [user.id]);
 
+  const [editingName, setEditingName] = useState(false);
+  const [editNameValue, setEditNameValue] = useState("");
+  const [savingName, setSavingName] = useState(false);
+
+  async function saveNameEdit() {
+    if (!editNameValue.trim()) { toast.error("Name cannot be empty"); return; }
+    setSavingName(true);
+    const { error } = await supabase.from("profiles").update({ full_name: editNameValue.trim() }).eq("id", user.id);
+    if (error) toast.error("Failed to update name");
+    else { toast.success("Name updated"); user.full_name = editNameValue.trim(); setEditingName(false); }
+    setSavingName(false);
+  }
+
   async function loadAssignedTeams() {
     setLoadingTeams(true);
     const { data } = await supabase
@@ -673,19 +686,44 @@ function UserRow({
 
   return (
     <div className="hover:bg-secondary/20 transition-colors">
-      <div className="px-5 py-4 cursor-pointer" onClick={() => navigate(`/admin/player/${user.id}`)}>
+      <div className="px-5 py-4 cursor-pointer" onClick={() => !editingName && navigate(`/admin/player/${user.id}`)}>
         <div className="flex flex-col sm:flex-row sm:items-center gap-3">
           <div className="flex items-center gap-3 flex-1 min-w-0">
             <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-display text-sm font-bold shrink-0">
               {(user.full_name || user.email || "?")[0].toUpperCase()}
             </div>
-            <div className="min-w-0">
-              <p className="text-sm font-display font-semibold text-foreground truncate flex items-center gap-2">
-                {user.full_name || "Unnamed"}
-                {isCurrentUser && (
-                  <span className="text-[10px] bg-primary/20 text-primary px-1.5 py-0.5 rounded-full">You</span>
-                )}
-              </p>
+            <div className="min-w-0" onClick={(e) => e.stopPropagation()}>
+              {editingName ? (
+                <div className="flex items-center gap-1.5">
+                  <input
+                    autoFocus
+                    value={editNameValue}
+                    onChange={(e) => setEditNameValue(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") saveNameEdit(); if (e.key === "Escape") setEditingName(false); }}
+                    className="text-sm font-display font-semibold text-foreground bg-background border border-border rounded px-2 py-1 w-40"
+                  />
+                  <button onClick={saveNameEdit} disabled={savingName} className="p-1 text-emerald-400 hover:bg-emerald-500/10 rounded transition-colors">
+                    {savingName ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
+                  </button>
+                  <button onClick={() => setEditingName(false)} className="p-1 text-muted-foreground hover:text-destructive rounded transition-colors">
+                    <XIcon className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ) : (
+                <p className="text-sm font-display font-semibold text-foreground truncate flex items-center gap-2">
+                  {user.full_name || "Unnamed"}
+                  <button
+                    onClick={() => { setEditNameValue(user.full_name || ""); setEditingName(true); }}
+                    className="p-0.5 text-muted-foreground hover:text-primary transition-colors"
+                    title="Edit name"
+                  >
+                    <Pencil className="h-3 w-3" />
+                  </button>
+                  {isCurrentUser && (
+                    <span className="text-[10px] bg-primary/20 text-primary px-1.5 py-0.5 rounded-full">You</span>
+                  )}
+                </p>
+              )}
               <p className="text-xs text-muted-foreground truncate">{user.email}</p>
             </div>
           </div>
