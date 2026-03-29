@@ -45,7 +45,6 @@ export function FixtureAvailability({ teamSlug }: Props) {
     enabled: !!user,
   });
 
-  // Fetch profiles for all users who have responded
   const respondentIds = [...new Set(availability.map((a) => a.user_id))];
   const { data: profiles = [] } = useQuery({
     queryKey: ["availability-profiles", respondentIds.sort().join(",")],
@@ -123,12 +122,6 @@ export function FixtureAvailability({ teamSlug }: Props) {
     };
   }
 
-  const statusButtons: { status: AvailabilityStatus; icon: typeof Check; label: string; activeClass: string }[] = [
-    { status: "available", icon: Check, label: "Available", activeClass: "bg-green-600 text-white border-green-600" },
-    { status: "maybe", icon: HelpCircle, label: "Maybe", activeClass: "bg-amber-500 text-white border-amber-500" },
-    { status: "unavailable", icon: X, label: "Unavailable", activeClass: "bg-red-600 text-white border-red-600" },
-  ];
-
   function getRespondents(fixture: FAFixture, status: string) {
     const opponent = fixture.homeTeam.includes("Peterborough Ath") ? fixture.awayTeam : fixture.homeTeam;
     const records = availability.filter((a) => a.fixture_date === fixture.date && a.opponent === opponent && a.status === status);
@@ -138,20 +131,23 @@ export function FixtureAvailability({ teamSlug }: Props) {
     });
   }
 
-  function getFixtureKey(fixture: FAFixture) {
-    const opponent = fixture.homeTeam.includes("Peterborough Ath") ? fixture.awayTeam : fixture.homeTeam;
-    return `${fixture.date}::${opponent}`;
-  }
+  const statusButtons: { status: AvailabilityStatus; icon: typeof Check; label: string; activeClass: string }[] = [
+    { status: "available", icon: Check, label: "Available", activeClass: "bg-green-600 text-white border-green-600" },
+    { status: "maybe", icon: HelpCircle, label: "Maybe", activeClass: "bg-amber-500 text-white border-amber-500" },
+    { status: "unavailable", icon: X, label: "Unavailable", activeClass: "bg-red-600 text-white border-red-600" },
+  ];
 
   return (
     <div className="space-y-3">
-      {upcomingFixtures.map((fixture, i) => {
+      {upcomingFixtures.map((fixture) => {
         const isHome = fixture.homeTeam.includes("Peterborough Ath");
         const opponent = isHome ? fixture.awayTeam : fixture.homeTeam;
         const myStatus = getMyStatus(fixture);
         const summary = getTeamSummary(fixture);
-        const fKey = getFixtureKey(fixture);
+        const fKey = fixtureKey(fixture);
         const isExpanded = expandedFixture === fKey;
+
+        return (
           <div key={`${fixture.date}-${opponent}`} className="bg-card border border-border rounded-xl p-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
               <div>
@@ -176,11 +172,15 @@ export function FixtureAvailability({ teamSlug }: Props) {
               </div>
 
               {(isCoach || isAdmin) && (
-                <div className="flex items-center gap-2 text-xs">
+                <button
+                  onClick={() => setExpandedFixture(isExpanded ? null : fKey)}
+                  className="flex items-center gap-2 text-xs hover:opacity-80 transition-opacity"
+                >
                   <span className="flex items-center gap-1 text-green-500"><Check className="h-3 w-3" />{summary.available}</span>
                   <span className="flex items-center gap-1 text-amber-500"><HelpCircle className="h-3 w-3" />{summary.maybe}</span>
                   <span className="flex items-center gap-1 text-red-500"><X className="h-3 w-3" />{summary.unavailable}</span>
-                </div>
+                  {isExpanded ? <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />}
+                </button>
               )}
             </div>
 
@@ -201,6 +201,38 @@ export function FixtureAvailability({ teamSlug }: Props) {
                 </button>
               ))}
             </div>
+
+            {isExpanded && (isCoach || isAdmin) && (
+              <div className="mt-3 pt-3 border-t border-border grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {(["available", "maybe", "unavailable"] as const).map((status) => {
+                  const names = getRespondents(fixture, status);
+                  const config = {
+                    available: { label: "Available", icon: Check, color: "text-green-500", bg: "bg-green-500/10" },
+                    maybe: { label: "Maybe", icon: HelpCircle, color: "text-amber-500", bg: "bg-amber-500/10" },
+                    unavailable: { label: "Unavailable", icon: X, color: "text-red-500", bg: "bg-red-500/10" },
+                  }[status];
+                  const StatusIcon = config.icon;
+
+                  return (
+                    <div key={status} className={`rounded-lg p-2.5 ${config.bg}`}>
+                      <div className={`flex items-center gap-1.5 mb-2 ${config.color}`}>
+                        <StatusIcon className="h-3.5 w-3.5" />
+                        <span className="text-xs font-display font-bold tracking-wider uppercase">{config.label} ({names.length})</span>
+                      </div>
+                      {names.length === 0 ? (
+                        <p className="text-xs text-muted-foreground italic">No responses</p>
+                      ) : (
+                        <ul className="space-y-0.5">
+                          {names.map((name, idx) => (
+                            <li key={idx} className="text-xs text-foreground">{name}</li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         );
       })}
