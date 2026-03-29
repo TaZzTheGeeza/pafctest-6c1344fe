@@ -203,7 +203,8 @@ export function POTMCardPreview({
               style={{
                 width: "100%",
                 height: "100%",
-                objectFit: "cover",
+                objectFit: "contain",
+                objectPosition: "center top",
                 transformOrigin: "center center",
                 transform: `scale(${zoom}) translate(${pan.x / zoom}px, ${pan.y / zoom}px)`,
               }}
@@ -266,7 +267,7 @@ export function POTMCardPreview({
             <Slider
               value={[zoom]}
               onValueChange={([v]) => setZoom(v)}
-              min={0.5}
+              min={1}
               max={3}
               step={0.05}
               className="flex-1"
@@ -283,7 +284,7 @@ export function POTMCardPreview({
             <RotateCcw className="h-2.5 w-2.5" /> Reset Position
           </Button>
           <p className="text-[9px] text-muted-foreground text-center">
-            Drag to reposition · Zoom to resize
+            Full photo visible by default · Drag and zoom only if needed
           </p>
         </div>
       )}
