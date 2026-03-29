@@ -10,7 +10,6 @@ export function HeroSection() {
       <div
         className="absolute inset-0 bg-cover"
         style={{ backgroundImage: `url(${heroBg})`, backgroundPosition: 'center 15%' }}
-        style={{ backgroundImage: `url(${heroBg})` }}
       />
       <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/30 to-background/95" />
 
