@@ -17,6 +17,7 @@ interface POTMEntry {
   reason: string;
   photoFile: File | null;
   photoPreview: string | null;
+  croppedBlob: Blob | null;
 }
 
 export function POTMTab({
@@ -27,13 +28,13 @@ export function POTMTab({
   const { data: roster = [] } = useTeamRoster(teamSlug);
   const queryClient = useQueryClient();
   const [entries, setEntries] = useState<POTMEntry[]>([
-    { playerId: "", reason: "", photoFile: null, photoPreview: null },
+    { playerId: "", reason: "", photoFile: null, photoPreview: null, croppedBlob: null },
   ]);
   const [saving, setSaving] = useState(false);
   const fileInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const addEntry = () => {
-    setEntries([...entries, { playerId: "", reason: "", photoFile: null, photoPreview: null }]);
+    setEntries([...entries, { playerId: "", reason: "", photoFile: null, photoPreview: null, croppedBlob: null }]);
   };
 
   const removeEntry = (i: number) => {
@@ -57,14 +58,14 @@ export function POTMTab({
     }
     const next = [...entries];
     if (next[i].photoPreview) URL.revokeObjectURL(next[i].photoPreview!);
-    next[i] = { ...next[i], photoFile: file, photoPreview: URL.createObjectURL(file) };
+    next[i] = { ...next[i], photoFile: file, photoPreview: URL.createObjectURL(file), croppedBlob: null };
     setEntries(next);
   };
 
   const clearPhoto = (i: number) => {
     const next = [...entries];
     if (next[i].photoPreview) URL.revokeObjectURL(next[i].photoPreview!);
-    next[i] = { ...next[i], photoFile: null, photoPreview: null };
+    next[i] = { ...next[i], photoFile: null, photoPreview: null, croppedBlob: null };
     setEntries(next);
     if (fileInputRefs.current[i]) fileInputRefs.current[i]!.value = "";
   };
@@ -85,8 +86,11 @@ export function POTMTab({
         if (!player) continue;
 
         let photoUrl: string | null = null;
-        if (entry.photoFile) {
-          photoUrl = await uploadPotmPhoto(entry.photoFile, {
+        const fileToUpload = entry.croppedBlob
+          ? new File([entry.croppedBlob], entry.photoFile?.name || "potm.jpg", { type: "image/jpeg" })
+          : entry.photoFile;
+        if (fileToUpload) {
+          photoUrl = await uploadPotmPhoto(fileToUpload, {
             playerName: player.first_name,
             awardDate,
             teamSlug,
@@ -128,7 +132,7 @@ export function POTMTab({
       queryClient.invalidateQueries({ queryKey: ["team-roster"] });
       // Reset
       entries.forEach(e => { if (e.photoPreview) URL.revokeObjectURL(e.photoPreview); });
-      setEntries([{ playerId: "", reason: "", photoFile: null, photoPreview: null }]);
+      setEntries([{ playerId: "", reason: "", photoFile: null, photoPreview: null, croppedBlob: null }]);
       toast.success(`${validEntries.length} POTM award${validEntries.length > 1 ? "s" : ""} saved!`);
     } catch (err: any) {
       toast.error(err.message || "Failed to save POTM");
@@ -219,6 +223,11 @@ export function POTMTab({
                     playerName={player?.first_name || "Player Name"}
                     shirtNumber={player?.shirt_number}
                     ageGroup={getAgeGroup(teamSlug)}
+                    onCroppedImage={(blob) => {
+                      const next = [...entries];
+                      next[i] = { ...next[i], croppedBlob: blob };
+                      setEntries(next);
+                    }}
                   />
                 </div>
               ) : (
