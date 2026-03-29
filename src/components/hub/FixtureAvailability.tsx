@@ -29,6 +29,7 @@ function fixtureKey(f: FAFixture) {
 export function FixtureAvailability({ teamSlug }: Props) {
   const { user, isCoach, isAdmin } = useAuth();
   const queryClient = useQueryClient();
+  const [expandedFixture, setExpandedFixture] = useState<string | null>(null);
   const { data: teamData, isLoading: fixturesLoading } = useTeamFixtures(teamSlug);
 
   const { data: availability = [], isLoading: availLoading } = useQuery({
@@ -42,6 +43,22 @@ export function FixtureAvailability({ teamSlug }: Props) {
       return data as AvailabilityRecord[];
     },
     enabled: !!user,
+  });
+
+  // Fetch profiles for all users who have responded
+  const respondentIds = [...new Set(availability.map((a) => a.user_id))];
+  const { data: profiles = [] } = useQuery({
+    queryKey: ["availability-profiles", respondentIds.sort().join(",")],
+    queryFn: async () => {
+      if (respondentIds.length === 0) return [];
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id, full_name")
+        .in("id", respondentIds);
+      if (error) throw error;
+      return data as { id: string; full_name: string | null }[];
+    },
+    enabled: respondentIds.length > 0 && (isCoach || isAdmin),
   });
 
   const mutation = useMutation({
