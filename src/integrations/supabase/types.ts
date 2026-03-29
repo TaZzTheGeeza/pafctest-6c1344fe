@@ -1300,6 +1300,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "tournament_matches_away_team_id_fkey"
+            columns: ["away_team_id"]
+            isOneToOne: false
+            referencedRelation: "tournament_teams_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "tournament_matches_group_id_fkey"
             columns: ["group_id"]
             isOneToOne: false
@@ -1311,6 +1318,13 @@ export type Database = {
             columns: ["home_team_id"]
             isOneToOne: false
             referencedRelation: "tournament_teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tournament_matches_home_team_id_fkey"
+            columns: ["home_team_id"]
+            isOneToOne: false
+            referencedRelation: "tournament_teams_public"
             referencedColumns: ["id"]
           },
         ]
@@ -1346,6 +1360,13 @@ export type Database = {
             columns: ["team_id"]
             isOneToOne: false
             referencedRelation: "tournament_teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tournament_team_players_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "tournament_teams_public"
             referencedColumns: ["id"]
           },
         ]
@@ -1556,7 +1577,89 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      raffle_ticket_numbers: {
+        Row: {
+          payment_status: string | null
+          raffle_id: string | null
+          ticket_number: number | null
+        }
+        Insert: {
+          payment_status?: string | null
+          raffle_id?: string | null
+          ticket_number?: number | null
+        }
+        Update: {
+          payment_status?: string | null
+          raffle_id?: string | null
+          ticket_number?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "raffle_tickets_raffle_id_fkey"
+            columns: ["raffle_id"]
+            isOneToOne: false
+            referencedRelation: "raffles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tournament_teams_public: {
+        Row: {
+          age_group_id: string | null
+          club_name: string | null
+          county: string | null
+          created_at: string | null
+          group_id: string | null
+          id: string | null
+          league_division: string | null
+          player_count: number | null
+          status: string | null
+          team_category: string | null
+          team_name: string | null
+        }
+        Insert: {
+          age_group_id?: string | null
+          club_name?: string | null
+          county?: string | null
+          created_at?: string | null
+          group_id?: string | null
+          id?: string | null
+          league_division?: string | null
+          player_count?: number | null
+          status?: string | null
+          team_category?: string | null
+          team_name?: string | null
+        }
+        Update: {
+          age_group_id?: string | null
+          club_name?: string | null
+          county?: string | null
+          created_at?: string | null
+          group_id?: string | null
+          id?: string | null
+          league_division?: string | null
+          player_count?: number | null
+          status?: string | null
+          team_category?: string | null
+          team_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_teams_age_group_id_fkey"
+            columns: ["age_group_id"]
+            isOneToOne: false
+            referencedRelation: "tournament_age_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tournament_teams_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "tournament_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       has_role: {
