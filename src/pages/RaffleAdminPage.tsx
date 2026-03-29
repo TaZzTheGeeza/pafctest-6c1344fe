@@ -70,6 +70,7 @@ const RaffleAdminPage = () => {
     max_tickets: "",
     draw_date: "",
     number_range: "",
+    auto_draw_when_sold_out: false,
   });
   const [editImageFile, setEditImageFile] = useState<File | null>(null);
   const [editImagePreview, setEditImagePreview] = useState<string | null>(null);
@@ -84,6 +85,7 @@ const RaffleAdminPage = () => {
     max_tickets: "",
     draw_date: "",
     number_range: "",
+    auto_draw_when_sold_out: false,
   });
 
   useEffect(() => {
