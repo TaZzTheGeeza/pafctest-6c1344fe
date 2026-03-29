@@ -175,7 +175,7 @@ export function CarpoolBoard({ teamSlug }: Props) {
   });
 
   const getName = (userId: string) => profiles.find((p) => p.id === userId)?.full_name || "Team Member";
-  const fixtures = teamData?.fixtures || [];
+  const fixtures = (teamData?.fixtures || []).filter((f) => f.type !== "result");
 
   if (fixturesLoading || offersLoading || requestsLoading) {
     return (
