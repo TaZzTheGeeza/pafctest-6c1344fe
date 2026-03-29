@@ -966,6 +966,7 @@ export type Database = {
       }
       raffles: {
         Row: {
+          auto_draw_when_sold_out: boolean
           created_at: string
           currency: string
           description: string | null
@@ -988,6 +989,7 @@ export type Database = {
           winner_ticket_id: string | null
         }
         Insert: {
+          auto_draw_when_sold_out?: boolean
           created_at?: string
           currency?: string
           description?: string | null
@@ -1010,6 +1012,7 @@ export type Database = {
           winner_ticket_id?: string | null
         }
         Update: {
+          auto_draw_when_sold_out?: boolean
           created_at?: string
           currency?: string
           description?: string | null

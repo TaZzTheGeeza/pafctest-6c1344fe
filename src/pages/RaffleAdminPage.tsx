@@ -33,6 +33,8 @@ interface Raffle {
   winner_ticket_id: string | null;
   image_url: string | null;
   created_at: string;
+  auto_draw_when_sold_out: boolean;
+  number_range: number | null;
 }
 
 interface RaffleTicket {
@@ -68,6 +70,7 @@ const RaffleAdminPage = () => {
     max_tickets: "",
     draw_date: "",
     number_range: "",
+    auto_draw_when_sold_out: false,
   });
   const [editImageFile, setEditImageFile] = useState<File | null>(null);
   const [editImagePreview, setEditImagePreview] = useState<string | null>(null);
@@ -82,6 +85,7 @@ const RaffleAdminPage = () => {
     max_tickets: "",
     draw_date: "",
     number_range: "",
+    auto_draw_when_sold_out: false,
   });
 
   useEffect(() => {
@@ -155,6 +159,7 @@ const RaffleAdminPage = () => {
       draw_date: newRaffle.draw_date || null,
       status: "draft",
       image_url: imageUrl,
+      auto_draw_when_sold_out: newRaffle.auto_draw_when_sold_out,
     } as any);
 
     if (error) {
@@ -162,7 +167,7 @@ const RaffleAdminPage = () => {
     } else {
       toast.success("Raffle created! Set it to 'Active' when ready.");
       setShowCreate(false);
-      setNewRaffle({ title: "", description: "", prize_description: "", ticket_price: "", max_tickets: "", draw_date: "", number_range: "" });
+      setNewRaffle({ title: "", description: "", prize_description: "", ticket_price: "", max_tickets: "", draw_date: "", number_range: "", auto_draw_when_sold_out: false });
       setImageFile(null);
       setImagePreview(null);
       fetchRaffles();
@@ -195,7 +200,8 @@ const RaffleAdminPage = () => {
       ticket_price: (raffle.ticket_price_cents / 100).toFixed(2),
       max_tickets: raffle.max_tickets?.toString() || "",
       draw_date: raffle.draw_date ? raffle.draw_date.split("T")[0] : "",
-      number_range: (raffle as any).number_range?.toString() || "",
+      number_range: raffle.number_range?.toString() || "",
+      auto_draw_when_sold_out: (raffle as any).auto_draw_when_sold_out ?? false,
     });
     setEditImagePreview(raffle.image_url);
     setEditImageFile(null);
@@ -260,6 +266,7 @@ const RaffleAdminPage = () => {
         number_range: editForm.number_range ? parseInt(editForm.number_range) : null,
         draw_date: editForm.draw_date || null,
         image_url: imageUrl,
+        auto_draw_when_sold_out: editForm.auto_draw_when_sold_out,
       } as any)
       .eq("id", editingRaffle.id);
 
@@ -430,6 +437,19 @@ const RaffleAdminPage = () => {
                       <DateInput value={newRaffle.draw_date} onChange={(val) => setNewRaffle(p => ({ ...p, draw_date: val }))} placeholder="Select draw date" />
                     </div>
                   </div>
+                  <div className="flex items-center gap-3 p-3 rounded-lg border border-border bg-secondary/30">
+                    <button
+                      type="button"
+                      onClick={() => setNewRaffle(p => ({ ...p, auto_draw_when_sold_out: !p.auto_draw_when_sold_out }))}
+                      className={`relative inline-flex h-6 w-10 items-center rounded-full transition-colors ${newRaffle.auto_draw_when_sold_out ? "bg-primary" : "bg-muted"}`}
+                    >
+                      <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${newRaffle.auto_draw_when_sold_out ? "translate-x-5" : "translate-x-1"}`} />
+                    </button>
+                    <div>
+                      <p className="text-sm font-display font-semibold text-foreground">Auto-draw when sold out</p>
+                      <p className="text-[10px] text-muted-foreground">Automatically trigger the draw when all numbers have been bought</p>
+                    </div>
+                  </div>
                   <div>
                     <Label>Raffle Image (optional)</Label>
                     <input
@@ -521,6 +541,19 @@ const RaffleAdminPage = () => {
                           <p className="text-xs text-muted-foreground">Per Ticket</p>
                         </div>
                       </div>
+
+                      {/* Auto-draw badge */}
+                      {(raffle as any).auto_draw_when_sold_out && raffle.number_range && (
+                        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/5 border border-primary/20">
+                          <Shuffle className="h-3.5 w-3.5 text-primary" />
+                          <span className="text-xs font-display text-primary tracking-wider">
+                            Auto-draw when sold out ({paidTickets.length}/{raffle.number_range})
+                          </span>
+                          {paidTickets.length >= (raffle.number_range ?? 0) && raffle.status === "active" && (
+                            <Badge className="ml-auto bg-green-500/20 text-green-400 border-green-500/30 text-[10px]">SOLD OUT</Badge>
+                          )}
+                        </div>
+                      )}
 
                       {/* Winner */}
                       {raffle.winner_name && (
@@ -650,6 +683,19 @@ const RaffleAdminPage = () => {
               <div>
                 <Label>Draw Date (optional)</Label>
                 <DateInput value={editForm.draw_date} onChange={(val) => setEditForm(p => ({ ...p, draw_date: val }))} placeholder="Select draw date" />
+              </div>
+            </div>
+            <div className="flex items-center gap-3 p-3 rounded-lg border border-border bg-secondary/30">
+              <button
+                type="button"
+                onClick={() => setEditForm(p => ({ ...p, auto_draw_when_sold_out: !p.auto_draw_when_sold_out }))}
+                className={`relative inline-flex h-6 w-10 items-center rounded-full transition-colors ${editForm.auto_draw_when_sold_out ? "bg-primary" : "bg-muted"}`}
+              >
+                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${editForm.auto_draw_when_sold_out ? "translate-x-5" : "translate-x-1"}`} />
+              </button>
+              <div>
+                <p className="text-sm font-display font-semibold text-foreground">Auto-draw when sold out</p>
+                <p className="text-[10px] text-muted-foreground">Automatically trigger the draw when all numbers have been bought</p>
               </div>
             </div>
             <div>

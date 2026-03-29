@@ -1,0 +1,1 @@
+ALTER TABLE public.raffles ADD COLUMN auto_draw_when_sold_out boolean NOT NULL DEFAULT false;

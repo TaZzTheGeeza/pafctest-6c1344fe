@@ -37,6 +37,7 @@ serve(async (req) => {
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as Stripe.Checkout.Session;
       const ticketIds = session.metadata?.ticket_ids?.split(",") || [];
+      const raffleId = session.metadata?.raffle_id;
 
       for (const ticketId of ticketIds) {
         await supabaseAdmin
@@ -46,6 +47,42 @@ serve(async (req) => {
             stripe_payment_intent_id: session.payment_intent as string,
           })
           .eq("id", ticketId.trim());
+      }
+
+      // Check for auto-draw when sold out
+      if (raffleId) {
+        const { data: raffle } = await supabaseAdmin
+          .from("raffles")
+          .select("auto_draw_when_sold_out, number_range, status")
+          .eq("id", raffleId)
+          .single();
+
+        if (raffle?.auto_draw_when_sold_out && raffle.number_range && raffle.status === "active") {
+          const { data: paidTickets } = await supabaseAdmin
+            .from("raffle_tickets")
+            .select("id, ticket_number, buyer_name")
+            .eq("raffle_id", raffleId)
+            .eq("payment_status", "paid");
+
+          if (paidTickets && paidTickets.length >= raffle.number_range) {
+            // All numbers sold — auto-draw a winner
+            const winnerIdx = Math.floor(Math.random() * paidTickets.length);
+            const winner = paidTickets[winnerIdx];
+
+            await supabaseAdmin
+              .from("raffles")
+              .update({
+                status: "drawn",
+                winner_name: winner.buyer_name,
+                winner_ticket_id: winner.id,
+                drawn_ticket_number: winner.ticket_number,
+                draw_started_at: new Date().toISOString(),
+              })
+              .eq("id", raffleId);
+
+            console.log(`Auto-draw complete for raffle ${raffleId}: winner ticket #${winner.ticket_number}`);
+          }
+        }
       }
     }
 
