@@ -3,6 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { UserPlus, Trash2, Users, Search, ChevronDown, Shield, User, Heart } from "lucide-react";
 import { toast } from "sonner";
+import { isUserOnline, formatLastSeen } from "@/hooks/usePresence";
+import { toast } from "sonner";
 
 const TEAM_ROLES = [
   { value: "coach", label: "Coach", color: "bg-amber-500/20 text-amber-400 border-amber-500/30", icon: Shield },
@@ -16,13 +18,14 @@ interface Member {
   user_id: string;
   team_slug: string;
   role: string;
-  profile?: { full_name: string | null; email: string | null };
+  profile?: { full_name: string | null; email: string | null; last_seen_at: string | null };
 }
 
 interface Profile {
   id: string;
   full_name: string | null;
   email: string | null;
+  last_seen_at: string | null;
 }
 
 export function TeamMemberManager({ teamSlug, teamName }: { teamSlug: string; teamName: string }) {
@@ -49,13 +52,13 @@ export function TeamMemberManager({ teamSlug, teamName }: { teamSlug: string; te
 
   async function loadProfile(userId: string) {
     if (profiles[userId]) return;
-    const { data } = await supabase.from("profiles").select("id, full_name, email").eq("id", userId).single();
-    if (data) setProfiles((prev) => ({ ...prev, [userId]: data }));
+    const { data } = await supabase.from("profiles").select("id, full_name, email, last_seen_at").eq("id", userId).single();
+    if (data) setProfiles((prev) => ({ ...prev, [userId]: data as any }));
   }
 
   async function loadAllProfiles() {
-    const { data } = await supabase.from("profiles").select("id, full_name, email");
-    if (data) setAllProfiles(data);
+    const { data } = await supabase.from("profiles").select("id, full_name, email, last_seen_at");
+    if (data) setAllProfiles(data as any);
   }
 
   async function addMember(userId: string) {
