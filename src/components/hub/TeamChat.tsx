@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Send, Hash, Plus, Users, ImagePlus, Loader2, X, Pencil, Trash2, Check } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import { isUserOnline } from "@/hooks/usePresence";
 
 interface Channel {
   id: string;
