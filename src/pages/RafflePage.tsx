@@ -13,7 +13,7 @@ import { toast } from "sonner";
 import { useSearchParams } from "react-router-dom";
 import NumberPicker from "@/components/raffle/NumberPicker";
 import { AnimatePresence } from "framer-motion";
-import RaffleDraw from "@/components/raffle/RaffleDraw";
+import RaffleDraw, { type RaffleTicket as DrawTicket } from "@/components/raffle/RaffleDraw";
 
 interface Raffle {
   id: string;
