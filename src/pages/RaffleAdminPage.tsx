@@ -437,6 +437,19 @@ const RaffleAdminPage = () => {
                       <DateInput value={newRaffle.draw_date} onChange={(val) => setNewRaffle(p => ({ ...p, draw_date: val }))} placeholder="Select draw date" />
                     </div>
                   </div>
+                  <div className="flex items-center gap-3 p-3 rounded-lg border border-border bg-secondary/30">
+                    <button
+                      type="button"
+                      onClick={() => setNewRaffle(p => ({ ...p, auto_draw_when_sold_out: !p.auto_draw_when_sold_out }))}
+                      className={`relative inline-flex h-6 w-10 items-center rounded-full transition-colors ${newRaffle.auto_draw_when_sold_out ? "bg-primary" : "bg-muted"}`}
+                    >
+                      <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${newRaffle.auto_draw_when_sold_out ? "translate-x-5" : "translate-x-1"}`} />
+                    </button>
+                    <div>
+                      <p className="text-sm font-display font-semibold text-foreground">Auto-draw when sold out</p>
+                      <p className="text-[10px] text-muted-foreground">Automatically trigger the draw when all numbers have been bought</p>
+                    </div>
+                  </div>
                   <div>
                     <Label>Raffle Image (optional)</Label>
                     <input
@@ -657,6 +670,19 @@ const RaffleAdminPage = () => {
               <div>
                 <Label>Draw Date (optional)</Label>
                 <DateInput value={editForm.draw_date} onChange={(val) => setEditForm(p => ({ ...p, draw_date: val }))} placeholder="Select draw date" />
+              </div>
+            </div>
+            <div className="flex items-center gap-3 p-3 rounded-lg border border-border bg-secondary/30">
+              <button
+                type="button"
+                onClick={() => setEditForm(p => ({ ...p, auto_draw_when_sold_out: !p.auto_draw_when_sold_out }))}
+                className={`relative inline-flex h-6 w-10 items-center rounded-full transition-colors ${editForm.auto_draw_when_sold_out ? "bg-primary" : "bg-muted"}`}
+              >
+                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${editForm.auto_draw_when_sold_out ? "translate-x-5" : "translate-x-1"}`} />
+              </button>
+              <div>
+                <p className="text-sm font-display font-semibold text-foreground">Auto-draw when sold out</p>
+                <p className="text-[10px] text-muted-foreground">Automatically trigger the draw when all numbers have been bought</p>
               </div>
             </div>
             <div>
