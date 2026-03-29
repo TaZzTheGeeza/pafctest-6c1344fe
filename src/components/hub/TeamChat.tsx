@@ -364,7 +364,10 @@ export function TeamChat({ teamSlug }: { teamSlug: string }) {
                     <div key={msg.id} className={`group flex ${isOwn ? "justify-end" : "justify-start"}`}>
                       <div className={`max-w-[75%] ${isOwn ? "items-end" : "items-start"}`}>
                         {showAvatar && (
-                          <p className={`text-[10px] font-display tracking-wider mb-0.5 ${isOwn ? "text-right text-primary" : "text-muted-foreground"}`}>
+                          <p className={`text-[10px] font-display tracking-wider mb-0.5 flex items-center gap-1.5 ${isOwn ? "justify-end text-primary" : "text-muted-foreground"}`}>
+                            {!isOwn && (
+                              <span className={`inline-block w-2 h-2 rounded-full ${isUserOnline(presenceMap[msg.user_id] ?? null) ? "bg-emerald-500" : "bg-muted-foreground/40"}`} />
+                            )}
                             {isOwn ? "You" : profiles[msg.user_id] || "Loading..."}
                           </p>
                         )}
