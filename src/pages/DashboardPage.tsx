@@ -54,7 +54,7 @@ const ADMIN_LINKS = [
   { label: "Safeguarding Reports", path: "/admin/safeguarding-reports", icon: Shield, desc: "View & manage safeguarding concerns" },
 ];
 
-type DashboardSection = "overview" | "users" | "requests" | "enquiries" | "potm" | "report" | "stats" | "manage";
+type DashboardSection = "overview" | "users" | "requests" | "enquiries" | "messages" | "potm" | "report" | "stats" | "manage";
 
 export default function DashboardPage() {
   const { user, isAdmin, isCoach } = useAuth();
@@ -209,32 +209,12 @@ export default function DashboardPage() {
     players: users.filter((u) => u.roles.includes("player")).length,
   };
 
-  const [enquiries, setEnquiries] = useState<any[]>([]);
-  const [enquiriesLoading, setEnquiriesLoading] = useState(false);
-
-  async function loadEnquiries() {
-    setEnquiriesLoading(true);
-    const { data } = await supabase
-      .from("contact_submissions" as any)
-      .select("*")
-      .order("created_at", { ascending: false });
-    setEnquiries(data ?? []);
-    setEnquiriesLoading(false);
-  }
-
-  useEffect(() => {
-    if (activeSection === "enquiries" && isAdmin) {
-      loadEnquiries();
-    }
-  }, [activeSection, isAdmin]);
-
-  const enquiryCount = enquiries.length;
-
   const sectionItems: { key: DashboardSection; label: string; icon: any; adminOnly?: boolean; coachOnly?: boolean }[] = [
     { key: "overview", label: "Overview", icon: LayoutDashboard },
+    { key: "messages", label: "Messages", icon: MessageSquare },
     { key: "users", label: "Users", icon: Users, adminOnly: true },
     { key: "requests", label: "Requests", icon: UserPlusIcon, adminOnly: true },
-    
+    { key: "enquiries", label: "Enquiries", icon: Mail, adminOnly: true },
     { key: "potm", label: "POTM", icon: Star, coachOnly: true },
     { key: "report", label: "Match Report", icon: FileText, coachOnly: true },
     { key: "stats", label: "Player Stats", icon: BarChart3, coachOnly: true },
