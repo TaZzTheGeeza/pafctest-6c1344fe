@@ -462,6 +462,18 @@ export default function DashboardPage() {
   );
 }
 
+const TEAM_SLUGS = [
+  "u7", "u8-black", "u8-gold", "u9", "u10",
+  "u11-black", "u11-gold", "u13-black", "u13-gold", "u14",
+];
+
+const TEAM_LABELS: Record<string, string> = {
+  "u7": "U7", "u8-black": "U8 Black", "u8-gold": "U8 Gold", "u9": "U9", "u10": "U10",
+  "u11-black": "U11 Black", "u11-gold": "U11 Gold", "u13-black": "U13 Black", "u13-gold": "U13 Gold", "u14": "U14",
+};
+
+const TEAM_ROLES = ["coach", "player", "parent", "member"] as const;
+
 function UserRow({
   user,
   currentUserId,
@@ -479,6 +491,11 @@ function UserRow({
   const [showTeamAssign, setShowTeamAssign] = useState(false);
   const [assignedTeams, setAssignedTeams] = useState<string[]>([]);
   const [loadingTeams, setLoadingTeams] = useState(false);
+  const [showTeamMembership, setShowTeamMembership] = useState(false);
+  const [teamMemberships, setTeamMemberships] = useState<{ team_slug: string; role: string }[]>([]);
+  const [loadingMemberships, setLoadingMemberships] = useState(false);
+  const [addingTeamSlug, setAddingTeamSlug] = useState<string | null>(null);
+  const [selectedRole, setSelectedRole] = useState<string>("member");
   const navigate = useNavigate();
   const isCurrentUser = user.id === currentUserId;
   const availableRoles = (["admin", "coach", "player", "user"] as AppRole[]).filter(
@@ -517,6 +534,50 @@ function UserRow({
   function handleTeamToggle() {
     if (!showTeamAssign) loadAssignedTeams();
     setShowTeamAssign(!showTeamAssign);
+  }
+
+  async function loadTeamMemberships() {
+    setLoadingMemberships(true);
+    const { data } = await supabase
+      .from("team_members")
+      .select("team_slug, role")
+      .eq("user_id", user.id);
+    setTeamMemberships(data || []);
+    setLoadingMemberships(false);
+  }
+
+  function handleTeamMembershipToggle() {
+    if (!showTeamMembership) loadTeamMemberships();
+    setShowTeamMembership(!showTeamMembership);
+  }
+
+  async function addToTeam(teamSlug: string) {
+    setAddingTeamSlug(teamSlug);
+    const { error } = await supabase
+      .from("team_members")
+      .insert({ user_id: user.id, team_slug: teamSlug, role: selectedRole });
+    if (error) {
+      if (error.code === "23505") toast.info("Already a member of this team");
+      else toast.error("Failed to add to team");
+    } else {
+      toast.success(`Added to ${TEAM_LABELS[teamSlug] || teamSlug} as ${selectedRole}`);
+      setTeamMemberships((prev) => [...prev, { team_slug: teamSlug, role: selectedRole }]);
+    }
+    setAddingTeamSlug(null);
+  }
+
+  async function removeFromTeam(teamSlug: string) {
+    const { error } = await supabase
+      .from("team_members")
+      .delete()
+      .eq("user_id", user.id)
+      .eq("team_slug", teamSlug);
+    if (error) {
+      toast.error("Failed to remove from team");
+    } else {
+      toast.success(`Removed from ${TEAM_LABELS[teamSlug] || teamSlug}`);
+      setTeamMemberships((prev) => prev.filter((m) => m.team_slug !== teamSlug));
+    }
   }
 
   return (
@@ -607,20 +668,28 @@ function UserRow({
                 onClick={handleTeamToggle}
                 className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-display border border-amber-500/30 text-amber-400 hover:bg-amber-500/10 transition-colors"
               >
-                <Users className="h-3 w-3" /> Teams
+                <Users className="h-3 w-3" /> Coach Teams
                 <ChevronDown className={`h-3 w-3 transition-transform ${showTeamAssign ? "rotate-180" : ""}`} />
               </button>
             )}
+
+            <button
+              onClick={handleTeamMembershipToggle}
+              className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-display border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 transition-colors"
+            >
+              <Shield className="h-3 w-3" /> Hub Teams
+              <ChevronDown className={`h-3 w-3 transition-transform ${showTeamMembership ? "rotate-180" : ""}`} />
+            </button>
           </div>
         </div>
       </div>
 
-      {/* Team Assignment Panel */}
+      {/* Coach Age Group Assignment Panel */}
       {isCoachUser && showTeamAssign && (
         <div className="px-5 pb-4" onClick={(e) => e.stopPropagation()}>
           <div className="bg-secondary/30 border border-border rounded-lg p-3 ml-13">
             <p className="text-[10px] font-display tracking-wider uppercase text-muted-foreground mb-2">
-              Assign teams for this coach
+              Assign age groups for this coach
             </p>
             {loadingTeams ? (
               <Loader2 className="h-4 w-4 animate-spin text-primary" />
@@ -642,6 +711,72 @@ function UserRow({
                     </button>
                   );
                 })}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Team Membership Assignment Panel */}
+      {showTeamMembership && (
+        <div className="px-5 pb-4" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-secondary/30 border border-border rounded-lg p-3 ml-13">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-[10px] font-display tracking-wider uppercase text-muted-foreground">
+                PAFC Hub team membership
+              </p>
+              <select
+                value={selectedRole}
+                onChange={(e) => setSelectedRole(e.target.value)}
+                className="bg-background border border-border rounded px-2 py-1 text-xs text-foreground"
+              >
+                {TEAM_ROLES.map((r) => (
+                  <option key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</option>
+                ))}
+              </select>
+            </div>
+            {loadingMemberships ? (
+              <Loader2 className="h-4 w-4 animate-spin text-primary" />
+            ) : (
+              <div className="space-y-2">
+                {/* Current memberships */}
+                {teamMemberships.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mb-2">
+                    {teamMemberships.map((m) => (
+                      <span
+                        key={m.team_slug}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-display border bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
+                      >
+                        {TEAM_LABELS[m.team_slug] || m.team_slug}
+                        <span className="text-emerald-600 text-[9px]">({m.role})</span>
+                        <button
+                          onClick={() => removeFromTeam(m.team_slug)}
+                          className="ml-0.5 hover:text-destructive transition-colors"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+                {/* Available teams */}
+                <div className="flex flex-wrap gap-1.5">
+                  {TEAM_SLUGS.filter((slug) => !teamMemberships.some((m) => m.team_slug === slug)).map((slug) => (
+                    <button
+                      key={slug}
+                      onClick={() => addToTeam(slug)}
+                      disabled={addingTeamSlug === slug}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-display border border-border text-muted-foreground hover:border-emerald-500/30 hover:text-emerald-400 transition-all"
+                    >
+                      {addingTeamSlug === slug ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : (
+                        <Plus className="h-3 w-3" />
+                      )}
+                      {TEAM_LABELS[slug]}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
           </div>
