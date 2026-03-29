@@ -201,8 +201,6 @@ const RafflePage = () => {
       payment_status: "paid",
     };
   };
-    return null;
-  };
 
   return (
     <div className="min-h-screen flex flex-col">
