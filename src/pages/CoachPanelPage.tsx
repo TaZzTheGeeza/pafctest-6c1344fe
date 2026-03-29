@@ -5,7 +5,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Trophy, FileText, Upload, Star, CheckCircle, Loader2, ShieldX, BarChart3, Settings, AlertTriangle, Plus, Trash2 } from "lucide-react";
+import { Trophy, FileText, Upload, Star, CheckCircle, Loader2, ShieldX, BarChart3, Settings, AlertTriangle, Plus, Trash2, Eraser } from "lucide-react";
 import { toast } from "sonner";
 import { ManageSubmissionsForm } from "@/components/ManageSubmissionsForm";
 import { PlayerStatsForm } from "@/components/PlayerStatsForm";
@@ -16,6 +16,7 @@ import { faTeamConfigs } from "@/lib/faFixtureConfig";
 import { uploadPotmPhoto } from "@/lib/potmPhoto";
 import { DateInput } from "@/components/ui/date-input";
 import { POTMCardPreview } from "@/components/coach/POTMCardPreview";
+import { BackgroundEraser } from "@/components/coach/BackgroundEraser";
 
 const ALL_AGE_GROUPS = [
   "U7", "U8 Black", "U8 Gold", "U9", "U10",
@@ -168,6 +169,8 @@ interface POTMEntry {
   photoFile: File | null;
   photoPreview: string | null;
   croppedBlob: Blob | null;
+  eraserOpen: boolean;
+  erasedPreview: string | null;
 }
 
 export function POTMForm({ ageGroups }: { ageGroups: string[] }) {
@@ -178,7 +181,7 @@ export function POTMForm({ ageGroups }: { ageGroups: string[] }) {
   const [matchDescription, setMatchDescription] = useState("");
   const [matchDate, setMatchDate] = useState("");
   const [entries, setEntries] = useState<POTMEntry[]>([
-    { player_name: "", shirt_number: "", reason: "", photoFile: null, photoPreview: null, croppedBlob: null },
+    { player_name: "", shirt_number: "", reason: "", photoFile: null, photoPreview: null, croppedBlob: null, eraserOpen: false, erasedPreview: null },
   ]);
   const fileInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
@@ -189,7 +192,7 @@ export function POTMForm({ ageGroups }: { ageGroups: string[] }) {
   const addEntry = () => {
     setEntries((prev) => [
       ...prev,
-      { player_name: "", shirt_number: "", reason: "", photoFile: null, photoPreview: null, croppedBlob: null },
+      { player_name: "", shirt_number: "", reason: "", photoFile: null, photoPreview: null, croppedBlob: null, eraserOpen: false, erasedPreview: null },
     ]);
   };
 
@@ -231,7 +234,8 @@ export function POTMForm({ ageGroups }: { ageGroups: string[] }) {
     setEntries((prev) => {
       const next = [...prev];
       if (next[i].photoPreview) URL.revokeObjectURL(next[i].photoPreview!);
-      next[i] = { ...next[i], photoFile: null, photoPreview: null, croppedBlob: null };
+      if (next[i].erasedPreview) URL.revokeObjectURL(next[i].erasedPreview!);
+      next[i] = { ...next[i], photoFile: null, photoPreview: null, croppedBlob: null, eraserOpen: false, erasedPreview: null };
       return next;
     });
 
