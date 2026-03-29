@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 import { ManageSubmissionsForm } from "@/components/ManageSubmissionsForm";
+import { EnquiryReplyPanel } from "@/components/dashboard/EnquiryReplyPanel";
+import { UserMessagesInbox } from "@/components/dashboard/UserMessagesInbox";
 import { PlayerStatsForm } from "@/components/PlayerStatsForm";
 import { useUserAgeGroups } from "@/hooks/useUserAgeGroups";
 import { faTeamConfigs } from "@/lib/faFixtureConfig";
