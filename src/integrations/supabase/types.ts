@@ -1577,32 +1577,6 @@ export type Database = {
       }
     }
     Views: {
-      raffle_ticket_numbers: {
-        Row: {
-          payment_status: string | null
-          raffle_id: string | null
-          ticket_number: number | null
-        }
-        Insert: {
-          payment_status?: string | null
-          raffle_id?: string | null
-          ticket_number?: number | null
-        }
-        Update: {
-          payment_status?: string | null
-          raffle_id?: string | null
-          ticket_number?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "raffle_tickets_raffle_id_fkey"
-            columns: ["raffle_id"]
-            isOneToOne: false
-            referencedRelation: "raffles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       tournament_teams_public: {
         Row: {
           age_group_id: string | null
