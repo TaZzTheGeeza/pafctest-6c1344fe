@@ -60,6 +60,7 @@ export default function PlayerRegistrationPage() {
     emergencyRelationship: "",
     emergencyPhone: "",
     medicalConditions: "",
+    hasMedicalConditions: "" as "" | "yes" | "no",
     knownToSocialServices: "no",
     socialServicesDetails: "",
     fosterCareDetails: "",
