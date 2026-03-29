@@ -16,8 +16,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { TournamentEntryForm } from "@/components/tournament/TournamentEntryForm";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import pitchLayout from "@/assets/tournament/pitch-layout.png";
-import venueDirections from "@/assets/tournament/venue-directions.jpeg";
+import PitchLayoutSVG from "@/components/tournament/PitchLayoutSVG";
 import { TournamentBracket } from "@/components/TournamentBracket";
 import { toast } from "sonner";
 
@@ -443,11 +442,30 @@ const TournamentPage = () => {
                     <div className="grid md:grid-cols-2 gap-4">
                       <div>
                         <p className="text-sm font-semibold mb-2">Pitch Layout</p>
-                        <img src={pitchLayout} alt="PAFC Tourney pitch layout showing 4 pitches, registration gazebo, and first aid area" className="rounded-lg border border-border w-full" />
+                        <PitchLayoutSVG />
                       </div>
                       <div>
                         <p className="text-sm font-semibold mb-2">Directions & Parking</p>
-                        <img src={venueDirections} alt="Map showing directions from Paston & Gunthorpe Community Association to Itter Park" className="rounded-lg border border-border w-full" />
+                        <div className="rounded-lg border border-border overflow-hidden aspect-[4/3]">
+                          <iframe
+                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2412.5!2d-0.2365!3d52.6095!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4877f1a0b0b0b0b1%3A0x1234567890abcdef!2sItter%20Park%2C%20Itter%20Crescent%2C%20Peterborough%20PE4%206SW!5e0!3m2!1sen!2suk!4v1700000000000"
+                            width="100%"
+                            height="100%"
+                            style={{ border: 0 }}
+                            allowFullScreen
+                            loading="lazy"
+                            referrerPolicy="no-referrer-when-downgrade"
+                            title="Itter Park location map"
+                          />
+                        </div>
+                        <a
+                          href="https://www.google.com/maps/dir//Itter+Park,+Itter+Crescent,+Peterborough+PE4+6SW"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 mt-2 text-xs text-primary hover:underline"
+                        >
+                          <MapPin className="h-3 w-3" /> Open in Google Maps
+                        </a>
                       </div>
                     </div>
                     <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-3 flex items-start gap-2">
