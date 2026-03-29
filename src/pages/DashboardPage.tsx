@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { toast } from "sonner";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   Users, Shield, ShieldCheck, ShieldAlert, UserCog, Trash2,
   Search, ChevronDown, Trophy, Ticket, BarChart3, FileText,
@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 import { ManageSubmissionsForm } from "@/components/ManageSubmissionsForm";
+import { EnquiryReplyPanel } from "@/components/dashboard/EnquiryReplyPanel";
+import { UserMessagesInbox } from "@/components/dashboard/UserMessagesInbox";
 import { PlayerStatsForm } from "@/components/PlayerStatsForm";
 import { useUserAgeGroups } from "@/hooks/useUserAgeGroups";
 import { faTeamConfigs } from "@/lib/faFixtureConfig";
@@ -52,7 +54,7 @@ const ADMIN_LINKS = [
   { label: "Safeguarding Reports", path: "/admin/safeguarding-reports", icon: Shield, desc: "View & manage safeguarding concerns" },
 ];
 
-type DashboardSection = "overview" | "users" | "requests" | "enquiries" | "potm" | "report" | "stats" | "manage";
+type DashboardSection = "overview" | "users" | "requests" | "enquiries" | "messages" | "potm" | "report" | "stats" | "manage";
 
 export default function DashboardPage() {
   const { user, isAdmin, isCoach } = useAuth();
@@ -67,6 +69,15 @@ export default function DashboardPage() {
   const [shopOpen, setShopOpen] = useState(true);
   const [togglingShop, setTogglingShop] = useState(false);
   const [activeSection, setActiveSection] = useState<DashboardSection>("overview");
+  const [searchParams] = useSearchParams();
+
+  // Handle section from URL params (e.g. /dashboard?section=messages)
+  useEffect(() => {
+    const section = searchParams.get("section");
+    if (section && ["overview", "users", "requests", "enquiries", "messages", "potm", "report", "stats", "manage"].includes(section)) {
+      setActiveSection(section as DashboardSection);
+    }
+  }, [searchParams]);
 
   const effectiveAgeGroups = isAdmin ? ALL_AGE_GROUPS : assignedGroups;
   const showCoachTools = isCoach || isAdmin;
@@ -207,32 +218,12 @@ export default function DashboardPage() {
     players: users.filter((u) => u.roles.includes("player")).length,
   };
 
-  const [enquiries, setEnquiries] = useState<any[]>([]);
-  const [enquiriesLoading, setEnquiriesLoading] = useState(false);
-
-  async function loadEnquiries() {
-    setEnquiriesLoading(true);
-    const { data } = await supabase
-      .from("contact_submissions" as any)
-      .select("*")
-      .order("created_at", { ascending: false });
-    setEnquiries(data ?? []);
-    setEnquiriesLoading(false);
-  }
-
-  useEffect(() => {
-    if (activeSection === "enquiries" && isAdmin) {
-      loadEnquiries();
-    }
-  }, [activeSection, isAdmin]);
-
-  const enquiryCount = enquiries.length;
-
   const sectionItems: { key: DashboardSection; label: string; icon: any; adminOnly?: boolean; coachOnly?: boolean }[] = [
     { key: "overview", label: "Overview", icon: LayoutDashboard },
+    { key: "messages", label: "Messages", icon: MessageSquare },
     { key: "users", label: "Users", icon: Users, adminOnly: true },
     { key: "requests", label: "Requests", icon: UserPlusIcon, adminOnly: true },
-    
+    { key: "enquiries", label: "Enquiries", icon: Mail, adminOnly: true },
     { key: "potm", label: "POTM", icon: Star, coachOnly: true },
     { key: "report", label: "Match Report", icon: FileText, coachOnly: true },
     { key: "stats", label: "Player Stats", icon: BarChart3, coachOnly: true },
@@ -485,57 +476,20 @@ export default function DashboardPage() {
                   <Mail className="h-4 w-4 text-primary" /> Contact Enquiries
                 </h2>
               </div>
-              {enquiriesLoading ? (
-                <div className="flex items-center justify-center py-16">
-                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                </div>
-              ) : enquiries.length === 0 ? (
-                <div className="text-center py-16">
-                  <Mail className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-                  <p className="text-muted-foreground font-display">No enquiries yet</p>
-                </div>
-              ) : (
-                <div className="divide-y divide-border">
-                  {enquiries.map((eq: any) => (
-                    <div key={eq.id} className="p-5 hover:bg-secondary/30 transition-colors">
-                      <div className="flex items-start justify-between gap-4 mb-2">
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 rounded-lg bg-primary/10">
-                            <Mail className="h-4 w-4 text-primary" />
-                          </div>
-                          <div>
-                            <p className="text-sm font-display font-semibold text-foreground">{eq.name}</p>
-                            <a href={`mailto:${eq.email}`} className="text-xs text-primary hover:underline flex items-center gap-1">
-                              {eq.email}
-                              <ExternalLink className="h-3 w-3" />
-                            </a>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-3 shrink-0">
-                          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                            <Clock className="h-3 w-3" />
-                            {new Date(eq.created_at).toLocaleDateString("en-GB", {
-                              day: "2-digit",
-                              month: "short",
-                              year: "2-digit",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
-                          </div>
-                          <a
-                            href={`mailto:${encodeURIComponent(eq.email)}?subject=${encodeURIComponent(`Re: Your enquiry to Peterborough Athletic FC`)}&body=${encodeURIComponent(`Hi ${eq.name},\n\nThank you for getting in touch with Peterborough Athletic FC.\n\n\n\nKind regards,\nPeterborough Athletic FC\n\n--- Original Message ---\n${eq.message}`)}`}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20 text-xs font-display tracking-wider transition-all"
-                          >
-                            <Mail className="h-3 w-3" />
-                            Reply
-                          </a>
-                        </div>
-                      </div>
-                      <p className="text-sm text-muted-foreground ml-11 whitespace-pre-wrap">{eq.message}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
+              <EnquiryReplyPanel />
+            </div>
+          )}
+
+          {/* Messages Section — all authenticated users */}
+          {activeSection === "messages" && (
+            <div className="bg-card border border-border rounded-xl overflow-hidden">
+              <div className="p-5 border-b border-border">
+                <h2 className="text-sm font-display tracking-wider uppercase text-foreground flex items-center gap-2">
+                  <MessageSquare className="h-4 w-4 text-primary" /> Messages
+                </h2>
+                <p className="text-xs text-muted-foreground mt-1">Replies to your contact enquiries from the club</p>
+              </div>
+              <UserMessagesInbox />
             </div>
           )}
 
