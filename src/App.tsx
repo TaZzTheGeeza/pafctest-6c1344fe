@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useCartSync } from "@/hooks/useCartSync";
+import { usePresence } from "@/hooks/usePresence";
 import { useEffect } from "react";
 import { FootballBackground } from "@/components/FootballBackground";
 import { AnnouncementBanner } from "@/components/AnnouncementBanner";
@@ -62,6 +63,7 @@ function PlayerHubRedirect() {
 
 function AppContent() {
   useCartSync();
+  usePresence();
   return (
     <BrowserRouter>
       <ScrollToTop />
