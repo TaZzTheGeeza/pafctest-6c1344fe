@@ -36,7 +36,6 @@ interface POTMAward {
 
 const ResultsPage = () => {
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [filterAgeGroup, setFilterAgeGroup] = useState<string>("all");
   const [filterTeam, setFilterTeam] = useState<string>("all");
 
   const { data: reports, isLoading } = useQuery({
@@ -62,13 +61,10 @@ const ResultsPage = () => {
     },
   });
 
-  const ageGroups = [...new Set(reports?.map((r) => r.age_group) || [])].sort();
   const teamNames = [...new Set(reports?.map((r) => r.team_name) || [])].sort();
-  const filtered = reports?.filter((r) => {
-    if (filterAgeGroup !== "all" && r.age_group !== filterAgeGroup) return false;
-    if (filterTeam !== "all" && r.team_name !== filterTeam) return false;
-    return true;
-  });
+  const filtered = filterTeam === "all"
+    ? reports
+    : reports?.filter((r) => r.team_name === filterTeam);
 
   const findPOTM = (report: MatchReport) =>
     potmAwards?.filter(
@@ -87,20 +83,8 @@ const ResultsPage = () => {
           </h1>
           <p className="text-muted-foreground mb-8">Season 2025/26</p>
 
-          {/* Filters */}
-          <div className="flex flex-wrap gap-3 mb-6">
-            <Select value={filterAgeGroup} onValueChange={setFilterAgeGroup}>
-              <SelectTrigger className="w-[160px]">
-                <SelectValue placeholder="Age Group" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Age Groups</SelectItem>
-                {ageGroups.map((ag) => (
-                  <SelectItem key={ag} value={ag}>{ag}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
+          {/* Team filter */}
+          <div className="mb-6">
             <Select value={filterTeam} onValueChange={setFilterTeam}>
               <SelectTrigger className="w-[240px]">
                 <SelectValue placeholder="Team" />
