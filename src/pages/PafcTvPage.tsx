@@ -149,7 +149,23 @@ const PafcTvPage = () => {
               </Button>
             </div>
 
-            {loading ? (
+            {/* Age Group Filters */}
+            <div className="flex items-center gap-2 mb-6 flex-wrap">
+              {ageGroups.map((group) => (
+                <button
+                  key={group}
+                  onClick={() => setActiveFilter(group)}
+                  className={`font-display text-xs tracking-wider px-4 py-1.5 rounded-sm border transition-all ${
+                    activeFilter === group
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-transparent text-muted-foreground border-border hover:border-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {group}
+                </button>
+              ))}
+            </div>
+
               <div className="flex items-center justify-center py-32">
                 <Loader2 className="h-10 w-10 animate-spin text-primary" />
               </div>
