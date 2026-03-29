@@ -5,7 +5,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Trophy, FileText, Upload, Star, CheckCircle, Loader2, ShieldX, BarChart3, Settings, AlertTriangle, Plus, Trash2 } from "lucide-react";
+import { Trophy, FileText, Upload, Star, CheckCircle, Loader2, ShieldX, BarChart3, Settings, AlertTriangle, Plus, Trash2, Eraser } from "lucide-react";
 import { toast } from "sonner";
 import { ManageSubmissionsForm } from "@/components/ManageSubmissionsForm";
 import { PlayerStatsForm } from "@/components/PlayerStatsForm";
@@ -16,6 +16,7 @@ import { faTeamConfigs } from "@/lib/faFixtureConfig";
 import { uploadPotmPhoto } from "@/lib/potmPhoto";
 import { DateInput } from "@/components/ui/date-input";
 import { POTMCardPreview } from "@/components/coach/POTMCardPreview";
+import { BackgroundEraser } from "@/components/coach/BackgroundEraser";
 
 const ALL_AGE_GROUPS = [
   "U7", "U8 Black", "U8 Gold", "U9", "U10",
@@ -168,6 +169,8 @@ interface POTMEntry {
   photoFile: File | null;
   photoPreview: string | null;
   croppedBlob: Blob | null;
+  eraserOpen: boolean;
+  erasedPreview: string | null;
 }
 
 export function POTMForm({ ageGroups }: { ageGroups: string[] }) {
@@ -178,7 +181,7 @@ export function POTMForm({ ageGroups }: { ageGroups: string[] }) {
   const [matchDescription, setMatchDescription] = useState("");
   const [matchDate, setMatchDate] = useState("");
   const [entries, setEntries] = useState<POTMEntry[]>([
-    { player_name: "", shirt_number: "", reason: "", photoFile: null, photoPreview: null, croppedBlob: null },
+    { player_name: "", shirt_number: "", reason: "", photoFile: null, photoPreview: null, croppedBlob: null, eraserOpen: false, erasedPreview: null },
   ]);
   const fileInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
@@ -189,7 +192,7 @@ export function POTMForm({ ageGroups }: { ageGroups: string[] }) {
   const addEntry = () => {
     setEntries((prev) => [
       ...prev,
-      { player_name: "", shirt_number: "", reason: "", photoFile: null, photoPreview: null, croppedBlob: null },
+      { player_name: "", shirt_number: "", reason: "", photoFile: null, photoPreview: null, croppedBlob: null, eraserOpen: false, erasedPreview: null },
     ]);
   };
 
@@ -231,7 +234,8 @@ export function POTMForm({ ageGroups }: { ageGroups: string[] }) {
     setEntries((prev) => {
       const next = [...prev];
       if (next[i].photoPreview) URL.revokeObjectURL(next[i].photoPreview!);
-      next[i] = { ...next[i], photoFile: null, photoPreview: null, croppedBlob: null };
+      if (next[i].erasedPreview) URL.revokeObjectURL(next[i].erasedPreview!);
+      next[i] = { ...next[i], photoFile: null, photoPreview: null, croppedBlob: null, eraserOpen: false, erasedPreview: null };
       return next;
     });
 
@@ -250,7 +254,10 @@ export function POTMForm({ ageGroups }: { ageGroups: string[] }) {
     try {
       for (const entry of validEntries) {
         let photo_url: string | null = null;
-        const fileToUpload = entry.photoFile;
+        // Use erased PNG if available, otherwise original file
+        const fileToUpload = entry.erasedPreview
+          ? new File([await fetch(entry.erasedPreview).then(r => r.blob())], "potm-erased.png", { type: "image/png" })
+          : entry.photoFile;
 
         if (fileToUpload) {
           photo_url = await uploadPotmPhoto(fileToUpload, {
@@ -303,7 +310,7 @@ export function POTMForm({ ageGroups }: { ageGroups: string[] }) {
             setMatchDescription("");
             setMatchDate("");
             setAgeGroup(ageGroups.length === 1 ? ageGroups[0] : "");
-            setEntries([{ player_name: "", shirt_number: "", reason: "", photoFile: null, photoPreview: null, croppedBlob: null }]);
+            setEntries([{ player_name: "", shirt_number: "", reason: "", photoFile: null, photoPreview: null, croppedBlob: null, eraserOpen: false, erasedPreview: null }]);
           }}
           className="text-sm font-display text-primary hover:text-gold-light transition-colors"
         >
@@ -399,24 +406,77 @@ export function POTMForm({ ageGroups }: { ageGroups: string[] }) {
               className="hidden"
             />
 
-            {entry.photoPreview ? (
+            {entry.photoPreview && entry.eraserOpen ? (
+              <BackgroundEraser
+                imageUrl={entry.photoPreview}
+                onComplete={(blob) => {
+                  const url = URL.createObjectURL(blob);
+                  setEntries((prev) => {
+                    const next = [...prev];
+                    if (next[i].erasedPreview) URL.revokeObjectURL(next[i].erasedPreview!);
+                    next[i] = { ...next[i], eraserOpen: false, erasedPreview: url };
+                    return next;
+                  });
+                  toast.success("Background removed — preview updated");
+                }}
+                onCancel={() => {
+                  setEntries((prev) => {
+                    const next = [...prev];
+                    next[i] = { ...next[i], eraserOpen: false };
+                    return next;
+                  });
+                }}
+              />
+            ) : entry.photoPreview ? (
               <div className="space-y-3">
-                <div className="flex items-start gap-3">
+                <div className="flex items-start gap-3 flex-wrap">
                   <div className="relative w-24 h-24 rounded-lg overflow-hidden border border-border">
-                    <img src={entry.photoPreview} alt="Preview" className="w-full h-full object-cover" />
+                    <img src={entry.erasedPreview || entry.photoPreview} alt="Preview" className="w-full h-full object-contain" style={entry.erasedPreview ? { background: "repeating-conic-gradient(hsl(var(--muted)) 0% 25%, hsl(var(--background)) 0% 50%) 0 0 / 12px 12px" } : undefined} />
                     <button type="button" onClick={() => clearPhoto(i)} className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs">×</button>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => fileInputRefs.current[i]?.click()}
-                    className="border border-border rounded-lg px-3 py-2 text-xs font-display text-muted-foreground hover:text-foreground hover:border-primary/50 transition-colors"
-                  >
-                    Change photo
-                  </button>
+                  <div className="flex flex-col gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => fileInputRefs.current[i]?.click()}
+                      className="border border-border rounded-lg px-3 py-2 text-xs font-display text-muted-foreground hover:text-foreground hover:border-primary/50 transition-colors"
+                    >
+                      Change photo
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEntries((prev) => {
+                          const next = [...prev];
+                          next[i] = { ...next[i], eraserOpen: true };
+                          return next;
+                        });
+                      }}
+                      className="border border-primary/30 rounded-lg px-3 py-2 text-xs font-display text-primary hover:bg-primary/10 transition-colors flex items-center gap-1.5"
+                    >
+                      <Eraser className="h-3 w-3" />
+                      {entry.erasedPreview ? "Edit background" : "Remove background"}
+                    </button>
+                    {entry.erasedPreview && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEntries((prev) => {
+                            const next = [...prev];
+                            if (next[i].erasedPreview) URL.revokeObjectURL(next[i].erasedPreview!);
+                            next[i] = { ...next[i], erasedPreview: null };
+                            return next;
+                          });
+                        }}
+                        className="text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        Restore original
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 <POTMCardPreview
-                  photoPreview={entry.photoPreview}
+                  photoPreview={entry.erasedPreview || entry.photoPreview}
                   playerName={entry.player_name || "Player Name"}
                   shirtNumber={entry.shirt_number ? parseInt(entry.shirt_number) : null}
                   ageGroup={ageGroup || undefined}
