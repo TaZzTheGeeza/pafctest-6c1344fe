@@ -86,7 +86,9 @@ export function POTMTab({
         if (!player) continue;
 
         let photoUrl: string | null = null;
-        const fileToUpload = entry.photoFile;
+        const fileToUpload = entry.croppedBlob
+          ? new File([entry.croppedBlob], "potm-cropped.png", { type: "image/png" })
+          : entry.photoFile;
         if (fileToUpload) {
           photoUrl = await uploadPotmPhoto(fileToUpload, {
             playerName: player.first_name,

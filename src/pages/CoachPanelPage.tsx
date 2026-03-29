@@ -252,7 +252,7 @@ export function POTMForm({ ageGroups }: { ageGroups: string[] }) {
       for (const entry of validEntries) {
         let photo_url: string | null = null;
         const fileToUpload = entry.croppedBlob
-          ? new File([entry.croppedBlob], "potm-cropped.jpg", { type: "image/jpeg" })
+          ? new File([entry.croppedBlob], "potm-cropped.png", { type: "image/png" })
           : entry.photoFile;
 
         if (fileToUpload) {

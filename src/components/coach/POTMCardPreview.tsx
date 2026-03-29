@@ -83,77 +83,49 @@ export function POTMCardPreview({
 
   const resetPosition = () => { setZoom(1); setPan({ x: 0, y: 0 }); };
 
-  // Generate cropped image whenever zoom/pan changes
+  // Export exactly what the preview shows so uploads match the card editor
   useEffect(() => {
-    if (!photoPreview || !onCroppedRef.current || !naturalSize.w) return;
+    if (!photoPreview || !onCroppedRef.current || !naturalSize.w || !naturalSize.h) return;
 
     const timer = setTimeout(() => {
       const img = new Image();
       img.crossOrigin = "anonymous";
       img.onload = () => {
-        // The preview container maps to the card's photo area (CARD_W x CARD_H)
-        // We need to figure out what portion of the source image is visible
-
-        // First, calculate the "cover" fit at zoom=1
-        const containerAspect = PREVIEW_W / PREVIEW_H;
-        const imgAspect = img.naturalWidth / img.naturalHeight;
-
-        let baseScale: number;
-        if (imgAspect > containerAspect) {
-          // image wider than container: height-fit
-          baseScale = PREVIEW_H / img.naturalHeight;
-        } else {
-          // image taller: width-fit
-          baseScale = PREVIEW_W / img.naturalWidth;
-        }
-
-        const scale = baseScale * zoom;
-        const renderedW = img.naturalWidth * scale;
-        const renderedH = img.naturalHeight * scale;
-
-        // Image is centered + panned
-        const imgLeft = (PREVIEW_W - renderedW) / 2 + pan.x;
-        const imgTop = (PREVIEW_H - renderedH) / 2 + pan.y;
-
-        // Visible crop in rendered coords
-        const cropLeft = Math.max(0, -imgLeft);
-        const cropTop = Math.max(0, -imgTop);
-        const cropRight = Math.min(renderedW, PREVIEW_W - imgLeft);
-        const cropBottom = Math.min(renderedH, PREVIEW_H - imgTop);
-
-        // Convert to source coords
-        const sx = cropLeft / scale;
-        const sy = cropTop / scale;
-        const sw = (cropRight - cropLeft) / scale;
-        const sh = (cropBottom - cropTop) / scale;
-
-        // Output at card resolution
         const canvas = document.createElement("canvas");
         canvas.width = CARD_W;
         canvas.height = CARD_H;
+
         const ctx = canvas.getContext("2d");
         if (!ctx) return;
 
-        // Draw as cover-fit into the full card area
-        const outAspect = CARD_W / CARD_H;
-        const srcAspect = sw / sh;
-        let dx = 0, dy = 0, dw = CARD_W, dh = CARD_H;
+        ctx.clearRect(0, 0, CARD_W, CARD_H);
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = "high";
 
-        if (srcAspect > outAspect) {
-          dw = CARD_H * srcAspect;
-          dx = (CARD_W - dw) / 2;
-        } else {
-          dh = CARD_W / srcAspect;
-          dy = (CARD_H - dh) / 2;
-        }
+        const containScale = Math.min(CARD_W / img.naturalWidth, CARD_H / img.naturalHeight);
+        const baseW = img.naturalWidth * containScale;
+        const baseH = img.naturalHeight * containScale;
+        const baseX = (CARD_W - baseW) / 2;
+        const baseY = 0;
 
-        ctx.drawImage(img, sx, sy, sw, sh, 0, 0, CARD_W, CARD_H);
+        const previewToCardScale = CARD_W / PREVIEW_W;
+        const panX = pan.x * previewToCardScale;
+        const panY = pan.y * previewToCardScale;
+        const centerX = CARD_W / 2;
+        const centerY = CARD_H / 2;
+
+        const drawW = baseW * zoom;
+        const drawH = baseH * zoom;
+        const drawX = (baseX - centerX) * zoom + centerX + panX;
+        const drawY = (baseY - centerY) * zoom + centerY + panY;
+
+        ctx.drawImage(img, drawX, drawY, drawW, drawH);
         canvas.toBlob((blob) => {
           if (blob) onCroppedRef.current?.(blob);
-        }, "image/jpeg", 0.92);
+        }, "image/png");
       };
       img.src = photoPreview;
-    }, 300);
+    }, 150);
 
     return () => clearTimeout(timer);
   }, [photoPreview, zoom, pan, naturalSize]);
