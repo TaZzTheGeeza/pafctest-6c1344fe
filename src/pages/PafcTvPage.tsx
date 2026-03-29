@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Play, ExternalLink, Youtube, Loader2, Tv, Signal, Clock, Eye } from "lucide-react";
+import { Play, ExternalLink, Youtube, Loader2, Eye, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -97,203 +97,170 @@ const PafcTvPage = () => {
       <Navbar />
       <main className="flex-1 pt-20">
 
-        {/* ── Broadcast-style Hero ── */}
-        <section className="relative bg-background overflow-hidden">
-          {/* Diagonal accent stripe */}
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-destructive via-primary to-destructive" />
+        {loading ? (
+          <div className="flex items-center justify-center py-40">
+            <Loader2 className="h-10 w-10 animate-spin text-primary" />
+          </div>
+        ) : (
+          <>
+            {/* ── Cinematic Hero ── */}
+            {heroVideo && (
+              <section className="relative h-[70vh] min-h-[480px] overflow-hidden">
+                <img
+                  src={`https://i.ytimg.com/vi/${heroVideo.id}/maxresdefault.jpg`}
+                  alt={heroVideo.title}
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+                {/* Heavy gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-r from-background via-background/80 to-background/20" />
+                <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/40" />
 
-          <div className="container mx-auto px-4 py-8">
-            {/* Top ticker bar */}
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 bg-destructive px-4 py-2 rounded-sm">
-                  <Tv className="h-5 w-5 text-destructive-foreground" />
-                  <span className="font-display text-lg tracking-widest text-destructive-foreground font-bold">
-                    PAFC TV
-                  </span>
-                </div>
-                <div className="hidden sm:flex items-center gap-2 bg-secondary px-3 py-2 rounded-sm">
-                  <Signal className="h-3 w-3 text-primary animate-pulse" />
-                  <span className="font-display text-xs tracking-wider text-muted-foreground uppercase">
-                    On Demand
-                  </span>
-                </div>
-              </div>
-              <Button
-                asChild
-                size="sm"
-                className="font-display tracking-wider bg-destructive hover:bg-destructive/90 text-destructive-foreground gap-2 rounded-sm"
-              >
-                <a
-                  href="https://www.youtube.com/@PeterboroughAthleticFC"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <Youtube className="h-4 w-4" />
-                  SUBSCRIBE
-                </a>
-              </Button>
-            </div>
-
-            {loading ? (
-              <div className="flex items-center justify-center py-32">
-                <Loader2 className="h-10 w-10 animate-spin text-primary" />
-              </div>
-            ) : (
-              <>
-                {/* Hero Feature */}
-                {heroVideo && (
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-0 mb-8 rounded-sm overflow-hidden border border-border">
-                    {/* Main video */}
-                    <button
-                      onClick={() => setActiveVideo(heroVideo)}
-                      className="lg:col-span-2 relative group aspect-video bg-secondary"
-                    >
-                      <img
-                        src={heroVideo.thumbnail}
-                        alt={heroVideo.title}
-                        className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-700"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="w-20 h-20 rounded-full bg-destructive/90 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-2xl">
-                          <Play className="h-8 w-8 text-destructive-foreground ml-1" fill="currentColor" />
-                        </div>
-                      </div>
-                      {/* Live-style badge */}
-                      <div className="absolute top-4 left-4 flex items-center gap-2">
-                        <span className="bg-destructive text-destructive-foreground text-xs font-display tracking-widest px-3 py-1 rounded-sm font-bold">
-                          LATEST
-                        </span>
-                      </div>
-                    </button>
-                    {/* Side info panel */}
-                    <div className="bg-card p-6 flex flex-col justify-between border-l border-border">
-                      <div>
-                        <div className="flex items-center gap-2 mb-3">
-                          <div className="w-1 h-6 bg-destructive rounded-full" />
-                          <span className="font-display text-xs tracking-widest text-destructive uppercase">
-                            Featured Match
-                          </span>
-                        </div>
-                        <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground leading-tight mb-4">
-                          {formatTitle(heroVideo.title)}
-                        </h2>
-                        <div className="space-y-2 text-sm text-muted-foreground">
-                          <div className="flex items-center gap-2">
-                            <Clock className="h-4 w-4" />
-                            <span>{timeAgo(heroVideo.published)}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Eye className="h-4 w-4" />
-                            <span>{formatViews(heroVideo.views)} views</span>
-                          </div>
-                        </div>
-                      </div>
+                <div className="relative h-full container mx-auto px-4 flex items-end pb-16">
+                  <div className="max-w-xl space-y-5">
+                    <div className="flex items-center gap-3">
+                      <span className="bg-destructive text-destructive-foreground text-xs font-display tracking-widest px-3 py-1 rounded-full font-bold">
+                        NEW
+                      </span>
+                      <span className="text-sm text-muted-foreground">
+                        {timeAgo(heroVideo.published)}
+                      </span>
+                    </div>
+                    <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-[1.1]">
+                      {formatTitle(heroVideo.title)}
+                    </h1>
+                    <p className="text-muted-foreground text-sm flex items-center gap-3">
+                      <span className="flex items-center gap-1">
+                        <Eye className="h-4 w-4" />
+                        {formatViews(heroVideo.views)} views
+                      </span>
+                      <span>·</span>
+                      <span>{formatDate(heroVideo.published)}</span>
+                    </p>
+                    <div className="flex items-center gap-3 pt-2">
                       <Button
                         onClick={() => setActiveVideo(heroVideo)}
-                        className="mt-6 font-display tracking-wider bg-primary hover:bg-primary/90 text-primary-foreground gap-2 rounded-sm w-full"
+                        size="lg"
+                        className="font-display tracking-wider bg-foreground text-background hover:bg-foreground/90 gap-2 rounded-full px-8"
                       >
-                        <Play className="h-4 w-4" fill="currentColor" />
-                        WATCH NOW
+                        <Play className="h-5 w-5" fill="currentColor" />
+                        PLAY
+                      </Button>
+                      <Button
+                        asChild
+                        size="lg"
+                        variant="outline"
+                        className="font-display tracking-wider border-muted-foreground/30 text-foreground hover:bg-secondary rounded-full px-8 gap-2"
+                      >
+                        <a
+                          href={`https://www.youtube.com/watch?v=${heroVideo.id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <Youtube className="h-5 w-5 text-destructive" />
+                          YOUTUBE
+                        </a>
                       </Button>
                     </div>
                   </div>
-                )}
+                </div>
+              </section>
+            )}
 
-                {/* Section divider with title */}
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="flex items-center gap-2">
-                    <div className="w-1 h-5 bg-primary rounded-full" />
-                    <h3 className="font-display text-lg tracking-wider text-foreground uppercase">
-                      More Matches
-                    </h3>
-                  </div>
-                  <div className="flex-1 h-px bg-border" />
+            {/* ── Content Rows ── */}
+            <section className="container mx-auto px-4 py-10 space-y-10">
+              {/* Recent Matches Row */}
+              <div>
+                <div className="flex items-center justify-between mb-5">
+                  <h2 className="font-display text-xl tracking-wider text-foreground uppercase">
+                    Recent Matches
+                  </h2>
+                  <a
+                    href="https://www.youtube.com/@PeterboroughAthleticFC"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-primary hover:text-primary/80 transition-colors flex items-center gap-1 font-display tracking-wider"
+                  >
+                    View All <ChevronRight className="h-4 w-4" />
+                  </a>
                 </div>
 
-                {/* Video grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-10">
-                  {restVideos.map((video, index) => (
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+                  {restVideos.map((video) => (
                     <button
                       key={video.id}
                       onClick={() => setActiveVideo(video)}
-                      className="group relative rounded-sm overflow-hidden bg-card border border-border hover:border-primary/50 transition-all duration-300 text-left"
+                      className="group text-left rounded-lg overflow-hidden transition-transform duration-300 hover:scale-[1.03]"
                     >
-                      <div className="aspect-video relative overflow-hidden">
+                      <div className="aspect-video relative overflow-hidden rounded-lg">
                         <img
                           src={video.thumbnail}
                           alt={video.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          className="w-full h-full object-cover transition-all duration-500 group-hover:brightness-75"
                           loading="lazy"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        {/* Play icon on hover */}
                         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                          <div className="w-12 h-12 rounded-full bg-destructive/90 flex items-center justify-center shadow-lg">
-                            <Play className="h-5 w-5 text-destructive-foreground ml-0.5" fill="currentColor" />
-                          </div>
-                        </div>
-                        {/* Bottom bar with views */}
-                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background/90 to-transparent p-2">
-                          <div className="flex items-center justify-between text-xs text-muted-foreground">
-                            <span className="flex items-center gap-1">
-                              <Eye className="h-3 w-3" />
-                              {formatViews(video.views)}
-                            </span>
-                            <span>{formatDate(video.published)}</span>
+                          <div className="w-12 h-12 rounded-full bg-foreground/90 flex items-center justify-center backdrop-blur-sm">
+                            <Play className="h-5 w-5 text-background ml-0.5" fill="currentColor" />
                           </div>
                         </div>
                       </div>
-                      <div className="p-3">
-                        <h4 className="font-display text-sm font-semibold text-foreground group-hover:text-primary transition-colors leading-tight line-clamp-2">
+                      <div className="pt-2.5 pb-1 px-0.5">
+                        <h4 className="font-body text-sm font-medium text-foreground group-hover:text-primary transition-colors leading-snug line-clamp-2">
                           {formatTitle(video.title)}
                         </h4>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {formatViews(video.views)} views · {timeAgo(video.published)}
+                        </p>
                       </div>
                     </button>
                   ))}
                 </div>
+              </div>
 
-                {/* Bottom CTA bar */}
-                <div className="border-t border-border pt-8 pb-4">
-                  <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <div className="flex items-center gap-3">
+              {/* Subscribe Banner */}
+              <div className="relative rounded-xl overflow-hidden bg-gradient-to-r from-secondary via-card to-secondary border border-border p-8 md:p-12">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-destructive/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+                <div className="relative flex flex-col md:flex-row items-center justify-between gap-6">
+                  <div className="flex items-center gap-5">
+                    <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center shrink-0">
                       <Youtube className="h-8 w-8 text-destructive" />
-                      <div>
-                        <p className="font-display text-sm tracking-wider text-foreground uppercase">
-                          Never miss a match
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          Subscribe to PAFC TV on YouTube for all the latest action
-                        </p>
-                      </div>
                     </div>
-                    <Button
-                      asChild
-                      size="lg"
-                      className="font-display tracking-wider bg-destructive hover:bg-destructive/90 text-destructive-foreground gap-2 rounded-sm"
-                    >
-                      <a
-                        href="https://www.youtube.com/@PeterboroughAthleticFC"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <Youtube className="h-5 w-5" />
-                        SUBSCRIBE TO OUR CHANNEL
-                        <ExternalLink className="h-4 w-4" />
-                      </a>
-                    </Button>
+                    <div>
+                      <h3 className="font-display text-2xl font-bold text-foreground tracking-wider">
+                        NEVER MISS A MATCH
+                      </h3>
+                      <p className="text-muted-foreground text-sm mt-1">
+                        Subscribe to PAFC TV on YouTube — full match footage uploaded after every game
+                      </p>
+                    </div>
                   </div>
+                  <Button
+                    asChild
+                    size="lg"
+                    className="font-display tracking-wider bg-destructive hover:bg-destructive/90 text-destructive-foreground gap-2 rounded-full px-8 shrink-0"
+                  >
+                    <a
+                      href="https://www.youtube.com/@PeterboroughAthleticFC"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Youtube className="h-5 w-5" />
+                      SUBSCRIBE
+                      <ExternalLink className="h-4 w-4" />
+                    </a>
+                  </Button>
                 </div>
-              </>
-            )}
-          </div>
-        </section>
+              </div>
+            </section>
+          </>
+        )}
       </main>
       <Footer />
 
       {/* Video Player Modal */}
       <Dialog open={!!activeVideo} onOpenChange={() => setActiveVideo(null)}>
-        <DialogContent className="max-w-5xl w-[95vw] p-0 bg-background border-border overflow-hidden rounded-sm">
+        <DialogContent className="max-w-5xl w-[95vw] p-0 bg-background border-border overflow-hidden rounded-lg">
           {activeVideo && (
             <div>
               <div className="aspect-video w-full">
@@ -305,38 +272,18 @@ const PafcTvPage = () => {
                   className="w-full h-full"
                 />
               </div>
-              <div className="p-5 border-t border-border">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <h3 className="font-display text-xl font-bold text-foreground">
-                      {formatTitle(activeVideo.title)}
-                    </h3>
-                    <p className="text-sm text-muted-foreground mt-1 flex items-center gap-3">
-                      <span className="flex items-center gap-1">
-                        <Eye className="h-3.5 w-3.5" />
-                        {formatViews(activeVideo.views)} views
-                      </span>
-                      <span>·</span>
-                      <span>{formatDate(activeVideo.published)}</span>
-                    </p>
-                  </div>
-                  <Button
-                    asChild
-                    size="sm"
-                    variant="outline"
-                    className="font-display tracking-wider rounded-sm gap-1.5 shrink-0"
-                  >
-                    <a
-                      href={`https://www.youtube.com/watch?v=${activeVideo.id}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <Youtube className="h-4 w-4 text-destructive" />
-                      YouTube
-                      <ExternalLink className="h-3 w-3" />
-                    </a>
-                  </Button>
-                </div>
+              <div className="p-5">
+                <h3 className="font-display text-xl font-bold text-foreground">
+                  {formatTitle(activeVideo.title)}
+                </h3>
+                <p className="text-sm text-muted-foreground mt-1 flex items-center gap-3">
+                  <span className="flex items-center gap-1">
+                    <Eye className="h-3.5 w-3.5" />
+                    {formatViews(activeVideo.views)} views
+                  </span>
+                  <span>·</span>
+                  <span>{formatDate(activeVideo.published)}</span>
+                </p>
               </div>
             </div>
           )}
