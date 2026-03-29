@@ -511,15 +511,24 @@ export default function DashboardPage() {
                             </a>
                           </div>
                         </div>
-                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground shrink-0">
-                          <Clock className="h-3 w-3" />
-                          {new Date(eq.created_at).toLocaleDateString("en-GB", {
-                            day: "2-digit",
-                            month: "short",
-                            year: "2-digit",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
+                        <div className="flex items-center gap-3 shrink-0">
+                          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                            <Clock className="h-3 w-3" />
+                            {new Date(eq.created_at).toLocaleDateString("en-GB", {
+                              day: "2-digit",
+                              month: "short",
+                              year: "2-digit",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </div>
+                          <a
+                            href={`mailto:${encodeURIComponent(eq.email)}?subject=${encodeURIComponent(`Re: Your enquiry to Peterborough Athletic FC`)}&body=${encodeURIComponent(`Hi ${eq.name},\n\nThank you for getting in touch with Peterborough Athletic FC.\n\n\n\nKind regards,\nPeterborough Athletic FC\n\n--- Original Message ---\n${eq.message}`)}`}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20 text-xs font-display tracking-wider transition-all"
+                          >
+                            <Mail className="h-3 w-3" />
+                            Reply
+                          </a>
                         </div>
                       </div>
                       <p className="text-sm text-muted-foreground ml-11 whitespace-pre-wrap">{eq.message}</p>
