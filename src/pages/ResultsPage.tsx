@@ -5,6 +5,7 @@ import { Footer } from "@/components/Footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Trophy, Star, ChevronDown, ChevronUp } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -86,64 +87,32 @@ const ResultsPage = () => {
           </h1>
           <p className="text-muted-foreground mb-8">Season 2025/26</p>
 
-          {/* Age group filter */}
-          {/* Age group filter */}
-          {ageGroups.length > 1 && (
-            <div className="flex flex-wrap gap-2 mb-3">
-              <button
-                onClick={() => setFilterAgeGroup("all")}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                  filterAgeGroup === "all"
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-muted-foreground hover:bg-muted/80"
-                }`}
-              >
-                All Age Groups
-              </button>
-              {ageGroups.map((ag) => (
-                <button
-                  key={ag}
-                  onClick={() => setFilterAgeGroup(ag)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                    filterAgeGroup === ag
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground hover:bg-muted/80"
-                  }`}
-                >
-                  {ag}
-                </button>
-              ))}
-            </div>
-          )}
+          {/* Filters */}
+          <div className="flex flex-wrap gap-3 mb-6">
+            <Select value={filterAgeGroup} onValueChange={setFilterAgeGroup}>
+              <SelectTrigger className="w-[160px]">
+                <SelectValue placeholder="Age Group" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Age Groups</SelectItem>
+                {ageGroups.map((ag) => (
+                  <SelectItem key={ag} value={ag}>{ag}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
-          {/* Team filter */}
-          {teamNames.length > 1 && (
-            <div className="flex flex-wrap gap-2 mb-6">
-              <button
-                onClick={() => setFilterTeam("all")}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                  filterTeam === "all"
-                    ? "bg-accent text-accent-foreground"
-                    : "bg-muted text-muted-foreground hover:bg-muted/80"
-                }`}
-              >
-                All Teams
-              </button>
-              {teamNames.map((tn) => (
-                <button
-                  key={tn}
-                  onClick={() => setFilterTeam(tn)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                    filterTeam === tn
-                      ? "bg-accent text-accent-foreground"
-                      : "bg-muted text-muted-foreground hover:bg-muted/80"
-                  }`}
-                >
-                  {tn}
-                </button>
-              ))}
-            </div>
-          )}
+            <Select value={filterTeam} onValueChange={setFilterTeam}>
+              <SelectTrigger className="w-[240px]">
+                <SelectValue placeholder="Team" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Teams</SelectItem>
+                {teamNames.map((tn) => (
+                  <SelectItem key={tn} value={tn}>{tn}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
           {isLoading ? (
             <p className="text-muted-foreground text-center py-12">Loading results...</p>
