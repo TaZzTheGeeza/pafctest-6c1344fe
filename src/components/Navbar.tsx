@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, ChevronDown, Trophy, ShoppingBag, LogIn, Newspaper, CalendarDays, Image, Award, Clock, UserPlus, FileText, Shield, Info, Heart, ClipboardList, MessageSquare, Settings } from "lucide-react";
+import { Menu, X, ChevronDown, Trophy, ShoppingBag, LogIn, Newspaper, CalendarDays, Image, Award, Clock, UserPlus, FileText, Shield, Info, Heart, ClipboardList, MessageSquare, Settings, Youtube } from "lucide-react";
 import { CartDrawer } from "@/components/CartDrawer";
 import { NotificationBell } from "@/components/hub/NotificationBell";
 import { useAuth } from "@/contexts/AuthContext";
@@ -47,7 +47,7 @@ const leftNav: NavItem[] = [
 
 const rightNav: NavItem[] = [
   { label: "About", path: "/club-info", dropdown: aboutItems },
-  { label: "PAFC TV", path: "https://www.youtube.com/@PeterboroughAthleticFC", external: true },
+  { label: "PAFC TV", path: "/pafc-tv" },
   { label: "Raffle", path: "/raffle" },
   { label: "Contact", path: "/contact" },
 ];
@@ -116,13 +116,20 @@ function NavItemRenderer({ item, location }: { item: NavItem; location: ReturnTy
     );
   }
 
+  const isPafcTv = item.label === "PAFC TV";
+
   return (
     <Link
       to={item.path}
-      className={`font-display text-[11px] tracking-[0.15em] uppercase px-3 py-2 transition-colors ${
-        location.pathname === item.path ? "text-primary" : "text-muted-foreground hover:text-foreground"
+      className={`font-display text-[11px] tracking-[0.15em] uppercase px-3 py-2 transition-colors flex items-center gap-1.5 ${
+        isPafcTv
+          ? "text-destructive hover:text-destructive/80 font-bold"
+          : location.pathname === item.path
+            ? "text-primary"
+            : "text-muted-foreground hover:text-foreground"
       }`}
     >
+      {isPafcTv && <Youtube className="h-4 w-4" />}
       {item.label}
     </Link>
   );
@@ -263,7 +270,10 @@ export function Navbar() {
                   {item.label}
                 </a>
               ) : (
-                <Link key={item.label} to={item.path} onClick={() => setIsOpen(false)} className="font-display text-sm tracking-wider text-muted-foreground hover:text-primary transition-colors py-2">
+                <Link key={item.label} to={item.path} onClick={() => setIsOpen(false)} className={`font-display text-sm tracking-wider transition-colors py-2 flex items-center gap-2 ${
+                  item.label === "PAFC TV" ? "text-destructive font-bold" : "text-muted-foreground hover:text-primary"
+                }`}>
+                  {item.label === "PAFC TV" && <Youtube className="h-4 w-4" />}
                   {item.label}
                 </Link>
               )
