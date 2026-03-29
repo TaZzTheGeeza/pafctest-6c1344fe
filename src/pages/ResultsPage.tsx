@@ -36,6 +36,7 @@ interface POTMAward {
 const ResultsPage = () => {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [filterAgeGroup, setFilterAgeGroup] = useState<string>("all");
+  const [filterTeam, setFilterTeam] = useState<string>("all");
 
   const { data: reports, isLoading } = useQuery({
     queryKey: ["match-reports-public"],
@@ -61,9 +62,12 @@ const ResultsPage = () => {
   });
 
   const ageGroups = [...new Set(reports?.map((r) => r.age_group) || [])].sort();
-  const filtered = filterAgeGroup === "all"
-    ? reports
-    : reports?.filter((r) => r.age_group === filterAgeGroup);
+  const teamNames = [...new Set(reports?.map((r) => r.team_name) || [])].sort();
+  const filtered = reports?.filter((r) => {
+    if (filterAgeGroup !== "all" && r.age_group !== filterAgeGroup) return false;
+    if (filterTeam !== "all" && r.team_name !== filterTeam) return false;
+    return true;
+  });
 
   const findPOTM = (report: MatchReport) =>
     potmAwards?.filter(
@@ -83,8 +87,9 @@ const ResultsPage = () => {
           <p className="text-muted-foreground mb-8">Season 2025/26</p>
 
           {/* Age group filter */}
+          {/* Age group filter */}
           {ageGroups.length > 1 && (
-            <div className="flex flex-wrap gap-2 mb-6">
+            <div className="flex flex-wrap gap-2 mb-3">
               <button
                 onClick={() => setFilterAgeGroup("all")}
                 className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
@@ -93,7 +98,7 @@ const ResultsPage = () => {
                     : "bg-muted text-muted-foreground hover:bg-muted/80"
                 }`}
               >
-                All Teams
+                All Age Groups
               </button>
               {ageGroups.map((ag) => (
                 <button
@@ -106,6 +111,35 @@ const ResultsPage = () => {
                   }`}
                 >
                   {ag}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Team filter */}
+          {teamNames.length > 1 && (
+            <div className="flex flex-wrap gap-2 mb-6">
+              <button
+                onClick={() => setFilterTeam("all")}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                  filterTeam === "all"
+                    ? "bg-accent text-accent-foreground"
+                    : "bg-muted text-muted-foreground hover:bg-muted/80"
+                }`}
+              >
+                All Teams
+              </button>
+              {teamNames.map((tn) => (
+                <button
+                  key={tn}
+                  onClick={() => setFilterTeam(tn)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                    filterTeam === tn
+                      ? "bg-accent text-accent-foreground"
+                      : "bg-muted text-muted-foreground hover:bg-muted/80"
+                  }`}
+                >
+                  {tn}
                 </button>
               ))}
             </div>
