@@ -393,6 +393,7 @@ export function POTMForm({ ageGroups }: { ageGroups: string[] }) {
           <div className="space-y-3">
             <label className="block text-xs font-display tracking-wider text-muted-foreground">Player Photo</label>
             <input
+              id={`potm-photo-upload-${i}`}
               ref={(el) => { fileInputRefs.current[i] = el; }}
               type="file"
               accept="image/*"
@@ -431,7 +432,10 @@ export function POTMForm({ ageGroups }: { ageGroups: string[] }) {
                 />
               </div>
             ) : (
-              <label className="flex items-center gap-3 cursor-pointer bg-secondary border border-dashed border-border rounded-lg px-4 py-4 hover:border-primary/50 transition-colors">
+              <label
+                htmlFor={`potm-photo-upload-${i}`}
+                className="flex items-center gap-3 cursor-pointer bg-secondary border border-dashed border-border rounded-lg px-4 py-4 hover:border-primary/50 transition-colors"
+              >
                 <Upload className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground">Click to upload a photo</span>
               </label>
