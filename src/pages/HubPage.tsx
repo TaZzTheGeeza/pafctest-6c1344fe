@@ -12,6 +12,7 @@ import { FixtureAvailability } from "@/components/hub/FixtureAvailability";
 import { CarpoolBoard } from "@/components/hub/CarpoolBoard";
 import { AttendanceStats } from "@/components/hub/AttendanceStats";
 import { GuardianManager } from "@/components/hub/GuardianManager";
+import { TeamAccessRequest } from "@/components/hub/TeamAccessRequest";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -185,11 +186,7 @@ export default function HubPage() {
           ) : loading ? (
             <div className="text-center py-16 text-muted-foreground">Loading your teams...</div>
           ) : myTeams.length === 0 ? (
-            <div className="max-w-md mx-auto bg-card border border-border rounded-xl p-8 text-center">
-              <Shield className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h2 className="font-display text-lg font-bold text-foreground mb-2">No Team Assigned</h2>
-              <p className="text-sm text-muted-foreground mb-4">You haven't been added to a team yet. Ask your coach or club admin to add you.</p>
-            </div>
+            <TeamAccessRequest />
           ) : (
             <div className="flex gap-0 md:gap-6">
               {/* Sidebar */}
