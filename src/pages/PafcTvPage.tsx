@@ -67,10 +67,21 @@ function timeAgo(iso: string): string {
   }
 }
 
+function extractAgeGroup(title: string): string {
+  const match = title.match(/U\d+/i);
+  return match ? match[0].toUpperCase() : "Other";
+}
+
+function ageGroupSortKey(group: string): number {
+  const match = group.match(/\d+/);
+  return match ? parseInt(match[0]) : 999;
+}
+
 const PafcTvPage = () => {
   const [videos, setVideos] = useState<Video[]>(fallbackVideos);
   const [loading, setLoading] = useState(true);
   const [activeVideo, setActiveVideo] = useState<Video | null>(null);
+  const [activeFilter, setActiveFilter] = useState<string>("All");
 
   useEffect(() => {
     async function fetchVideos() {
@@ -89,8 +100,12 @@ const PafcTvPage = () => {
     fetchVideos();
   }, []);
 
-  const heroVideo = videos[0];
-  const restVideos = videos.slice(1);
+  const ageGroups = ["All", ...Array.from(new Set(videos.map((v) => extractAgeGroup(v.title)))).sort((a, b) => ageGroupSortKey(a) - ageGroupSortKey(b))];
+
+  const filteredVideos = activeFilter === "All" ? videos : videos.filter((v) => extractAgeGroup(v.title) === activeFilter);
+
+  const heroVideo = filteredVideos[0];
+  const restVideos = filteredVideos.slice(1);
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -132,6 +147,23 @@ const PafcTvPage = () => {
                   SUBSCRIBE
                 </a>
               </Button>
+            </div>
+
+            {/* Age Group Filters */}
+            <div className="flex items-center gap-2 mb-6 flex-wrap">
+              {ageGroups.map((group) => (
+                <button
+                  key={group}
+                  onClick={() => setActiveFilter(group)}
+                  className={`font-display text-xs tracking-wider px-4 py-1.5 rounded-sm border transition-all ${
+                    activeFilter === group
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-transparent text-muted-foreground border-border hover:border-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {group}
+                </button>
+              ))}
             </div>
 
             {loading ? (
