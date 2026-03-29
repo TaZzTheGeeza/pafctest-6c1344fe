@@ -266,6 +266,7 @@ const RaffleAdminPage = () => {
         number_range: editForm.number_range ? parseInt(editForm.number_range) : null,
         draw_date: editForm.draw_date || null,
         image_url: imageUrl,
+        auto_draw_when_sold_out: editForm.auto_draw_when_sold_out,
       } as any)
       .eq("id", editingRaffle.id);
 
