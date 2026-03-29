@@ -58,7 +58,7 @@ function MegaDropdown({ item, location }: { item: NavItem; location: ReturnType<
   if (!item.dropdown) return null;
   return (
     <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 hidden group-hover:block">
-      <div className="bg-card/95 backdrop-blur-xl border border-border rounded-xl shadow-2xl shadow-black/30 p-4 min-w-[300px]">
+      <div className="bg-card/[0.97] border border-border rounded-xl shadow-2xl shadow-black/30 p-4 min-w-[300px]">
         <p className="text-[10px] font-display tracking-[0.2em] text-muted-foreground uppercase mb-3 px-1">{item.label}</p>
         <div className="grid gap-0.5">
           {item.dropdown.map((sub) => {
@@ -180,7 +180,7 @@ export function Navbar() {
       </div>
 
       {/* Main nav — split layout with centered logo + mega menu dropdowns */}
-      <div className={`transition-all duration-300 border-b border-border ${scrolled ? "bg-background/95 backdrop-blur-xl" : "bg-background"}`}>
+      <div className={`transition-all duration-300 border-b border-border ${scrolled ? "bg-background/[0.97]" : "bg-background"}`}>
         <div className="container mx-auto px-4 hidden lg:flex items-center justify-center h-14">
           {/* Left nav */}
           <div className="flex items-center gap-0.5 flex-1 justify-end pr-6">

@@ -44,7 +44,29 @@ export const FootballBackground = () => {
     resize();
     window.addEventListener("resize", resize);
 
-    const animate = () => {
+    // Throttle to ~20fps and pause when tab is hidden
+    const FRAME_INTERVAL = 50; // ms (~20fps instead of 60)
+    let lastFrame = 0;
+    let paused = false;
+
+    const handleVisibility = () => {
+      paused = document.hidden;
+      if (!paused) {
+        lastFrame = 0;
+        animationRef.current = requestAnimationFrame(animate);
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+
+    const animate = (timestamp: number) => {
+      if (paused) return;
+
+      if (timestamp - lastFrame < FRAME_INTERVAL) {
+        animationRef.current = requestAnimationFrame(animate);
+        return;
+      }
+      lastFrame = timestamp;
+
       timeRef.current++;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -70,10 +92,11 @@ export const FootballBackground = () => {
       animationRef.current = requestAnimationFrame(animate);
     };
 
-    animate();
+    animationRef.current = requestAnimationFrame(animate);
 
     return () => {
       window.removeEventListener("resize", resize);
+      document.removeEventListener("visibilitychange", handleVisibility);
       cancelAnimationFrame(animationRef.current);
     };
   }, [createDust]);
