@@ -62,7 +62,13 @@ export function FixtureAvailability({ teamSlug }: Props) {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["fixture-availability", teamSlug] }),
   });
 
-  const upcomingFixtures = (teamData?.fixtures || []).filter((f) => f.type !== "result");
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const upcomingFixtures = (teamData?.fixtures || []).filter((f) => {
+    const [dd, mm, yy] = f.date.split("/").map(Number);
+    const fDate = new Date(2000 + yy, mm - 1, dd);
+    return fDate >= today;
+  });
 
   if (fixturesLoading || availLoading) {
     return (
