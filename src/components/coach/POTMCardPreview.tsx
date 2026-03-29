@@ -13,8 +13,8 @@ interface POTMCardPreviewProps {
 }
 
 const CARD_W = 280;
-const CARD_H = 320; // photo area height on real card
-const PREVIEW_SCALE = 180 / 280; // preview is 180px wide
+const CARD_H = 320;
+const PREVIEW_SCALE = 180 / 280;
 const PREVIEW_W = 180;
 const PREVIEW_H = Math.round(CARD_H * PREVIEW_SCALE);
 
@@ -32,6 +32,8 @@ export function POTMCardPreview({
   const dragStart = useRef({ x: 0, y: 0, panX: 0, panY: 0 });
   const imgRef = useRef<HTMLImageElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const onCroppedRef = useRef(onCroppedImage);
+  onCroppedRef.current = onCroppedImage;
 
   // Reset when photo changes
   useEffect(() => {
@@ -83,7 +85,7 @@ export function POTMCardPreview({
 
   // Generate cropped image whenever zoom/pan changes
   useEffect(() => {
-    if (!photoPreview || !onCroppedImage || !naturalSize.w) return;
+    if (!photoPreview || !onCroppedRef.current || !naturalSize.w) return;
 
     const timer = setTimeout(() => {
       const img = new Image();
@@ -147,14 +149,14 @@ export function POTMCardPreview({
 
         ctx.drawImage(img, sx, sy, sw, sh, 0, 0, CARD_W, CARD_H);
         canvas.toBlob((blob) => {
-          if (blob) onCroppedImage(blob);
+          if (blob) onCroppedRef.current?.(blob);
         }, "image/jpeg", 0.92);
       };
       img.src = photoPreview;
-    }, 300); // debounce
+    }, 300);
 
     return () => clearTimeout(timer);
-  }, [photoPreview, zoom, pan, naturalSize, onCroppedImage]);
+  }, [photoPreview, zoom, pan, naturalSize]);
 
   return (
     <div className="flex flex-col items-center gap-2">
