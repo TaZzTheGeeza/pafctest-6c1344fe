@@ -594,6 +594,19 @@ function UserRow({
 
   useEffect(() => { checkDocUploaderStatus(); }, [user.id]);
 
+  const [editingName, setEditingName] = useState(false);
+  const [editNameValue, setEditNameValue] = useState("");
+  const [savingName, setSavingName] = useState(false);
+
+  async function saveNameEdit() {
+    if (!editNameValue.trim()) { toast.error("Name cannot be empty"); return; }
+    setSavingName(true);
+    const { error } = await supabase.from("profiles").update({ full_name: editNameValue.trim() }).eq("id", user.id);
+    if (error) toast.error("Failed to update name");
+    else { toast.success("Name updated"); user.full_name = editNameValue.trim(); setEditingName(false); }
+    setSavingName(false);
+  }
+
   async function loadAssignedTeams() {
     setLoadingTeams(true);
     const { data } = await supabase
