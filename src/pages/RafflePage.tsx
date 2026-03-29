@@ -193,12 +193,11 @@ const RafflePage = () => {
     setLiveDrawAutoStart(false);
   };
 
-  const getPresetWinner = (raffle: Raffle): RaffleTicket | null => {
+  const getPresetWinner = (raffle: Raffle): DrawTicket | null => {
     if (!raffle.drawn_ticket_number) return null;
     return {
       ticket_number: raffle.drawn_ticket_number,
       buyer_name: raffle.winner_name || "Winner",
-      payment_status: "paid",
     };
   };
 
