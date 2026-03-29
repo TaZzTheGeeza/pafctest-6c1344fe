@@ -307,7 +307,7 @@ export function POTMForm({ ageGroups }: { ageGroups: string[] }) {
             setMatchDescription("");
             setMatchDate("");
             setAgeGroup(ageGroups.length === 1 ? ageGroups[0] : "");
-            setEntries([{ player_name: "", shirt_number: "", reason: "", photoFile: null, photoPreview: null, croppedBlob: null }]);
+            setEntries([{ player_name: "", shirt_number: "", reason: "", photoFile: null, photoPreview: null, croppedBlob: null, eraserOpen: false, erasedPreview: null }]);
           }}
           className="text-sm font-display text-primary hover:text-gold-light transition-colors"
         >
