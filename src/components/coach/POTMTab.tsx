@@ -224,9 +224,12 @@ export function POTMTab({
                     shirtNumber={player?.shirt_number}
                     ageGroup={getAgeGroup(teamSlug)}
                     onCroppedImage={(blob) => {
-                      const next = [...entries];
-                      next[i] = { ...next[i], croppedBlob: blob };
-                      setEntries(next);
+                      // Use functional update to avoid stale closure issues
+                      setEntries(prev => {
+                        const next = [...prev];
+                        next[i] = { ...next[i], croppedBlob: blob };
+                        return next;
+                      });
                     }}
                   />
                 </div>
