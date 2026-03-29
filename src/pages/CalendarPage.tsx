@@ -7,6 +7,28 @@ import { CalendarDays, MapPin, Clock, Download, Filter } from "lucide-react";
 import { EventRSVP } from "@/components/EventRSVP";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isSameMonth, addMonths, subMonths } from "date-fns";
 
+/** Format a UTC date string to UK time display */
+function formatUK(dateStr: string, fmt: string): string {
+  // Use Intl to get the UK-offset parts, then format with date-fns
+  const d = new Date(dateStr);
+  const ukString = d.toLocaleString("en-GB", { timeZone: "Europe/London" });
+  // Parse "DD/MM/YYYY, HH:MM:SS" back into a Date we can pass to date-fns
+  const [datePart, timePart] = ukString.split(", ");
+  const [day, month, year] = datePart.split("/").map(Number);
+  const [hours, minutes, seconds] = timePart.split(":").map(Number);
+  const ukDate = new Date(year, month - 1, day, hours, minutes, seconds);
+  return format(ukDate, fmt);
+}
+
+function toUKDate(dateStr: string): Date {
+  const d = new Date(dateStr);
+  const ukString = d.toLocaleString("en-GB", { timeZone: "Europe/London" });
+  const [datePart, timePart] = ukString.split(", ");
+  const [day, month, year] = datePart.split("/").map(Number);
+  const [hours, minutes, seconds] = timePart.split(":").map(Number);
+  return new Date(year, month - 1, day, hours, minutes, seconds);
+}
+
 interface ClubEvent {
   id: string;
   title: string;
@@ -28,11 +50,12 @@ const typeColors: Record<string, string> = {
 };
 
 function generateICS(event: ClubEvent): string {
+  const ukStart = toUKDate(event.start_time);
   const dtStart = event.is_all_day
-    ? format(new Date(event.start_time), "yyyyMMdd")
-    : format(new Date(event.start_time), "yyyyMMdd'T'HHmmss");
+    ? format(ukStart, "yyyyMMdd")
+    : format(ukStart, "yyyyMMdd'T'HHmmss");
   const dtEnd = event.end_time
-    ? event.is_all_day ? format(new Date(event.end_time), "yyyyMMdd") : format(new Date(event.end_time), "yyyyMMdd'T'HHmmss")
+    ? event.is_all_day ? format(toUKDate(event.end_time), "yyyyMMdd") : format(toUKDate(event.end_time), "yyyyMMdd'T'HHmmss")
     : dtStart;
 
   return `BEGIN:VCALENDAR
@@ -80,10 +103,10 @@ export default function CalendarPage() {
   const paddingDays = startDayOfWeek === 0 ? 6 : startDayOfWeek - 1;
 
   const filteredEvents = events.filter((e) => filterType === "all" || e.event_type === filterType);
-  const dayEvents = selectedDate ? filteredEvents.filter((e) => isSameDay(new Date(e.start_time), selectedDate)) : [];
+  const dayEvents = selectedDate ? filteredEvents.filter((e) => isSameDay(toUKDate(e.start_time), selectedDate)) : [];
 
   const upcomingEvents = filteredEvents
-    .filter((e) => new Date(e.start_time) >= new Date())
+    .filter((e) => toUKDate(e.start_time) >= new Date())
     .slice(0, 10);
 
   return (
@@ -127,7 +150,7 @@ export default function CalendarPage() {
                 ))}
                 {Array.from({ length: paddingDays }).map((_, i) => <div key={`pad-${i}`} />)}
                 {days.map((day) => {
-                  const hasEvents = filteredEvents.some((e) => isSameDay(new Date(e.start_time), day));
+                  const hasEvents = filteredEvents.some((e) => isSameDay(toUKDate(e.start_time), day));
                   const isSelected = selectedDate && isSameDay(day, selectedDate);
                   const isToday = isSameDay(day, new Date());
                   return (
@@ -165,7 +188,7 @@ export default function CalendarPage() {
                           {e.description && <p className="text-sm text-muted-foreground mt-1">{e.description}</p>}
                           <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
                             {!e.is_all_day && (
-                              <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{format(new Date(e.start_time), "HH:mm")}</span>
+                              <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{formatUK(e.start_time, "HH:mm")}</span>
                             )}
                             {e.location && <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{e.location}</span>}
                           </div>
@@ -195,14 +218,14 @@ export default function CalendarPage() {
                       {upcomingEvents.map((e) => (
                         <button
                           key={e.id}
-                          onClick={() => setSelectedDate(new Date(e.start_time))}
+                          onClick={() => setSelectedDate(toUKDate(e.start_time))}
                           className="w-full text-left bg-card border border-border rounded-lg p-3 hover:border-primary/50 transition-colors"
                         >
                           <div className="flex items-center gap-2">
                             <span className={`w-2 h-2 rounded-full shrink-0 ${typeColors[e.event_type] || typeColors.general}`} />
                             <span className="text-sm font-display text-foreground truncate">{e.title}</span>
                           </div>
-                          <p className="text-xs text-muted-foreground mt-1 pl-4">{format(new Date(e.start_time), "EEE dd MMM, HH:mm")}</p>
+                          <p className="text-xs text-muted-foreground mt-1 pl-4">{formatUK(e.start_time, "EEE dd MMM, HH:mm")}</p>
                         </button>
                       ))}
                     </div>
