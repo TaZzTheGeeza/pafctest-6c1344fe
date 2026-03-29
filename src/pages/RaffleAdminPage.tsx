@@ -33,6 +33,8 @@ interface Raffle {
   winner_ticket_id: string | null;
   image_url: string | null;
   created_at: string;
+  auto_draw_when_sold_out: boolean;
+  number_range: number | null;
 }
 
 interface RaffleTicket {
