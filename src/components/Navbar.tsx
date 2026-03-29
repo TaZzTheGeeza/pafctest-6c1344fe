@@ -58,7 +58,7 @@ function MegaDropdown({ item, location }: { item: NavItem; location: ReturnType<
   if (!item.dropdown) return null;
   return (
     <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 hidden group-hover:block">
-      <div className="bg-card/95 backdrop-blur-xl border border-border rounded-xl shadow-2xl shadow-black/30 p-4 min-w-[300px]">
+      <div className="bg-card/[0.97] border border-border rounded-xl shadow-2xl shadow-black/30 p-4 min-w-[300px]">
         <p className="text-[10px] font-display tracking-[0.2em] text-muted-foreground uppercase mb-3 px-1">{item.label}</p>
         <div className="grid gap-0.5">
           {item.dropdown.map((sub) => {
