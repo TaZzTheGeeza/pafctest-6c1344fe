@@ -37,7 +37,6 @@ interface POTMAward {
 const ResultsPage = () => {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [filterTeam, setFilterTeam] = useState<string>("all");
-  const [filterTeam, setFilterTeam] = useState<string>("all");
 
   const { data: reports, isLoading } = useQuery({
     queryKey: ["match-reports-public"],
