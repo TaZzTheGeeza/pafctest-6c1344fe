@@ -270,7 +270,10 @@ export function Navbar() {
                   {item.label}
                 </a>
               ) : (
-                <Link key={item.label} to={item.path} onClick={() => setIsOpen(false)} className="font-display text-sm tracking-wider text-muted-foreground hover:text-primary transition-colors py-2">
+                <Link key={item.label} to={item.path} onClick={() => setIsOpen(false)} className={`font-display text-sm tracking-wider transition-colors py-2 flex items-center gap-2 ${
+                  item.label === "PAFC TV" ? "text-destructive font-bold" : "text-muted-foreground hover:text-primary"
+                }`}>
+                  {item.label === "PAFC TV" && <Youtube className="h-4 w-4" />}
                   {item.label}
                 </Link>
               )
