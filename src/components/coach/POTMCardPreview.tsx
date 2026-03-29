@@ -17,17 +17,6 @@ const CARD_H = 320;
 const PREVIEW_SCALE = 180 / 280;
 const PREVIEW_W = 180;
 const PREVIEW_H = Math.round(CARD_H * PREVIEW_SCALE);
-  playerName: string;
-  shirtNumber?: number | null;
-  ageGroup?: string;
-  onCroppedImage?: (blob: Blob) => void;
-}
-
-const CARD_W = 280;
-const CARD_H = 320; // photo area height on real card
-const PREVIEW_SCALE = 180 / 280; // preview is 180px wide
-const PREVIEW_W = 180;
-const PREVIEW_H = Math.round(CARD_H * PREVIEW_SCALE);
 
 export function POTMCardPreview({
   photoPreview,
