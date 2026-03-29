@@ -12,7 +12,7 @@ interface Props {
 }
 
 // 🔧 DEV BYPASS — set to false before publishing!
-const DEV_BYPASS = true;
+const DEV_BYPASS = false;
 
 export function RoleGate({ children, requiredRole, redirectTo = "/auth" }: Props) {
   const { user, loading, isPlayer, isCoach, isAdmin, rolesLoading } = useAuth();
