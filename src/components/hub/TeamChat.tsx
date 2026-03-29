@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Send, Hash, Plus, Users, ImagePlus, Loader2, X, Pencil, Trash2, Check } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import { isUserOnline } from "@/hooks/usePresence";
 
 interface Channel {
   id: string;
@@ -57,6 +58,7 @@ export function TeamChat({ teamSlug }: { teamSlug: string }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [profiles, setProfiles] = useState<Record<string, string>>({});
+  const [presenceMap, setPresenceMap] = useState<Record<string, string | null>>({});
   const [showNewChannel, setShowNewChannel] = useState(false);
   const [newChannelName, setNewChannelName] = useState("");
   const [uploading, setUploading] = useState(false);
@@ -128,9 +130,10 @@ export function TeamChat({ teamSlug }: { teamSlug: string }) {
 
   async function loadProfileFor(userId: string) {
     if (profiles[userId]) return;
-    const { data } = await supabase.from("profiles").select("full_name, email").eq("id", userId).single();
+    const { data } = await supabase.from("profiles").select("full_name, email, last_seen_at").eq("id", userId).single();
     if (data) {
-      setProfiles((prev) => ({ ...prev, [userId]: data.full_name || data.email || "Unknown" }));
+      setProfiles((prev) => ({ ...prev, [userId]: (data as any).full_name || (data as any).email || "Unknown" }));
+      setPresenceMap((prev) => ({ ...prev, [userId]: (data as any).last_seen_at }));
     }
   }
 
@@ -361,7 +364,10 @@ export function TeamChat({ teamSlug }: { teamSlug: string }) {
                     <div key={msg.id} className={`group flex ${isOwn ? "justify-end" : "justify-start"}`}>
                       <div className={`max-w-[75%] ${isOwn ? "items-end" : "items-start"}`}>
                         {showAvatar && (
-                          <p className={`text-[10px] font-display tracking-wider mb-0.5 ${isOwn ? "text-right text-primary" : "text-muted-foreground"}`}>
+                          <p className={`text-[10px] font-display tracking-wider mb-0.5 flex items-center gap-1.5 ${isOwn ? "justify-end text-primary" : "text-muted-foreground"}`}>
+                            {!isOwn && (
+                              <span className={`inline-block w-2 h-2 rounded-full ${isUserOnline(presenceMap[msg.user_id] ?? null) ? "bg-emerald-500" : "bg-muted-foreground/40"}`} />
+                            )}
                             {isOwn ? "You" : profiles[msg.user_id] || "Loading..."}
                           </p>
                         )}

@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { UserPlus, Trash2, Users, Search, ChevronDown, Shield, User, Heart } from "lucide-react";
 import { toast } from "sonner";
+import { isUserOnline, formatLastSeen } from "@/hooks/usePresence";
 
 const TEAM_ROLES = [
   { value: "coach", label: "Coach", color: "bg-amber-500/20 text-amber-400 border-amber-500/30", icon: Shield },
@@ -16,13 +17,14 @@ interface Member {
   user_id: string;
   team_slug: string;
   role: string;
-  profile?: { full_name: string | null; email: string | null };
+  profile?: { full_name: string | null; email: string | null; last_seen_at: string | null };
 }
 
 interface Profile {
   id: string;
   full_name: string | null;
   email: string | null;
+  last_seen_at: string | null;
 }
 
 export function TeamMemberManager({ teamSlug, teamName }: { teamSlug: string; teamName: string }) {
@@ -49,13 +51,13 @@ export function TeamMemberManager({ teamSlug, teamName }: { teamSlug: string; te
 
   async function loadProfile(userId: string) {
     if (profiles[userId]) return;
-    const { data } = await supabase.from("profiles").select("id, full_name, email").eq("id", userId).single();
-    if (data) setProfiles((prev) => ({ ...prev, [userId]: data }));
+    const { data } = await supabase.from("profiles").select("id, full_name, email, last_seen_at").eq("id", userId).single();
+    if (data) setProfiles((prev) => ({ ...prev, [userId]: data as any }));
   }
 
   async function loadAllProfiles() {
-    const { data } = await supabase.from("profiles").select("id, full_name, email");
-    if (data) setAllProfiles(data);
+    const { data } = await supabase.from("profiles").select("id, full_name, email, last_seen_at");
+    if (data) setAllProfiles(data as any);
   }
 
   async function addMember(userId: string) {
@@ -181,15 +183,20 @@ export function TeamMemberManager({ teamSlug, teamName }: { teamSlug: string; te
               const p = profiles[m.user_id];
               const roleConfig = getRoleConfig(m.role);
               const Icon = roleConfig.icon;
+              const online = isUserOnline(p?.last_seen_at ?? null);
+              const lastSeen = formatLastSeen(p?.last_seen_at ?? null);
               return (
                 <div key={m.id} className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-display text-xs font-bold">
-                      {(p?.full_name || p?.email || "?")[0].toUpperCase()}
+                    <div className="relative">
+                      <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-display text-xs font-bold">
+                        {(p?.full_name || p?.email || "?")[0].toUpperCase()}
+                      </div>
+                      <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-card ${online ? "bg-emerald-500" : "bg-muted-foreground/40"}`} />
                     </div>
                     <div>
                       <p className="text-sm font-display text-foreground">{p?.full_name || "Loading..."}</p>
-                      <p className="text-[10px] text-muted-foreground">{p?.email}</p>
+                      <p className="text-[10px] text-muted-foreground">{online ? "Online" : lastSeen !== "Never" ? `Last seen ${lastSeen}` : p?.email}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
