@@ -35,6 +35,10 @@ export default function AuthPage() {
       toast.error("Please fill in all fields");
       return;
     }
+    if (mode === "signup" && !form.fullName.trim()) {
+      toast.error("Full name is required");
+      return;
+    }
     setSubmitting(true);
 
     if (mode === "signup") {
@@ -84,13 +88,14 @@ export default function AuthPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               {mode === "signup" && (
                 <div>
-                  <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Full Name</label>
+                  <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Full Name *</label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <input
+                     <input
+                      required
                       value={form.fullName}
                       onChange={(e) => setForm({ ...form, fullName: e.target.value })}
-                      placeholder="Your name"
+                      placeholder="Your full name"
                       className="w-full bg-secondary border border-border rounded-lg pl-10 pr-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground"
                     />
                   </div>
