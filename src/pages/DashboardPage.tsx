@@ -461,6 +461,59 @@ export default function DashboardPage() {
             <TeamRequestsManager />
           )}
 
+          {/* Enquiries Section — admin only */}
+          {activeSection === "enquiries" && isAdmin && (
+            <div className="bg-card border border-border rounded-xl overflow-hidden">
+              <div className="p-5 border-b border-border">
+                <h2 className="text-sm font-display tracking-wider uppercase text-foreground flex items-center gap-2">
+                  <Mail className="h-4 w-4 text-primary" /> Contact Enquiries
+                </h2>
+              </div>
+              {enquiriesLoading ? (
+                <div className="flex items-center justify-center py-16">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                </div>
+              ) : enquiries.length === 0 ? (
+                <div className="text-center py-16">
+                  <Mail className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+                  <p className="text-muted-foreground font-display">No enquiries yet</p>
+                </div>
+              ) : (
+                <div className="divide-y divide-border">
+                  {enquiries.map((eq: any) => (
+                    <div key={eq.id} className="p-5 hover:bg-secondary/30 transition-colors">
+                      <div className="flex items-start justify-between gap-4 mb-2">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-lg bg-primary/10">
+                            <Mail className="h-4 w-4 text-primary" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-display font-semibold text-foreground">{eq.name}</p>
+                            <a href={`mailto:${eq.email}`} className="text-xs text-primary hover:underline flex items-center gap-1">
+                              {eq.email}
+                              <ExternalLink className="h-3 w-3" />
+                            </a>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground shrink-0">
+                          <Clock className="h-3 w-3" />
+                          {new Date(eq.created_at).toLocaleDateString("en-GB", {
+                            day: "2-digit",
+                            month: "short",
+                            year: "2-digit",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </div>
+                      </div>
+                      <p className="text-sm text-muted-foreground ml-11 whitespace-pre-wrap">{eq.message}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Coach Tabs */}
           {activeSection === "potm" && showCoachTools && (
             <div className="max-w-2xl mx-auto">
