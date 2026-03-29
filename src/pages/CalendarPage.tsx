@@ -50,11 +50,12 @@ const typeColors: Record<string, string> = {
 };
 
 function generateICS(event: ClubEvent): string {
+  const ukStart = toUKDate(event.start_time);
   const dtStart = event.is_all_day
-    ? format(new Date(event.start_time), "yyyyMMdd")
-    : format(new Date(event.start_time), "yyyyMMdd'T'HHmmss");
+    ? format(ukStart, "yyyyMMdd")
+    : format(ukStart, "yyyyMMdd'T'HHmmss");
   const dtEnd = event.end_time
-    ? event.is_all_day ? format(new Date(event.end_time), "yyyyMMdd") : format(new Date(event.end_time), "yyyyMMdd'T'HHmmss")
+    ? event.is_all_day ? format(toUKDate(event.end_time), "yyyyMMdd") : format(toUKDate(event.end_time), "yyyyMMdd'T'HHmmss")
     : dtStart;
 
   return `BEGIN:VCALENDAR
