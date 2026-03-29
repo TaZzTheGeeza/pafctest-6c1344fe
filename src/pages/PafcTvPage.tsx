@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Play, ExternalLink, Youtube, Loader2, Eye, Users, Video } from "lucide-react";
+import { Play, ExternalLink, Youtube, Loader2, Eye, Calendar, Search, SlidersHorizontal, Film } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -59,18 +59,30 @@ function timeAgo(iso: string): string {
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     if (days === 0) return "Today";
     if (days === 1) return "Yesterday";
-    if (days < 7) return `${days} days ago`;
-    if (days < 30) return `${Math.floor(days / 7)} weeks ago`;
-    return `${Math.floor(days / 30)} months ago`;
+    if (days < 7) return `${days}d ago`;
+    if (days < 30) return `${Math.floor(days / 7)}w ago`;
+    return `${Math.floor(days / 30)}mo ago`;
   } catch {
     return "";
   }
 }
 
-// Extract age group from title (e.g. "U13", "U11", "U8")
 function extractAgeGroup(title: string): string {
   const match = title.match(/U\d+/i);
   return match ? match[0].toUpperCase() : "Other";
+}
+
+// Try to extract opponent name
+function extractOpponent(title: string): { team: string; opponent: string } {
+  const cleaned = title.replace(/^PETERBOROUGH ATHLETIC\s*/i, "");
+  const parts = cleaned.split(/\s+vs\s+/i);
+  if (parts.length === 2) {
+    return {
+      team: parts[0].trim().split(" ").map(w => /^U\d+/i.test(w) ? w.toUpperCase() : w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(" "),
+      opponent: parts[1].trim().replace(/\s*·.*$/, "").split(" ").map(w => /^U\d+/i.test(w) ? w.toUpperCase() : w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(" "),
+    };
+  }
+  return { team: "PAFC", opponent: cleaned };
 }
 
 const PafcTvPage = () => {
@@ -78,6 +90,7 @@ const PafcTvPage = () => {
   const [loading, setLoading] = useState(true);
   const [activeVideo, setActiveVideo] = useState<Video | null>(null);
   const [activeFilter, setActiveFilter] = useState<string>("All");
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     async function fetchVideos() {
@@ -96,55 +109,41 @@ const PafcTvPage = () => {
     fetchVideos();
   }, []);
 
-  // Get unique age groups for filter tabs
   const ageGroups = ["All", ...Array.from(new Set(videos.map((v) => extractAgeGroup(v.title)))).sort()];
 
-  const filteredVideos =
-    activeFilter === "All" ? videos : videos.filter((v) => extractAgeGroup(v.title) === activeFilter);
+  const filteredVideos = videos.filter((v) => {
+    const matchesFilter = activeFilter === "All" || extractAgeGroup(v.title) === activeFilter;
+    const matchesSearch = !searchQuery || v.title.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesFilter && matchesSearch;
+  });
 
-  const totalViews = videos.reduce((sum, v) => sum + v.views, 0);
+  const featuredVideo = filteredVideos[0];
+  const gridVideos = filteredVideos.slice(1);
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
       <main className="flex-1 pt-20">
 
-        {/* ── Channel Banner ── */}
-        <section className="relative h-48 md:h-64 overflow-hidden bg-secondary">
-          {/* Texture overlay */}
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-destructive/10" />
-          <div className="absolute inset-0 opacity-[0.03]" style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-          }} />
-          <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent" />
-        </section>
-
-        {/* ── Channel Info Bar ── */}
-        <section className="container mx-auto px-4 -mt-10 relative z-10 mb-8">
-          <div className="flex flex-col sm:flex-row items-start sm:items-end gap-5">
-            {/* Channel avatar */}
-            <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-card border-4 border-background flex items-center justify-center shadow-lg shrink-0">
-              <Youtube className="h-10 w-10 md:h-12 md:w-12 text-destructive" />
-            </div>
-            <div className="flex-1 flex flex-col sm:flex-row sm:items-end justify-between gap-4 w-full">
+        {/* ── Page Header ── */}
+        <section className="border-b border-border">
+          <div className="container mx-auto px-4 py-8">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
               <div>
-                <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground tracking-wide">
+                <div className="flex items-center gap-2 mb-2">
+                  <Film className="h-5 w-5 text-primary" />
+                  <span className="font-display text-sm tracking-widest text-primary uppercase">Match Centre</span>
+                </div>
+                <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground tracking-wide">
                   PAFC TV
                 </h1>
-                <div className="flex items-center gap-4 mt-1.5 text-sm text-muted-foreground">
-                  <span className="flex items-center gap-1.5">
-                    <Video className="h-4 w-4" />
-                    {videos.length} videos
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <Eye className="h-4 w-4" />
-                    {formatViews(totalViews)} total views
-                  </span>
-                </div>
+                <p className="text-muted-foreground mt-2 text-sm">
+                  Full match footage from every fixture — find your team's games below
+                </p>
               </div>
               <Button
                 asChild
-                className="font-display tracking-wider bg-destructive hover:bg-destructive/90 text-destructive-foreground gap-2 rounded-full px-6"
+                className="font-display tracking-wider bg-destructive hover:bg-destructive/90 text-destructive-foreground gap-2 rounded-sm self-start md:self-auto"
               >
                 <a
                   href="https://www.youtube.com/@PeterboroughAthleticFC"
@@ -153,101 +152,193 @@ const PafcTvPage = () => {
                 >
                   <Youtube className="h-4 w-4" />
                   SUBSCRIBE
+                  <ExternalLink className="h-3.5 w-3.5" />
                 </a>
               </Button>
             </div>
           </div>
         </section>
 
-        {/* ── Filter Tabs ── */}
-        <section className="border-b border-border sticky top-20 bg-background/95 backdrop-blur-sm z-20">
-          <div className="container mx-auto px-4">
-            <div className="flex items-center gap-1 overflow-x-auto pb-px scrollbar-none">
-              {ageGroups.map((group) => (
-                <button
-                  key={group}
-                  onClick={() => setActiveFilter(group)}
-                  className={`font-display text-sm tracking-wider px-5 py-3 border-b-2 transition-colors whitespace-nowrap ${
-                    activeFilter === group
-                      ? "border-primary text-primary"
-                      : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
-                  }`}
-                >
-                  {group}
-                </button>
-              ))}
+        {/* ── Filters & Search Bar ── */}
+        <section className="border-b border-border bg-card/50 sticky top-20 z-20 backdrop-blur-sm">
+          <div className="container mx-auto px-4 py-3">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+              {/* Age group pills */}
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <SlidersHorizontal className="h-4 w-4 text-muted-foreground mr-1 hidden sm:block" />
+                {ageGroups.map((group) => (
+                  <button
+                    key={group}
+                    onClick={() => setActiveFilter(group)}
+                    className={`font-display text-xs tracking-wider px-3.5 py-1.5 rounded-sm border transition-all ${
+                      activeFilter === group
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-transparent text-muted-foreground border-border hover:border-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {group}
+                  </button>
+                ))}
+              </div>
+              {/* Search */}
+              <div className="relative sm:ml-auto w-full sm:w-auto">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <input
+                  type="text"
+                  placeholder="Search matches..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full sm:w-56 bg-secondary border border-border rounded-sm pl-9 pr-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-colors"
+                />
+              </div>
             </div>
           </div>
         </section>
 
-        {/* ── Video Grid ── */}
-        <section className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 py-8">
           {loading ? (
             <div className="flex items-center justify-center py-32">
               <Loader2 className="h-10 w-10 animate-spin text-primary" />
             </div>
           ) : filteredVideos.length === 0 ? (
             <div className="text-center py-20">
-              <p className="text-muted-foreground font-display tracking-wider">No videos found for {activeFilter}</p>
+              <Film className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground font-display tracking-wider">No matches found</p>
+              <p className="text-sm text-muted-foreground mt-1">Try a different filter or search term</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-4 gap-y-8">
-              {filteredVideos.map((video) => (
-                <button
-                  key={video.id}
-                  onClick={() => setActiveVideo(video)}
-                  className="group text-left"
-                >
-                  {/* Thumbnail */}
-                  <div className="aspect-video relative overflow-hidden rounded-xl bg-secondary">
-                    <img
-                      src={video.thumbnail}
-                      alt={video.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-0 bg-background/0 group-hover:bg-background/20 transition-colors duration-300" />
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <div className="w-14 h-14 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center">
-                        <Play className="h-6 w-6 text-foreground ml-0.5" fill="currentColor" />
+            <>
+              {/* ── Featured Match ── */}
+              {featuredVideo && (
+                <div className="mb-10">
+                  <button
+                    onClick={() => setActiveVideo(featuredVideo)}
+                    className="w-full group grid grid-cols-1 lg:grid-cols-5 gap-0 rounded-lg overflow-hidden border border-border hover:border-primary/40 transition-all bg-card"
+                  >
+                    {/* Thumbnail - takes 3 cols */}
+                    <div className="lg:col-span-3 aspect-video relative overflow-hidden">
+                      <img
+                        src={featuredVideo.thumbnail}
+                        alt={featuredVideo.title}
+                        className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-700"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent to-card/20 group-hover:to-card/10 transition-colors" />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-20 h-20 rounded-full bg-primary/90 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-2xl">
+                          <Play className="h-8 w-8 text-primary-foreground ml-1" fill="currentColor" />
+                        </div>
                       </div>
-                    </div>
-                    {/* Age group badge */}
-                    <div className="absolute top-2 right-2">
-                      <span className="bg-background/80 backdrop-blur-sm text-foreground text-xs font-display tracking-wider px-2.5 py-1 rounded-md">
-                        {extractAgeGroup(video.title)}
+                      <span className="absolute top-3 left-3 bg-destructive text-destructive-foreground text-xs font-display tracking-widest px-3 py-1 rounded-sm font-bold">
+                        LATEST
                       </span>
                     </div>
-                  </div>
+                    {/* Match info panel - takes 2 cols */}
+                    <div className="lg:col-span-2 p-6 lg:p-8 flex flex-col justify-center text-left border-t lg:border-t-0 lg:border-l border-border">
+                      <span className="font-display text-xs tracking-widest text-primary uppercase mb-3">
+                        Featured Match
+                      </span>
 
-                  {/* Info */}
-                  <div className="mt-3 flex gap-3">
-                    <div className="w-9 h-9 rounded-full bg-card border border-border flex items-center justify-center shrink-0 mt-0.5">
-                      <Youtube className="h-4 w-4 text-destructive" />
+                      {/* VS layout */}
+                      <div className="space-y-3 mb-6">
+                        <div>
+                          <span className="font-display text-xs tracking-wider text-muted-foreground uppercase">PAFC</span>
+                          <h2 className="font-display text-xl md:text-2xl font-bold text-foreground leading-tight">
+                            {extractOpponent(featuredVideo.title).team}
+                          </h2>
+                        </div>
+                        <div className="font-display text-lg text-primary font-bold">VS</div>
+                        <div>
+                          <span className="font-display text-xs tracking-wider text-muted-foreground uppercase">Opposition</span>
+                          <h2 className="font-display text-xl md:text-2xl font-bold text-foreground leading-tight">
+                            {extractOpponent(featuredVideo.title).opponent}
+                          </h2>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <span className="flex items-center gap-1.5">
+                          <Calendar className="h-4 w-4" />
+                          {formatDate(featuredVideo.published)}
+                        </span>
+                        <span className="flex items-center gap-1.5">
+                          <Eye className="h-4 w-4" />
+                          {formatViews(featuredVideo.views)} views
+                        </span>
+                      </div>
                     </div>
-                    <div className="min-w-0">
-                      <h4 className="font-body text-sm font-medium text-foreground group-hover:text-primary transition-colors leading-snug line-clamp-2">
-                        {formatTitle(video.title)}
-                      </h4>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        PAFC TV
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {formatViews(video.views)} views · {timeAgo(video.published)}
-                      </p>
-                    </div>
-                  </div>
-                </button>
-              ))}
-            </div>
+                  </button>
+                </div>
+              )}
+
+              {/* ── Match List Grid ── */}
+              <div className="flex items-center gap-3 mb-5">
+                <h3 className="font-display text-sm tracking-widest text-muted-foreground uppercase">
+                  {activeFilter === "All" ? "All Matches" : `${activeFilter} Matches`}
+                </h3>
+                <div className="flex-1 h-px bg-border" />
+                <span className="text-xs text-muted-foreground">{filteredVideos.length} videos</span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
+                {gridVideos.map((video) => {
+                  const { team, opponent } = extractOpponent(video.title);
+                  return (
+                    <button
+                      key={video.id}
+                      onClick={() => setActiveVideo(video)}
+                      className="group text-left rounded-lg overflow-hidden border border-border hover:border-primary/40 bg-card transition-all duration-300"
+                    >
+                      <div className="aspect-video relative overflow-hidden">
+                        <img
+                          src={video.thumbnail}
+                          alt={video.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          loading="lazy"
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                          <div className="w-14 h-14 rounded-full bg-primary/90 flex items-center justify-center shadow-lg">
+                            <Play className="h-6 w-6 text-primary-foreground ml-0.5" fill="currentColor" />
+                          </div>
+                        </div>
+                        <div className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm text-foreground text-xs font-display tracking-wider px-2 py-0.5 rounded-sm">
+                          {extractAgeGroup(video.title)}
+                        </div>
+                      </div>
+                      {/* Match info strip */}
+                      <div className="p-4">
+                        <div className="flex items-center justify-between gap-2 mb-2">
+                          <span className="font-display text-sm font-bold text-foreground group-hover:text-primary transition-colors truncate">
+                            {team}
+                          </span>
+                          <span className="font-display text-xs text-primary font-bold shrink-0">VS</span>
+                          <span className="font-display text-sm font-bold text-foreground group-hover:text-primary transition-colors truncate text-right">
+                            {opponent}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between text-xs text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
+                            {formatDate(video.published)}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Eye className="h-3 w-3" />
+                            {formatViews(video.views)}
+                          </span>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </>
           )}
-        </section>
+        </div>
       </main>
       <Footer />
 
       {/* Video Player Modal */}
       <Dialog open={!!activeVideo} onOpenChange={() => setActiveVideo(null)}>
-        <DialogContent className="max-w-5xl w-[95vw] p-0 bg-background border-border overflow-hidden rounded-xl">
+        <DialogContent className="max-w-5xl w-[95vw] p-0 bg-background border-border overflow-hidden rounded-lg">
           {activeVideo && (
             <div>
               <div className="aspect-video w-full">
@@ -276,7 +367,7 @@ const PafcTvPage = () => {
                     asChild
                     size="sm"
                     variant="outline"
-                    className="font-display tracking-wider rounded-full gap-1.5"
+                    className="font-display tracking-wider rounded-sm gap-1.5"
                   >
                     <a
                       href={`https://www.youtube.com/watch?v=${activeVideo.id}`}
@@ -284,7 +375,7 @@ const PafcTvPage = () => {
                       rel="noopener noreferrer"
                     >
                       <Youtube className="h-4 w-4 text-destructive" />
-                      Watch on YouTube
+                      YouTube
                       <ExternalLink className="h-3 w-3" />
                     </a>
                   </Button>
