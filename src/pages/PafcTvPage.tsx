@@ -166,6 +166,7 @@ const PafcTvPage = () => {
               ))}
             </div>
 
+            {loading ? (
               <div className="flex items-center justify-center py-32">
                 <Loader2 className="h-10 w-10 animate-spin text-primary" />
               </div>
