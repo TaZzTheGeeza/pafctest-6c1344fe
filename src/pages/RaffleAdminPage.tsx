@@ -159,6 +159,7 @@ const RaffleAdminPage = () => {
       draw_date: newRaffle.draw_date || null,
       status: "draft",
       image_url: imageUrl,
+      auto_draw_when_sold_out: newRaffle.auto_draw_when_sold_out,
     } as any);
 
     if (error) {
@@ -166,7 +167,7 @@ const RaffleAdminPage = () => {
     } else {
       toast.success("Raffle created! Set it to 'Active' when ready.");
       setShowCreate(false);
-      setNewRaffle({ title: "", description: "", prize_description: "", ticket_price: "", max_tickets: "", draw_date: "", number_range: "" });
+      setNewRaffle({ title: "", description: "", prize_description: "", ticket_price: "", max_tickets: "", draw_date: "", number_range: "", auto_draw_when_sold_out: false });
       setImageFile(null);
       setImagePreview(null);
       fetchRaffles();
@@ -199,7 +200,8 @@ const RaffleAdminPage = () => {
       ticket_price: (raffle.ticket_price_cents / 100).toFixed(2),
       max_tickets: raffle.max_tickets?.toString() || "",
       draw_date: raffle.draw_date ? raffle.draw_date.split("T")[0] : "",
-      number_range: (raffle as any).number_range?.toString() || "",
+      number_range: raffle.number_range?.toString() || "",
+      auto_draw_when_sold_out: (raffle as any).auto_draw_when_sold_out ?? false,
     });
     setEditImagePreview(raffle.image_url);
     setEditImageFile(null);
