@@ -3,7 +3,7 @@ import { useTeamFixtures, type FAFixture } from "@/hooks/useTeamFixtures";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Check, X, HelpCircle, Loader2, MapPin, Clock, Users, Navigation } from "lucide-react";
+import { Check, X, HelpCircle, Loader2, MapPin, Clock, Users, Navigation, ChevronDown, ChevronUp } from "lucide-react";
 import { format } from "date-fns";
 
 interface Props {
@@ -29,6 +29,7 @@ function fixtureKey(f: FAFixture) {
 export function FixtureAvailability({ teamSlug }: Props) {
   const { user, isCoach, isAdmin } = useAuth();
   const queryClient = useQueryClient();
+  const [expandedFixture, setExpandedFixture] = useState<string | null>(null);
   const { data: teamData, isLoading: fixturesLoading } = useTeamFixtures(teamSlug);
 
   const { data: availability = [], isLoading: availLoading } = useQuery({
@@ -42,6 +43,21 @@ export function FixtureAvailability({ teamSlug }: Props) {
       return data as AvailabilityRecord[];
     },
     enabled: !!user,
+  });
+
+  const respondentIds = [...new Set(availability.map((a) => a.user_id))];
+  const { data: profiles = [] } = useQuery({
+    queryKey: ["availability-profiles", respondentIds.sort().join(",")],
+    queryFn: async () => {
+      if (respondentIds.length === 0) return [];
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id, full_name")
+        .in("id", respondentIds);
+      if (error) throw error;
+      return data as { id: string; full_name: string | null }[];
+    },
+    enabled: respondentIds.length > 0 && (isCoach || isAdmin),
   });
 
   const mutation = useMutation({
@@ -106,6 +122,15 @@ export function FixtureAvailability({ teamSlug }: Props) {
     };
   }
 
+  function getRespondents(fixture: FAFixture, status: string) {
+    const opponent = fixture.homeTeam.includes("Peterborough Ath") ? fixture.awayTeam : fixture.homeTeam;
+    const records = availability.filter((a) => a.fixture_date === fixture.date && a.opponent === opponent && a.status === status);
+    return records.map((r) => {
+      const profile = profiles.find((p) => p.id === r.user_id);
+      return profile?.full_name || "Unknown";
+    });
+  }
+
   const statusButtons: { status: AvailabilityStatus; icon: typeof Check; label: string; activeClass: string }[] = [
     { status: "available", icon: Check, label: "Available", activeClass: "bg-green-600 text-white border-green-600" },
     { status: "maybe", icon: HelpCircle, label: "Maybe", activeClass: "bg-amber-500 text-white border-amber-500" },
@@ -114,11 +139,13 @@ export function FixtureAvailability({ teamSlug }: Props) {
 
   return (
     <div className="space-y-3">
-      {upcomingFixtures.map((fixture, i) => {
+      {upcomingFixtures.map((fixture) => {
         const isHome = fixture.homeTeam.includes("Peterborough Ath");
         const opponent = isHome ? fixture.awayTeam : fixture.homeTeam;
         const myStatus = getMyStatus(fixture);
         const summary = getTeamSummary(fixture);
+        const fKey = fixtureKey(fixture);
+        const isExpanded = expandedFixture === fKey;
 
         return (
           <div key={`${fixture.date}-${opponent}`} className="bg-card border border-border rounded-xl p-4">
@@ -145,11 +172,15 @@ export function FixtureAvailability({ teamSlug }: Props) {
               </div>
 
               {(isCoach || isAdmin) && (
-                <div className="flex items-center gap-2 text-xs">
+                <button
+                  onClick={() => setExpandedFixture(isExpanded ? null : fKey)}
+                  className="flex items-center gap-2 text-xs hover:opacity-80 transition-opacity"
+                >
                   <span className="flex items-center gap-1 text-green-500"><Check className="h-3 w-3" />{summary.available}</span>
                   <span className="flex items-center gap-1 text-amber-500"><HelpCircle className="h-3 w-3" />{summary.maybe}</span>
                   <span className="flex items-center gap-1 text-red-500"><X className="h-3 w-3" />{summary.unavailable}</span>
-                </div>
+                  {isExpanded ? <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />}
+                </button>
               )}
             </div>
 
@@ -170,6 +201,38 @@ export function FixtureAvailability({ teamSlug }: Props) {
                 </button>
               ))}
             </div>
+
+            {isExpanded && (isCoach || isAdmin) && (
+              <div className="mt-3 pt-3 border-t border-border grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {(["available", "maybe", "unavailable"] as const).map((status) => {
+                  const names = getRespondents(fixture, status);
+                  const config = {
+                    available: { label: "Available", icon: Check, color: "text-green-500", bg: "bg-green-500/10" },
+                    maybe: { label: "Maybe", icon: HelpCircle, color: "text-amber-500", bg: "bg-amber-500/10" },
+                    unavailable: { label: "Unavailable", icon: X, color: "text-red-500", bg: "bg-red-500/10" },
+                  }[status];
+                  const StatusIcon = config.icon;
+
+                  return (
+                    <div key={status} className={`rounded-lg p-2.5 ${config.bg}`}>
+                      <div className={`flex items-center gap-1.5 mb-2 ${config.color}`}>
+                        <StatusIcon className="h-3.5 w-3.5" />
+                        <span className="text-xs font-display font-bold tracking-wider uppercase">{config.label} ({names.length})</span>
+                      </div>
+                      {names.length === 0 ? (
+                        <p className="text-xs text-muted-foreground italic">No responses</p>
+                      ) : (
+                        <ul className="space-y-0.5">
+                          {names.map((name, idx) => (
+                            <li key={idx} className="text-xs text-foreground">{name}</li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         );
       })}
