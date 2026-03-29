@@ -18,7 +18,8 @@ import { useUserAgeGroups } from "@/hooks/useUserAgeGroups";
 import { faTeamConfigs } from "@/lib/faFixtureConfig";
 import { POTMForm } from "@/pages/CoachPanelPage";
 import { MatchReportForm } from "@/pages/CoachPanelPage";
-import { Upload, CheckCircle, AlertTriangle } from "lucide-react";
+import { Upload, CheckCircle, AlertTriangle, UserPlus as UserPlusIcon } from "lucide-react";
+import { TeamRequestsManager } from "@/components/dashboard/TeamRequestsManager";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
 
@@ -51,7 +52,7 @@ const ADMIN_LINKS = [
   { label: "Safeguarding Reports", path: "/admin/safeguarding-reports", icon: Shield, desc: "View & manage safeguarding concerns" },
 ];
 
-type DashboardSection = "overview" | "users" | "potm" | "report" | "stats" | "manage";
+type DashboardSection = "overview" | "users" | "requests" | "potm" | "report" | "stats" | "manage";
 
 export default function DashboardPage() {
   const { user, isAdmin, isCoach } = useAuth();
@@ -209,6 +210,7 @@ export default function DashboardPage() {
   const sectionItems: { key: DashboardSection; label: string; icon: any; adminOnly?: boolean; coachOnly?: boolean }[] = [
     { key: "overview", label: "Overview", icon: LayoutDashboard },
     { key: "users", label: "Users", icon: Users, adminOnly: true },
+    { key: "requests", label: "Requests", icon: UserPlusIcon, adminOnly: true },
     { key: "potm", label: "POTM", icon: Star, coachOnly: true },
     { key: "report", label: "Match Report", icon: FileText, coachOnly: true },
     { key: "stats", label: "Player Stats", icon: BarChart3, coachOnly: true },
@@ -432,6 +434,11 @@ export default function DashboardPage() {
                 </p>
               </div>
             </div>
+          )}
+
+          {/* Requests Section — admin only */}
+          {activeSection === "requests" && isAdmin && (
+            <TeamRequestsManager />
           )}
 
           {/* Coach Tabs */}
