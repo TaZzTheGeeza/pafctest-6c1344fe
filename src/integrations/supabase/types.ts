@@ -1636,6 +1636,13 @@ export type Database = {
       }
     }
     Functions: {
+      get_taken_ticket_numbers: {
+        Args: { _raffle_id: string }
+        Returns: {
+          payment_status: string
+          ticket_number: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
