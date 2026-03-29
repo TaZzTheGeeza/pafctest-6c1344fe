@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X, ChevronDown, Trophy, ShoppingBag, LogIn, Newspaper, CalendarDays, Image, Award, Clock, UserPlus, FileText, Shield, Info, Heart, ClipboardList, MessageSquare, Settings, Youtube } from "lucide-react";
-import { PafcHubIcon } from "@/components/icons/PafcHubIcon";
+
 import { CartDrawer } from "@/components/CartDrawer";
 import { NotificationBell } from "@/components/hub/NotificationBell";
 import { useAuth } from "@/contexts/AuthContext";
@@ -133,7 +133,7 @@ function NavItemRenderer({ item, location }: { item: NavItem; location: ReturnTy
               : "text-muted-foreground hover:text-foreground"
       }`}
     >
-      {isPafcHub && <PafcHubIcon className="h-3.5 w-3.5" />}
+      
       {isPafcTv && <Youtube className="h-4 w-4" />}
       {item.label}
     </Link>
@@ -279,7 +279,7 @@ export function Navbar() {
                   item.label === "PAFC Hub" ? "text-primary font-bold bg-primary/10 rounded-md px-3 border border-primary/30" :
                   item.label === "PAFC TV" ? "text-destructive font-bold" : "text-muted-foreground hover:text-primary"
                 }`}>
-                  {item.label === "PAFC Hub" && <PafcHubIcon className="h-4 w-4" />}
+                  
                   {item.label === "PAFC TV" && <Youtube className="h-4 w-4" />}
                   {item.label}
                 </Link>
