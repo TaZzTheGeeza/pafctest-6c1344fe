@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { toast } from "sonner";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   Users, Shield, ShieldCheck, ShieldAlert, UserCog, Trash2,
   Search, ChevronDown, Trophy, Ticket, BarChart3, FileText,
@@ -69,6 +69,15 @@ export default function DashboardPage() {
   const [shopOpen, setShopOpen] = useState(true);
   const [togglingShop, setTogglingShop] = useState(false);
   const [activeSection, setActiveSection] = useState<DashboardSection>("overview");
+  const [searchParams] = useSearchParams();
+
+  // Handle section from URL params (e.g. /dashboard?section=messages)
+  useEffect(() => {
+    const section = searchParams.get("section");
+    if (section && ["overview", "users", "requests", "enquiries", "messages", "potm", "report", "stats", "manage"].includes(section)) {
+      setActiveSection(section as DashboardSection);
+    }
+  }, [searchParams]);
 
   const effectiveAgeGroups = isAdmin ? ALL_AGE_GROUPS : assignedGroups;
   const showCoachTools = isCoach || isAdmin;
