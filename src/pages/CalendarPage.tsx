@@ -7,6 +7,28 @@ import { CalendarDays, MapPin, Clock, Download, Filter } from "lucide-react";
 import { EventRSVP } from "@/components/EventRSVP";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isSameMonth, addMonths, subMonths } from "date-fns";
 
+/** Format a UTC date string to UK time display */
+function formatUK(dateStr: string, fmt: string): string {
+  // Use Intl to get the UK-offset parts, then format with date-fns
+  const d = new Date(dateStr);
+  const ukString = d.toLocaleString("en-GB", { timeZone: "Europe/London" });
+  // Parse "DD/MM/YYYY, HH:MM:SS" back into a Date we can pass to date-fns
+  const [datePart, timePart] = ukString.split(", ");
+  const [day, month, year] = datePart.split("/").map(Number);
+  const [hours, minutes, seconds] = timePart.split(":").map(Number);
+  const ukDate = new Date(year, month - 1, day, hours, minutes, seconds);
+  return format(ukDate, fmt);
+}
+
+function toUKDate(dateStr: string): Date {
+  const d = new Date(dateStr);
+  const ukString = d.toLocaleString("en-GB", { timeZone: "Europe/London" });
+  const [datePart, timePart] = ukString.split(", ");
+  const [day, month, year] = datePart.split("/").map(Number);
+  const [hours, minutes, seconds] = timePart.split(":").map(Number);
+  return new Date(year, month - 1, day, hours, minutes, seconds);
+}
+
 interface ClubEvent {
   id: string;
   title: string;
