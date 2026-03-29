@@ -1070,6 +1070,45 @@ export type Database = {
         }
         Relationships: []
       }
+      team_requests: {
+        Row: {
+          created_at: string
+          id: string
+          invite_code: string | null
+          player_name: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          role_requested: string
+          status: string
+          team_slug: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          invite_code?: string | null
+          player_name?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          role_requested?: string
+          status?: string
+          team_slug: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          invite_code?: string | null
+          player_name?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          role_requested?: string
+          status?: string
+          team_slug?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       team_selections: {
         Row: {
           created_at: string
