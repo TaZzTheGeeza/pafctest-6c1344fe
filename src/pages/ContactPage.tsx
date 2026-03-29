@@ -5,20 +5,34 @@ import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Mail, MapPin, Send } from "lucide-react";
+import { MapPin, Send, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function ContactPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success("Message sent!", { description: "We'll get back to you as soon as possible." });
-    setName("");
-    setEmail("");
-    setMessage("");
+    setSubmitting(true);
+    try {
+      const { error } = await supabase.functions.invoke("handle-contact-form", {
+        body: { name, email, message },
+      });
+      if (error) throw error;
+      toast.success("Message sent!", { description: "We'll get back to you as soon as possible." });
+      setName("");
+      setEmail("");
+      setMessage("");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to send message", { description: "Please try again later." });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -49,21 +63,14 @@ export default function ContactPage() {
                   <label className="text-sm text-muted-foreground mb-1 block">Message</label>
                   <Textarea value={message} onChange={(e) => setMessage(e.target.value)} required placeholder="Your message..." rows={5} />
                 </div>
-                <Button type="submit" className="w-full bg-gold-gradient text-primary-foreground font-display tracking-wider">
-                  <Send className="w-4 h-4 mr-2" />
-                  Send Message
+                <Button type="submit" disabled={submitting} className="w-full bg-gold-gradient text-primary-foreground font-display tracking-wider">
+                  {submitting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Send className="w-4 h-4 mr-2" />}
+                  {submitting ? "Sending..." : "Send Message"}
                 </Button>
               </form>
             </div>
 
             <div className="space-y-6">
-              <div className="bg-card border border-border rounded-lg p-8">
-                <div className="flex items-center gap-3 mb-3">
-                  <Mail className="h-5 w-5 text-primary" />
-                  <h3 className="font-display font-bold">Email</h3>
-                </div>
-                <p className="text-muted-foreground text-sm">info@peterboroughathleticfc.co.uk</p>
-              </div>
               <div className="bg-card border border-border rounded-lg p-8">
                 <div className="flex items-center gap-3 mb-3">
                   <MapPin className="h-5 w-5 text-primary" />
