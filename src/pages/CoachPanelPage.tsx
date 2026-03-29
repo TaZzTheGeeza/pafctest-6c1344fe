@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Navbar } from "@/components/Navbar";
@@ -15,6 +15,7 @@ import { useTeamRoster } from "@/hooks/useTeamRoster";
 import { faTeamConfigs } from "@/lib/faFixtureConfig";
 import { uploadPotmPhoto } from "@/lib/potmPhoto";
 import { DateInput } from "@/components/ui/date-input";
+import { POTMCardPreview } from "@/components/coach/POTMCardPreview";
 
 const ALL_AGE_GROUPS = [
   "U7", "U8 Black", "U8 Gold", "U9", "U10",
@@ -166,6 +167,7 @@ interface POTMEntry {
   reason: string;
   photoFile: File | null;
   photoPreview: string | null;
+  croppedBlob: Blob | null;
 }
 
 export function POTMForm({ ageGroups }: { ageGroups: string[] }) {
@@ -176,15 +178,19 @@ export function POTMForm({ ageGroups }: { ageGroups: string[] }) {
   const [matchDescription, setMatchDescription] = useState("");
   const [matchDate, setMatchDate] = useState("");
   const [entries, setEntries] = useState<POTMEntry[]>([
-    { player_name: "", shirt_number: "", reason: "", photoFile: null, photoPreview: null },
+    { player_name: "", shirt_number: "", reason: "", photoFile: null, photoPreview: null, croppedBlob: null },
   ]);
+  const fileInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const teamSlug = AGE_GROUP_TO_SLUG[ageGroup] || "";
   const { data: roster = [] } = useTeamRoster(teamSlug);
-  const selectedNames = entries.map(e => e.player_name).filter(Boolean);
+  const selectedNames = entries.map((e) => e.player_name).filter(Boolean);
 
   const addEntry = () => {
-    setEntries([...entries, { player_name: "", shirt_number: "", reason: "", photoFile: null, photoPreview: null }]);
+    setEntries((prev) => [
+      ...prev,
+      { player_name: "", shirt_number: "", reason: "", photoFile: null, photoPreview: null, croppedBlob: null },
+    ]);
   };
 
   const removeEntry = (i: number) => {
@@ -192,32 +198,49 @@ export function POTMForm({ ageGroups }: { ageGroups: string[] }) {
     setEntries(entries.filter((_, idx) => idx !== i));
   };
 
-  const updateEntry = (i: number, field: keyof POTMEntry, value: any) => {
-    const next = [...entries];
-    next[i] = { ...next[i], [field]: value };
-    setEntries(next);
+  const updateEntry = (i: number, field: keyof POTMEntry, value: string | File | Blob | null) => {
+    setEntries((prev) => {
+      const next = [...prev];
+      next[i] = { ...next[i], [field]: value };
+      return next;
+    });
   };
 
   const handlePhotoChange = (i: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 20 * 1024 * 1024) { toast.error("Photo must be under 20MB"); return; }
-    const next = [...entries];
-    if (next[i].photoPreview) URL.revokeObjectURL(next[i].photoPreview!);
-    next[i] = { ...next[i], photoFile: file, photoPreview: URL.createObjectURL(file) };
-    setEntries(next);
+    if (file.size > 20 * 1024 * 1024) {
+      toast.error("Photo must be under 20MB");
+      return;
+    }
+
+    setEntries((prev) => {
+      const next = [...prev];
+      if (next[i].photoPreview) URL.revokeObjectURL(next[i].photoPreview!);
+      next[i] = {
+        ...next[i],
+        photoFile: file,
+        photoPreview: URL.createObjectURL(file),
+        croppedBlob: null,
+      };
+      return next;
+    });
   };
 
   const clearPhoto = (i: number) => {
-    const next = [...entries];
-    if (next[i].photoPreview) URL.revokeObjectURL(next[i].photoPreview!);
-    next[i] = { ...next[i], photoFile: null, photoPreview: null };
-    setEntries(next);
+    setEntries((prev) => {
+      const next = [...prev];
+      if (next[i].photoPreview) URL.revokeObjectURL(next[i].photoPreview!);
+      next[i] = { ...next[i], photoFile: null, photoPreview: null, croppedBlob: null };
+      return next;
+    });
+
+    if (fileInputRefs.current[i]) fileInputRefs.current[i]!.value = "";
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const validEntries = entries.filter(en => en.player_name.trim());
+    const validEntries = entries.filter((en) => en.player_name.trim());
     if (!ageGroup || validEntries.length === 0) {
       toast.error("Please select a team and add at least one player");
       return;
@@ -227,18 +250,21 @@ export function POTMForm({ ageGroups }: { ageGroups: string[] }) {
     try {
       for (const entry of validEntries) {
         let photo_url: string | null = null;
+        const fileToUpload = entry.croppedBlob
+          ? new File([entry.croppedBlob], entry.photoFile?.name || "potm.jpg", { type: "image/jpeg" })
+          : entry.photoFile;
 
-        if (entry.photoFile) {
-            photo_url = await uploadPotmPhoto(entry.photoFile, {
-              playerName: entry.player_name.trim(),
-              awardDate: matchDate || new Date().toISOString().split("T")[0],
-              teamSlug: AGE_GROUP_TO_SLUG[ageGroup],
-              onStatus: (status) => {
-                if (status === "processing") toast.info("Removing photo background...");
-                if (status === "processed") toast.success("Background removed");
-                if (status === "fallback") toast.warning("Using original photo while background removal is improved");
-              },
-            });
+        if (fileToUpload) {
+          photo_url = await uploadPotmPhoto(fileToUpload, {
+            playerName: entry.player_name.trim(),
+            awardDate: matchDate || new Date().toISOString().split("T")[0],
+            teamSlug: AGE_GROUP_TO_SLUG[ageGroup],
+            onStatus: (status) => {
+              if (status === "processing") toast.info("Preparing photo...");
+              if (status === "processed") toast.success("Photo ready");
+              if (status === "fallback") toast.warning("Using original photo");
+            },
+          });
         }
 
         const { error } = await supabase.from("player_of_the_match").insert({
@@ -254,7 +280,9 @@ export function POTMForm({ ageGroups }: { ageGroups: string[] }) {
         if (error) throw error;
       }
 
-      entries.forEach(en => { if (en.photoPreview) URL.revokeObjectURL(en.photoPreview); });
+      entries.forEach((en) => {
+        if (en.photoPreview) URL.revokeObjectURL(en.photoPreview);
+      });
       toast.success(`${validEntries.length} POTM award${validEntries.length > 1 ? "s" : ""} submitted!`);
       setSubmitted(true);
     } catch (err: any) {
@@ -277,7 +305,7 @@ export function POTMForm({ ageGroups }: { ageGroups: string[] }) {
             setMatchDescription("");
             setMatchDate("");
             setAgeGroup(ageGroups.length === 1 ? ageGroups[0] : "");
-            setEntries([{ player_name: "", shirt_number: "", reason: "", photoFile: null, photoPreview: null }]);
+            setEntries([{ player_name: "", shirt_number: "", reason: "", photoFile: null, photoPreview: null, croppedBlob: null }]);
           }}
           className="text-sm font-display text-primary hover:text-gold-light transition-colors"
         >
@@ -308,7 +336,6 @@ export function POTMForm({ ageGroups }: { ageGroups: string[] }) {
         onChange={(opponent, date) => {
           setFixtureKey(`${date}|${opponent}`);
           setMatchDescription(opponent);
-          // Handle both YYYY-MM-DD (manual) and DD/MM/YY (FA fixture) formats
           if (date.includes("-")) {
             setMatchDate(date);
           } else if (date.includes("/")) {
@@ -336,7 +363,7 @@ export function POTMForm({ ageGroups }: { ageGroups: string[] }) {
               <select
                 value={entry.player_name}
                 onChange={(e) => {
-                  const selected = roster.find(p => p.first_name === e.target.value);
+                  const selected = roster.find((p) => p.first_name === e.target.value);
                   updateEntry(i, "player_name", e.target.value);
                   if (selected?.shirt_number) updateEntry(i, "shirt_number", String(selected.shirt_number));
                 }}
@@ -344,7 +371,7 @@ export function POTMForm({ ageGroups }: { ageGroups: string[] }) {
               >
                 <option value="">Select player</option>
                 {roster
-                  .filter(p => !selectedNames.includes(p.first_name) || p.first_name === entry.player_name)
+                  .filter((p) => !selectedNames.includes(p.first_name) || p.first_name === entry.player_name)
                   .map((p) => (
                     <option key={p.id} value={p.first_name}>
                       {p.shirt_number ? `#${p.shirt_number} ` : ""}{p.first_name}
@@ -363,18 +390,50 @@ export function POTMForm({ ageGroups }: { ageGroups: string[] }) {
             <textarea value={entry.reason} onChange={(e) => updateEntry(i, "reason", e.target.value)} placeholder="What made this player stand out?" rows={2} className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground resize-none" />
           </div>
 
-          <div>
-            <label className="block text-xs font-display tracking-wider text-muted-foreground mb-2">Player Photo</label>
+          <div className="space-y-3">
+            <label className="block text-xs font-display tracking-wider text-muted-foreground">Player Photo</label>
+            <input
+              ref={(el) => { fileInputRefs.current[i] = el; }}
+              type="file"
+              accept="image/*"
+              onChange={(e) => handlePhotoChange(i, e)}
+              className="hidden"
+            />
+
             {entry.photoPreview ? (
-              <div className="relative w-24 h-24 rounded-lg overflow-hidden">
-                <img src={entry.photoPreview} alt="Preview" className="w-full h-full object-cover" />
-                <button type="button" onClick={() => clearPhoto(i)} className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs">×</button>
+              <div className="space-y-3">
+                <div className="flex items-start gap-3">
+                  <div className="relative w-24 h-24 rounded-lg overflow-hidden border border-border">
+                    <img src={entry.photoPreview} alt="Preview" className="w-full h-full object-cover" />
+                    <button type="button" onClick={() => clearPhoto(i)} className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs">×</button>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => fileInputRefs.current[i]?.click()}
+                    className="border border-border rounded-lg px-3 py-2 text-xs font-display text-muted-foreground hover:text-foreground hover:border-primary/50 transition-colors"
+                  >
+                    Change photo
+                  </button>
+                </div>
+
+                <POTMCardPreview
+                  photoPreview={entry.photoPreview}
+                  playerName={entry.player_name || "Player Name"}
+                  shirtNumber={entry.shirt_number ? parseInt(entry.shirt_number) : null}
+                  ageGroup={ageGroup || undefined}
+                  onCroppedImage={(blob) => {
+                    setEntries((prev) => {
+                      const next = [...prev];
+                      next[i] = { ...next[i], croppedBlob: blob };
+                      return next;
+                    });
+                  }}
+                />
               </div>
             ) : (
               <label className="flex items-center gap-3 cursor-pointer bg-secondary border border-dashed border-border rounded-lg px-4 py-4 hover:border-primary/50 transition-colors">
                 <Upload className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground">Click to upload a photo</span>
-                <input type="file" accept="image/*" onChange={(e) => handlePhotoChange(i, e)} className="hidden" />
               </label>
             )}
           </div>
@@ -396,10 +455,6 @@ export function POTMForm({ ageGroups }: { ageGroups: string[] }) {
     </form>
   );
 }
-
-interface GoalAssistEntry { playerId: string; count: number; }
-
-export function MatchReportForm({ ageGroups }: { ageGroups: string[] }) {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [fixtureKey, setFixtureKey] = useState("");
