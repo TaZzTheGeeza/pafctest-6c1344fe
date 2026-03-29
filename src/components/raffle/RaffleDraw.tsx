@@ -4,11 +4,11 @@ import { Trophy, X, Sparkles, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-interface RaffleTicket {
-  id: string;
+export interface RaffleTicket {
+  id?: string;
   ticket_number: number;
-  buyer_name: string;
-  buyer_email: string;
+  buyer_name?: string;
+  buyer_email?: string;
 }
 
 interface RaffleDrawProps {
