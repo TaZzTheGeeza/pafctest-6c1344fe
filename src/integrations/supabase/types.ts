@@ -131,6 +131,36 @@ export type Database = {
         }
         Relationships: []
       }
+      club_documents: {
+        Row: {
+          created_at: string
+          description: string | null
+          document_category: string
+          file_url: string | null
+          id: string
+          title: string
+          uploaded_by: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          document_category?: string
+          file_url?: string | null
+          id?: string
+          title: string
+          uploaded_by: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          document_category?: string
+          file_url?: string | null
+          id?: string
+          title?: string
+          uploaded_by?: string
+        }
+        Relationships: []
+      }
       club_events: {
         Row: {
           created_at: string
@@ -191,6 +221,27 @@ export type Database = {
           id?: string
           message?: string
           name?: string
+        }
+        Relationships: []
+      }
+      document_upload_permissions: {
+        Row: {
+          created_at: string
+          granted_by: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          granted_by?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          granted_by?: string | null
+          id?: string
+          user_id?: string
         }
         Relationships: []
       }
