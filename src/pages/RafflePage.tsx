@@ -36,10 +36,7 @@ interface Raffle {
 }
 
 interface RaffleTicket {
-  id: string;
   ticket_number: number;
-  buyer_name: string;
-  buyer_email: string;
   payment_status: string;
 }
 
