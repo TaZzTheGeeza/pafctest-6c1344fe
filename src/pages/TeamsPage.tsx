@@ -160,15 +160,16 @@ function TeamDetail({ team }: { team: TeamData }) {
                                 </span>
                               )}
                               {fix.venue && (
-                                <a
-                                  href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(fix.venue)}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  onClick={(e) => e.stopPropagation()}
+                                <button
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(fix.venue)}`, '_system');
+                                  }}
                                   className="text-[10px] text-primary hover:text-primary/80 flex items-center gap-0.5 transition-colors"
                                 >
                                   <Navigation className="w-2.5 h-2.5" />Directions
-                                </a>
+                                </button>
                               )}
                             </div>
                           </div>
