@@ -58,6 +58,7 @@ export function TeamChat({ teamSlug }: { teamSlug: string }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [profiles, setProfiles] = useState<Record<string, string>>({});
+  const [presenceMap, setPresenceMap] = useState<Record<string, string | null>>({});
   const [showNewChannel, setShowNewChannel] = useState(false);
   const [newChannelName, setNewChannelName] = useState("");
   const [uploading, setUploading] = useState(false);
@@ -129,9 +130,10 @@ export function TeamChat({ teamSlug }: { teamSlug: string }) {
 
   async function loadProfileFor(userId: string) {
     if (profiles[userId]) return;
-    const { data } = await supabase.from("profiles").select("full_name, email").eq("id", userId).single();
+    const { data } = await supabase.from("profiles").select("full_name, email, last_seen_at").eq("id", userId).single();
     if (data) {
-      setProfiles((prev) => ({ ...prev, [userId]: data.full_name || data.email || "Unknown" }));
+      setProfiles((prev) => ({ ...prev, [userId]: (data as any).full_name || (data as any).email || "Unknown" }));
+      setPresenceMap((prev) => ({ ...prev, [userId]: (data as any).last_seen_at }));
     }
   }
 
