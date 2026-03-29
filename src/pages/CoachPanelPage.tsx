@@ -455,6 +455,7 @@ export function POTMForm({ ageGroups }: { ageGroups: string[] }) {
     </form>
   );
 }
+export function MatchReportForm({ ageGroups }: { ageGroups: string[] }) {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [fixtureKey, setFixtureKey] = useState("");
