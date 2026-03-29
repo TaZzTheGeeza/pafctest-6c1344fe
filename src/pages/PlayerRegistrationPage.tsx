@@ -99,6 +99,16 @@ export default function PlayerRegistrationPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!form.hasMedicalConditions) {
+      toast.error("Please indicate whether the player has any medical conditions.");
+      return;
+    }
+
+    if (form.hasMedicalConditions === "yes" && !form.medicalConditions.trim()) {
+      toast.error("Please provide details of the medical conditions.");
+      return;
+    }
+
     if (!form.declarationConfirmed) {
       toast.error("Please confirm the declaration before submitting.");
       return;
@@ -369,11 +379,42 @@ export default function PlayerRegistrationPage() {
 
                   {/* Medical Information */}
                   <div>
-                    <h3 className="font-display text-sm font-bold text-primary mb-3">Medical Information</h3>
-                    <label className="text-xs text-muted-foreground mb-1 block">
-                      Please provide details of any medical conditions, allergies, or additional needs we should be aware of.
-                    </label>
-                    <Textarea name="medicalConditions" value={form.medicalConditions} onChange={handleChange} placeholder="Medical conditions, allergies, dietary requirements..." rows={3} maxLength={2000} />
+                    <h3 className="font-display text-sm font-bold text-primary mb-3">MEDICAL INFORMATION <span className="text-red-400">*</span></h3>
+                    <p className="text-xs text-muted-foreground mb-3">
+                      Does the player have any medical conditions, allergies, or additional needs we should be aware of?
+                    </p>
+                    <div className="flex gap-4 mb-3">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="hasMedicalConditions"
+                          value="yes"
+                          checked={form.hasMedicalConditions === "yes"}
+                          onChange={handleChange}
+                          className="accent-primary w-4 h-4"
+                        />
+                        <span className="text-sm text-foreground font-display">Yes</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="hasMedicalConditions"
+                          value="no"
+                          checked={form.hasMedicalConditions === "no"}
+                          onChange={handleChange}
+                          className="accent-primary w-4 h-4"
+                        />
+                        <span className="text-sm text-foreground font-display">No</span>
+                      </label>
+                    </div>
+                    {form.hasMedicalConditions === "yes" && (
+                      <div>
+                        <label className="text-xs text-muted-foreground mb-1 block">
+                          Please provide details of any medical conditions, allergies, or additional needs we should be aware of. <span className="text-red-400">*</span>
+                        </label>
+                        <Textarea name="medicalConditions" value={form.medicalConditions} onChange={handleChange} placeholder="Medical conditions, allergies, dietary requirements..." rows={3} maxLength={2000} required />
+                      </div>
+                    )}
                   </div>
 
                   {/* Safeguarding Information */}
