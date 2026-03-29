@@ -129,6 +129,20 @@ export function FixtureAvailability({ teamSlug }: Props) {
     { status: "unavailable", icon: X, label: "Unavailable", activeClass: "bg-red-600 text-white border-red-600" },
   ];
 
+  function getRespondents(fixture: FAFixture, status: string) {
+    const opponent = fixture.homeTeam.includes("Peterborough Ath") ? fixture.awayTeam : fixture.homeTeam;
+    const records = availability.filter((a) => a.fixture_date === fixture.date && a.opponent === opponent && a.status === status);
+    return records.map((r) => {
+      const profile = profiles.find((p) => p.id === r.user_id);
+      return profile?.full_name || "Unknown";
+    });
+  }
+
+  function getFixtureKey(fixture: FAFixture) {
+    const opponent = fixture.homeTeam.includes("Peterborough Ath") ? fixture.awayTeam : fixture.homeTeam;
+    return `${fixture.date}::${opponent}`;
+  }
+
   return (
     <div className="space-y-3">
       {upcomingFixtures.map((fixture, i) => {
@@ -136,8 +150,8 @@ export function FixtureAvailability({ teamSlug }: Props) {
         const opponent = isHome ? fixture.awayTeam : fixture.homeTeam;
         const myStatus = getMyStatus(fixture);
         const summary = getTeamSummary(fixture);
-
-        return (
+        const fKey = getFixtureKey(fixture);
+        const isExpanded = expandedFixture === fKey;
           <div key={`${fixture.date}-${opponent}`} className="bg-card border border-border rounded-xl p-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
               <div>
