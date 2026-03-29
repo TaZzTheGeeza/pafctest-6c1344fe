@@ -226,11 +226,13 @@ export default function DashboardPage() {
     }
   }, [activeSection, isAdmin]);
 
+  const enquiryCount = enquiries.length;
+
   const sectionItems: { key: DashboardSection; label: string; icon: any; adminOnly?: boolean; coachOnly?: boolean }[] = [
     { key: "overview", label: "Overview", icon: LayoutDashboard },
     { key: "users", label: "Users", icon: Users, adminOnly: true },
     { key: "requests", label: "Requests", icon: UserPlusIcon, adminOnly: true },
-    { key: "enquiries", label: "Enquiries", icon: Mail, adminOnly: true },
+    
     { key: "potm", label: "POTM", icon: Star, coachOnly: true },
     { key: "report", label: "Match Report", icon: FileText, coachOnly: true },
     { key: "stats", label: "Player Stats", icon: BarChart3, coachOnly: true },
@@ -359,6 +361,20 @@ export default function DashboardPage() {
                     <Eye className="h-4 w-4" /> Quick Access
                   </h2>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    <button
+                      onClick={() => setActiveSection("enquiries")}
+                      className="bg-card border border-border rounded-xl p-4 hover:border-primary/50 hover:bg-primary/5 transition-all group text-left"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                          <Mail className="h-4 w-4 text-primary" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-display font-semibold text-foreground">Enquiries</p>
+                          <p className="text-[10px] text-muted-foreground">View contact form messages</p>
+                        </div>
+                      </div>
+                    </button>
                     {ADMIN_LINKS.map((link) => (
                       <Link
                         key={link.path}
