@@ -13,7 +13,7 @@ import { toast } from "sonner";
 import { useSearchParams } from "react-router-dom";
 import NumberPicker from "@/components/raffle/NumberPicker";
 import { AnimatePresence } from "framer-motion";
-import RaffleDraw from "@/components/raffle/RaffleDraw";
+import RaffleDraw, { type RaffleTicket as DrawTicket } from "@/components/raffle/RaffleDraw";
 
 interface Raffle {
   id: string;
@@ -36,10 +36,7 @@ interface Raffle {
 }
 
 interface RaffleTicket {
-  id: string;
   ticket_number: number;
-  buyer_name: string;
-  buyer_email: string;
   payment_status: string;
 }
 
@@ -123,13 +120,9 @@ const RafflePage = () => {
 
     for (const raffle of data || []) {
       const { data: ticketData } = await supabase
-        .from("raffle_tickets")
-        .select("id, ticket_number, buyer_name, buyer_email, payment_status")
-        .eq("raffle_id", raffle.id)
-        .eq("payment_status", "paid")
-        .order("ticket_number", { ascending: true });
+        .rpc("get_taken_ticket_numbers" as any, { _raffle_id: raffle.id });
 
-      setTickets(prev => ({ ...prev, [raffle.id]: ticketData || [] }));
+      setTickets(prev => ({ ...prev, [raffle.id]: (ticketData as any[] || []) }));
     }
 
     setLoading(false);
@@ -196,22 +189,12 @@ const RafflePage = () => {
     setLiveDrawAutoStart(false);
   };
 
-  const getPresetWinner = (raffle: Raffle): RaffleTicket | null => {
-    if (!raffle.winner_ticket_id) return null;
-    const raffleTickets = tickets[raffle.id] || [];
-    const winnerTicket = raffleTickets.find(t => t.id === raffle.winner_ticket_id);
-    if (winnerTicket) return winnerTicket;
-    // Fallback: construct from raffle data
-    if (raffle.winner_name && (raffle as any).drawn_ticket_number) {
-      return {
-        id: raffle.winner_ticket_id,
-        ticket_number: (raffle as any).drawn_ticket_number,
-        buyer_name: raffle.winner_name,
-        buyer_email: "",
-        payment_status: "paid",
-      };
-    }
-    return null;
+  const getPresetWinner = (raffle: Raffle): DrawTicket | null => {
+    if (!raffle.drawn_ticket_number) return null;
+    return {
+      ticket_number: raffle.drawn_ticket_number,
+      buyer_name: raffle.winner_name || "Winner",
+    };
   };
 
   return (
