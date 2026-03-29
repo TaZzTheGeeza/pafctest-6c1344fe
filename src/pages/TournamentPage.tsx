@@ -446,26 +446,44 @@ const TournamentPage = () => {
                       </div>
                       <div>
                         <p className="text-sm font-semibold mb-2">Directions & Parking</p>
-                        <div className="rounded-lg border border-border overflow-hidden aspect-[4/3]">
-                          <iframe
-                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2412.5!2d-0.2365!3d52.6095!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4877f1a0b0b0b0b1%3A0x1234567890abcdef!2sItter%20Park%2C%20Itter%20Crescent%2C%20Peterborough%20PE4%206SW!5e0!3m2!1sen!2suk!4v1700000000000"
-                            width="100%"
-                            height="100%"
-                            style={{ border: 0 }}
-                            allowFullScreen
-                            loading="lazy"
-                            referrerPolicy="no-referrer-when-downgrade"
-                            title="Itter Park location map"
-                          />
+                        <div className="space-y-3">
+                          <div>
+                            <p className="text-xs font-medium text-muted-foreground mb-1 flex items-center gap-1"><MapPin className="h-3 w-3 text-primary" /> Tournament Venue</p>
+                            <div className="rounded-lg border border-border overflow-hidden aspect-video">
+                              <iframe
+                                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2412.5!2d-0.2365!3d52.6095!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s!2sItter+Cres%2C+Park%2C+Peterborough+PE4!5e0!3m2!1sen!2suk!4v1700000000000"
+                                width="100%"
+                                height="100%"
+                                style={{ border: 0 }}
+                                allowFullScreen
+                                loading="lazy"
+                                referrerPolicy="no-referrer-when-downgrade"
+                                title="Tournament venue - Itter Park"
+                              />
+                            </div>
+                            <a href="https://www.google.com/maps/dir//Itter+Cres,+Park,+Peterborough+PE4" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 mt-1 text-xs text-primary hover:underline">
+                              <MapPin className="h-3 w-3" /> Get directions to venue
+                            </a>
+                          </div>
+                          <div>
+                            <p className="text-xs font-medium text-muted-foreground mb-1 flex items-center gap-1"><MapPin className="h-3 w-3 text-yellow-500" /> Parking Location</p>
+                            <div className="rounded-lg border border-border overflow-hidden aspect-video">
+                              <iframe
+                                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2412.5!2d-0.2365!3d52.6095!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s!2s1-25+Hallfields+Ln%2C+Peterborough+PE4+7UW!5e0!3m2!1sen!2suk!4v1700000000001"
+                                width="100%"
+                                height="100%"
+                                style={{ border: 0 }}
+                                allowFullScreen
+                                loading="lazy"
+                                referrerPolicy="no-referrer-when-downgrade"
+                                title="Parking location - Hallfields Lane"
+                              />
+                            </div>
+                            <a href="https://www.google.com/maps/dir//1-25+Hallfields+Ln,+Peterborough+PE4+7UW" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 mt-1 text-xs text-primary hover:underline">
+                              <MapPin className="h-3 w-3" /> Get directions to parking
+                            </a>
+                          </div>
                         </div>
-                        <a
-                          href="https://www.google.com/maps/dir//Itter+Park,+Itter+Crescent,+Peterborough+PE4+6SW"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 mt-2 text-xs text-primary hover:underline"
-                        >
-                          <MapPin className="h-3 w-3" /> Open in Google Maps
-                        </a>
                       </div>
                     </div>
                     <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-3 flex items-start gap-2">
