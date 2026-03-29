@@ -194,6 +194,38 @@ export type Database = {
         }
         Relationships: []
       }
+      enquiry_replies: {
+        Row: {
+          admin_user_id: string
+          created_at: string
+          id: string
+          message: string
+          submission_id: string
+        }
+        Insert: {
+          admin_user_id: string
+          created_at?: string
+          id?: string
+          message: string
+          submission_id: string
+        }
+        Update: {
+          admin_user_id?: string
+          created_at?: string
+          id?: string
+          message?: string
+          submission_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "enquiry_replies_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "contact_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_rsvps: {
         Row: {
           created_at: string
