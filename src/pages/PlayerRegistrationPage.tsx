@@ -143,11 +143,8 @@ export default function PlayerRegistrationPage() {
 
       if (uploadError) throw uploadError;
 
-      const { data: urlData } = supabase.storage
-        .from("registration-photos")
-        .getPublicUrl(filePath);
-
-      insertData.photo_url = urlData.publicUrl;
+      // Store the file path (bucket is private; admins use signed URLs to view)
+      insertData.photo_url = filePath;
 
       const { error } = await supabase
         .from("player_registrations" as any)
