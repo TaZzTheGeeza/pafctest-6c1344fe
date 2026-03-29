@@ -4,7 +4,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { UserPlus, Trash2, Users, Search, ChevronDown, Shield, User, Heart } from "lucide-react";
 import { toast } from "sonner";
 import { isUserOnline, formatLastSeen } from "@/hooks/usePresence";
-import { toast } from "sonner";
 
 const TEAM_ROLES = [
   { value: "coach", label: "Coach", color: "bg-amber-500/20 text-amber-400 border-amber-500/30", icon: Shield },
