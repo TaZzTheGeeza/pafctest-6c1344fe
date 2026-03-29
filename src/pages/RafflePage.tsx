@@ -120,13 +120,13 @@ const RafflePage = () => {
 
     for (const raffle of data || []) {
       const { data: ticketData } = await supabase
-        .from("raffle_ticket_numbers" as any)
-        .select("ticket_number, raffle_id, payment_status")
+        .from("raffle_tickets")
+        .select("ticket_number, payment_status")
         .eq("raffle_id", raffle.id)
         .eq("payment_status", "paid")
         .order("ticket_number", { ascending: true });
 
-      setTickets(prev => ({ ...prev, [raffle.id]: ticketData || [] }));
+      setTickets(prev => ({ ...prev, [raffle.id]: (ticketData as any[] || []) }));
     }
 
     setLoading(false);
