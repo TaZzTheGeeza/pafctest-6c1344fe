@@ -771,6 +771,22 @@ function UserRow({
               <Shield className="h-3 w-3" /> Hub Teams
               <ChevronDown className={`h-3 w-3 transition-transform ${showTeamMembership ? "rotate-180" : ""}`} />
             </button>
+
+            {/* Doc Uploader Toggle */}
+            {isDocUploader !== null && (
+              <button
+                onClick={(e) => { e.stopPropagation(); toggleDocUploader(); }}
+                disabled={togglingDocUploader}
+                className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-display border transition-colors ${
+                  isDocUploader
+                    ? "bg-violet-500/20 text-violet-400 border-violet-500/30"
+                    : "border-border text-muted-foreground hover:border-violet-500/30 hover:text-violet-400"
+                }`}
+              >
+                {togglingDocUploader ? <Loader2 className="h-3 w-3 animate-spin" /> : <FileText className="h-3 w-3" />}
+                {isDocUploader ? "Doc Uploader ✓" : "Doc Uploader"}
+              </button>
+            )}
           </div>
         </div>
       </div>
