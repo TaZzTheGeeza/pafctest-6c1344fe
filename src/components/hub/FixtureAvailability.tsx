@@ -62,7 +62,7 @@ export function FixtureAvailability({ teamSlug }: Props) {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["fixture-availability", teamSlug] }),
   });
 
-  const upcomingFixtures = teamData?.fixtures || [];
+  const upcomingFixtures = (teamData?.fixtures || []).filter((f) => f.type !== "result");
 
   if (fixturesLoading || availLoading) {
     return (
