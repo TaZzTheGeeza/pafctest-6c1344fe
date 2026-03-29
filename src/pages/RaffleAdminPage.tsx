@@ -542,6 +542,19 @@ const RaffleAdminPage = () => {
                         </div>
                       </div>
 
+                      {/* Auto-draw badge */}
+                      {(raffle as any).auto_draw_when_sold_out && raffle.number_range && (
+                        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/5 border border-primary/20">
+                          <Shuffle className="h-3.5 w-3.5 text-primary" />
+                          <span className="text-xs font-display text-primary tracking-wider">
+                            Auto-draw when sold out ({paidTickets.length}/{raffle.number_range})
+                          </span>
+                          {paidTickets.length >= (raffle.number_range ?? 0) && raffle.status === "active" && (
+                            <Badge className="ml-auto bg-green-500/20 text-green-400 border-green-500/30 text-[10px]">SOLD OUT</Badge>
+                          )}
+                        </div>
+                      )}
+
                       {/* Winner */}
                       {raffle.winner_name && (
                         <div className="bg-primary/10 border border-primary/30 rounded-lg p-4 text-center">
