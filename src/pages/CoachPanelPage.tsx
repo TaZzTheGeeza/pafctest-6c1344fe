@@ -455,6 +455,8 @@ export function POTMForm({ ageGroups }: { ageGroups: string[] }) {
     </form>
   );
 }
+interface GoalAssistEntry { playerId: string; count: number; }
+
 export function MatchReportForm({ ageGroups }: { ageGroups: string[] }) {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
