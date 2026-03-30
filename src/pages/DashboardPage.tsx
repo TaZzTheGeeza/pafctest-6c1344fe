@@ -152,7 +152,7 @@ export default function DashboardPage() {
   async function loadUsers() {
     setLoading(true);
     const [profilesRes, rolesRes, membersRes] = await Promise.all([
-      supabase.from("profiles").select("id, full_name, email, last_seen_at"),
+      supabase.from("profiles").select("id, full_name, email, last_seen_at, avatar_url"),
       supabase.from("user_roles").select("user_id, role"),
       supabase.from("team_members").select("user_id, team_slug"),
     ]);
