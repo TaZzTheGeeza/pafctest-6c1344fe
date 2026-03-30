@@ -222,7 +222,7 @@ export default function MeetingsPage() {
         </div>
         <div className="flex-1">
           <iframe
-            src={`https://meet.jit.si/${roomName}#userInfo.displayName="${encodeURIComponent(displayName)}"&config.prejoinConfig.enabled=false&config.startWithAudioMuted=true&config.startWithVideoMuted=false&interfaceConfig.SHOW_JITSI_WATERMARK=false&interfaceConfig.SHOW_WATERMARK_FOR_GUESTS=false&interfaceConfig.SHOW_BRAND_WATERMARK=false&interfaceConfig.DEFAULT_BACKGROUND='#1a1a2e'`}
+            src={`https://8x8.vc/vpaas-magic-cookie-529c66ec08814374b1d179324dafc44f/${roomName}#userInfo.displayName="${encodeURIComponent(displayName)}"&config.prejoinConfig.enabled=false&config.startWithAudioMuted=true&config.startWithVideoMuted=false`}
             allow="camera; microphone; fullscreen; display-capture; autoplay; clipboard-write"
             className="w-full h-full border-0"
             title="Club Meeting"
