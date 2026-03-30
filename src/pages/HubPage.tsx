@@ -166,6 +166,7 @@ export default function HubPage() {
       {activeTab === "attendance" && activeTeam && (isCoach || isAdmin) && <AttendanceStats teamSlug={activeTeam} />}
       {activeTab === "guardian" && activeTeam && <GuardianManager teamSlug={activeTeam} teamName={activeTeamName || ""} />}
       {activeTab === "members" && activeTeam && (isAdmin || isCoach) && <TeamMemberManager teamSlug={activeTeam} teamName={activeTeamName || ""} />}
+      {activeTab === "meetings" && <HubMeetingsEmbed />}
       {activeTab === "player" && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {playerHubItems.map((item) => (
