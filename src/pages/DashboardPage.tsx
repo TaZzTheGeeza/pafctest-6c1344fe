@@ -275,15 +275,15 @@ export default function DashboardPage() {
     players: users.filter((u) => u.roles.includes("player")).length,
   };
 
-  const sectionItems: { key: DashboardSection; label: string; icon: any; adminOnly?: boolean; coachOnly?: boolean; treasurerOnly?: boolean; group: "main" | "coach" }[] = [
+  const sectionItems: { key: DashboardSection; label: string; icon: any; adminOnly?: boolean; coachOnly?: boolean; treasurerOnly?: boolean; group: "main" | "coach" | "users" }[] = [
     { key: "overview", label: "Overview", icon: LayoutDashboard, group: "main" },
     { key: "messages", label: "Messages", icon: MessageSquare, group: "main" },
-    { key: "users", label: "Users", icon: Users, adminOnly: true, group: "main" },
-    { key: "requests", label: "Requests", icon: UserPlusIcon, adminOnly: true, group: "main" },
     { key: "notifications", label: "Notifications", icon: Megaphone, adminOnly: true, group: "main" },
     { key: "finances", label: "Finances", icon: CreditCard, treasurerOnly: true, group: "main" },
     { key: "orders", label: "Orders", icon: ShoppingBag, adminOnly: true, group: "main" },
-    { key: "permissions", label: "Permissions", icon: Shield, adminOnly: true, group: "main" },
+    { key: "users", label: "Users", icon: Users, adminOnly: true, group: "users" },
+    { key: "requests", label: "Requests", icon: UserPlusIcon, adminOnly: true, group: "users" },
+    { key: "permissions", label: "Permissions", icon: Shield, adminOnly: true, group: "users" },
     { key: "potm", label: "POTM", icon: Star, coachOnly: true, group: "coach" },
     { key: "report", label: "Match Report", icon: FileText, coachOnly: true, group: "coach" },
     { key: "stats", label: "Player Stats", icon: BarChart3, coachOnly: true, group: "coach" },
@@ -298,7 +298,9 @@ export default function DashboardPage() {
   });
 
   const mainSections = visibleSections.filter((s) => s.group === "main");
+  const userSections = visibleSections.filter((s) => s.group === "users");
   const coachSections = visibleSections.filter((s) => s.group === "coach");
+  const activeInUsers = userSections.some((s) => s.key === activeSection);
   const activeInCoach = coachSections.some((s) => s.key === activeSection);
 
   return (
@@ -339,6 +341,39 @@ export default function DashboardPage() {
                 {s.label}
               </button>
             ))}
+
+            {/* User Manager Dropdown */}
+            {userSections.length > 0 && (
+              <div className="relative group">
+                <button
+                  className={`flex items-center gap-2 font-display text-xs tracking-wider py-2.5 px-4 rounded-lg border transition-all whitespace-nowrap ${
+                    activeInUsers
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "border-border text-muted-foreground hover:text-foreground hover:border-primary/50"
+                  }`}
+                >
+                  <UserCog className="h-3.5 w-3.5" />
+                  {activeInUsers ? userSections.find((s) => s.key === activeSection)?.label : "User Manager"}
+                  <ChevronDown className="h-3 w-3" />
+                </button>
+                <div className="absolute top-full left-0 mt-1 bg-card border border-border rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 min-w-[180px]">
+                  {userSections.map((s) => (
+                    <button
+                      key={s.key}
+                      onClick={() => setActiveSection(s.key)}
+                      className={`flex items-center gap-2 w-full text-left px-4 py-2.5 text-xs font-display tracking-wider transition-colors first:rounded-t-lg last:rounded-b-lg ${
+                        activeSection === s.key
+                          ? "bg-primary/10 text-primary"
+                          : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                      }`}
+                    >
+                      <s.icon className="h-3.5 w-3.5" />
+                      {s.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Coach Tools Dropdown */}
             {coachSections.length > 0 && (
