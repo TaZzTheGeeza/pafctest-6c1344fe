@@ -709,6 +709,7 @@ function UserRow({
   onRemoveRole: (userId: string, role: AppRole) => void;
 }) {
   const [showAddMenu, setShowAddMenu] = useState(false);
+  const [showActionsMenu, setShowActionsMenu] = useState(false);
   const [showTeamAssign, setShowTeamAssign] = useState(false);
   const [assignedTeams, setAssignedTeams] = useState<string[]>([]);
   const [loadingTeams, setLoadingTeams] = useState(false);
