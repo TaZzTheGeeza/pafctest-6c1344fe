@@ -74,6 +74,8 @@ export function HubMeetingsEmbed() {
             isAdmin={false}
             inviteeCount={0}
             onJoin={() => handleJoin(meeting)}
+            onDelete={() => {}}
+            onEnd={() => {}}
           />
         ))}
       </div>
