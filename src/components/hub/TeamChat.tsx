@@ -5,6 +5,7 @@ import { Send, Hash, Plus, Users, ImagePlus, Loader2, X, Pencil, Trash2, Check }
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { isUserOnline } from "@/hooks/usePresence";
+import { notifyTeamMembers } from "@/lib/notifyTeamMembers";
 
 interface Channel {
   id: string;
@@ -188,8 +189,37 @@ export function TeamChat({ teamSlug }: { teamSlug: string }) {
     if (text) content += text;
     if (imgUrl) content += (text ? " " : "") + `${IMAGE_PREFIX}${imgUrl}${IMAGE_SUFFIX}`;
 
-    const { error } = await supabase.from("hub_messages").insert({ channel_id: activeChannel.id, user_id: user.id, content });
+    const { data: insertedMsg, error } = await supabase
+      .from("hub_messages")
+      .insert({ channel_id: activeChannel.id, user_id: user.id, content })
+      .select("id")
+      .single();
     if (error) { toast.error("Failed to send message"); return; }
+
+    // Notify team (email only — in-app is handled by realtime)
+    const senderName = profiles[user.id] || "A team member";
+    const preview = text ? (text.length > 80 ? text.slice(0, 80) + "…" : text) : "sent an image";
+    notifyTeamMembers({
+      teamSlug,
+      excludeUserId: user.id,
+      notification: {
+        title: `Message in #${activeChannel.name}`,
+        message: `${senderName}: ${preview}`,
+        type: "info",
+        link: "/hub?tab=chat",
+      },
+      email: {
+        templateName: "new-chat-message",
+        templateData: {
+          senderName,
+          channelName: activeChannel.name,
+          messagePreview: preview,
+          teamName: teamSlug,
+        },
+        idempotencyPrefix: `chat-${insertedMsg?.id || Date.now()}`,
+      },
+    });
+
     setNewMessage("");
     setImagePreview(null);
     setPendingImageUrl(null);
