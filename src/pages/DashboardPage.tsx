@@ -275,7 +275,7 @@ export default function DashboardPage() {
     players: users.filter((u) => u.roles.includes("player")).length,
   };
 
-  const sectionItems: { key: DashboardSection; label: string; icon: any; adminOnly?: boolean; coachOnly?: boolean; treasurerOnly?: boolean; group: "main" | "coach" }[] = [
+  const sectionItems: { key: DashboardSection; label: string; icon: any; adminOnly?: boolean; coachOnly?: boolean; treasurerOnly?: boolean; group: "main" | "coach" | "users" }[] = [
     { key: "overview", label: "Overview", icon: LayoutDashboard, group: "main" },
     { key: "messages", label: "Messages", icon: MessageSquare, group: "main" },
     { key: "notifications", label: "Notifications", icon: Megaphone, adminOnly: true, group: "main" },
