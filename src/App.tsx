@@ -45,6 +45,7 @@ import MyProfilePage from "./pages/MyProfilePage.tsx";
 import BulkDocumentUploadPage from "./pages/BulkDocumentUploadPage.tsx";
 import SafeguardingReportsPage from "./pages/SafeguardingReportsPage.tsx";
 import PafcTvPage from "./pages/PafcTvPage.tsx";
+import ResetPasswordPage from "./pages/ResetPasswordPage.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
