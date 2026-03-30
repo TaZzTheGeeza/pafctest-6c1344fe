@@ -284,6 +284,7 @@ export default function DashboardPage() {
     { key: "notifications", label: "Notifications", icon: Megaphone, adminOnly: true },
     { key: "orders", label: "Orders", icon: ShoppingBag, adminOnly: true },
     { key: "finances", label: "Finances", icon: CreditCard, treasurerOnly: true },
+    { key: "permissions", label: "Permissions", icon: Shield, adminOnly: true },
     { key: "potm", label: "POTM", icon: Star, coachOnly: true },
     { key: "report", label: "Match Report", icon: FileText, coachOnly: true },
     { key: "stats", label: "Player Stats", icon: BarChart3, coachOnly: true },
