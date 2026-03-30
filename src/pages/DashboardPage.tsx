@@ -191,8 +191,8 @@ export default function DashboardPage() {
   }
 
   const AGE_GROUP_TO_TEAM_SLUG: Record<string, string> = {
-    "U7": "u7", "U8 Black": "u8-black", "U8 Gold": "u8-gold", "U9": "u9", "U10": "u10",
-    "U11 Black": "u11-black", "U11 Gold": "u11-gold", "U13 Black": "u13-black", "U13 Gold": "u13-gold", "U14": "u14",
+    "U7": "u7s", "U8 Black": "u8s-black", "U8 Gold": "u8s-gold", "U9": "u9s", "U10": "u10s",
+    "U11 Black": "u11s-black", "U11 Gold": "u11s-gold", "U13 Black": "u13s-black", "U13 Gold": "u13s-gold", "U14": "u14s",
   };
 
   async function addRole(userId: string, role: AppRole) {
