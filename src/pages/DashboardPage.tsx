@@ -600,6 +600,10 @@ export default function DashboardPage() {
           {activeSection === "finances" && (isTreasurer || isAdmin) && (
             <TreasurerPaymentsBoard />
           )}
+
+          {activeSection === "permissions" && isAdmin && (
+            <RolePermissionManager />
+          )}
         </div>
       </main>
       <Footer />
