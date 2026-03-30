@@ -145,7 +145,7 @@ export function Navbar() {
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
-  const { user, signOut, isCoach, isAdmin } = useAuth();
+  const { user, signOut, isCoach, isAdmin, isTreasurer } = useAuth();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -173,7 +173,7 @@ export function Navbar() {
           <div className="flex items-center gap-3">
             <NotificationBell />
             <span className="hidden lg:block"><CartDrawer /></span>
-             {(isAdmin || isCoach) && (
+             {(isAdmin || isCoach || isTreasurer) && (
               <Link to="/dashboard" className="font-display text-[10px] tracking-[0.15em] uppercase text-primary hover:text-primary/80 transition-colors flex items-center gap-1.5">
                 <Settings className="h-3 w-3" /> Dashboard
               </Link>
@@ -298,7 +298,7 @@ export function Navbar() {
                 <ShoppingBag className="h-4 w-4" /> Shop
               </Link>
             </div>
-            {(isAdmin || isCoach) && (
+            {(isAdmin || isCoach || isTreasurer) && (
               <Link to="/dashboard" onClick={() => setIsOpen(false)} className="flex items-center justify-center gap-2 w-full font-display text-sm tracking-wider py-2.5 rounded-md border border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground transition-all mt-2">
                 <Settings className="h-4 w-4" /> Dashboard
               </Link>

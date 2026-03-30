@@ -9,7 +9,7 @@ import {
   Users, Shield, ShieldCheck, ShieldAlert, UserCog, Trash2,
   Search, ChevronDown, Trophy, Ticket, BarChart3, FileText,
   MessageSquare, Settings, Eye, Plus, Loader2, Crown, Swords, ShoppingBag,
-  Star, LayoutDashboard, Mail, Clock, ExternalLink, Pencil, Check, X as XIcon, Megaphone
+  Star, LayoutDashboard, Mail, Clock, ExternalLink, Pencil, Check, X as XIcon, Megaphone, CreditCard
 } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 import { isUserOnline, formatLastSeen } from "@/hooks/usePresence";
@@ -25,6 +25,7 @@ import { Upload, CheckCircle, AlertTriangle, UserPlus as UserPlusIcon } from "lu
 import { TeamRequestsManager } from "@/components/dashboard/TeamRequestsManager";
 import { AdminNotificationComposer } from "@/components/dashboard/AdminNotificationComposer";
 import { OrdersTab } from "@/components/dashboard/OrdersTab";
+import { TreasurerPaymentsBoard } from "@/components/dashboard/TreasurerPaymentsBoard";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
 
@@ -47,6 +48,7 @@ const ROLE_CONFIG: Record<AppRole, { label: string; color: string; icon: any }> 
   coach: { label: "Coach", color: "bg-amber-500/20 text-amber-400 border-amber-500/30", icon: ShieldCheck },
   player: { label: "Player", color: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30", icon: Users },
   user: { label: "User", color: "bg-blue-500/20 text-blue-400 border-blue-500/30", icon: UserCog },
+  treasurer: { label: "Treasurer", color: "bg-purple-500/20 text-purple-400 border-purple-500/30", icon: ShoppingBag },
 };
 
 const ADMIN_LINKS = [
@@ -59,10 +61,10 @@ const ADMIN_LINKS = [
   { label: "Safeguarding Reports", path: "/admin/safeguarding-reports", icon: Shield, desc: "View & manage safeguarding concerns" },
 ];
 
-type DashboardSection = "overview" | "users" | "requests" | "enquiries" | "messages" | "notifications" | "orders" | "potm" | "report" | "stats" | "manage";
+type DashboardSection = "overview" | "users" | "requests" | "enquiries" | "messages" | "notifications" | "orders" | "potm" | "report" | "stats" | "manage" | "finances";
 
 export default function DashboardPage() {
-  const { user, isAdmin, isCoach } = useAuth();
+  const { user, isAdmin, isCoach, isTreasurer } = useAuth();
   const { assignedGroups, isLoading: ageGroupsLoading } = useUserAgeGroups();
   const [users, setUsers] = useState<UserWithRoles[]>([]);
   const [loading, setLoading] = useState(true);
@@ -81,7 +83,7 @@ export default function DashboardPage() {
   // Handle section from URL params (e.g. /dashboard?section=messages)
   useEffect(() => {
     const section = searchParams.get("section");
-    if (section && ["overview", "users", "requests", "enquiries", "messages", "notifications", "orders", "potm", "report", "stats", "manage"].includes(section)) {
+    if (section && ["overview", "users", "requests", "enquiries", "messages", "notifications", "orders", "potm", "report", "stats", "manage", "finances"].includes(section)) {
       setActiveSection(section as DashboardSection);
     }
   }, [searchParams]);
@@ -272,7 +274,7 @@ export default function DashboardPage() {
     players: users.filter((u) => u.roles.includes("player")).length,
   };
 
-  const sectionItems: { key: DashboardSection; label: string; icon: any; adminOnly?: boolean; coachOnly?: boolean }[] = [
+  const sectionItems: { key: DashboardSection; label: string; icon: any; adminOnly?: boolean; coachOnly?: boolean; treasurerOnly?: boolean }[] = [
     { key: "overview", label: "Overview", icon: LayoutDashboard },
     { key: "messages", label: "Messages", icon: MessageSquare },
     { key: "users", label: "Users", icon: Users, adminOnly: true },
@@ -280,6 +282,7 @@ export default function DashboardPage() {
     
     { key: "notifications", label: "Notifications", icon: Megaphone, adminOnly: true },
     { key: "orders", label: "Orders", icon: ShoppingBag, adminOnly: true },
+    { key: "finances", label: "Finances", icon: CreditCard, treasurerOnly: true },
     { key: "potm", label: "POTM", icon: Star, coachOnly: true },
     { key: "report", label: "Match Report", icon: FileText, coachOnly: true },
     { key: "stats", label: "Player Stats", icon: BarChart3, coachOnly: true },
@@ -289,6 +292,7 @@ export default function DashboardPage() {
   const visibleSections = sectionItems.filter((s) => {
     if (s.adminOnly && !isAdmin) return false;
     if (s.coachOnly && !showCoachTools) return false;
+    if (s.treasurerOnly && !isTreasurer && !isAdmin) return false;
     return true;
   });
 
@@ -483,6 +487,7 @@ export default function DashboardPage() {
                     <option value="admin">Admins</option>
                     <option value="coach">Coaches</option>
                     <option value="player">Players</option>
+                    <option value="treasurer">Treasurers</option>
                     <option value="user">Users</option>
                   </select>
                   <select
@@ -588,6 +593,10 @@ export default function DashboardPage() {
 
           {activeSection === "orders" && isAdmin && (
             <OrdersTab />
+          )}
+
+          {activeSection === "finances" && (isTreasurer || isAdmin) && (
+            <TreasurerPaymentsBoard />
           )}
         </div>
       </main>
