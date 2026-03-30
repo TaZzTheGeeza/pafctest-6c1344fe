@@ -31,14 +31,33 @@ export default function MeetingsPage() {
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
 
   const { data: meetings = [], isLoading } = useQuery({
-    queryKey: ["club-meetings"],
+    queryKey: ["club-meetings", isAdmin, user?.id],
     queryFn: async () => {
+      if (isAdmin) {
+        const { data, error } = await supabase
+          .from("club_meetings")
+          .select("*")
+          .order("scheduled_at", { ascending: true });
+        if (error) throw error;
+        return data as Meeting[];
+      }
+      // Non-admins: fetch meetings they're invited to or meetings open to everyone
+      const { data: invitedMeetingIds } = await supabase
+        .from("meeting_invitees")
+        .select("meeting_id")
+        .eq("user_id", user!.id);
+      const invitedIds = invitedMeetingIds?.map((i) => i.meeting_id) || [];
+
       const { data, error } = await supabase
         .from("club_meetings")
         .select("*")
         .order("scheduled_at", { ascending: true });
       if (error) throw error;
-      return data as Meeting[];
+
+      // Filter to meetings where invite_type is 'everyone' OR user is explicitly invited
+      return (data as Meeting[]).filter(
+        (m) => m.invite_type === "everyone" || invitedIds.includes(m.id)
+      );
     },
   });
 
