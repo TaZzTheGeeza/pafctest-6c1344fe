@@ -409,6 +409,7 @@ export type Database = {
           id: string
           note: string | null
           opponent: string
+          responding_for: string | null
           status: string
           team_slug: string
           updated_at: string
@@ -420,6 +421,7 @@ export type Database = {
           id?: string
           note?: string | null
           opponent: string
+          responding_for?: string | null
           status?: string
           team_slug: string
           updated_at?: string
@@ -431,6 +433,7 @@ export type Database = {
           id?: string
           note?: string | null
           opponent?: string
+          responding_for?: string | null
           status?: string
           team_slug?: string
           updated_at?: string
