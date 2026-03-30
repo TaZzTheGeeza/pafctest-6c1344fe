@@ -207,6 +207,7 @@ export type Database = {
           description: string | null
           duration_minutes: number
           id: string
+          invite_type: string
           room_code: string
           scheduled_at: string
           status: string
@@ -218,6 +219,7 @@ export type Database = {
           description?: string | null
           duration_minutes?: number
           id?: string
+          invite_type?: string
           room_code?: string
           scheduled_at: string
           status?: string
@@ -229,6 +231,7 @@ export type Database = {
           description?: string | null
           duration_minutes?: number
           id?: string
+          invite_type?: string
           room_code?: string
           scheduled_at?: string
           status?: string
@@ -934,6 +937,35 @@ export type Database = {
           team_name?: string
         }
         Relationships: []
+      }
+      meeting_invitees: {
+        Row: {
+          created_at: string
+          id: string
+          meeting_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          meeting_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          meeting_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meeting_invitees_meeting_id_fkey"
+            columns: ["meeting_id"]
+            isOneToOne: false
+            referencedRelation: "club_meetings"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       player_documents: {
         Row: {
