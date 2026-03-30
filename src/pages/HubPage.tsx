@@ -12,6 +12,7 @@ import { FixtureAvailability } from "@/components/hub/FixtureAvailability";
 import { CarpoolBoard } from "@/components/hub/CarpoolBoard";
 import { AttendanceStats } from "@/components/hub/AttendanceStats";
 import { GuardianManager } from "@/components/hub/GuardianManager";
+import { HubMeetingsEmbed } from "@/components/hub/HubMeetingsEmbed";
 import { TeamAccessRequest } from "@/components/hub/TeamAccessRequest";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -40,6 +41,7 @@ const tabs = [
   { id: "carpool", label: "Carpool", icon: Car },
   { id: "attendance", label: "Attendance", icon: TrendingUp },
   { id: "guardian", label: "Guardian", icon: UserPlus },
+  { id: "meetings", label: "Meetings", icon: Video },
   { id: "player", label: "Player Zone", icon: User },
 ];
 
@@ -79,15 +81,6 @@ const playerHubItems = [
     color: "text-red-400",
     bgColor: "bg-red-400/10",
     borderColor: "border-red-400/20",
-  },
-  {
-    title: "Meetings",
-    description: "View and join scheduled club meetings and video calls.",
-    icon: Video,
-    path: "/meetings",
-    color: "text-purple-400",
-    bgColor: "bg-purple-400/10",
-    borderColor: "border-purple-400/20",
   },
 ];
 
@@ -174,6 +167,7 @@ export default function HubPage() {
       {activeTab === "attendance" && activeTeam && (isCoach || isAdmin) && <AttendanceStats teamSlug={activeTeam} />}
       {activeTab === "guardian" && activeTeam && <GuardianManager teamSlug={activeTeam} teamName={activeTeamName || ""} />}
       {activeTab === "members" && activeTeam && (isAdmin || isCoach) && <TeamMemberManager teamSlug={activeTeam} teamName={activeTeamName || ""} />}
+      {activeTab === "meetings" && <HubMeetingsEmbed />}
       {activeTab === "player" && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {playerHubItems.map((item) => (
