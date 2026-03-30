@@ -200,6 +200,42 @@ export type Database = {
         }
         Relationships: []
       }
+      club_meetings: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string | null
+          duration_minutes: number
+          id: string
+          room_code: string
+          scheduled_at: string
+          status: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description?: string | null
+          duration_minutes?: number
+          id?: string
+          room_code?: string
+          scheduled_at: string
+          status?: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          duration_minutes?: number
+          id?: string
+          room_code?: string
+          scheduled_at?: string
+          status?: string
+          title?: string
+        }
+        Relationships: []
+      }
       contact_submissions: {
         Row: {
           created_at: string
