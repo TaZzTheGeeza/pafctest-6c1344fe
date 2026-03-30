@@ -25,6 +25,7 @@ import { Upload, CheckCircle, AlertTriangle, UserPlus as UserPlusIcon } from "lu
 import { TeamRequestsManager } from "@/components/dashboard/TeamRequestsManager";
 import { AdminNotificationComposer } from "@/components/dashboard/AdminNotificationComposer";
 import { OrdersTab } from "@/components/dashboard/OrdersTab";
+import { TreasurerPaymentsBoard } from "@/components/dashboard/TreasurerPaymentsBoard";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
 
