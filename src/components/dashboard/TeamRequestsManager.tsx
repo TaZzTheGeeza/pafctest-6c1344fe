@@ -6,8 +6,13 @@ import { CheckCircle, XCircle, Clock, Loader2, UserPlus, Shield, Users } from "l
 import { toast } from "sonner";
 
 const TEAM_LABELS: Record<string, string> = {
-  "u7": "U7", "u8-black": "U8 Black", "u8-gold": "U8 Gold", "u9": "U9", "u10": "U10",
-  "u11-black": "U11 Black", "u11-gold": "U11 Gold", "u13-black": "U13 Black", "u13-gold": "U13 Gold", "u14": "U14",
+  "u7s": "U7", "u8s-black": "U8 Black", "u8s-gold": "U8 Gold", "u9s": "U9", "u10s": "U10",
+  "u11s-black": "U11 Black", "u11s-gold": "U11 Gold", "u13s-black": "U13 Black", "u13s-gold": "U13 Gold", "u14s": "U14",
+};
+
+const TEAM_SLUG_TO_AGE_GROUP: Record<string, string> = {
+  "u7s": "U7", "u8s-black": "U8 Black", "u8s-gold": "U8 Gold", "u9s": "U9", "u10s": "U10",
+  "u11s-black": "U11 Black", "u11s-gold": "U11 Gold", "u13s-black": "U13 Black", "u13s-gold": "U13 Gold", "u14s": "U14",
 };
 
 interface TeamRequest {
@@ -84,7 +89,16 @@ export function TeamRequestsManager() {
         });
       }
 
-      // 4. Update request status
+      // 5. Sync user_age_groups so coach/player sees team in POTM/Match Report dropdowns
+      const ageGroup = TEAM_SLUG_TO_AGE_GROUP[req.team_slug];
+      if (ageGroup) {
+        await supabase.from("user_age_groups").insert({
+          user_id: req.user_id,
+          age_group: ageGroup,
+        });
+      }
+
+      // 6. Update request status
       const { error } = await supabase
         .from("team_requests" as any)
         .update({ status: "approved", reviewed_by: user!.id, reviewed_at: new Date().toISOString() } as any)
