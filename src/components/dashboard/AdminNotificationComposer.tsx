@@ -83,12 +83,12 @@ export function AdminNotificationComposer() {
       toast.error("Select at least one delivery channel");
       return;
     }
-    if (audience === "team" && !selectedTeam) {
-      toast.error("Select a team");
+    if (audience === "team" && selectedTeams.length === 0) {
+      toast.error("Select at least one team");
       return;
     }
-    if (audience === "member" && !selectedMemberId) {
-      toast.error("Select a member");
+    if (audience === "member" && selectedMembers.length === 0) {
+      toast.error("Select at least one member");
       return;
     }
 
@@ -98,13 +98,17 @@ export function AdminNotificationComposer() {
       let targetUserIds: string[] = [];
 
       if (audience === "member") {
-        targetUserIds = [selectedMemberId];
+        targetUserIds = selectedMembers.map((m) => m.id);
       } else if (audience === "team") {
-        const { data: members } = await supabase
-          .from("team_members")
-          .select("user_id")
-          .eq("team_slug", selectedTeam);
-        targetUserIds = (members ?? []).map((m) => m.user_id);
+        const allMembers: string[] = [];
+        for (const slug of selectedTeams) {
+          const { data: members } = await supabase
+            .from("team_members")
+            .select("user_id")
+            .eq("team_slug", slug);
+          if (members) allMembers.push(...members.map((m) => m.user_id));
+        }
+        targetUserIds = [...new Set(allMembers)];
       } else {
         // All players: get all unique user_ids from team_members
         const { data: members } = await supabase
@@ -130,7 +134,7 @@ export function AdminNotificationComposer() {
           title: title.trim(),
           message: message.trim(),
           type: "admin_broadcast",
-          team_slug: audience === "team" ? selectedTeam : null,
+          team_slug: audience === "team" && selectedTeams.length === 1 ? selectedTeams[0] : null,
         }));
         const { error } = await supabase.from("hub_notifications").insert(notifications);
         if (error) console.error("In-app notification insert error:", error);
@@ -216,7 +220,7 @@ export function AdminNotificationComposer() {
               <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground mb-1.5 block">
                 Audience
               </Label>
-              <Select value={audience} onValueChange={(v) => { setAudience(v as "all" | "team" | "member"); setSelectedMemberId(""); setMemberSearch(""); setMemberResults([]); }}>
+              <Select value={audience} onValueChange={(v) => { setAudience(v as "all" | "team" | "member"); setSelectedMembers([]); setMemberSearch(""); setMemberResults([]); setSelectedTeams([]); }}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
