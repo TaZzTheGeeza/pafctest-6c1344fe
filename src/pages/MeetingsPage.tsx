@@ -1,27 +1,14 @@
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  Video, Plus, Calendar, Clock, Users, X, ArrowLeft,
-  Loader2, VideoOff, Mic, MicOff, MonitorUp
-} from "lucide-react";
+import { Video, Plus, ArrowLeft, Loader2, X } from "lucide-react";
 import { format } from "date-fns";
-
-interface Meeting {
-  id: string;
-  title: string;
-  description: string | null;
-  scheduled_at: string;
-  duration_minutes: number;
-  room_code: string;
-  status: string;
-  created_by: string;
-  created_at: string;
-}
+import { MeetingCard, type Meeting } from "@/components/meetings/MeetingCard";
+import { MeetingInviteSelector, type InviteType } from "@/components/meetings/MeetingInviteSelector";
 
 export default function MeetingsPage() {
   const { user, isAdmin } = useAuth();
@@ -37,6 +24,11 @@ export default function MeetingsPage() {
   const [scheduledTime, setScheduledTime] = useState("19:00");
   const [duration, setDuration] = useState(60);
 
+  // Invite state
+  const [inviteType, setInviteType] = useState<InviteType>("everyone");
+  const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+
   const { data: meetings = [], isLoading } = useQuery({
     queryKey: ["club-meetings"],
     queryFn: async () => {
@@ -49,6 +41,21 @@ export default function MeetingsPage() {
     },
   });
 
+  // Fetch invitee counts per meeting
+  const { data: inviteeCounts = {} } = useQuery({
+    queryKey: ["meeting-invitee-counts"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("meeting_invitees")
+        .select("meeting_id");
+      const counts: Record<string, number> = {};
+      (data ?? []).forEach((row: any) => {
+        counts[row.meeting_id] = (counts[row.meeting_id] || 0) + 1;
+      });
+      return counts;
+    },
+  });
+
   const upcomingMeetings = meetings.filter(
     (m) => m.status !== "ended" && new Date(m.scheduled_at) >= new Date(Date.now() - 2 * 60 * 60 * 1000)
   );
@@ -56,36 +63,84 @@ export default function MeetingsPage() {
     (m) => m.status === "ended" || new Date(m.scheduled_at) < new Date(Date.now() - 2 * 60 * 60 * 1000)
   );
 
-  const handleCreate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!title || !scheduledDate || !user) return;
-
-    setSaving(true);
-    const scheduledAt = new Date(`${scheduledDate}T${scheduledTime}`).toISOString();
-
-    const { error } = await supabase.from("club_meetings").insert({
-      title,
-      description: description || null,
-      scheduled_at: scheduledAt,
-      duration_minutes: duration,
-      created_by: user.id,
-    } as any);
-
-    setSaving(false);
-    if (error) {
-      toast.error("Failed to create meeting");
-      console.error(error);
-      return;
-    }
-
-    toast.success("Meeting scheduled!");
-    queryClient.invalidateQueries({ queryKey: ["club-meetings"] });
+  const resetForm = () => {
     setTitle("");
     setDescription("");
     setScheduledDate("");
     setScheduledTime("19:00");
     setDuration(60);
+    setInviteType("everyone");
+    setSelectedRoles([]);
+    setSelectedUsers([]);
     setShowCreate(false);
+  };
+
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!title || !scheduledDate || !user) return;
+
+    // Validate invite selections
+    if (inviteType === "roles" && selectedRoles.length === 0) {
+      toast.error("Please select at least one role to invite");
+      return;
+    }
+    if (inviteType === "specific" && selectedUsers.length === 0) {
+      toast.error("Please select at least one person to invite");
+      return;
+    }
+
+    setSaving(true);
+    const scheduledAt = new Date(`${scheduledDate}T${scheduledTime}`).toISOString();
+
+    // Create the meeting
+    const { data: newMeeting, error } = await supabase
+      .from("club_meetings")
+      .insert({
+        title,
+        description: description || null,
+        scheduled_at: scheduledAt,
+        duration_minutes: duration,
+        created_by: user.id,
+        invite_type: inviteType,
+      } as any)
+      .select()
+      .single();
+
+    if (error || !newMeeting) {
+      setSaving(false);
+      toast.error("Failed to create meeting");
+      console.error(error);
+      return;
+    }
+
+    // Insert invitees
+    let userIdsToInvite: string[] = [];
+
+    if (inviteType === "roles") {
+      // Resolve roles to user IDs
+      const { data: roleUsers } = await supabase
+        .from("user_roles")
+        .select("user_id")
+        .in("role", selectedRoles);
+      const uniqueIds = new Set((roleUsers ?? []).map((r: any) => r.user_id));
+      userIdsToInvite = Array.from(uniqueIds);
+    } else if (inviteType === "specific") {
+      userIdsToInvite = selectedUsers;
+    }
+
+    if (userIdsToInvite.length > 0) {
+      const invitees = userIdsToInvite.map((uid) => ({
+        meeting_id: (newMeeting as any).id,
+        user_id: uid,
+      }));
+      await supabase.from("meeting_invitees").insert(invitees as any);
+    }
+
+    setSaving(false);
+    toast.success("Meeting scheduled!");
+    queryClient.invalidateQueries({ queryKey: ["club-meetings"] });
+    queryClient.invalidateQueries({ queryKey: ["meeting-invitee-counts"] });
+    resetForm();
   };
 
   const handleStartMeeting = async (meeting: Meeting) => {
@@ -117,6 +172,7 @@ export default function MeetingsPage() {
     }
     toast.success("Meeting deleted");
     queryClient.invalidateQueries({ queryKey: ["club-meetings"] });
+    queryClient.invalidateQueries({ queryKey: ["meeting-invitee-counts"] });
   };
 
   // Active video room
@@ -126,7 +182,6 @@ export default function MeetingsPage() {
 
     return (
       <div className="fixed inset-0 z-50 bg-black flex flex-col">
-        {/* Top bar */}
         <div className="flex items-center justify-between px-4 py-2 bg-card/90 border-b border-border backdrop-blur-sm">
           <button
             onClick={() => setActiveRoom(null)}
@@ -148,8 +203,6 @@ export default function MeetingsPage() {
             )}
           </div>
         </div>
-
-        {/* Jitsi iframe */}
         <div className="flex-1">
           <iframe
             src={`https://meet.jit.si/${roomName}#userInfo.displayName="${encodeURIComponent(displayName)}"&config.prejoinConfig.enabled=false&config.startWithAudioMuted=true&config.startWithVideoMuted=false&interfaceConfig.SHOW_JITSI_WATERMARK=false&interfaceConfig.SHOW_WATERMARK_FOR_GUESTS=false&interfaceConfig.SHOW_BRAND_WATERMARK=false&interfaceConfig.DEFAULT_BACKGROUND='#1a1a2e'`}
@@ -194,12 +247,12 @@ export default function MeetingsPage() {
         {/* Create Meeting Dialog */}
         {showCreate && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-            <div className="bg-card border border-border rounded-xl w-full max-w-md shadow-xl">
-              <div className="flex items-center justify-between p-4 border-b border-border">
+            <div className="bg-card border border-border rounded-xl w-full max-w-md shadow-xl max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between p-4 border-b border-border sticky top-0 bg-card z-10 rounded-t-xl">
                 <h3 className="font-display text-sm font-bold text-foreground tracking-wider uppercase">
                   Schedule Meeting
                 </h3>
-                <button onClick={() => setShowCreate(false)} className="text-muted-foreground hover:text-foreground">
+                <button onClick={resetForm} className="text-muted-foreground hover:text-foreground">
                   <X className="h-4 w-4" />
                 </button>
               </div>
@@ -274,10 +327,20 @@ export default function MeetingsPage() {
                   </select>
                 </div>
 
+                {/* Invite Selector */}
+                <MeetingInviteSelector
+                  inviteType={inviteType}
+                  setInviteType={setInviteType}
+                  selectedRoles={selectedRoles}
+                  setSelectedRoles={setSelectedRoles}
+                  selectedUsers={selectedUsers}
+                  setSelectedUsers={setSelectedUsers}
+                />
+
                 <div className="flex justify-end gap-2 pt-2">
                   <button
                     type="button"
-                    onClick={() => setShowCreate(false)}
+                    onClick={resetForm}
                     className="px-4 py-2 rounded-lg text-xs font-display tracking-wider border border-border text-muted-foreground hover:text-foreground transition-colors"
                   >
                     Cancel
@@ -323,6 +386,7 @@ export default function MeetingsPage() {
                       key={meeting.id}
                       meeting={meeting}
                       isAdmin={isAdmin}
+                      inviteeCount={inviteeCounts[meeting.id]}
                       onJoin={() => handleStartMeeting(meeting)}
                       onDelete={() => handleDelete(meeting.id)}
                     />
@@ -359,85 +423,6 @@ export default function MeetingsPage() {
         )}
       </div>
       <Footer />
-    </div>
-  );
-}
-
-function MeetingCard({
-  meeting,
-  isAdmin,
-  onJoin,
-  onDelete,
-}: {
-  meeting: Meeting;
-  isAdmin: boolean;
-  onJoin: () => void;
-  onDelete: () => void;
-}) {
-  const isLive = meeting.status === "live";
-  const scheduledDate = new Date(meeting.scheduled_at);
-  const isStartingSoon = scheduledDate.getTime() - Date.now() < 15 * 60 * 1000;
-
-  return (
-    <div
-      className={`relative p-4 bg-card border rounded-xl transition-all ${
-        isLive
-          ? "border-emerald-500/50 shadow-lg shadow-emerald-500/10"
-          : "border-border hover:border-primary/30"
-      }`}
-    >
-      {isLive && (
-        <div className="absolute top-3 right-3 flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/30">
-          <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="text-[10px] font-display font-bold text-emerald-400 tracking-wider uppercase">Live</span>
-        </div>
-      )}
-
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex-1 min-w-0">
-          <h3 className="text-base font-display font-bold text-foreground tracking-wide">
-            {meeting.title}
-          </h3>
-          {meeting.description && (
-            <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{meeting.description}</p>
-          )}
-          <div className="flex items-center gap-4 mt-2">
-            <span className="flex items-center gap-1 text-xs text-muted-foreground">
-              <Calendar className="h-3 w-3" />
-              {format(scheduledDate, "EEE dd MMM yyyy")}
-            </span>
-            <span className="flex items-center gap-1 text-xs text-muted-foreground">
-              <Clock className="h-3 w-3" />
-              {format(scheduledDate, "HH:mm")} · {meeting.duration_minutes} min
-            </span>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 flex-shrink-0">
-          {(isLive || isStartingSoon || isAdmin) && (
-            <button
-              onClick={onJoin}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-display tracking-wider transition-colors ${
-                isLive
-                  ? "bg-emerald-500 text-white hover:bg-emerald-600"
-                  : "bg-primary text-primary-foreground hover:bg-primary/90"
-              }`}
-            >
-              <Video className="h-3.5 w-3.5" />
-              {isLive ? "Join Now" : isAdmin ? "Start" : "Join"}
-            </button>
-          )}
-          {isAdmin && !isLive && (
-            <button
-              onClick={onDelete}
-              className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-              title="Delete meeting"
-            >
-              <X className="h-3.5 w-3.5" />
-            </button>
-          )}
-        </div>
-      </div>
     </div>
   );
 }
