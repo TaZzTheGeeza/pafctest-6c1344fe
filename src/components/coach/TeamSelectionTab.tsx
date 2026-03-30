@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useTeamRoster } from "@/hooks/useTeamRoster";
+import { notifyTeamMembers } from "@/lib/notifyTeamMembers";
 import type { FAFixture } from "@/hooks/useTeamFixtures";
 
 export function TeamSelectionTab({
@@ -109,6 +110,29 @@ export function TeamSelectionTab({
 
       queryClient.invalidateQueries({ queryKey: ["team-roster"] });
       queryClient.invalidateQueries({ queryKey: ["team-selection", teamSlug, fixture.date, opponent] });
+
+      // Notify team members
+      notifyTeamMembers({
+        teamSlug,
+        notification: {
+          title: "Squad Announced",
+          message: `Team selection published for vs ${opponent}`,
+          type: "info",
+          link: "/hub?tab=availability",
+        },
+        email: {
+          templateName: "team-selection-published",
+          templateData: {
+            opponent,
+            fixtureDate: fixture.date,
+            formation: formation || undefined,
+            teamName: teamSlug,
+            playerCount: selectedIds.size,
+          },
+          idempotencyPrefix: `team-sel-${teamSlug}-${fixture.date}-${opponent}`,
+        },
+      });
+
       toast.success("Squad & appearances saved!");
     } catch (err: any) {
       toast.error(err.message || "Failed to save");
