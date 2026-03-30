@@ -12,6 +12,7 @@ import {
   Star, LayoutDashboard, Mail, Clock, ExternalLink, Pencil, Check, X as XIcon, Megaphone
 } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
+import { isUserOnline, formatLastSeen } from "@/hooks/usePresence";
 import { ManageSubmissionsForm } from "@/components/ManageSubmissionsForm";
 import { EnquiryReplyPanel } from "@/components/dashboard/EnquiryReplyPanel";
 import { UserMessagesInbox } from "@/components/dashboard/UserMessagesInbox";
@@ -36,6 +37,7 @@ interface UserWithRoles {
   email: string | null;
   full_name: string | null;
   roles: AppRole[];
+  last_seen_at: string | null;
 }
 
 const ROLE_CONFIG: Record<AppRole, { label: string; color: string; icon: any }> = {
@@ -148,7 +150,7 @@ export default function DashboardPage() {
   async function loadUsers() {
     setLoading(true);
     const [profilesRes, rolesRes, membersRes] = await Promise.all([
-      supabase.from("profiles").select("id, full_name, email"),
+      supabase.from("profiles").select("id, full_name, email, last_seen_at"),
       supabase.from("user_roles").select("user_id, role"),
       supabase.from("team_members").select("user_id, team_slug"),
     ]);
@@ -175,6 +177,7 @@ export default function DashboardPage() {
       email: p.email,
       full_name: p.full_name,
       roles: roleMap[p.id] ?? [],
+      last_seen_at: p.last_seen_at,
     }));
 
     merged.sort((a, b) => {
