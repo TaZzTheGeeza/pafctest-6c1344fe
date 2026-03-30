@@ -50,6 +50,7 @@ const ROLE_CONFIG: Record<AppRole, { label: string; color: string; icon: any }> 
   player: { label: "Player", color: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30", icon: Users },
   user: { label: "User", color: "bg-blue-500/20 text-blue-400 border-blue-500/30", icon: UserCog },
   treasurer: { label: "Treasurer", color: "bg-purple-500/20 text-purple-400 border-purple-500/30", icon: ShoppingBag },
+  welfare_officer: { label: "Welfare Officer", color: "bg-pink-500/20 text-pink-400 border-pink-500/30", icon: Shield },
 };
 
 const ADMIN_LINKS = [
