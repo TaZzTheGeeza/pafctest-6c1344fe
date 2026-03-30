@@ -14,6 +14,7 @@ import { template as newChatMessage } from './new-chat-message.tsx'
 import { template as availabilityEventAdded } from './availability-event-added.tsx'
 import { template as teamSelectionPublished } from './team-selection-published.tsx'
 import { template as adminBroadcast } from './admin-broadcast.tsx'
+import { template as shopOrderNotification } from './shop-order-notification.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'payment-request-created': paymentRequestCreated,
@@ -21,4 +22,5 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'availability-event-added': availabilityEventAdded,
   'team-selection-published': teamSelectionPublished,
   'admin-broadcast': adminBroadcast,
+  'shop-order-notification': shopOrderNotification,
 }
