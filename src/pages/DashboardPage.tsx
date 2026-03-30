@@ -487,6 +487,7 @@ export default function DashboardPage() {
                     <option value="admin">Admins</option>
                     <option value="coach">Coaches</option>
                     <option value="player">Players</option>
+                    <option value="treasurer">Treasurers</option>
                     <option value="user">Users</option>
                   </select>
                   <select
