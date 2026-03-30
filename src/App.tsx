@@ -107,6 +107,7 @@ function AppContent() {
         <Route path="/admin/safeguarding-reports" element={<SafeguardingReportsPage />} />
         <Route path="/my-profile" element={<RoleGate requiredRole="player"><MyProfilePage /></RoleGate>} />
         <Route path="/auth" element={<AuthPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
