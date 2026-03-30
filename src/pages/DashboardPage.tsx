@@ -751,13 +751,19 @@ function UserRow({
     }
   }
 
+  const online = isUserOnline(user.last_seen_at);
+  const lastSeen = formatLastSeen(user.last_seen_at);
+
   return (
     <div className="hover:bg-secondary/20 transition-colors">
       <div className="px-5 py-4 cursor-pointer" onClick={() => !editingName && navigate(`/admin/player/${user.id}`)}>
         <div className="flex flex-col sm:flex-row sm:items-center gap-3">
           <div className="flex items-center gap-3 flex-1 min-w-0">
-            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-display text-sm font-bold shrink-0">
-              {(user.full_name || user.email || "?")[0].toUpperCase()}
+            <div className="relative shrink-0">
+              <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-display text-sm font-bold">
+                {(user.full_name || user.email || "?")[0].toUpperCase()}
+              </div>
+              <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-card ${online ? "bg-emerald-500" : "bg-muted-foreground/40"}`} />
             </div>
             <div className="min-w-0" onClick={(e) => e.stopPropagation()}>
               {editingName ? (
@@ -791,7 +797,12 @@ function UserRow({
                   )}
                 </p>
               )}
-              <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+              <p className="text-xs text-muted-foreground truncate flex items-center gap-2">
+                {user.email}
+                <span className={`text-[10px] ${online ? "text-emerald-400" : "text-muted-foreground/60"}`}>
+                  {online ? "● Online" : lastSeen !== "Never" ? `Last seen ${lastSeen}` : "Never signed in"}
+                </span>
+              </p>
             </div>
           </div>
 
