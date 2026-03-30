@@ -114,7 +114,7 @@ export default function HubPage() {
 
   async function loadMyTeams() {
     setLoading(true);
-    if (isAdmin || isCoach) {
+    if (isAdmin) {
       setMyTeams(TEAMS.map((t) => t.slug));
       if (!activeTeam) setActiveTeam(TEAMS[0].slug);
       setLoading(false);
@@ -122,8 +122,16 @@ export default function HubPage() {
     }
     const { data } = await supabase.from("team_members").select("team_slug").eq("user_id", user!.id);
     const rawSlugs = data?.map((d) => d.team_slug) || [];
+    // Normalize non-canonical slugs to canonical ones
+    const canonicalMap: Record<string, string> = {
+      "u7": "u7s", "u8-black": "u8s-black", "u8-gold": "u8s-gold",
+      "u9": "u9s", "u10": "u10s", "u11-black": "u11s-black",
+      "u11-gold": "u11s-gold", "u13-black": "u13s-black", "u13-gold": "u13s-gold",
+      "u14": "u14s",
+    };
+    const normalized = [...new Set(rawSlugs.map((s) => canonicalMap[s] || s))];
     const teamOrder = TEAMS.map((t) => t.slug);
-    const slugs = rawSlugs.sort((a, b) => teamOrder.indexOf(a) - teamOrder.indexOf(b));
+    const slugs = normalized.filter((s) => teamOrder.includes(s)).sort((a, b) => teamOrder.indexOf(a) - teamOrder.indexOf(b));
     setMyTeams(slugs);
     if (!activeTeam && slugs.length > 0) setActiveTeam(slugs[0]);
     setLoading(false);
