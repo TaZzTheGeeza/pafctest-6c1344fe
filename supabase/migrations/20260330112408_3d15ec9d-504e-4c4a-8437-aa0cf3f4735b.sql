@@ -1,0 +1,1 @@
+ALTER TABLE public.fixture_availability ADD COLUMN responding_for text DEFAULT NULL;
