@@ -9,7 +9,7 @@ import {
   Users, Shield, ShieldCheck, ShieldAlert, UserCog, Trash2,
   Search, ChevronDown, Trophy, Ticket, BarChart3, FileText,
   MessageSquare, Settings, Eye, Plus, Loader2, Crown, Swords, ShoppingBag,
-  Star, LayoutDashboard, Mail, Clock, ExternalLink, Pencil, Check, X as XIcon, Megaphone, CreditCard
+  Star, LayoutDashboard, Mail, Clock, ExternalLink, Pencil, Check, X as XIcon, Megaphone, CreditCard, Video
 } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 import { isUserOnline, formatLastSeen } from "@/hooks/usePresence";
@@ -56,6 +56,7 @@ const ADMIN_LINKS = [
   { label: "Tournament Admin", path: "/tournament-admin", icon: Trophy, desc: "Manage tournaments & brackets" },
   { label: "Raffle Admin", path: "/raffle-admin", icon: Ticket, desc: "Create & manage raffles" },
   { label: "PAFC Hub", path: "/hub", icon: MessageSquare, desc: "Team chat, payments, availability" },
+  { label: "Club Meetings", path: "/meetings", icon: Video, desc: "Schedule & join video meetings" },
   { label: "Results", path: "/results", icon: BarChart3, desc: "Match results & stats" },
   { label: "Club Documents", path: "/club-documents", icon: FileText, desc: "Manage club docs" },
   { label: "Bulk Doc Upload", path: "/admin/bulk-documents", icon: FileText, desc: "Upload docs for multiple players" },
