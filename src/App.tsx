@@ -46,6 +46,7 @@ import BulkDocumentUploadPage from "./pages/BulkDocumentUploadPage.tsx";
 import SafeguardingReportsPage from "./pages/SafeguardingReportsPage.tsx";
 import PafcTvPage from "./pages/PafcTvPage.tsx";
 import ResetPasswordPage from "./pages/ResetPasswordPage.tsx";
+import UnsubscribePage from "./pages/UnsubscribePage.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -108,6 +109,7 @@ function AppContent() {
         <Route path="/my-profile" element={<RoleGate requiredRole="player"><MyProfilePage /></RoleGate>} />
         <Route path="/auth" element={<AuthPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/unsubscribe" element={<UnsubscribePage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
