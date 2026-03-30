@@ -80,6 +80,15 @@ const playerHubItems = [
     bgColor: "bg-red-400/10",
     borderColor: "border-red-400/20",
   },
+  {
+    title: "Meetings",
+    description: "View and join scheduled club meetings and video calls.",
+    icon: Video,
+    path: "/meetings",
+    color: "text-purple-400",
+    bgColor: "bg-purple-400/10",
+    borderColor: "border-purple-400/20",
+  },
 ];
 
 export default function HubPage() {
