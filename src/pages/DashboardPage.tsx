@@ -298,7 +298,9 @@ export default function DashboardPage() {
   });
 
   const mainSections = visibleSections.filter((s) => s.group === "main");
+  const userSections = visibleSections.filter((s) => s.group === "users");
   const coachSections = visibleSections.filter((s) => s.group === "coach");
+  const activeInUsers = userSections.some((s) => s.key === activeSection);
   const activeInCoach = coachSections.some((s) => s.key === activeSection);
 
   return (
