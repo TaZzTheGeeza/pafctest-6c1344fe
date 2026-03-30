@@ -9,6 +9,7 @@ interface AuthContextType {
   isCoach: boolean;
   isPlayer: boolean;
   isAdmin: boolean;
+  isTreasurer: boolean;
   rolesLoading: boolean;
   signOut: () => Promise<void>;
 }
@@ -20,6 +21,7 @@ const AuthContext = createContext<AuthContextType>({
   isCoach: false,
   isPlayer: false,
   isAdmin: false,
+  isTreasurer: false,
   rolesLoading: true,
   signOut: async () => {},
 });
@@ -33,6 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isCoach, setIsCoach] = useState(false);
   const [isPlayer, setIsPlayer] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isTreasurer, setIsTreasurer] = useState(false);
   const [rolesLoading, setRolesLoading] = useState(true);
 
   useEffect(() => {
@@ -56,6 +59,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsCoach(false);
       setIsPlayer(false);
       setIsAdmin(false);
+      setIsTreasurer(false);
       setRolesLoading(false);
       return;
     }
@@ -70,6 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setIsAdmin(roles.includes("admin"));
         setIsCoach(roles.includes("coach") || roles.includes("admin"));
         setIsPlayer(roles.includes("player") || roles.includes("coach") || roles.includes("admin"));
+        setIsTreasurer(roles.includes("treasurer") || roles.includes("admin"));
         setRolesLoading(false);
       });
   }, [user]);
@@ -79,7 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, isCoach, isPlayer, isAdmin, rolesLoading, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, isCoach, isPlayer, isAdmin, isTreasurer, rolesLoading, signOut }}>
       {children}
     </AuthContext.Provider>
   );
