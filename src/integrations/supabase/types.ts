@@ -443,6 +443,39 @@ export type Database = {
         }
         Relationships: []
       }
+      hub_availability_events: {
+        Row: {
+          created_at: string
+          created_by: string
+          event_date: string
+          event_time: string | null
+          id: string
+          team_slug: string
+          title: string
+          venue: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          event_date: string
+          event_time?: string | null
+          id?: string
+          team_slug: string
+          title: string
+          venue?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          event_date?: string
+          event_time?: string | null
+          id?: string
+          team_slug?: string
+          title?: string
+          venue?: string | null
+        }
+        Relationships: []
+      }
       hub_channels: {
         Row: {
           channel_type: string

@@ -3,8 +3,8 @@ import { useTeamFixtures, type FAFixture } from "@/hooks/useTeamFixtures";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Check, X, HelpCircle, Loader2, MapPin, Clock, Users, Navigation, ChevronDown, ChevronUp } from "lucide-react";
-import { format } from "date-fns";
+import { Check, X, HelpCircle, Loader2, MapPin, Clock, Navigation, ChevronDown, ChevronUp, Trash2, CalendarPlus } from "lucide-react";
+import { AddAvailabilityEventDialog } from "./AddAvailabilityEventDialog";
 
 interface Props {
   teamSlug: string;
@@ -22,8 +22,56 @@ interface AvailabilityRecord {
   note: string | null;
 }
 
-function fixtureKey(f: FAFixture) {
-  return `${f.date}::${f.homeTeam.includes("Peterborough Ath") ? f.awayTeam : f.homeTeam}`;
+interface CustomEvent {
+  id: string;
+  team_slug: string;
+  title: string;
+  event_date: string;
+  event_time: string | null;
+  venue: string | null;
+  created_by: string;
+}
+
+// Unified item type for rendering
+interface AvailabilityItem {
+  key: string;
+  date: string;
+  time: string;
+  title: string;
+  venue: string;
+  isHome: boolean;
+  opponent: string; // used as key for availability records
+  isCustom: boolean;
+  customEventId?: string;
+}
+
+function fixtureToItem(f: FAFixture): AvailabilityItem {
+  const isHome = f.homeTeam.includes("Peterborough Ath");
+  const opponent = isHome ? f.awayTeam : f.homeTeam;
+  return {
+    key: `fa-${f.date}-${opponent}`,
+    date: f.date,
+    time: f.time,
+    title: `${isHome ? "vs" : "@"} ${opponent}`,
+    venue: f.venue,
+    isHome,
+    opponent,
+    isCustom: false,
+  };
+}
+
+function customEventToItem(e: CustomEvent): AvailabilityItem {
+  return {
+    key: `custom-${e.id}`,
+    date: e.event_date,
+    time: e.event_time || "TBC",
+    title: e.title,
+    venue: e.venue || "",
+    isHome: true,
+    opponent: `custom::${e.id}`,
+    isCustom: true,
+    customEventId: e.id,
+  };
 }
 
 export function FixtureAvailability({ teamSlug }: Props) {
@@ -41,6 +89,19 @@ export function FixtureAvailability({ teamSlug }: Props) {
         .eq("team_slug", teamSlug);
       if (error) throw error;
       return data as AvailabilityRecord[];
+    },
+    enabled: !!user,
+  });
+
+  const { data: customEvents = [], isLoading: eventsLoading } = useQuery({
+    queryKey: ["hub-availability-events", teamSlug],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("hub_availability_events")
+        .select("*")
+        .eq("team_slug", teamSlug);
+      if (error) throw error;
+      return (data || []) as CustomEvent[];
     },
     enabled: !!user,
   });
@@ -78,15 +139,42 @@ export function FixtureAvailability({ teamSlug }: Props) {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["fixture-availability", teamSlug] }),
   });
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const upcomingFixtures = (teamData?.fixtures || []).filter((f) => {
-    const [dd, mm, yy] = f.date.split("/").map(Number);
-    const fDate = new Date(2000 + yy, mm - 1, dd);
-    return fDate >= today;
+  const deleteMutation = useMutation({
+    mutationFn: async (eventId: string) => {
+      const { error } = await supabase
+        .from("hub_availability_events")
+        .delete()
+        .eq("id", eventId);
+      if (error) throw error;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["hub-availability-events", teamSlug] }),
   });
 
-  if (fixturesLoading || availLoading) {
+  // Build unified list
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const faItems: AvailabilityItem[] = (teamData?.fixtures || [])
+    .filter((f) => {
+      const [dd, mm, yy] = f.date.split("/").map(Number);
+      return new Date(2000 + yy, mm - 1, dd) >= today;
+    })
+    .map(fixtureToItem);
+
+  const customItems: AvailabilityItem[] = customEvents
+    .filter((e) => {
+      const [dd, mm, yy] = e.event_date.split("/").map(Number);
+      return new Date(2000 + yy, mm - 1, dd) >= today;
+    })
+    .map(customEventToItem);
+
+  const allItems = [...faItems, ...customItems].sort((a, b) => {
+    const [ad, am, ay] = a.date.split("/").map(Number);
+    const [bd, bm, by] = b.date.split("/").map(Number);
+    return new Date(2000 + ay, am - 1, ad).getTime() - new Date(2000 + by, bm - 1, bd).getTime();
+  });
+
+  if (fixturesLoading || availLoading || eventsLoading) {
     return (
       <div className="flex items-center justify-center py-16 text-muted-foreground">
         <Loader2 className="h-5 w-5 animate-spin mr-2" /> Loading fixtures…
@@ -94,27 +182,32 @@ export function FixtureAvailability({ teamSlug }: Props) {
     );
   }
 
-  if (upcomingFixtures.length === 0) {
+  if (allItems.length === 0) {
     return (
-      <div className="bg-card border border-border rounded-xl p-8 text-center">
-        <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-        <h3 className="font-display text-lg font-bold text-foreground mb-2">No Upcoming Fixtures</h3>
-        <p className="text-sm text-muted-foreground">There are no scheduled fixtures for this team right now.</p>
+      <div className="space-y-3">
+        {(isCoach || isAdmin) && (
+          <div className="flex justify-end">
+            <AddAvailabilityEventDialog teamSlug={teamSlug} />
+          </div>
+        )}
+        <div className="bg-card border border-border rounded-xl p-8 text-center">
+          <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <h3 className="font-display text-lg font-bold text-foreground mb-2">No Upcoming Fixtures</h3>
+          <p className="text-sm text-muted-foreground">There are no scheduled fixtures or events for this team right now.</p>
+        </div>
       </div>
     );
   }
 
-  function getMyStatus(fixture: FAFixture): AvailabilityStatus {
-    const opponent = fixture.homeTeam.includes("Peterborough Ath") ? fixture.awayTeam : fixture.homeTeam;
+  function getMyStatus(item: AvailabilityItem): AvailabilityStatus {
     const record = availability.find(
-      (a) => a.fixture_date === fixture.date && a.opponent === opponent && a.user_id === user?.id
+      (a) => a.fixture_date === item.date && a.opponent === item.opponent && a.user_id === user?.id
     );
     return (record?.status as AvailabilityStatus) || "pending";
   }
 
-  function getTeamSummary(fixture: FAFixture) {
-    const opponent = fixture.homeTeam.includes("Peterborough Ath") ? fixture.awayTeam : fixture.homeTeam;
-    const records = availability.filter((a) => a.fixture_date === fixture.date && a.opponent === opponent);
+  function getTeamSummary(item: AvailabilityItem) {
+    const records = availability.filter((a) => a.fixture_date === item.date && a.opponent === item.opponent);
     return {
       available: records.filter((r) => r.status === "available").length,
       unavailable: records.filter((r) => r.status === "unavailable").length,
@@ -122,9 +215,8 @@ export function FixtureAvailability({ teamSlug }: Props) {
     };
   }
 
-  function getRespondents(fixture: FAFixture, status: string) {
-    const opponent = fixture.homeTeam.includes("Peterborough Ath") ? fixture.awayTeam : fixture.homeTeam;
-    const records = availability.filter((a) => a.fixture_date === fixture.date && a.opponent === opponent && a.status === status);
+  function getRespondents(item: AvailabilityItem, status: string) {
+    const records = availability.filter((a) => a.fixture_date === item.date && a.opponent === item.opponent && a.status === status);
     return records.map((r) => {
       const profile = profiles.find((p) => p.id === r.user_id);
       return profile?.full_name || "Unknown";
@@ -139,29 +231,39 @@ export function FixtureAvailability({ teamSlug }: Props) {
 
   return (
     <div className="space-y-3">
-      {upcomingFixtures.map((fixture) => {
-        const isHome = fixture.homeTeam.includes("Peterborough Ath");
-        const opponent = isHome ? fixture.awayTeam : fixture.homeTeam;
-        const myStatus = getMyStatus(fixture);
-        const summary = getTeamSummary(fixture);
-        const fKey = fixtureKey(fixture);
-        const isExpanded = expandedFixture === fKey;
+      {(isCoach || isAdmin) && (
+        <div className="flex justify-end">
+          <AddAvailabilityEventDialog teamSlug={teamSlug} />
+        </div>
+      )}
+
+      {allItems.map((item) => {
+        const myStatus = getMyStatus(item);
+        const summary = getTeamSummary(item);
+        const isExpanded = expandedFixture === item.key;
 
         return (
-          <div key={`${fixture.date}-${opponent}`} className="bg-card border border-border rounded-xl p-4">
+          <div key={item.key} className="bg-card border border-border rounded-xl p-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
               <div>
-                <p className="font-display text-sm font-bold text-foreground">
-                  {isHome ? "vs" : "@"} {opponent}
-                </p>
+                <div className="flex items-center gap-2">
+                  {item.isCustom && (
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-display tracking-wider uppercase bg-accent text-accent-foreground">
+                      <CalendarPlus className="h-2.5 w-2.5" />Event
+                    </span>
+                  )}
+                  <p className="font-display text-sm font-bold text-foreground">
+                    {item.title}
+                  </p>
+                </div>
                 <div className="flex flex-wrap items-center gap-3 mt-1 text-xs text-muted-foreground">
-                  <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{fixture.date} · {fixture.time}</span>
-                  {fixture.venue && <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{fixture.venue}</span>}
-                  {fixture.venue && (
+                  <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{item.date} · {item.time}</span>
+                  {item.venue && <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{item.venue}</span>}
+                  {item.venue && (
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(fixture.venue)}`, '_system');
+                        window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(item.venue)}`, '_system');
                       }}
                       className="text-[10px] text-primary hover:text-primary/80 flex items-center gap-0.5 transition-colors"
                     >
@@ -171,24 +273,38 @@ export function FixtureAvailability({ teamSlug }: Props) {
                 </div>
               </div>
 
-              {(isCoach || isAdmin) && (
-                <button
-                  onClick={() => setExpandedFixture(isExpanded ? null : fKey)}
-                  className="flex items-center gap-2 text-xs hover:opacity-80 transition-opacity"
-                >
-                  <span className="flex items-center gap-1 text-green-500"><Check className="h-3 w-3" />{summary.available}</span>
-                  <span className="flex items-center gap-1 text-amber-500"><HelpCircle className="h-3 w-3" />{summary.maybe}</span>
-                  <span className="flex items-center gap-1 text-red-500"><X className="h-3 w-3" />{summary.unavailable}</span>
-                  {isExpanded ? <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />}
-                </button>
-              )}
+              <div className="flex items-center gap-2">
+                {item.isCustom && (isCoach || isAdmin) && (
+                  <button
+                    onClick={() => {
+                      if (confirm("Delete this event?")) {
+                        deleteMutation.mutate(item.customEventId!);
+                      }
+                    }}
+                    className="text-muted-foreground hover:text-red-500 transition-colors"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                )}
+                {(isCoach || isAdmin) && (
+                  <button
+                    onClick={() => setExpandedFixture(isExpanded ? null : item.key)}
+                    className="flex items-center gap-2 text-xs hover:opacity-80 transition-opacity"
+                  >
+                    <span className="flex items-center gap-1 text-green-500"><Check className="h-3 w-3" />{summary.available}</span>
+                    <span className="flex items-center gap-1 text-amber-500"><HelpCircle className="h-3 w-3" />{summary.maybe}</span>
+                    <span className="flex items-center gap-1 text-red-500"><X className="h-3 w-3" />{summary.unavailable}</span>
+                    {isExpanded ? <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />}
+                  </button>
+                )}
+              </div>
             </div>
 
             <div className="flex gap-2">
               {statusButtons.map(({ status, icon: Icon, label, activeClass }) => (
                 <button
                   key={status}
-                  onClick={() => mutation.mutate({ fixtureDate: fixture.date, opponent, status })}
+                  onClick={() => mutation.mutate({ fixtureDate: item.date, opponent: item.opponent, status })}
                   disabled={mutation.isPending}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-display tracking-wider border transition-colors ${
                     myStatus === status
@@ -205,7 +321,7 @@ export function FixtureAvailability({ teamSlug }: Props) {
             {isExpanded && (isCoach || isAdmin) && (
               <div className="mt-3 pt-3 border-t border-border grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {(["available", "maybe", "unavailable"] as const).map((status) => {
-                  const names = getRespondents(fixture, status);
+                  const names = getRespondents(item, status);
                   const config = {
                     available: { label: "Available", icon: Check, color: "text-green-500", bg: "bg-green-500/10" },
                     maybe: { label: "Maybe", icon: HelpCircle, color: "text-amber-500", bg: "bg-amber-500/10" },
