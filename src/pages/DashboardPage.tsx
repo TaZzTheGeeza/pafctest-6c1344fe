@@ -62,7 +62,7 @@ const ADMIN_LINKS = [
   { label: "Safeguarding Reports", path: "/admin/safeguarding-reports", icon: Shield, desc: "View & manage safeguarding concerns" },
 ];
 
-type DashboardSection = "overview" | "users" | "requests" | "enquiries" | "messages" | "notifications" | "orders" | "potm" | "report" | "stats" | "manage" | "finances";
+type DashboardSection = "overview" | "users" | "requests" | "enquiries" | "messages" | "notifications" | "orders" | "potm" | "report" | "stats" | "manage" | "finances" | "permissions";
 
 export default function DashboardPage() {
   const { user, isAdmin, isCoach, isTreasurer } = useAuth();
