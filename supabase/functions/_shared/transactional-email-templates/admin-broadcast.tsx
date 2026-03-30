@@ -1,37 +1,51 @@
-export const subject = (data: Record<string, string>) =>
-  data.title || "Club Announcement";
+import * as React from 'npm:react@18.3.1'
+import {
+  Body, Container, Head, Heading, Html, Preview, Text, Section, Hr,
+} from 'npm:@react-email/components@0.0.22'
+import type { TemplateEntry } from './registry.ts'
 
-export const html = (data: Record<string, string>) => `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    body { margin: 0; padding: 0; background: #0a0a0a; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-    .container { max-width: 560px; margin: 0 auto; padding: 40px 24px; }
-    .card { background: #141414; border: 1px solid #262626; border-radius: 12px; padding: 32px 24px; }
-    .badge { display: inline-block; background: rgba(234,179,8,0.15); color: #eab308; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 4px 12px; border-radius: 20px; margin-bottom: 16px; }
-    h1 { color: #ffffff; font-size: 20px; font-weight: 700; margin: 0 0 12px; }
-    .message { color: #a3a3a3; font-size: 14px; line-height: 1.6; margin: 0 0 24px; white-space: pre-line; }
-    .btn { display: inline-block; background: #eab308; color: #0a0a0a; font-size: 13px; font-weight: 700; text-decoration: none; padding: 10px 28px; border-radius: 8px; }
-    .footer { text-align: center; margin-top: 24px; color: #525252; font-size: 11px; }
-    .footer a { color: #737373; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="card">
-      <div class="badge">📢 Club Announcement</div>
-      <h1>${data.title || "Announcement"}</h1>
-      <p class="message">${data.message || ""}</p>
-      <a href="https://pafc.lovable.app/hub" class="btn">Open Hub</a>
-    </div>
-    <div class="footer">
-      <p>PA FC &bull; Sent from the club</p>
-      <p><a href="{{unsubscribe_url}}">Unsubscribe</a></p>
-    </div>
-  </div>
-</body>
-</html>
-`;
+const SITE_NAME = "Peterborough Athletic FC"
+
+interface Props {
+  title?: string
+  message?: string
+}
+
+const AdminBroadcastEmail = ({ title, message }: Props) => (
+  <Html lang="en" dir="ltr">
+    <Head />
+    <Preview>{title || 'Club Announcement'}</Preview>
+    <Body style={main}>
+      <Container style={container}>
+        <Section style={headerSection}>
+          <Heading style={h1}>{SITE_NAME}</Heading>
+        </Section>
+        <Hr style={divider} />
+        <Section style={badgeWrap}>
+          <Text style={badge}>📢 Club Announcement</Text>
+        </Section>
+        <Heading style={h2}>{title || 'Announcement'}</Heading>
+        <Text style={text}>{message || ''}</Text>
+        <Text style={footer}>— The {SITE_NAME} Team</Text>
+      </Container>
+    </Body>
+  </Html>
+)
+
+export const template = {
+  component: AdminBroadcastEmail,
+  subject: (data: Record<string, any>) => data.title || 'Club Announcement',
+  displayName: 'Admin broadcast',
+  previewData: { title: 'Training Cancelled', message: 'Due to the weather, all training sessions this Saturday are cancelled. Stay safe!' },
+} satisfies TemplateEntry
+
+const main = { backgroundColor: '#ffffff', fontFamily: "'Inter', Arial, sans-serif" }
+const container = { padding: '20px 25px', maxWidth: '560px', margin: '0 auto' }
+const headerSection = { textAlign: 'center' as const, padding: '20px 0 10px' }
+const h1 = { fontSize: '20px', fontWeight: '700', color: '#b8860b', fontFamily: "'Oswald', Arial, sans-serif", textTransform: 'uppercase' as const, letterSpacing: '0.05em', margin: '0' }
+const h2 = { fontSize: '18px', fontWeight: '600', color: '#1a1a1a', margin: '10px 0 10px' }
+const divider = { borderColor: '#e5e5e5', margin: '10px 0' }
+const text = { fontSize: '14px', color: '#55575d', lineHeight: '1.6', margin: '0 0 16px', whiteSpace: 'pre-line' as const }
+const badgeWrap = { margin: '10px 0 0' }
+const badge = { fontSize: '11px', fontWeight: '600', color: '#b8860b', backgroundColor: '#fdf6e3', padding: '4px 10px', borderRadius: '4px', display: 'inline-block' as const, margin: '0', textTransform: 'uppercase' as const, letterSpacing: '0.05em' }
+const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
