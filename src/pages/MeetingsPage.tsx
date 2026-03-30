@@ -137,6 +137,22 @@ export default function MeetingsPage() {
       await supabase.from("meeting_invitees").insert(invitees as any);
     }
 
+    // Send notifications (fire-and-forget)
+    const formattedDate = new Date(`${scheduledDate}T${scheduledTime}`).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+    const durationLabel = duration <= 60 ? `${duration} minutes` : `${duration / 60} hours`;
+    notifyMeetingInvitees({
+      meetingId: (newMeeting as any).id,
+      inviteType,
+      userIds: userIdsToInvite,
+      meeting: {
+        title,
+        scheduledDate: formattedDate,
+        scheduledTime,
+        duration: durationLabel,
+        description: description || undefined,
+      },
+    });
+
     setSaving(false);
     toast.success("Meeting scheduled!");
     queryClient.invalidateQueries({ queryKey: ["club-meetings"] });
