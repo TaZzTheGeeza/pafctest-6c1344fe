@@ -9,7 +9,8 @@ import {
   Users, Shield, ShieldCheck, ShieldAlert, UserCog, Trash2,
   Search, ChevronDown, Trophy, Ticket, BarChart3, FileText,
   MessageSquare, Settings, Eye, Plus, Loader2, Crown, Swords, ShoppingBag,
-  Star, LayoutDashboard, Mail, Clock, ExternalLink, Pencil, Check, X as XIcon, Megaphone, CreditCard
+  Star, LayoutDashboard, Mail, Clock, ExternalLink, Pencil, Check, X as XIcon, Megaphone, CreditCard,
+  MoreHorizontal
 } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 import { isUserOnline, formatLastSeen } from "@/hooks/usePresence";
@@ -708,6 +709,7 @@ function UserRow({
   onRemoveRole: (userId: string, role: AppRole) => void;
 }) {
   const [showAddMenu, setShowAddMenu] = useState(false);
+  const [showActionsMenu, setShowActionsMenu] = useState(false);
   const [showTeamAssign, setShowTeamAssign] = useState(false);
   const [assignedTeams, setAssignedTeams] = useState<string[]>([]);
   const [loadingTeams, setLoadingTeams] = useState(false);
@@ -904,103 +906,130 @@ function UserRow({
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
-            {user.roles.length === 0 && (
-              <span className="text-xs text-muted-foreground italic">No roles</span>
-            )}
-            {user.roles.map((role) => {
-              const config = ROLE_CONFIG[role];
-              const Icon = config.icon;
-              return (
-                <span
-                  key={role}
-                  className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-display border ${config.color}`}
-                >
-                  <Icon className="h-3 w-3" />
-                  {config.label}
-                  <button
-                    onClick={() => onRemoveRole(user.id, role)}
-                    className="ml-0.5 hover:text-destructive transition-colors"
-                    title={`Remove ${config.label} role`}
+          <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+            {/* Compact role badges */}
+            <div className="flex flex-wrap items-center gap-1">
+              {user.roles.length === 0 && (
+                <span className="text-xs text-muted-foreground italic">No roles</span>
+              )}
+              {user.roles.map((role) => {
+                const config = ROLE_CONFIG[role];
+                const Icon = config.icon;
+                return (
+                  <span
+                    key={role}
+                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-display border ${config.color}`}
+                    title={config.label}
                   >
-                    <Trash2 className="h-3 w-3" />
-                  </button>
+                    <Icon className="h-3 w-3" />
+                    {config.label}
+                  </span>
+                );
+              })}
+              {isDocUploader && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-display border bg-violet-500/20 text-violet-400 border-violet-500/30">
+                  <FileText className="h-3 w-3" />
+                  Uploader
                 </span>
-              );
-            })}
+              )}
+            </div>
 
-            {availableRoles.length > 0 && (
-              <div className="relative">
-                <button
-                  onClick={() => setShowAddMenu(!showAddMenu)}
-                  className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-display border border-dashed border-border text-muted-foreground hover:border-primary hover:text-primary transition-colors"
-                >
-                  <Plus className="h-3 w-3" /> Add
-                  <ChevronDown className={`h-3 w-3 transition-transform ${showAddMenu ? "rotate-180" : ""}`} />
-                </button>
-                {showAddMenu && (
-                  <div className="absolute right-0 top-full mt-1 bg-card border border-border rounded-lg shadow-xl z-50 py-1 min-w-[140px]">
-                    {availableRoles.map((role) => {
-                      const config = ROLE_CONFIG[role];
-                      const Icon = config.icon;
-                      const isAdding = addingRole === `${user.id}-${role}`;
-                      return (
+            {/* Single actions menu */}
+            <div className="relative">
+              <button
+                onClick={() => setShowActionsMenu(!showActionsMenu)}
+                className="p-1.5 rounded-lg border border-border text-muted-foreground hover:text-primary hover:border-primary/50 transition-colors"
+                title="Manage user"
+              >
+                <MoreHorizontal className="h-4 w-4" />
+              </button>
+              {showActionsMenu && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setShowActionsMenu(false)} />
+                  <div className="absolute right-0 top-full mt-1 bg-card border border-border rounded-lg shadow-xl z-50 py-1 min-w-[180px]">
+                    {/* Add Role submenu */}
+                    {availableRoles.length > 0 && (
+                      <>
+                        <p className="px-3 py-1.5 text-[10px] font-display tracking-wider uppercase text-muted-foreground">Add Role</p>
+                        {availableRoles.map((role) => {
+                          const config = ROLE_CONFIG[role];
+                          const Icon = config.icon;
+                          const isAdding = addingRole === `${user.id}-${role}`;
+                          return (
+                            <button
+                              key={role}
+                              onClick={() => { onAddRole(user.id, role); setShowActionsMenu(false); }}
+                              disabled={isAdding}
+                              className="w-full flex items-center gap-2 px-3 py-1.5 text-xs font-display text-foreground hover:bg-secondary/50 transition-colors"
+                            >
+                              {isAdding ? <Loader2 className="h-3 w-3 animate-spin" /> : <Icon className="h-3 w-3" />}
+                              {config.label}
+                            </button>
+                          );
+                        })}
+                      </>
+                    )}
+
+                    {/* Remove Role submenu */}
+                    {user.roles.length > 0 && (
+                      <>
+                        <div className="border-t border-border my-1" />
+                        <p className="px-3 py-1.5 text-[10px] font-display tracking-wider uppercase text-muted-foreground">Remove Role</p>
+                        {user.roles.map((role) => {
+                          const config = ROLE_CONFIG[role];
+                          const Icon = config.icon;
+                          return (
+                            <button
+                              key={role}
+                              onClick={() => { onRemoveRole(user.id, role); setShowActionsMenu(false); }}
+                              className="w-full flex items-center gap-2 px-3 py-1.5 text-xs font-display text-destructive hover:bg-destructive/10 transition-colors"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                              {config.label}
+                            </button>
+                          );
+                        })}
+                      </>
+                    )}
+
+                    <div className="border-t border-border my-1" />
+
+                    {/* Team actions */}
+                    {isCoachUser && (
+                      <button
+                        onClick={() => { handleTeamToggle(); setShowActionsMenu(false); }}
+                        className="w-full flex items-center gap-2 px-3 py-1.5 text-xs font-display text-foreground hover:bg-secondary/50 transition-colors"
+                      >
+                        <Users className="h-3 w-3 text-amber-400" />
+                        Coach Age Groups
+                      </button>
+                    )}
+                    <button
+                      onClick={() => { handleTeamMembershipToggle(); setShowActionsMenu(false); }}
+                      className="w-full flex items-center gap-2 px-3 py-1.5 text-xs font-display text-foreground hover:bg-secondary/50 transition-colors"
+                    >
+                      <Shield className="h-3 w-3 text-emerald-400" />
+                      Hub Teams
+                    </button>
+
+                    {/* Doc Uploader toggle */}
+                    {isDocUploader !== null && (
+                      <>
+                        <div className="border-t border-border my-1" />
                         <button
-                          key={role}
-                          onClick={() => {
-                            onAddRole(user.id, role);
-                            setShowAddMenu(false);
-                          }}
-                          disabled={isAdding}
-                          className="w-full flex items-center gap-2 px-3 py-2 text-xs font-display text-foreground hover:bg-secondary/50 transition-colors"
+                          onClick={(e) => { e.stopPropagation(); toggleDocUploader(); setShowActionsMenu(false); }}
+                          disabled={togglingDocUploader}
+                          className="w-full flex items-center gap-2 px-3 py-1.5 text-xs font-display text-foreground hover:bg-secondary/50 transition-colors"
                         >
-                          {isAdding ? (
-                            <Loader2 className="h-3 w-3 animate-spin" />
-                          ) : (
-                            <Icon className="h-3 w-3" />
-                          )}
-                          {config.label}
+                          {togglingDocUploader ? <Loader2 className="h-3 w-3 animate-spin" /> : <FileText className="h-3 w-3 text-violet-400" />}
+                          {isDocUploader ? "Remove Doc Uploader" : "Grant Doc Uploader"}
                         </button>
-                      );
-                    })}
+                      </>
+                    )}
                   </div>
-                )}
-              </div>
-            )}
-
-            {isCoachUser && (
-              <button
-                onClick={handleTeamToggle}
-                className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-display border border-amber-500/30 text-amber-400 hover:bg-amber-500/10 transition-colors"
-              >
-                <Users className="h-3 w-3" /> Coach Teams
-                <ChevronDown className={`h-3 w-3 transition-transform ${showTeamAssign ? "rotate-180" : ""}`} />
-              </button>
-            )}
-
-            <button
-              onClick={handleTeamMembershipToggle}
-              className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-display border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 transition-colors"
-            >
-              <Shield className="h-3 w-3" /> Hub Teams
-              <ChevronDown className={`h-3 w-3 transition-transform ${showTeamMembership ? "rotate-180" : ""}`} />
-            </button>
-
-            {/* Doc Uploader Toggle */}
-            {isDocUploader !== null && (
-              <button
-                onClick={(e) => { e.stopPropagation(); toggleDocUploader(); }}
-                disabled={togglingDocUploader}
-                className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-display border transition-colors ${
-                  isDocUploader
-                    ? "bg-violet-500/20 text-violet-400 border-violet-500/30"
-                    : "border-border text-muted-foreground hover:border-violet-500/30 hover:text-violet-400"
-                }`}
-              >
-                {togglingDocUploader ? <Loader2 className="h-3 w-3 animate-spin" /> : <FileText className="h-3 w-3" />}
-                {isDocUploader ? "Doc Uploader ✓" : "Doc Uploader"}
-              </button>
-            )}
+                </>
+              )}
+            </div>
           </div>
         </div>
       </div>
