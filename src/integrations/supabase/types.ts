@@ -1998,15 +1998,7 @@ export type Database = {
           ticket_number: number
         }[]
       }
-      has_role:
-        | {
-            Args: {
-              _role: Database["public"]["Enums"]["app_role"]
-              _user_id: string
-            }
-            Returns: boolean
-          }
-        | { Args: { _role: string; _user_id: string }; Returns: boolean }
+      has_role: { Args: { _role: string; _user_id: string }; Returns: boolean }
       is_team_member: {
         Args: { _team_slug: string; _user_id: string }
         Returns: boolean
