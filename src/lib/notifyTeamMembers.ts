@@ -1,8 +1,8 @@
 import { supabase } from "@/integrations/supabase/client";
 
 /**
- * Sends an in-app notification + email to all members of a team.
- * This is a fire-and-forget helper — errors are logged but don't block the caller.
+ * Sends in-app notification + email + push to all members of a team.
+ * Fire-and-forget — errors are logged but don't block the caller.
  */
 export async function notifyTeamMembers({
   teamSlug,
@@ -39,7 +39,7 @@ export async function notifyTeamMembers({
 
     if (targetMembers.length === 0) return;
 
-    // Insert in-app notifications
+    // 1. Insert in-app notifications
     const notifications = targetMembers.map((m) => ({
       user_id: m.user_id,
       title: notification.title,
@@ -51,9 +51,8 @@ export async function notifyTeamMembers({
 
     await supabase.from("hub_notifications").insert(notifications);
 
-    // Send email notifications (one per member)
+    // 2. Send email notifications (one per member)
     if (email) {
-      // Get emails for all target members
       const userIds = targetMembers.map((m) => m.user_id);
       const { data: profiles } = await supabase
         .from("profiles")
@@ -63,7 +62,6 @@ export async function notifyTeamMembers({
       if (profiles) {
         for (const profile of profiles) {
           if (!profile.email) continue;
-          // Fire-and-forget — don't await each one
           supabase.functions
             .invoke("send-transactional-email", {
               body: {
@@ -77,6 +75,20 @@ export async function notifyTeamMembers({
         }
       }
     }
+
+    // 3. Send push notifications
+    const pushUserIds = targetMembers.map((m) => m.user_id);
+    supabase.functions
+      .invoke("send-push-notification", {
+        body: {
+          userIds: pushUserIds,
+          title: notification.title,
+          message: notification.message,
+          link: notification.link,
+          tag: `${notification.type}-${teamSlug}`,
+        },
+      })
+      .catch((err) => console.error("Push notification failed:", err));
   } catch (err) {
     console.error("notifyTeamMembers error:", err);
   }
