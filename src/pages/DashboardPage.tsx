@@ -274,7 +274,7 @@ export default function DashboardPage() {
     { key: "messages", label: "Messages", icon: MessageSquare },
     { key: "users", label: "Users", icon: Users, adminOnly: true },
     { key: "requests", label: "Requests", icon: UserPlusIcon, adminOnly: true },
-    { key: "enquiries", label: "Enquiries", icon: Mail, adminOnly: true },
+    
     { key: "notifications", label: "Notifications", icon: Megaphone, adminOnly: true },
     { key: "potm", label: "POTM", icon: Star, coachOnly: true },
     { key: "report", label: "Match Report", icon: FileText, coachOnly: true },
