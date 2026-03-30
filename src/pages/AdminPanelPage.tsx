@@ -378,7 +378,7 @@ function UserRow({
   const [showAddMenu, setShowAddMenu] = useState(false);
   const navigate = useNavigate();
   const isCurrentUser = user.id === currentUserId;
-  const availableRoles = (["admin", "coach", "player", "user"] as AppRole[]).filter(
+  const availableRoles = (["admin", "coach", "player", "user", "welfare_officer"] as AppRole[]).filter(
     (r) => !user.roles.includes(r)
   );
 
