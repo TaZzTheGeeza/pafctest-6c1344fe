@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Bell, Mail, Smartphone, Send, Loader2, Users, Megaphone } from "lucide-react";
+import { Bell, Mail, Smartphone, Send, Loader2, Users, Megaphone, User } from "lucide-react";
 
 const TEAM_SLUGS = [
   "u7", "u8-black", "u8-gold", "u9", "u10",
@@ -38,8 +38,11 @@ export function AdminNotificationComposer() {
   const { user } = useAuth();
   const [title, setTitle] = useState("");
   const [message, setMessage] = useState("");
-  const [audience, setAudience] = useState<"all" | "team">("all");
+  const [audience, setAudience] = useState<"all" | "team" | "member">("all");
   const [selectedTeam, setSelectedTeam] = useState("");
+  const [selectedMemberId, setSelectedMemberId] = useState("");
+  const [memberSearch, setMemberSearch] = useState("");
+  const [memberResults, setMemberResults] = useState<{ id: string; full_name: string | null; email: string | null }[]>([]);
   const [sendInApp, setSendInApp] = useState(true);
   const [sendEmail, setSendEmail] = useState(false);
   const [sendPush, setSendPush] = useState(false);
@@ -84,13 +87,19 @@ export function AdminNotificationComposer() {
       toast.error("Select a team");
       return;
     }
+    if (audience === "member" && !selectedMemberId) {
+      toast.error("Select a member");
+      return;
+    }
 
     setSending(true);
     try {
       // Get target users
       let targetUserIds: string[] = [];
 
-      if (audience === "team") {
+      if (audience === "member") {
+        targetUserIds = [selectedMemberId];
+      } else if (audience === "team") {
         const { data: members } = await supabase
           .from("team_members")
           .select("user_id")
@@ -207,7 +216,7 @@ export function AdminNotificationComposer() {
               <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground mb-1.5 block">
                 Audience
               </Label>
-              <Select value={audience} onValueChange={(v) => setAudience(v as "all" | "team")}>
+              <Select value={audience} onValueChange={(v) => { setAudience(v as "all" | "team" | "member"); setSelectedMemberId(""); setMemberSearch(""); setMemberResults([]); }}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -220,6 +229,11 @@ export function AdminNotificationComposer() {
                   <SelectItem value="team">
                     <span className="flex items-center gap-2">
                       <Users className="h-3.5 w-3.5" /> Specific Team
+                    </span>
+                  </SelectItem>
+                  <SelectItem value="member">
+                    <span className="flex items-center gap-2">
+                      <User className="h-3.5 w-3.5" /> Specific Member
                     </span>
                   </SelectItem>
                 </SelectContent>
@@ -243,6 +257,55 @@ export function AdminNotificationComposer() {
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+            )}
+
+            {audience === "member" && (
+              <div className="relative">
+                <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground mb-1.5 block">
+                  Member
+                </Label>
+                {selectedMemberId ? (
+                  <div className="flex items-center gap-2 bg-secondary/50 border border-border rounded-lg px-3 py-2">
+                    <User className="h-4 w-4 text-primary" />
+                    <span className="text-sm flex-1 truncate">
+                      {memberResults.find(m => m.id === selectedMemberId)?.full_name || memberResults.find(m => m.id === selectedMemberId)?.email || "Selected member"}
+                    </span>
+                    <button onClick={() => { setSelectedMemberId(""); setMemberSearch(""); }} className="text-muted-foreground hover:text-foreground text-xs">✕</button>
+                  </div>
+                ) : (
+                  <>
+                    <Input
+                      value={memberSearch}
+                      onChange={async (e) => {
+                        const q = e.target.value;
+                        setMemberSearch(q);
+                        if (q.length < 2) { setMemberResults([]); return; }
+                        const { data } = await supabase
+                          .from("profiles")
+                          .select("id, full_name, email")
+                          .or(`full_name.ilike.%${q}%,email.ilike.%${q}%`)
+                          .limit(8);
+                        setMemberResults(data ?? []);
+                      }}
+                      placeholder="Search by name or email..."
+                    />
+                    {memberResults.length > 0 && (
+                      <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-xl z-50 max-h-48 overflow-y-auto">
+                        {memberResults.map((m) => (
+                          <button
+                            key={m.id}
+                            onClick={() => { setSelectedMemberId(m.id); setMemberSearch(""); }}
+                            className="w-full text-left px-3 py-2 text-sm hover:bg-secondary/50 transition-colors flex flex-col"
+                          >
+                            <span className="font-display text-foreground">{m.full_name || "No name"}</span>
+                            <span className="text-[10px] text-muted-foreground">{m.email}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
             )}
           </div>
