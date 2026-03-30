@@ -13,7 +13,7 @@ import {
 import type { Database } from "@/integrations/supabase/types";
 import { DateInput } from "@/components/ui/date-input";
 
-type AppRole = Database["public"]["Enums"]["app_role"];
+type AppRole = string;
 
 const ROLE_CONFIG: Record<AppRole, { label: string; color: string }> = {
   admin: { label: "Admin", color: "bg-red-500/20 text-red-400 border-red-500/30" },

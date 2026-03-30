@@ -28,7 +28,7 @@ import { OrdersTab } from "@/components/dashboard/OrdersTab";
 import { TreasurerPaymentsBoard } from "@/components/dashboard/TreasurerPaymentsBoard";
 import { RolePermissionManager } from "@/components/dashboard/RolePermissionManager";
 
-type AppRole = Database["public"]["Enums"]["app_role"];
+type AppRole = string;
 
 const ALL_AGE_GROUPS = [
   "U7", "U8 Black", "U8 Gold", "U9", "U10",
