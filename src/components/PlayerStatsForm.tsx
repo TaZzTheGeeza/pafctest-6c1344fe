@@ -174,49 +174,57 @@ export function PlayerStatsForm({ allowedAgeGroups }: { allowedAgeGroups?: strin
                       value={player.first_name}
                       onChange={(e) => updatePlayer(i, "first_name", e.target.value)}
                       placeholder="First name"
-                      className="bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground placeholder:text-muted-foreground col-span-2 md:col-span-1"
+                      disabled={!canEdit}
+                      className="bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground placeholder:text-muted-foreground col-span-2 md:col-span-1 disabled:opacity-60"
                     />
                     <input
                       type="number"
                       value={player.shirt_number ?? ""}
                       onChange={(e) => updatePlayer(i, "shirt_number", e.target.value ? parseInt(e.target.value) : null)}
                       placeholder="#"
-                      className="bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground text-center placeholder:text-muted-foreground"
+                      disabled={!canEdit}
+                      className="bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground text-center placeholder:text-muted-foreground disabled:opacity-60"
                     />
                     <input
                       type="number"
                       min="0"
                       value={player.goals}
                       onChange={(e) => updatePlayer(i, "goals", parseInt(e.target.value) || 0)}
-                      className="bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground text-center"
+                      disabled={!canEdit}
+                      className="bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground text-center disabled:opacity-60"
                     />
                     <input
                       type="number"
                       min="0"
                       value={player.assists}
                       onChange={(e) => updatePlayer(i, "assists", parseInt(e.target.value) || 0)}
-                      className="bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground text-center"
+                      disabled={!canEdit}
+                      className="bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground text-center disabled:opacity-60"
                     />
                     <input
                       type="number"
                       min="0"
                       value={player.appearances}
                       onChange={(e) => updatePlayer(i, "appearances", parseInt(e.target.value) || 0)}
-                      className="bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground text-center"
+                      disabled={!canEdit}
+                      className="bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground text-center disabled:opacity-60"
                     />
                     <input
                       type="number"
                       min="0"
                       value={player.potm_awards}
                       onChange={(e) => updatePlayer(i, "potm_awards", parseInt(e.target.value) || 0)}
-                      className="bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground text-center"
+                      disabled={!canEdit}
+                      className="bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground text-center disabled:opacity-60"
                     />
-                    <button
-                      onClick={() => removePlayer(i)}
-                      className="text-destructive hover:text-destructive/80 transition-colors flex items-center justify-center"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+                    {canEdit && (
+                      <button
+                        onClick={() => removePlayer(i)}
+                        className="text-destructive hover:text-destructive/80 transition-colors flex items-center justify-center"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    )}
                   </div>
                 ))}
               </div>
