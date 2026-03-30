@@ -24,4 +24,5 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'team-selection-published': teamSelectionPublished,
   'admin-broadcast': adminBroadcast,
   'shop-order-notification': shopOrderNotification,
+  'meeting-invite': meetingInvite,
 }
