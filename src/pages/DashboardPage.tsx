@@ -26,6 +26,7 @@ import { TeamRequestsManager } from "@/components/dashboard/TeamRequestsManager"
 import { AdminNotificationComposer } from "@/components/dashboard/AdminNotificationComposer";
 import { OrdersTab } from "@/components/dashboard/OrdersTab";
 import { TreasurerPaymentsBoard } from "@/components/dashboard/TreasurerPaymentsBoard";
+import { RolePermissionManager } from "@/components/dashboard/RolePermissionManager";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
 
@@ -61,7 +62,7 @@ const ADMIN_LINKS = [
   { label: "Safeguarding Reports", path: "/admin/safeguarding-reports", icon: Shield, desc: "View & manage safeguarding concerns" },
 ];
 
-type DashboardSection = "overview" | "users" | "requests" | "enquiries" | "messages" | "notifications" | "orders" | "potm" | "report" | "stats" | "manage" | "finances";
+type DashboardSection = "overview" | "users" | "requests" | "enquiries" | "messages" | "notifications" | "orders" | "potm" | "report" | "stats" | "manage" | "finances" | "permissions";
 
 export default function DashboardPage() {
   const { user, isAdmin, isCoach, isTreasurer } = useAuth();
@@ -83,7 +84,7 @@ export default function DashboardPage() {
   // Handle section from URL params (e.g. /dashboard?section=messages)
   useEffect(() => {
     const section = searchParams.get("section");
-    if (section && ["overview", "users", "requests", "enquiries", "messages", "notifications", "orders", "potm", "report", "stats", "manage", "finances"].includes(section)) {
+    if (section && ["overview", "users", "requests", "enquiries", "messages", "notifications", "orders", "potm", "report", "stats", "manage", "finances", "permissions"].includes(section)) {
       setActiveSection(section as DashboardSection);
     }
   }, [searchParams]);
@@ -283,6 +284,7 @@ export default function DashboardPage() {
     { key: "notifications", label: "Notifications", icon: Megaphone, adminOnly: true },
     { key: "orders", label: "Orders", icon: ShoppingBag, adminOnly: true },
     { key: "finances", label: "Finances", icon: CreditCard, treasurerOnly: true },
+    { key: "permissions", label: "Permissions", icon: Shield, adminOnly: true },
     { key: "potm", label: "POTM", icon: Star, coachOnly: true },
     { key: "report", label: "Match Report", icon: FileText, coachOnly: true },
     { key: "stats", label: "Player Stats", icon: BarChart3, coachOnly: true },
@@ -597,6 +599,10 @@ export default function DashboardPage() {
 
           {activeSection === "finances" && (isTreasurer || isAdmin) && (
             <TreasurerPaymentsBoard />
+          )}
+
+          {activeSection === "permissions" && isAdmin && (
+            <RolePermissionManager />
           )}
         </div>
       </main>
