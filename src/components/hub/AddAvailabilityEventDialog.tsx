@@ -5,6 +5,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Plus, X } from "lucide-react";
 import { toast } from "sonner";
 import { faTeamConfigs } from "@/lib/faFixtureConfig";
+import { notifyTeamMembers } from "@/lib/notifyTeamMembers";
 
 interface Props {
   teamSlug: string;
@@ -54,6 +55,24 @@ export function AddAvailabilityEventDialog({ teamSlug }: Props) {
       console.error(error);
       return;
     }
+
+    // Notify team members
+    const friendlyDate = new Date(eventDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+    notifyTeamMembers({
+      teamSlug: selectedTeam,
+      excludeUserId: user.id,
+      notification: {
+        title: "New Availability Event",
+        message: `${title} — ${friendlyDate}`,
+        type: "event",
+        link: "/hub?tab=availability",
+      },
+      email: {
+        templateName: "availability-event-added",
+        templateData: { eventTitle: title, eventDate: friendlyDate, eventTime, venue: venue || undefined, teamName: selectedTeam },
+        idempotencyPrefix: `avail-event-${selectedTeam}-${formattedDate}-${Date.now()}`,
+      },
+    });
 
     toast.success("Event added to availability");
     queryClient.invalidateQueries({ queryKey: ["hub-availability-events"] });

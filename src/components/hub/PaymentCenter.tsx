@@ -6,6 +6,7 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 import { useSearchParams } from "react-router-dom";
 import { DateInput } from "@/components/ui/date-input";
+import { notifyTeamMembers } from "@/lib/notifyTeamMembers";
 
 interface PaymentRequest {
   id: string;
@@ -124,11 +125,32 @@ export function PaymentCenter({ teamSlug }: { teamSlug: string }) {
     e.preventDefault();
     const amountCents = Math.round(parseFloat(form.amount) * 100);
     if (!form.title || isNaN(amountCents) || amountCents <= 0) { toast.error("Please fill in all fields"); return; }
+    const id = crypto.randomUUID();
     const { error } = await supabase.from("hub_payment_requests").insert({
-      title: form.title, description: form.description || null, amount_cents: amountCents,
+      id, title: form.title, description: form.description || null, amount_cents: amountCents,
       due_date: form.due_date || null, created_by: user?.id, team_slug: teamSlug,
     });
     if (error) { toast.error("Failed to create request"); return; }
+
+    // Notify team members
+    const amountStr = (amountCents / 100).toFixed(2);
+    const dueStr = form.due_date ? new Date(form.due_date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : undefined;
+    notifyTeamMembers({
+      teamSlug,
+      excludeUserId: user?.id,
+      notification: {
+        title: "New Payment Request",
+        message: `${form.title} — £${amountStr}`,
+        type: "payment",
+        link: "/hub?tab=payments",
+      },
+      email: {
+        templateName: "payment-request-created",
+        templateData: { title: form.title, amount: amountStr, dueDate: dueStr, teamName: teamSlug },
+        idempotencyPrefix: `payment-req-${id}`,
+      },
+    });
+
     setForm({ title: "", description: "", amount: "", due_date: "" });
     setShowCreate(false);
     loadRequests();
