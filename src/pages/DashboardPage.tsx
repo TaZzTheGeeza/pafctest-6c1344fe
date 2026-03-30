@@ -273,7 +273,7 @@ export default function DashboardPage() {
     players: users.filter((u) => u.roles.includes("player")).length,
   };
 
-  const sectionItems: { key: DashboardSection; label: string; icon: any; adminOnly?: boolean; coachOnly?: boolean }[] = [
+  const sectionItems: { key: DashboardSection; label: string; icon: any; adminOnly?: boolean; coachOnly?: boolean; treasurerOnly?: boolean }[] = [
     { key: "overview", label: "Overview", icon: LayoutDashboard },
     { key: "messages", label: "Messages", icon: MessageSquare },
     { key: "users", label: "Users", icon: Users, adminOnly: true },
@@ -281,6 +281,7 @@ export default function DashboardPage() {
     
     { key: "notifications", label: "Notifications", icon: Megaphone, adminOnly: true },
     { key: "orders", label: "Orders", icon: ShoppingBag, adminOnly: true },
+    { key: "finances", label: "Finances", icon: CreditCard, treasurerOnly: true },
     { key: "potm", label: "POTM", icon: Star, coachOnly: true },
     { key: "report", label: "Match Report", icon: FileText, coachOnly: true },
     { key: "stats", label: "Player Stats", icon: BarChart3, coachOnly: true },
@@ -290,6 +291,7 @@ export default function DashboardPage() {
   const visibleSections = sectionItems.filter((s) => {
     if (s.adminOnly && !isAdmin) return false;
     if (s.coachOnly && !showCoachTools) return false;
+    if (s.treasurerOnly && !isTreasurer && !isAdmin) return false;
     return true;
   });
 
