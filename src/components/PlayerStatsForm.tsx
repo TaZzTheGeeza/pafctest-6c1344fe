@@ -24,6 +24,7 @@ interface PlayerStat {
 export function PlayerStatsForm({ allowedAgeGroups }: { allowedAgeGroups?: string[] }) {
   const visibleGroups = allowedAgeGroups && allowedAgeGroups.length > 0 ? allowedAgeGroups : ageGroups;
   const [selectedGroup, setSelectedGroup] = useState(visibleGroups.length === 1 ? visibleGroups[0] : "");
+  const canEdit = !allowedAgeGroups || allowedAgeGroups.length === 0 || allowedAgeGroups.includes(selectedGroup);
   const [players, setPlayers] = useState<PlayerStat[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -173,71 +174,89 @@ export function PlayerStatsForm({ allowedAgeGroups }: { allowedAgeGroups?: strin
                       value={player.first_name}
                       onChange={(e) => updatePlayer(i, "first_name", e.target.value)}
                       placeholder="First name"
-                      className="bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground placeholder:text-muted-foreground col-span-2 md:col-span-1"
+                      disabled={!canEdit}
+                      className="bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground placeholder:text-muted-foreground col-span-2 md:col-span-1 disabled:opacity-60"
                     />
                     <input
                       type="number"
                       value={player.shirt_number ?? ""}
                       onChange={(e) => updatePlayer(i, "shirt_number", e.target.value ? parseInt(e.target.value) : null)}
                       placeholder="#"
-                      className="bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground text-center placeholder:text-muted-foreground"
+                      disabled={!canEdit}
+                      className="bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground text-center placeholder:text-muted-foreground disabled:opacity-60"
                     />
                     <input
                       type="number"
                       min="0"
                       value={player.goals}
                       onChange={(e) => updatePlayer(i, "goals", parseInt(e.target.value) || 0)}
-                      className="bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground text-center"
+                      disabled={!canEdit}
+                      className="bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground text-center disabled:opacity-60"
                     />
                     <input
                       type="number"
                       min="0"
                       value={player.assists}
                       onChange={(e) => updatePlayer(i, "assists", parseInt(e.target.value) || 0)}
-                      className="bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground text-center"
+                      disabled={!canEdit}
+                      className="bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground text-center disabled:opacity-60"
                     />
                     <input
                       type="number"
                       min="0"
                       value={player.appearances}
                       onChange={(e) => updatePlayer(i, "appearances", parseInt(e.target.value) || 0)}
-                      className="bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground text-center"
+                      disabled={!canEdit}
+                      className="bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground text-center disabled:opacity-60"
                     />
                     <input
                       type="number"
                       min="0"
                       value={player.potm_awards}
                       onChange={(e) => updatePlayer(i, "potm_awards", parseInt(e.target.value) || 0)}
-                      className="bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground text-center"
+                      disabled={!canEdit}
+                      className="bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground text-center disabled:opacity-60"
                     />
-                    <button
-                      onClick={() => removePlayer(i)}
-                      className="text-destructive hover:text-destructive/80 transition-colors flex items-center justify-center"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+                    {canEdit && (
+                      <button
+                        onClick={() => removePlayer(i)}
+                        className="text-destructive hover:text-destructive/80 transition-colors flex items-center justify-center"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    )}
                   </div>
                 ))}
               </div>
 
-              <div className="flex items-center gap-3 pt-2">
-                <button
-                  onClick={addPlayer}
-                  className="flex items-center gap-2 text-sm font-display tracking-wider text-primary hover:text-gold-light transition-colors"
-                >
-                  <Plus className="h-4 w-4" />
-                  Add Player
-                </button>
-              </div>
+              {canEdit && (
+                <>
+                  <div className="flex items-center gap-3 pt-2">
+                    <button
+                      onClick={addPlayer}
+                      className="flex items-center gap-2 text-sm font-display tracking-wider text-primary hover:text-gold-light transition-colors"
+                    >
+                      <Plus className="h-4 w-4" />
+                      Add Player
+                    </button>
+                  </div>
 
-              <button
-                onClick={saveAll}
-                disabled={saving || players.length === 0}
-                className="w-full bg-primary text-primary-foreground font-display tracking-wider py-3 rounded-lg hover:bg-gold-light transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-              >
-                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                {saving ? "Saving..." : "Save All Stats"}
-              </button>
+                  <button
+                    onClick={saveAll}
+                    disabled={saving || players.length === 0}
+                    className="w-full bg-primary text-primary-foreground font-display tracking-wider py-3 rounded-lg hover:bg-gold-light transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                    {saving ? "Saving..." : "Save All Stats"}
+                  </button>
+                </>
+              )}
+
+              {!canEdit && selectedGroup && (
+                <p className="text-xs text-muted-foreground text-center pt-2">
+                  You can only view stats for this age group. Editing is restricted to assigned coaches.
+                </p>
+              )}
             </>
           )}
         </>
