@@ -101,7 +101,7 @@ function AppContent() {
         <Route path="/potm-demo" element={<POTMDemoPage />} />
         <Route path="/hub" element={<HubPage />} />
         <Route path="/install" element={<InstallPage />} />
-        <Route path="/dashboard" element={<RoleGate requiredRole="treasurer"><DashboardPage /></RoleGate>} />
+        <Route path="/dashboard" element={<RoleGate requiredRole="coach"><DashboardPage /></RoleGate>} />
         <Route path="/admin" element={<Navigate to="/dashboard" replace />} />
         <Route path="/admin/player/:userId" element={<RoleGate requiredRole="admin"><AdminPlayerProfilePage /></RoleGate>} />
         <Route path="/admin/bulk-documents" element={<RoleGate requiredRole="admin"><BulkDocumentUploadPage /></RoleGate>} />
