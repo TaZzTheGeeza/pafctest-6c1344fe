@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 
-type AppRole = Database["public"]["Enums"]["app_role"];
+type AppRole = string;
 
 interface UserWithRoles {
   id: string;
