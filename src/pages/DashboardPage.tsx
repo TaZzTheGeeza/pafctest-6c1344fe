@@ -583,6 +583,10 @@ export default function DashboardPage() {
           {activeSection === "notifications" && isAdmin && (
             <AdminNotificationComposer />
           )}
+
+          {activeSection === "orders" && isAdmin && (
+            <OrdersTab />
+          )}
         </div>
       </main>
       <Footer />
