@@ -17,21 +17,21 @@ import {
 import { Bell, Mail, Smartphone, Send, Loader2, Users, Megaphone, User } from "lucide-react";
 
 const TEAM_SLUGS = [
-  "u7", "u8-black", "u8-gold", "u9", "u10",
-  "u11-black", "u11-gold", "u13-black", "u13-gold", "u14",
+  "u7s", "u8s-black", "u8s-gold", "u9s", "u10s",
+  "u11s-black", "u11s-gold", "u13s-black", "u13s-gold", "u14s",
 ];
 
 const TEAM_LABELS: Record<string, string> = {
-  "u7": "U7",
-  "u8-black": "U8 Black",
-  "u8-gold": "U8 Gold",
-  "u9": "U9",
-  "u10": "U10",
-  "u11-black": "U11 Black",
-  "u11-gold": "U11 Gold",
-  "u13-black": "U13 Black",
-  "u13-gold": "U13 Gold",
-  "u14": "U14",
+  "u7s": "U7",
+  "u8s-black": "U8 Black",
+  "u8s-gold": "U8 Gold",
+  "u9s": "U9",
+  "u10s": "U10",
+  "u11s-black": "U11 Black",
+  "u11s-gold": "U11 Gold",
+  "u13s-black": "U13 Black",
+  "u13s-gold": "U13 Gold",
+  "u14s": "U14",
 };
 
 export function AdminNotificationComposer() {
