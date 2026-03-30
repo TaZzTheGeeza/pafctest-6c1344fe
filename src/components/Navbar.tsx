@@ -298,7 +298,7 @@ export function Navbar() {
                 <ShoppingBag className="h-4 w-4" /> Shop
               </Link>
             </div>
-            {(isAdmin || isCoach) && (
+            {(isAdmin || isCoach || isTreasurer) && (
               <Link to="/dashboard" onClick={() => setIsOpen(false)} className="flex items-center justify-center gap-2 w-full font-display text-sm tracking-wider py-2.5 rounded-md border border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground transition-all mt-2">
                 <Settings className="h-4 w-4" /> Dashboard
               </Link>
