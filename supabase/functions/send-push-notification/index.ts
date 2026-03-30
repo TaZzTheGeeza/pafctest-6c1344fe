@@ -26,7 +26,7 @@ Deno.serve(async (req) => {
     )
   }
 
-  const vapidPublicKey = 'BC5n9msP2WpnF7q8in_ZZhXQgXvrbiArAeZr4azE2hzhEF7bSWesvqUEnFzmrfWdxpF3fMnCy5yDz8yUhPHOv2c'
+  const vapidPublicKey = 'BGatX1ncLiIAqB7UNwzF0wuyVxdcZIDCIWEnbFyOJVnSt3Jv82LD7TQc_iAk_7oKqH_A1ljCe7R9Uj-uYNu2d5A'
 
   webpush.setVapidDetails(
     'mailto:noreply@www.pa-fc.uk',
