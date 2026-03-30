@@ -118,8 +118,7 @@ export function AdminNotificationComposer() {
         targetUserIds = unique;
       }
 
-      // Exclude the sender
-      targetUserIds = targetUserIds.filter((id) => id !== user?.id);
+      // No longer exclude the sender – admins may want to test on themselves
 
       if (targetUserIds.length === 0) {
         toast.error("No members to notify");
