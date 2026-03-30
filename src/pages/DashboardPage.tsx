@@ -342,6 +342,38 @@ export default function DashboardPage() {
               </button>
             ))}
 
+            {/* User Manager Dropdown */}
+            {userSections.length > 0 && (
+              <div className="relative group">
+                <button
+                  className={`flex items-center gap-2 font-display text-xs tracking-wider py-2.5 px-4 rounded-lg border transition-all whitespace-nowrap ${
+                    activeInUsers
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "border-border text-muted-foreground hover:text-foreground hover:border-primary/50"
+                  }`}
+                >
+                  <UserCog className="h-3.5 w-3.5" />
+                  {activeInUsers ? userSections.find((s) => s.key === activeSection)?.label : "User Manager"}
+                  <ChevronDown className="h-3 w-3" />
+                </button>
+                <div className="absolute top-full left-0 mt-1 bg-card border border-border rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 min-w-[180px]">
+                  {userSections.map((s) => (
+                    <button
+                      key={s.key}
+                      onClick={() => setActiveSection(s.key)}
+                      className={`flex items-center gap-2 w-full text-left px-4 py-2.5 text-xs font-display tracking-wider transition-colors first:rounded-t-lg last:rounded-b-lg ${
+                        activeSection === s.key
+                          ? "bg-primary/10 text-primary"
+                          : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                      }`}
+                    >
+                      <s.icon className="h-3.5 w-3.5" />
+                      {s.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
             {/* Coach Tools Dropdown */}
             {coachSections.length > 0 && (
               <div className="relative group">
