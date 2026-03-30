@@ -24,6 +24,7 @@ import { MatchReportForm } from "@/pages/CoachPanelPage";
 import { Upload, CheckCircle, AlertTriangle, UserPlus as UserPlusIcon } from "lucide-react";
 import { TeamRequestsManager } from "@/components/dashboard/TeamRequestsManager";
 import { AdminNotificationComposer } from "@/components/dashboard/AdminNotificationComposer";
+import { OrdersTab } from "@/components/dashboard/OrdersTab";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
 
@@ -57,7 +58,7 @@ const ADMIN_LINKS = [
   { label: "Safeguarding Reports", path: "/admin/safeguarding-reports", icon: Shield, desc: "View & manage safeguarding concerns" },
 ];
 
-type DashboardSection = "overview" | "users" | "requests" | "enquiries" | "messages" | "notifications" | "potm" | "report" | "stats" | "manage";
+type DashboardSection = "overview" | "users" | "requests" | "enquiries" | "messages" | "notifications" | "orders" | "potm" | "report" | "stats" | "manage";
 
 export default function DashboardPage() {
   const { user, isAdmin, isCoach } = useAuth();
@@ -79,7 +80,7 @@ export default function DashboardPage() {
   // Handle section from URL params (e.g. /dashboard?section=messages)
   useEffect(() => {
     const section = searchParams.get("section");
-    if (section && ["overview", "users", "requests", "enquiries", "messages", "notifications", "potm", "report", "stats", "manage"].includes(section)) {
+    if (section && ["overview", "users", "requests", "enquiries", "messages", "notifications", "orders", "potm", "report", "stats", "manage"].includes(section)) {
       setActiveSection(section as DashboardSection);
     }
   }, [searchParams]);
@@ -276,6 +277,7 @@ export default function DashboardPage() {
     { key: "requests", label: "Requests", icon: UserPlusIcon, adminOnly: true },
     
     { key: "notifications", label: "Notifications", icon: Megaphone, adminOnly: true },
+    { key: "orders", label: "Orders", icon: ShoppingBag, adminOnly: true },
     { key: "potm", label: "POTM", icon: Star, coachOnly: true },
     { key: "report", label: "Match Report", icon: FileText, coachOnly: true },
     { key: "stats", label: "Player Stats", icon: BarChart3, coachOnly: true },
