@@ -119,6 +119,24 @@ export function TeamAccessRequest() {
         </div>
       )}
 
+      {/* Current memberships */}
+      {hasTeams && (
+        <div className="bg-card border border-border rounded-xl p-5">
+          <h3 className="font-display text-sm font-bold text-foreground mb-3">Current Memberships</h3>
+          <div className="space-y-2">
+            {myMemberships.map(tm => {
+              const teamLabel = TEAMS.find(t => t.slug === tm.team_slug)?.label || tm.team_slug;
+              return (
+                <div key={tm.team_slug} className="flex items-center justify-between bg-secondary/50 rounded-lg px-3 py-2.5">
+                  <span className="text-sm font-display text-foreground">{teamLabel}</span>
+                  <span className="px-2.5 py-1 rounded-full text-[10px] font-display bg-primary/10 text-primary border border-primary/20 capitalize">{tm.role}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Request Form */}
       <div className="bg-card border border-border rounded-xl p-5 space-y-4">
         <h3 className="font-display text-sm font-bold text-foreground flex items-center gap-2">
