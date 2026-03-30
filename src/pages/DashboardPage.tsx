@@ -373,6 +373,7 @@ export default function DashboardPage() {
                   ))}
                 </div>
               </div>
+            )}
 
             {/* Coach Tools Dropdown */}
             {coachSections.length > 0 && (
