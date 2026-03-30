@@ -39,8 +39,8 @@ export function AdminNotificationComposer() {
   const [title, setTitle] = useState("");
   const [message, setMessage] = useState("");
   const [audience, setAudience] = useState<"all" | "team" | "member">("all");
-  const [selectedTeam, setSelectedTeam] = useState("");
-  const [selectedMemberId, setSelectedMemberId] = useState("");
+  const [selectedTeams, setSelectedTeams] = useState<string[]>([]);
+  const [selectedMembers, setSelectedMembers] = useState<{ id: string; full_name: string | null; email: string | null }[]>([]);
   const [memberSearch, setMemberSearch] = useState("");
   const [memberResults, setMemberResults] = useState<{ id: string; full_name: string | null; email: string | null }[]>([]);
   const [sendInApp, setSendInApp] = useState(true);
@@ -83,12 +83,12 @@ export function AdminNotificationComposer() {
       toast.error("Select at least one delivery channel");
       return;
     }
-    if (audience === "team" && !selectedTeam) {
-      toast.error("Select a team");
+    if (audience === "team" && selectedTeams.length === 0) {
+      toast.error("Select at least one team");
       return;
     }
-    if (audience === "member" && !selectedMemberId) {
-      toast.error("Select a member");
+    if (audience === "member" && selectedMembers.length === 0) {
+      toast.error("Select at least one member");
       return;
     }
 
@@ -98,13 +98,17 @@ export function AdminNotificationComposer() {
       let targetUserIds: string[] = [];
 
       if (audience === "member") {
-        targetUserIds = [selectedMemberId];
+        targetUserIds = selectedMembers.map((m) => m.id);
       } else if (audience === "team") {
-        const { data: members } = await supabase
-          .from("team_members")
-          .select("user_id")
-          .eq("team_slug", selectedTeam);
-        targetUserIds = (members ?? []).map((m) => m.user_id);
+        const allMembers: string[] = [];
+        for (const slug of selectedTeams) {
+          const { data: members } = await supabase
+            .from("team_members")
+            .select("user_id")
+            .eq("team_slug", slug);
+          if (members) allMembers.push(...members.map((m) => m.user_id));
+        }
+        targetUserIds = [...new Set(allMembers)];
       } else {
         // All players: get all unique user_ids from team_members
         const { data: members } = await supabase
@@ -130,7 +134,7 @@ export function AdminNotificationComposer() {
           title: title.trim(),
           message: message.trim(),
           type: "admin_broadcast",
-          team_slug: audience === "team" ? selectedTeam : null,
+          team_slug: audience === "team" && selectedTeams.length === 1 ? selectedTeams[0] : null,
         }));
         const { error } = await supabase.from("hub_notifications").insert(notifications);
         if (error) console.error("In-app notification insert error:", error);
@@ -216,7 +220,7 @@ export function AdminNotificationComposer() {
               <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground mb-1.5 block">
                 Audience
               </Label>
-              <Select value={audience} onValueChange={(v) => { setAudience(v as "all" | "team" | "member"); setSelectedMemberId(""); setMemberSearch(""); setMemberResults([]); }}>
+              <Select value={audience} onValueChange={(v) => { setAudience(v as "all" | "team" | "member"); setSelectedMembers([]); setMemberSearch(""); setMemberResults([]); setSelectedTeams([]); }}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -241,70 +245,74 @@ export function AdminNotificationComposer() {
             </div>
 
             {audience === "team" && (
-              <div>
+              <div className="sm:col-span-2">
                 <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground mb-1.5 block">
-                  Team
+                  Teams
                 </Label>
-                <Select value={selectedTeam} onValueChange={setSelectedTeam}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select team..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {TEAM_SLUGS.map((slug) => (
-                      <SelectItem key={slug} value={slug}>
+                <div className="flex flex-wrap gap-2">
+                  {TEAM_SLUGS.map((slug) => {
+                    const isSelected = selectedTeams.includes(slug);
+                    return (
+                      <button
+                        key={slug}
+                        type="button"
+                        onClick={() => setSelectedTeams((prev) => isSelected ? prev.filter((s) => s !== slug) : [...prev, slug])}
+                        className={`px-3 py-1.5 rounded-full text-xs font-display border transition-colors ${isSelected ? "bg-primary text-primary-foreground border-primary" : "bg-secondary/50 text-muted-foreground border-border hover:border-primary/50"}`}
+                      >
                         {TEAM_LABELS[slug] || slug}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             )}
 
             {audience === "member" && (
-              <div className="relative">
+              <div className="relative sm:col-span-2">
                 <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground mb-1.5 block">
-                  Member
+                  Members
                 </Label>
-                {selectedMemberId ? (
-                  <div className="flex items-center gap-2 bg-secondary/50 border border-border rounded-lg px-3 py-2">
-                    <User className="h-4 w-4 text-primary" />
-                    <span className="text-sm flex-1 truncate">
-                      {memberResults.find(m => m.id === selectedMemberId)?.full_name || memberResults.find(m => m.id === selectedMemberId)?.email || "Selected member"}
-                    </span>
-                    <button onClick={() => { setSelectedMemberId(""); setMemberSearch(""); }} className="text-muted-foreground hover:text-foreground text-xs">✕</button>
+                {selectedMembers.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mb-2">
+                    {selectedMembers.map((m) => (
+                      <span key={m.id} className="inline-flex items-center gap-1 bg-primary/10 text-primary text-xs px-2 py-1 rounded-full">
+                        <User className="h-3 w-3" />
+                        {m.full_name || m.email || "Member"}
+                        <button onClick={() => setSelectedMembers((prev) => prev.filter((p) => p.id !== m.id))} className="hover:text-foreground ml-0.5">✕</button>
+                      </span>
+                    ))}
                   </div>
-                ) : (
-                  <>
-                    <Input
-                      value={memberSearch}
-                      onChange={async (e) => {
-                        const q = e.target.value;
-                        setMemberSearch(q);
-                        if (q.length < 2) { setMemberResults([]); return; }
-                        const { data } = await supabase
-                          .from("profiles")
-                          .select("id, full_name, email")
-                          .or(`full_name.ilike.%${q}%,email.ilike.%${q}%`)
-                          .limit(8);
-                        setMemberResults(data ?? []);
-                      }}
-                      placeholder="Search by name or email..."
-                    />
-                    {memberResults.length > 0 && (
-                      <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-xl z-50 max-h-48 overflow-y-auto">
-                        {memberResults.map((m) => (
-                          <button
-                            key={m.id}
-                            onClick={() => { setSelectedMemberId(m.id); setMemberSearch(""); }}
-                            className="w-full text-left px-3 py-2 text-sm hover:bg-secondary/50 transition-colors flex flex-col"
-                          >
-                            <span className="font-display text-foreground">{m.full_name || "No name"}</span>
-                            <span className="text-[10px] text-muted-foreground">{m.email}</span>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </>
+                )}
+                <Input
+                  value={memberSearch}
+                  onChange={async (e) => {
+                    const q = e.target.value;
+                    setMemberSearch(q);
+                    if (q.length < 2) { setMemberResults([]); return; }
+                    const { data } = await supabase
+                      .from("profiles")
+                      .select("id, full_name, email")
+                      .or(`full_name.ilike.%${q}%,email.ilike.%${q}%`)
+                      .limit(8);
+                    setMemberResults(data ?? []);
+                  }}
+                  placeholder="Search by name or email to add..."
+                />
+                {memberResults.length > 0 && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-xl z-50 max-h-48 overflow-y-auto">
+                    {memberResults
+                      .filter((m) => !selectedMembers.some((s) => s.id === m.id))
+                      .map((m) => (
+                        <button
+                          key={m.id}
+                          onClick={() => { setSelectedMembers((prev) => [...prev, m]); setMemberSearch(""); setMemberResults([]); }}
+                          className="w-full text-left px-3 py-2 text-sm hover:bg-secondary/50 transition-colors flex flex-col"
+                        >
+                          <span className="font-display text-foreground">{m.full_name || "No name"}</span>
+                          <span className="text-[10px] text-muted-foreground">{m.email}</span>
+                        </button>
+                      ))}
+                  </div>
                 )}
               </div>
             )}
