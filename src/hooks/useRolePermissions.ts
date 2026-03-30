@@ -47,20 +47,20 @@ export function useRolePermissions() {
 
   async function loadPermissions() {
     setLoading(true);
-    const { data } = await supabase
-      .from("role_permissions")
+    const { data } = await (supabase
+      .from("role_permissions" as any)
       .select("*")
       .order("role")
-      .order("permission");
-    setPermissions((data as any as RolePermission[]) || []);
+      .order("permission") as any);
+    setPermissions((data as RolePermission[]) || []);
     setLoading(false);
   }
 
   async function togglePermission(id: string, enabled: boolean) {
-    const { error } = await supabase
-      .from("role_permissions")
-      .update({ enabled, updated_at: new Date().toISOString() } as any)
-      .eq("id", id);
+    const { error } = await (supabase
+      .from("role_permissions" as any)
+      .update({ enabled, updated_at: new Date().toISOString() })
+      .eq("id", id) as any);
     if (error) throw error;
     setPermissions((prev) =>
       prev.map((p) => (p.id === id ? { ...p, enabled } : p))
@@ -94,13 +94,13 @@ export function useHasPermission(permission: string) {
 
       const userRoles = roles.map((r) => r.role);
       
-      const { data: perms } = await supabase
-        .from("role_permissions")
+      const { data: perms } = await (supabase
+        .from("role_permissions" as any)
         .select("enabled")
         .in("role", userRoles)
-        .eq("permission", permission);
+        .eq("permission", permission) as any);
       
-      setHasPermission(perms?.some((p: any) => p.enabled) ?? false);
+      setHasPermission((perms as any[])?.some((p) => p.enabled) ?? false);
     }
     check();
   }, [user, permission]);
