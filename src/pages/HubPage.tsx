@@ -12,6 +12,7 @@ import { FixtureAvailability } from "@/components/hub/FixtureAvailability";
 import { CarpoolBoard } from "@/components/hub/CarpoolBoard";
 import { AttendanceStats } from "@/components/hub/AttendanceStats";
 import { GuardianManager } from "@/components/hub/GuardianManager";
+import { HubMeetingsEmbed } from "@/components/hub/HubMeetingsEmbed";
 import { TeamAccessRequest } from "@/components/hub/TeamAccessRequest";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
