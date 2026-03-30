@@ -17,6 +17,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { registerPushSubscription, isPushSupported, isPushEnabled } from "@/lib/pushNotifications";
 
 const TEAMS = [
   { slug: "u7s", name: "U7" },
@@ -101,6 +102,14 @@ export default function HubPage() {
   useEffect(() => {
     if (!user) { setLoading(false); return; }
     loadMyTeams();
+    // Auto-register push subscription
+    if (isPushSupported()) {
+      isPushEnabled().then((enabled) => {
+        if (!enabled) {
+          registerPushSubscription(user.id).catch(() => {});
+        }
+      });
+    }
   }, [user]);
 
   async function loadMyTeams() {
