@@ -121,7 +121,9 @@ export default function HubPage() {
       return;
     }
     const { data } = await supabase.from("team_members").select("team_slug").eq("user_id", user!.id);
-    const slugs = data?.map((d) => d.team_slug) || [];
+    const rawSlugs = data?.map((d) => d.team_slug) || [];
+    const teamOrder = TEAMS.map((t) => t.slug);
+    const slugs = rawSlugs.sort((a, b) => teamOrder.indexOf(a) - teamOrder.indexOf(b));
     setMyTeams(slugs);
     if (!activeTeam && slugs.length > 0) setActiveTeam(slugs[0]);
     setLoading(false);
