@@ -40,7 +40,7 @@ serve(async (req) => {
       customer_email: team.manager_email,
       line_items: [
         {
-          price: "price_1TEeV8C5z9v3Zf3be2soHQqF",
+          price: "price_1TGmyGCLdtMESt0q7BmL7gJA",
           quantity: 1,
         },
       ],
