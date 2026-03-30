@@ -39,8 +39,8 @@ export function AdminNotificationComposer() {
   const [title, setTitle] = useState("");
   const [message, setMessage] = useState("");
   const [audience, setAudience] = useState<"all" | "team" | "member">("all");
-  const [selectedTeam, setSelectedTeam] = useState("");
-  const [selectedMemberId, setSelectedMemberId] = useState("");
+  const [selectedTeams, setSelectedTeams] = useState<string[]>([]);
+  const [selectedMembers, setSelectedMembers] = useState<{ id: string; full_name: string | null; email: string | null }[]>([]);
   const [memberSearch, setMemberSearch] = useState("");
   const [memberResults, setMemberResults] = useState<{ id: string; full_name: string | null; email: string | null }[]>([]);
   const [sendInApp, setSendInApp] = useState(true);
