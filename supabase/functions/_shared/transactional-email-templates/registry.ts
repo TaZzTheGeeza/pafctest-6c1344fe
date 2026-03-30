@@ -13,10 +13,12 @@ import { template as paymentRequestCreated } from './payment-request-created.tsx
 import { template as newChatMessage } from './new-chat-message.tsx'
 import { template as availabilityEventAdded } from './availability-event-added.tsx'
 import { template as teamSelectionPublished } from './team-selection-published.tsx'
+import { template as adminBroadcast } from './admin-broadcast.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'payment-request-created': paymentRequestCreated,
   'new-chat-message': newChatMessage,
   'availability-event-added': availabilityEventAdded,
   'team-selection-published': teamSelectionPublished,
+  'admin-broadcast': adminBroadcast,
 }
