@@ -26,6 +26,7 @@ import { TeamRequestsManager } from "@/components/dashboard/TeamRequestsManager"
 import { AdminNotificationComposer } from "@/components/dashboard/AdminNotificationComposer";
 import { OrdersTab } from "@/components/dashboard/OrdersTab";
 import { TreasurerPaymentsBoard } from "@/components/dashboard/TreasurerPaymentsBoard";
+import { RolePermissionManager } from "@/components/dashboard/RolePermissionManager";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
 
