@@ -89,7 +89,16 @@ export function TeamRequestsManager() {
         });
       }
 
-      // 4. Update request status
+      // 5. Sync user_age_groups so coach/player sees team in POTM/Match Report dropdowns
+      const ageGroup = TEAM_SLUG_TO_AGE_GROUP[req.team_slug];
+      if (ageGroup) {
+        await supabase.from("user_age_groups").insert({
+          user_id: req.user_id,
+          age_group: ageGroup,
+        });
+      }
+
+      // 6. Update request status
       const { error } = await supabase
         .from("team_requests" as any)
         .update({ status: "approved", reviewed_by: user!.id, reviewed_at: new Date().toISOString() } as any)
