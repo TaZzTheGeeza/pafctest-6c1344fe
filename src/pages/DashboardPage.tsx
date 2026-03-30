@@ -64,6 +64,8 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<AppRole | "all">("all");
+  const [teamFilter, setTeamFilter] = useState<string>("all");
+  const [teamMemberships, setTeamMemberships] = useState<Record<string, string[]>>({});
   const [addingRole, setAddingRole] = useState<string | null>(null);
   const [registrationOpen, setRegistrationOpen] = useState(false);
   const [togglingReg, setTogglingReg] = useState(false);
@@ -145,19 +147,28 @@ export default function DashboardPage() {
 
   async function loadUsers() {
     setLoading(true);
-    const [profilesRes, rolesRes] = await Promise.all([
+    const [profilesRes, rolesRes, membersRes] = await Promise.all([
       supabase.from("profiles").select("id, full_name, email"),
       supabase.from("user_roles").select("user_id, role"),
+      supabase.from("team_members").select("user_id, team_slug"),
     ]);
 
     const profiles = profilesRes.data ?? [];
     const roles = rolesRes.data ?? [];
+    const members = membersRes.data ?? [];
 
     const roleMap: Record<string, AppRole[]> = {};
     for (const r of roles) {
       if (!roleMap[r.user_id]) roleMap[r.user_id] = [];
       roleMap[r.user_id].push(r.role);
     }
+
+    const tmMap: Record<string, string[]> = {};
+    for (const m of members) {
+      if (!tmMap[m.user_id]) tmMap[m.user_id] = [];
+      if (!tmMap[m.user_id].includes(m.team_slug)) tmMap[m.user_id].push(m.team_slug);
+    }
+    setTeamMemberships(tmMap);
 
     const merged: UserWithRoles[] = profiles.map((p) => ({
       id: p.id,
@@ -203,13 +214,17 @@ export default function DashboardPage() {
     }
   }
 
+  // Collect unique team slugs for the filter dropdown
+  const allTeamSlugs = Array.from(new Set(Object.values(teamMemberships).flat())).sort();
+
   const filteredUsers = users.filter((u) => {
     const matchesSearch =
       !search ||
       u.full_name?.toLowerCase().includes(search.toLowerCase()) ||
       u.email?.toLowerCase().includes(search.toLowerCase());
     const matchesRole = roleFilter === "all" || u.roles.includes(roleFilter);
-    return matchesSearch && matchesRole;
+    const matchesTeam = teamFilter === "all" || (teamMemberships[u.id] ?? []).includes(teamFilter);
+    return matchesSearch && matchesRole && matchesTeam;
   });
 
   const stats = {
@@ -430,6 +445,18 @@ export default function DashboardPage() {
                     <option value="coach">Coaches</option>
                     <option value="player">Players</option>
                     <option value="user">Users</option>
+                  </select>
+                  <select
+                    value={teamFilter}
+                    onChange={(e) => setTeamFilter(e.target.value)}
+                    className="bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground"
+                  >
+                    <option value="all">All Teams</option>
+                    {allTeamSlugs.map((slug) => (
+                      <option key={slug} value={slug}>
+                        {slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>
