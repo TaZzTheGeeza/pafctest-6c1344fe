@@ -37,6 +37,7 @@ interface UserWithRoles {
   id: string;
   email: string | null;
   full_name: string | null;
+  avatar_url: string | null;
   roles: AppRole[];
   last_seen_at: string | null;
 }
@@ -151,7 +152,7 @@ export default function DashboardPage() {
   async function loadUsers() {
     setLoading(true);
     const [profilesRes, rolesRes, membersRes] = await Promise.all([
-      supabase.from("profiles").select("id, full_name, email, last_seen_at"),
+      supabase.from("profiles").select("id, full_name, email, last_seen_at, avatar_url"),
       supabase.from("user_roles").select("user_id, role"),
       supabase.from("team_members").select("user_id, team_slug"),
     ]);
@@ -177,6 +178,7 @@ export default function DashboardPage() {
       id: p.id,
       email: p.email,
       full_name: p.full_name,
+      avatar_url: p.avatar_url,
       roles: roleMap[p.id] ?? [],
       last_seen_at: p.last_seen_at,
     }));
@@ -766,9 +768,13 @@ function UserRow({
         <div className="flex flex-col sm:flex-row sm:items-center gap-3">
           <div className="flex items-center gap-3 flex-1 min-w-0">
             <div className="relative shrink-0">
-              <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-display text-sm font-bold">
-                {(user.full_name || user.email || "?")[0].toUpperCase()}
-              </div>
+              {user.avatar_url ? (
+                <img src={user.avatar_url} alt={user.full_name || ""} className="w-10 h-10 rounded-full object-cover" />
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-display text-sm font-bold">
+                  {(user.full_name || user.email || "?")[0].toUpperCase()}
+                </div>
+              )}
               <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-card ${online ? "bg-emerald-500" : "bg-muted-foreground/40"}`} />
             </div>
             <div className="min-w-0" onClick={(e) => e.stopPropagation()}>
