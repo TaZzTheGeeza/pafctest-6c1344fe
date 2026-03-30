@@ -229,24 +229,34 @@ export function PlayerStatsForm({ allowedAgeGroups }: { allowedAgeGroups?: strin
                 ))}
               </div>
 
-              <div className="flex items-center gap-3 pt-2">
-                <button
-                  onClick={addPlayer}
-                  className="flex items-center gap-2 text-sm font-display tracking-wider text-primary hover:text-gold-light transition-colors"
-                >
-                  <Plus className="h-4 w-4" />
-                  Add Player
-                </button>
-              </div>
+              {canEdit && (
+                <>
+                  <div className="flex items-center gap-3 pt-2">
+                    <button
+                      onClick={addPlayer}
+                      className="flex items-center gap-2 text-sm font-display tracking-wider text-primary hover:text-gold-light transition-colors"
+                    >
+                      <Plus className="h-4 w-4" />
+                      Add Player
+                    </button>
+                  </div>
 
-              <button
-                onClick={saveAll}
-                disabled={saving || players.length === 0}
-                className="w-full bg-primary text-primary-foreground font-display tracking-wider py-3 rounded-lg hover:bg-gold-light transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-              >
-                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                {saving ? "Saving..." : "Save All Stats"}
-              </button>
+                  <button
+                    onClick={saveAll}
+                    disabled={saving || players.length === 0}
+                    className="w-full bg-primary text-primary-foreground font-display tracking-wider py-3 rounded-lg hover:bg-gold-light transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                    {saving ? "Saving..." : "Save All Stats"}
+                  </button>
+                </>
+              )}
+
+              {!canEdit && selectedGroup && (
+                <p className="text-xs text-muted-foreground text-center pt-2">
+                  You can only view stats for this age group. Editing is restricted to assigned coaches.
+                </p>
+              )}
             </>
           )}
         </>
