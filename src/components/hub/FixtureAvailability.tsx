@@ -3,7 +3,7 @@ import { useTeamFixtures, type FAFixture } from "@/hooks/useTeamFixtures";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Check, X, HelpCircle, Loader2, MapPin, Clock, Navigation, ChevronDown, ChevronUp, Trash2, CalendarPlus } from "lucide-react";
+import { Check, X, HelpCircle, Loader2, MapPin, Clock, Navigation, ChevronDown, ChevronUp, Trash2, CalendarPlus, Users } from "lucide-react";
 import { AddAvailabilityEventDialog } from "./AddAvailabilityEventDialog";
 
 interface Props {
@@ -20,6 +20,7 @@ interface AvailabilityRecord {
   user_id: string;
   status: string;
   note: string | null;
+  responding_for: string | null;
 }
 
 interface CustomEvent {
@@ -32,7 +33,14 @@ interface CustomEvent {
   created_by: string;
 }
 
-// Unified item type for rendering
+interface Guardian {
+  id: string;
+  parent_user_id: string;
+  player_name: string;
+  team_slug: string;
+  status: string;
+}
+
 interface AvailabilityItem {
   key: string;
   date: string;
@@ -40,7 +48,7 @@ interface AvailabilityItem {
   title: string;
   venue: string;
   isHome: boolean;
-  opponent: string; // used as key for availability records
+  opponent: string;
   isCustom: boolean;
   customEventId?: string;
 }
@@ -78,6 +86,8 @@ export function FixtureAvailability({ teamSlug }: Props) {
   const { user, isCoach, isAdmin } = useAuth();
   const queryClient = useQueryClient();
   const [expandedFixture, setExpandedFixture] = useState<string | null>(null);
+  // Track which "person" is selected per fixture: null = self, string = child name
+  const [respondingForMap, setRespondingForMap] = useState<Record<string, string | null>>({});
   const { data: teamData, isLoading: fixturesLoading } = useTeamFixtures(teamSlug);
 
   const { data: availability = [], isLoading: availLoading } = useQuery({
@@ -89,6 +99,22 @@ export function FixtureAvailability({ teamSlug }: Props) {
         .eq("team_slug", teamSlug);
       if (error) throw error;
       return data as AvailabilityRecord[];
+    },
+    enabled: !!user,
+  });
+
+  // Fetch guardian links for this user + team
+  const { data: guardians = [] } = useQuery({
+    queryKey: ["guardians", user?.id, teamSlug],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("guardians")
+        .select("*")
+        .eq("parent_user_id", user!.id)
+        .eq("team_slug", teamSlug)
+        .eq("status", "active");
+      if (error) throw error;
+      return data as Guardian[];
     },
     enabled: !!user,
   });
@@ -122,7 +148,17 @@ export function FixtureAvailability({ teamSlug }: Props) {
   });
 
   const mutation = useMutation({
-    mutationFn: async ({ fixtureDate, opponent, status }: { fixtureDate: string; opponent: string; status: AvailabilityStatus }) => {
+    mutationFn: async ({
+      fixtureDate,
+      opponent,
+      status,
+      respondingFor,
+    }: {
+      fixtureDate: string;
+      opponent: string;
+      status: AvailabilityStatus;
+      respondingFor: string | null;
+    }) => {
       const { error } = await supabase.from("fixture_availability").upsert(
         {
           team_slug: teamSlug,
@@ -130,9 +166,10 @@ export function FixtureAvailability({ teamSlug }: Props) {
           opponent,
           user_id: user!.id,
           status,
+          responding_for: respondingFor,
           updated_at: new Date().toISOString(),
         },
-        { onConflict: "team_slug,fixture_date,opponent,user_id" }
+        { onConflict: "team_slug,fixture_date,opponent,user_id,responding_for" }
       );
       if (error) throw error;
     },
@@ -199,9 +236,17 @@ export function FixtureAvailability({ teamSlug }: Props) {
     );
   }
 
-  function getMyStatus(item: AvailabilityItem): AvailabilityStatus {
+  function getSelectedRespondingFor(itemKey: string): string | null {
+    return respondingForMap[itemKey] ?? null;
+  }
+
+  function getMyStatus(item: AvailabilityItem, respondingFor: string | null): AvailabilityStatus {
     const record = availability.find(
-      (a) => a.fixture_date === item.date && a.opponent === item.opponent && a.user_id === user?.id
+      (a) =>
+        a.fixture_date === item.date &&
+        a.opponent === item.opponent &&
+        a.user_id === user?.id &&
+        (a.responding_for || null) === respondingFor
     );
     return (record?.status as AvailabilityStatus) || "pending";
   }
@@ -219,9 +264,21 @@ export function FixtureAvailability({ teamSlug }: Props) {
     const records = availability.filter((a) => a.fixture_date === item.date && a.opponent === item.opponent && a.status === status);
     return records.map((r) => {
       const profile = profiles.find((p) => p.id === r.user_id);
-      return profile?.full_name || "Unknown";
+      const baseName = profile?.full_name || "Unknown";
+      if (r.responding_for) {
+        return `${r.responding_for} (via ${baseName})`;
+      }
+      return baseName;
     });
   }
+
+  const hasGuardians = guardians.length > 0;
+
+  // Options for the "responding for" selector
+  const respondingOptions: { value: string | null; label: string }[] = [
+    { value: null, label: "Myself" },
+    ...guardians.map((g) => ({ value: g.player_name, label: g.player_name })),
+  ];
 
   const statusButtons: { status: AvailabilityStatus; icon: typeof Check; label: string; activeClass: string }[] = [
     { status: "available", icon: Check, label: "Available", activeClass: "bg-green-600 text-white border-green-600" },
@@ -238,7 +295,8 @@ export function FixtureAvailability({ teamSlug }: Props) {
       )}
 
       {allItems.map((item) => {
-        const myStatus = getMyStatus(item);
+        const selectedRespondingFor = getSelectedRespondingFor(item.key);
+        const myStatus = getMyStatus(item, selectedRespondingFor);
         const summary = getTeamSummary(item);
         const isExpanded = expandedFixture === item.key;
 
@@ -300,11 +358,46 @@ export function FixtureAvailability({ teamSlug }: Props) {
               </div>
             </div>
 
+            {/* Responding-for selector (only shown if user has linked children) */}
+            {hasGuardians && (
+              <div className="flex items-center gap-2 mb-3">
+                <Users className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-xs text-muted-foreground font-display">Responding for:</span>
+                <div className="flex gap-1.5 flex-wrap">
+                  {respondingOptions.map((opt) => {
+                    const isSelected = selectedRespondingFor === opt.value;
+                    return (
+                      <button
+                        key={opt.value ?? "__self__"}
+                        onClick={() =>
+                          setRespondingForMap((prev) => ({ ...prev, [item.key]: opt.value }))
+                        }
+                        className={`px-2.5 py-1 rounded-md text-xs font-display tracking-wider border transition-colors ${
+                          isSelected
+                            ? "bg-primary text-primary-foreground border-primary"
+                            : "border-border text-muted-foreground hover:text-foreground hover:border-primary/30"
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             <div className="flex gap-2">
               {statusButtons.map(({ status, icon: Icon, label, activeClass }) => (
                 <button
                   key={status}
-                  onClick={() => mutation.mutate({ fixtureDate: item.date, opponent: item.opponent, status })}
+                  onClick={() =>
+                    mutation.mutate({
+                      fixtureDate: item.date,
+                      opponent: item.opponent,
+                      status,
+                      respondingFor: selectedRespondingFor,
+                    })
+                  }
                   disabled={mutation.isPending}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-display tracking-wider border transition-colors ${
                     myStatus === status
@@ -317,6 +410,30 @@ export function FixtureAvailability({ teamSlug }: Props) {
                 </button>
               ))}
             </div>
+
+            {/* Show status chips for each person the user has responded for */}
+            {hasGuardians && (
+              <div className="mt-2 flex flex-wrap gap-2">
+                {respondingOptions.map((opt) => {
+                  const s = getMyStatus(item, opt.value);
+                  if (s === "pending") return null;
+                  const cfg = {
+                    available: { label: "✓", bg: "bg-green-600/20 text-green-400" },
+                    maybe: { label: "?", bg: "bg-amber-500/20 text-amber-400" },
+                    unavailable: { label: "✗", bg: "bg-red-600/20 text-red-400" },
+                    pending: { label: "", bg: "" },
+                  }[s];
+                  return (
+                    <span
+                      key={opt.value ?? "__self__"}
+                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-display ${cfg.bg}`}
+                    >
+                      {cfg.label} {opt.label}
+                    </span>
+                  );
+                })}
+              </div>
+            )}
 
             {isExpanded && (isCoach || isAdmin) && (
               <div className="mt-3 pt-3 border-t border-border grid grid-cols-1 sm:grid-cols-3 gap-3">
