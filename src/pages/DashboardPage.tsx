@@ -187,6 +187,11 @@ export default function DashboardPage() {
     setLoading(false);
   }
 
+  const AGE_GROUP_TO_TEAM_SLUG: Record<string, string> = {
+    "U7": "u7", "U8 Black": "u8-black", "U8 Gold": "u8-gold", "U9": "u9", "U10": "u10",
+    "U11 Black": "u11-black", "U11 Gold": "u11-gold", "U13 Black": "u13-black", "U13 Gold": "u13-gold", "U14": "u14",
+  };
+
   async function addRole(userId: string, role: AppRole) {
     setAddingRole(`${userId}-${role}`);
     const { error } = await supabase.from("user_roles").insert({ user_id: userId, role });
@@ -195,6 +200,33 @@ export default function DashboardPage() {
       else toast.error("Failed to add role");
     } else {
       toast.success(`${ROLE_CONFIG[role].label} role added`);
+
+      // Auto-add to Hub team_members based on age group assignments
+      if (role === "coach" || role === "player") {
+        const { data: ageGroups } = await supabase
+          .from("user_age_groups")
+          .select("age_group")
+          .eq("user_id", userId);
+
+        const teamRole = role === "coach" ? "coach" : "player";
+        if (ageGroups && ageGroups.length > 0) {
+          let addedCount = 0;
+          for (const ag of ageGroups) {
+            const slug = AGE_GROUP_TO_TEAM_SLUG[ag.age_group];
+            if (!slug) continue;
+            const { error: tmError } = await supabase
+              .from("team_members")
+              .insert({ user_id: userId, team_slug: slug, role: teamRole });
+            if (!tmError) addedCount++;
+          }
+          if (addedCount > 0) {
+            toast.success(`Also added to ${addedCount} Hub team(s) as ${teamRole}`);
+          }
+        } else {
+          toast.info("Tip: Assign age groups or Hub Teams to link this user to a team in the Hub");
+        }
+      }
+
       loadUsers();
     }
     setAddingRole(null);
