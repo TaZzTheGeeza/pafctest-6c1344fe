@@ -134,10 +134,12 @@ export function MeetingInviteSelector({
       {inviteType === "roles" && (
         <div className="space-y-1.5">
           {/* System roles */}
-          {["admin", "coach", "player", "treasurer"].map((role) => (
-            <label
+          {["admin", "coach", "player", "treasurer", "welfare_officer"].map((role) => (
+            <button
               key={role}
-              className="flex items-center gap-2 p-2 rounded-lg border border-border bg-background hover:border-primary/30 cursor-pointer transition-colors"
+              type="button"
+              onClick={() => toggleRole(role)}
+              className="flex items-center gap-2 p-2 rounded-lg border border-border bg-background hover:border-primary/30 cursor-pointer transition-colors w-full text-left"
             >
               <div
                 className={`h-4 w-4 rounded border flex items-center justify-center transition-colors ${
@@ -150,11 +152,11 @@ export function MeetingInviteSelector({
                   <Check className="h-2.5 w-2.5 text-primary-foreground" />
                 )}
               </div>
-              <span className="text-sm text-foreground capitalize">{role}s</span>
+              <span className="text-sm text-foreground capitalize">{role.replace("_", " ")}s</span>
               <span className="text-[10px] text-muted-foreground ml-auto">
                 {getUserCountForRole(role)} member{getUserCountForRole(role) !== 1 ? "s" : ""}
               </span>
-            </label>
+            </button>
           ))}
           {/* Custom roles */}
           {roles
