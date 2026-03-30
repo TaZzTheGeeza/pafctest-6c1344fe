@@ -47,6 +47,7 @@ import SafeguardingReportsPage from "./pages/SafeguardingReportsPage.tsx";
 import PafcTvPage from "./pages/PafcTvPage.tsx";
 import ResetPasswordPage from "./pages/ResetPasswordPage.tsx";
 import UnsubscribePage from "./pages/UnsubscribePage.tsx";
+import MeetingsPage from "./pages/MeetingsPage.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
