@@ -593,6 +593,10 @@ export default function DashboardPage() {
           {activeSection === "orders" && isAdmin && (
             <OrdersTab />
           )}
+
+          {activeSection === "finances" && (isTreasurer || isAdmin) && (
+            <TreasurerPaymentsBoard />
+          )}
         </div>
       </main>
       <Footer />
