@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, ChevronDown, Trophy, ShoppingBag, LogIn, Newspaper, CalendarDays, Image, Award, Clock, UserPlus, FileText, Shield, Info, Heart, ClipboardList, MessageSquare, Settings, Youtube } from "lucide-react";
+import { Menu, X, ChevronDown, Trophy, ShoppingBag, LogIn, Newspaper, CalendarDays, Image, Award, Clock, UserPlus, FileText, Shield, Info, Heart, ClipboardList, MessageSquare, Settings, Youtube, User } from "lucide-react";
 
 import { CartDrawer } from "@/components/CartDrawer";
 import { NotificationBell } from "@/components/hub/NotificationBell";
@@ -179,9 +179,14 @@ export function Navbar() {
               </Link>
             )}
             {user ? (
-              <button onClick={() => signOut()} className="font-display text-[10px] tracking-[0.15em] uppercase text-muted-foreground hover:text-foreground transition-colors">
-                Sign Out
-              </button>
+              <>
+                <Link to="/my-profile" className="font-display text-[10px] tracking-[0.15em] uppercase text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
+                  <User className="h-3 w-3" /> My Profile
+                </Link>
+                <button onClick={() => signOut()} className="font-display text-[10px] tracking-[0.15em] uppercase text-muted-foreground hover:text-foreground transition-colors">
+                  Sign Out
+                </button>
+              </>
             ) : (
               <Link to="/auth" className="font-display text-[10px] tracking-[0.15em] uppercase text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5">
                 <LogIn className="h-3 w-3" /> Sign In
@@ -299,9 +304,14 @@ export function Navbar() {
               </Link>
             )}
             {user ? (
-              <button onClick={() => { signOut(); setIsOpen(false); }} className="w-full font-display text-sm tracking-wider py-2.5 rounded-md border border-border text-muted-foreground hover:text-primary transition-colors mt-2">
-                Sign Out
-              </button>
+              <>
+                <Link to="/my-profile" onClick={() => setIsOpen(false)} className="flex items-center justify-center gap-2 w-full font-display text-sm tracking-wider py-2.5 rounded-md border border-border text-muted-foreground hover:text-primary transition-colors mt-2">
+                  <User className="h-4 w-4" /> My Profile
+                </Link>
+                <button onClick={() => { signOut(); setIsOpen(false); }} className="w-full font-display text-sm tracking-wider py-2.5 rounded-md border border-border text-muted-foreground hover:text-primary transition-colors mt-1">
+                  Sign Out
+                </button>
+              </>
             ) : (
               <Link to="/auth" onClick={() => setIsOpen(false)} className="flex items-center justify-center gap-2 w-full font-display text-sm tracking-wider py-2.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors mt-2">
                 <LogIn className="h-4 w-4" /> Sign In / Sign Up
