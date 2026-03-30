@@ -224,6 +224,33 @@ export type Database = {
         }
         Relationships: []
       }
+      custom_roles: {
+        Row: {
+          color: string | null
+          created_at: string | null
+          id: string
+          is_system: boolean | null
+          label: string
+          name: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string | null
+          id?: string
+          is_system?: boolean | null
+          label: string
+          name: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string | null
+          id?: string
+          is_system?: boolean | null
+          label?: string
+          name?: string
+        }
+        Relationships: []
+      }
       document_upload_permissions: {
         Row: {
           created_at: string
@@ -1249,7 +1276,7 @@ export type Database = {
           enabled: boolean
           id: string
           permission: string
-          role: Database["public"]["Enums"]["app_role"]
+          role: string
           updated_at: string
         }
         Insert: {
@@ -1257,7 +1284,7 @@ export type Database = {
           enabled?: boolean
           id?: string
           permission: string
-          role: Database["public"]["Enums"]["app_role"]
+          role: string
           updated_at?: string
         }
         Update: {
@@ -1265,7 +1292,7 @@ export type Database = {
           enabled?: boolean
           id?: string
           permission?: string
-          role?: Database["public"]["Enums"]["app_role"]
+          role?: string
           updated_at?: string
         }
         Relationships: []
@@ -1878,19 +1905,19 @@ export type Database = {
         Row: {
           created_at: string
           id: string
-          role: Database["public"]["Enums"]["app_role"]
+          role: string
           user_id: string
         }
         Insert: {
           created_at?: string
           id?: string
-          role: Database["public"]["Enums"]["app_role"]
+          role: string
           user_id: string
         }
         Update: {
           created_at?: string
           id?: string
-          role?: Database["public"]["Enums"]["app_role"]
+          role?: string
           user_id?: string
         }
         Relationships: []
@@ -1971,13 +1998,15 @@ export type Database = {
           ticket_number: number
         }[]
       }
-      has_role: {
-        Args: {
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
-        }
-        Returns: boolean
-      }
+      has_role:
+        | {
+            Args: {
+              _role: Database["public"]["Enums"]["app_role"]
+              _user_id: string
+            }
+            Returns: boolean
+          }
+        | { Args: { _role: string; _user_id: string }; Returns: boolean }
       is_team_member: {
         Args: { _team_slug: string; _user_id: string }
         Returns: boolean
