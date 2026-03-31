@@ -111,7 +111,7 @@ export function MatchReportTab({
   const handleSave = async () => {
     setSaving(true);
     try {
-      const matchDate = parseMatchDate();
+      const matchDate = dbDate;
       const ageGroup = getAgeGroup(teamSlug);
 
       // Build goal scorer text for match_reports table
