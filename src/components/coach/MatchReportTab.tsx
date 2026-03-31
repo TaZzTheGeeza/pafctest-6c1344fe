@@ -78,19 +78,42 @@ export function MatchReportTab({
         .filter(Boolean)
         .join(", ");
 
-      // Save match report
-      const { error: reportError } = await supabase.from("match_reports").insert({
-        team_name: teamName,
-        age_group: ageGroup,
-        opponent,
-        home_score: parseInt(homeScore) || 0,
-        away_score: parseInt(awayScore) || 0,
-        goal_scorers: goalText || null,
-        assists: assistText || null,
-        notes: notes || null,
-        match_date: matchDate,
-      });
-      if (reportError) throw reportError;
+      // Check if report already exists for this match
+      const { data: existingReport } = await supabase
+        .from("match_reports")
+        .select("id")
+        .eq("team_name", teamName)
+        .eq("opponent", opponent)
+        .eq("match_date", matchDate)
+        .maybeSingle();
+
+      if (existingReport) {
+        // Update existing report
+        const { error: reportError } = await supabase.from("match_reports")
+          .update({
+            home_score: parseInt(homeScore) || 0,
+            away_score: parseInt(awayScore) || 0,
+            goal_scorers: goalText || null,
+            assists: assistText || null,
+            notes: notes || null,
+          })
+          .eq("id", existingReport.id);
+        if (reportError) throw reportError;
+      } else {
+        // Insert new report
+        const { error: reportError } = await supabase.from("match_reports").insert({
+          team_name: teamName,
+          age_group: ageGroup,
+          opponent,
+          home_score: parseInt(homeScore) || 0,
+          away_score: parseInt(awayScore) || 0,
+          goal_scorers: goalText || null,
+          assists: assistText || null,
+          notes: notes || null,
+          match_date: matchDate,
+        });
+        if (reportError) throw reportError;
+      }
 
       // Save per-match player stats (goals & assists)
       const playerMap = new Map<string, { goals: number; assists: number }>();
