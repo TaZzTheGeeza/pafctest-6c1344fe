@@ -54,7 +54,9 @@ export default function AuthPage() {
       if (error) {
         toast.error(error.message);
       } else {
-        toast.success("Check your email to verify your account!");
+        toast.success("Account created — you can sign in right away.");
+        setMode("login");
+        setForm((current) => ({ ...current, password: "" }));
       }
     } else {
       const { error } = await supabase.auth.signInWithPassword({
