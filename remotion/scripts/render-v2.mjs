@@ -45,54 +45,39 @@ await renderMedia({
 
 await browser.close({ silent: false });
 
-// Now merge audio tracks
 console.log("Merging audio...");
 
 const SCENES = [
-  { dur: 446, audio: "01-intro.mp3" },
-  { dur: 331, audio: "02-hub-overview.mp3" },
-  { dur: 490, audio: "03-hub-chat.mp3" },
-  { dur: 458, audio: "04-hub-availability.mp3" },
-  { dur: 537, audio: "05-hub-payments.mp3" },
-  { dur: 536, audio: "06-hub-meetings.mp3" },
-  { dur: 478, audio: "07-hub-extras.mp3" },
-  { dur: 354, audio: "08-tournament-intro.mp3" },
-  { dur: 548, audio: "09-tournament-detail.mp3" },
-  { dur: 510, audio: "10-tournament-admin.mp3" },
-  { dur: 515, audio: "11-dashboard.mp3" },
-  { dur: 483, audio: "12-sales-pitch.mp3" },
-  { dur: 375, audio: "13-outro.mp3" },
+  { dur: 462, audio: "01-intro.mp3" },
+  { dur: 347, audio: "02-hub-overview.mp3" },
+  { dur: 506, audio: "03-hub-chat.mp3" },
+  { dur: 474, audio: "04-hub-availability.mp3" },
+  { dur: 553, audio: "05-hub-payments.mp3" },
+  { dur: 552, audio: "06-hub-meetings.mp3" },
+  { dur: 893, audio: "07-hub-extras.mp3" },
+  { dur: 370, audio: "08-tournament-intro.mp3" },
+  { dur: 564, audio: "09-tournament-detail.mp3" },
+  { dur: 526, audio: "10-tournament-admin.mp3" },
+  { dur: 531, audio: "11-dashboard.mp3" },
+  { dur: 1017, audio: "12-raffle-overview.mp3" },
+  { dur: 943, audio: "13-raffle-admin.mp3" },
+  { dur: 709, audio: "14-sales-pitch.mp3" },
+  { dur: 614, audio: "15-outro.mp3" },
 ];
 
 const T = 20;
 const fps = 30;
 const audioDir = path.resolve(__dirname, "../public/audio");
 
-// Build ffmpeg filter for concatenating audio with gaps
-let filterParts = [];
-let concatInputs = "";
-let inputIdx = 0;
-
-// Calculate start times in seconds
 let pos = 0;
 const starts = [];
-for (let i = 0; i < SCENES.length; i++) {
-  starts.push(pos / fps);
-  if (i > 0) pos += SCENES[i - 1].dur - T;
-  else pos = SCENES[0].dur - T;
-}
-// Recalculate properly
-starts.length = 0;
-pos = 0;
 for (let i = 0; i < SCENES.length; i++) {
   starts.push(pos / fps);
   pos += SCENES[i].dur - T;
 }
 
-// Build inputs
-let inputs = SCENES.map((s, i) => `-i "${path.join(audioDir, s.audio)}"`).join(" ");
+let inputs = SCENES.map((s) => `-i "${path.join(audioDir, s.audio)}"`).join(" ");
 
-// Build filter with adelay
 let filters = SCENES.map((s, i) => {
   const delayMs = Math.round(starts[i] * 1000);
   return `[${i}:a]adelay=${delayMs}|${delayMs}[a${i}]`;

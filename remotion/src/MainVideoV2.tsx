@@ -16,24 +16,24 @@ import { SceneOutroV2 } from "./scenes/SceneOutroV2";
 
 const T = 20; // transition duration
 
-// Scene durations (from audio + buffer)
 const SCENES = [
-  { dur: 446, audio: "01-intro.mp3" },         // 0: Intro
-  { dur: 331, audio: "02-hub-overview.mp3" },   // 1: Hub overview
-  { dur: 490, audio: "03-hub-chat.mp3" },       // 2: Hub chat
-  { dur: 458, audio: "04-hub-availability.mp3" },// 3: Hub availability
-  { dur: 537, audio: "05-hub-payments.mp3" },   // 4: Hub payments
-  { dur: 536, audio: "06-hub-meetings.mp3" },   // 5: Hub meetings
-  { dur: 478, audio: "07-hub-extras.mp3" },     // 6: Hub extras
-  { dur: 354, audio: "08-tournament-intro.mp3" },// 7: Tournament intro
-  { dur: 548, audio: "09-tournament-detail.mp3" },// 8: Tournament detail
-  { dur: 510, audio: "10-tournament-admin.mp3" },// 9: Tournament admin
-  { dur: 515, audio: "11-dashboard.mp3" },      // 10: Dashboard
-  { dur: 483, audio: "12-sales-pitch.mp3" },    // 11: Sales pitch
-  { dur: 375, audio: "13-outro.mp3" },          // 12: Outro
+  { dur: 462, audio: "01-intro.mp3" },
+  { dur: 347, audio: "02-hub-overview.mp3" },
+  { dur: 506, audio: "03-hub-chat.mp3" },
+  { dur: 474, audio: "04-hub-availability.mp3" },
+  { dur: 553, audio: "05-hub-payments.mp3" },
+  { dur: 552, audio: "06-hub-meetings.mp3" },
+  { dur: 893, audio: "07-hub-extras.mp3" },
+  { dur: 370, audio: "08-tournament-intro.mp3" },
+  { dur: 564, audio: "09-tournament-detail.mp3" },
+  { dur: 526, audio: "10-tournament-admin.mp3" },
+  { dur: 531, audio: "11-dashboard.mp3" },
+  { dur: 1017, audio: "12-raffle-overview.mp3" },
+  { dur: 943, audio: "13-raffle-admin.mp3" },
+  { dur: 709, audio: "14-sales-pitch.mp3" },
+  { dur: 614, audio: "15-outro.mp3" },
 ];
 
-// Calculate audio start frames (accounting for transition overlaps)
 function getAudioStarts() {
   const starts: number[] = [0];
   let pos = 0;
@@ -47,12 +47,10 @@ function getAudioStarts() {
 export const MainVideoV2: React.FC = () => {
   const frame = useCurrentFrame();
   const audioStarts = getAudioStarts();
-
-  const hueShift = interpolate(frame, [0, 6000], [0, 40]);
+  const hueShift = interpolate(frame, [0, 9000], [0, 50]);
 
   return (
     <AbsoluteFill style={{ backgroundColor: "#0a0a0a" }}>
-      {/* Animated background */}
       <AbsoluteFill
         style={{
           background: `radial-gradient(ellipse at 30% 50%, hsla(${38 + hueShift}, 45%, 12%, 0.3) 0%, transparent 70%)`,
@@ -65,10 +63,7 @@ export const MainVideoV2: React.FC = () => {
           <SceneIntroV2 />
         </TransitionSeries.Sequence>
 
-        <TransitionSeries.Transition
-          presentation={fade()}
-          timing={linearTiming({ durationInFrames: T })}
-        />
+        <TransitionSeries.Transition presentation={fade()} timing={linearTiming({ durationInFrames: T })} />
 
         {/* 1: Hub Overview */}
         <TransitionSeries.Sequence durationInFrames={SCENES[1].dur}>
@@ -85,10 +80,7 @@ export const MainVideoV2: React.FC = () => {
           />
         </TransitionSeries.Sequence>
 
-        <TransitionSeries.Transition
-          presentation={slide({ direction: "from-right" })}
-          timing={linearTiming({ durationInFrames: T })}
-        />
+        <TransitionSeries.Transition presentation={slide({ direction: "from-right" })} timing={linearTiming({ durationInFrames: T })} />
 
         {/* 2: Hub Chat */}
         <TransitionSeries.Sequence durationInFrames={SCENES[2].dur}>
@@ -105,10 +97,7 @@ export const MainVideoV2: React.FC = () => {
           />
         </TransitionSeries.Sequence>
 
-        <TransitionSeries.Transition
-          presentation={wipe({ direction: "from-left" })}
-          timing={linearTiming({ durationInFrames: T })}
-        />
+        <TransitionSeries.Transition presentation={wipe({ direction: "from-left" })} timing={linearTiming({ durationInFrames: T })} />
 
         {/* 3: Hub Availability */}
         <TransitionSeries.Sequence durationInFrames={SCENES[3].dur}>
@@ -125,10 +114,7 @@ export const MainVideoV2: React.FC = () => {
           />
         </TransitionSeries.Sequence>
 
-        <TransitionSeries.Transition
-          presentation={fade()}
-          timing={linearTiming({ durationInFrames: T })}
-        />
+        <TransitionSeries.Transition presentation={fade()} timing={linearTiming({ durationInFrames: T })} />
 
         {/* 4: Hub Payments */}
         <TransitionSeries.Sequence durationInFrames={SCENES[4].dur}>
@@ -145,10 +131,7 @@ export const MainVideoV2: React.FC = () => {
           />
         </TransitionSeries.Sequence>
 
-        <TransitionSeries.Transition
-          presentation={slide({ direction: "from-left" })}
-          timing={linearTiming({ durationInFrames: T })}
-        />
+        <TransitionSeries.Transition presentation={slide({ direction: "from-left" })} timing={linearTiming({ durationInFrames: T })} />
 
         {/* 5: Hub Meetings */}
         <TransitionSeries.Sequence durationInFrames={SCENES[5].dur}>
@@ -165,15 +148,12 @@ export const MainVideoV2: React.FC = () => {
           />
         </TransitionSeries.Sequence>
 
-        <TransitionSeries.Transition
-          presentation={wipe({ direction: "from-right" })}
-          timing={linearTiming({ durationInFrames: T })}
-        />
+        <TransitionSeries.Transition presentation={wipe({ direction: "from-right" })} timing={linearTiming({ durationInFrames: T })} />
 
-        {/* 6: Hub Extras */}
+        {/* 6: Hub Extras (with carpool screenshot) */}
         <TransitionSeries.Sequence durationInFrames={SCENES[6].dur}>
           <SceneFeatureHighlight
-            screenshotSrc={staticFile("screenshots/hub-chat.png")}
+            screenshotSrc={staticFile("screenshots/hub-carpool.png")}
             title="AND MORE..."
             subtitle="CARPOOL · ATTENDANCE · GUARDIANS"
             bullets={[
@@ -186,10 +166,7 @@ export const MainVideoV2: React.FC = () => {
           />
         </TransitionSeries.Sequence>
 
-        <TransitionSeries.Transition
-          presentation={fade()}
-          timing={linearTiming({ durationInFrames: T })}
-        />
+        <TransitionSeries.Transition presentation={fade()} timing={linearTiming({ durationInFrames: T })} />
 
         {/* 7: Tournament Intro */}
         <TransitionSeries.Sequence durationInFrames={SCENES[7].dur}>
@@ -206,10 +183,7 @@ export const MainVideoV2: React.FC = () => {
           />
         </TransitionSeries.Sequence>
 
-        <TransitionSeries.Transition
-          presentation={slide({ direction: "from-right" })}
-          timing={linearTiming({ durationInFrames: T })}
-        />
+        <TransitionSeries.Transition presentation={slide({ direction: "from-right" })} timing={linearTiming({ durationInFrames: T })} />
 
         {/* 8: Tournament Detail */}
         <TransitionSeries.Sequence durationInFrames={SCENES[8].dur}>
@@ -227,10 +201,7 @@ export const MainVideoV2: React.FC = () => {
           />
         </TransitionSeries.Sequence>
 
-        <TransitionSeries.Transition
-          presentation={wipe({ direction: "from-left" })}
-          timing={linearTiming({ durationInFrames: T })}
-        />
+        <TransitionSeries.Transition presentation={wipe({ direction: "from-left" })} timing={linearTiming({ durationInFrames: T })} />
 
         {/* 9: Tournament Admin */}
         <TransitionSeries.Sequence durationInFrames={SCENES[9].dur}>
@@ -248,10 +219,7 @@ export const MainVideoV2: React.FC = () => {
           />
         </TransitionSeries.Sequence>
 
-        <TransitionSeries.Transition
-          presentation={fade()}
-          timing={linearTiming({ durationInFrames: T })}
-        />
+        <TransitionSeries.Transition presentation={fade()} timing={linearTiming({ durationInFrames: T })} />
 
         {/* 10: Dashboard */}
         <TransitionSeries.Sequence durationInFrames={SCENES[10].dur}>
@@ -269,39 +237,69 @@ export const MainVideoV2: React.FC = () => {
           />
         </TransitionSeries.Sequence>
 
-        <TransitionSeries.Transition
-          presentation={slide({ direction: "from-left" })}
-          timing={linearTiming({ durationInFrames: T })}
-        />
+        <TransitionSeries.Transition presentation={slide({ direction: "from-left" })} timing={linearTiming({ durationInFrames: T })} />
 
-        {/* 11: Sales Pitch */}
+        {/* 11: Raffle Overview */}
         <TransitionSeries.Sequence durationInFrames={SCENES[11].dur}>
+          <SceneFeatureHighlight
+            screenshotSrc={staticFile("screenshots/raffle-create.png")}
+            title="CLUB RAFFLE"
+            subtitle="DIGITAL FUNDRAISING"
+            bullets={[
+              "Create raffles in seconds — title, prize & price",
+              "Visual number grid for supporters",
+              "Instant Stripe payments per ticket",
+              "No spreadsheets, no cash handling",
+            ]}
+            layout="left"
+          />
+        </TransitionSeries.Sequence>
+
+        <TransitionSeries.Transition presentation={wipe({ direction: "from-right" })} timing={linearTiming({ durationInFrames: T })} />
+
+        {/* 12: Raffle Admin */}
+        <TransitionSeries.Sequence durationInFrames={SCENES[12].dur}>
+          <SceneFeatureHighlight
+            screenshotSrc={staticFile("screenshots/raffle-admin.png")}
+            title="RAFFLE ADMIN"
+            subtitle="DRAW · TRACK · REPEAT"
+            bullets={[
+              "Live ticket sales & revenue dashboard",
+              "One-click random winner draw",
+              "Auto-draw when sold out option",
+              "Run multiple raffles simultaneously",
+            ]}
+            layout="right"
+          />
+        </TransitionSeries.Sequence>
+
+        <TransitionSeries.Transition presentation={fade()} timing={linearTiming({ durationInFrames: T })} />
+
+        {/* 13: Sales Pitch */}
+        <TransitionSeries.Sequence durationInFrames={SCENES[13].dur}>
           <SceneFeatureHighlight
             screenshotSrc={staticFile("screenshots/01-homepage.png")}
             title="PLUS EVERYTHING ELSE"
             subtitle="A COMPLETE CLUB ECOSYSTEM"
             bullets={[
               "Club shop powered by Shopify",
-              "Raffle system with live video draws",
               "PAFC TV pulling YouTube content",
               "News, events, gallery & player registration",
+              "Everything a grassroots club needs",
             ]}
             layout="left"
           />
         </TransitionSeries.Sequence>
 
-        <TransitionSeries.Transition
-          presentation={fade()}
-          timing={linearTiming({ durationInFrames: T })}
-        />
+        <TransitionSeries.Transition presentation={fade()} timing={linearTiming({ durationInFrames: T })} />
 
-        {/* 12: Outro */}
-        <TransitionSeries.Sequence durationInFrames={SCENES[12].dur}>
+        {/* 14: Outro */}
+        <TransitionSeries.Sequence durationInFrames={SCENES[14].dur}>
           <SceneOutroV2 />
         </TransitionSeries.Sequence>
       </TransitionSeries>
 
-      {/* Audio - sequential */}
+      {/* Audio */}
       {SCENES.map((scene, i) => (
         <Sequence key={i} from={audioStarts[i]}>
           <Audio src={staticFile(`audio/${scene.audio}`)} />
