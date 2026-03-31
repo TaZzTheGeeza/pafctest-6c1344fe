@@ -65,6 +65,18 @@ export function TeamAccessRequest() {
         throw new Error("Please enter your child's name or an invite code");
       }
 
+      // Check if user is already a member of this team
+      const existingMembership = myMemberships.find(m => m.team_slug === selectedTeam);
+      if (existingMembership) {
+        throw new Error("You're already a member of this team");
+      }
+
+      // Check if user already has a pending request for this team
+      const existingRequest = myRequests.find((r: any) => r.team_slug === selectedTeam && r.status === "pending");
+      if (existingRequest) {
+        throw new Error("You already have a pending request for this team");
+      }
+
       const { error } = await supabase.from("team_requests" as any).insert({
         user_id: user!.id,
         team_slug: selectedTeam,
