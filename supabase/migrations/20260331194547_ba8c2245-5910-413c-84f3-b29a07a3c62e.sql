@@ -1,0 +1,1 @@
+DROP TRIGGER IF EXISTS sync_player_stats_trigger ON public.match_player_stats;
