@@ -60,42 +60,42 @@ export function TeamRequestsManager() {
     mutationFn: async (req: TeamRequest) => {
       // 1. Add to team_members
       const teamRole = req.role_requested === "coach" ? "coach" : "parent";
-      await supabase.from("team_members").insert({
+      await supabase.from("team_members").upsert({
         user_id: req.user_id,
         team_slug: req.team_slug,
         role: teamRole,
-      });
+      }, { onConflict: "user_id,team_slug" });
 
       // 2. If parent, create guardian link
       if (req.role_requested === "parent" && req.player_name) {
-        await supabase.from("guardians").insert({
+        await supabase.from("guardians").upsert({
           parent_user_id: req.user_id,
           player_name: req.player_name,
           team_slug: req.team_slug,
           status: "active",
-        });
+        }, { onConflict: "parent_user_id,player_name,team_slug" as any });
       }
 
       // 3. Ensure user has 'user' app role at minimum
-      await supabase.from("user_roles").insert({
+      await supabase.from("user_roles").upsert({
         user_id: req.user_id,
         role: "user",
-      });
+      }, { onConflict: "user_id,role" });
       // If coach, also add coach role
       if (req.role_requested === "coach") {
-        await supabase.from("user_roles").insert({
+        await supabase.from("user_roles").upsert({
           user_id: req.user_id,
           role: "coach",
-        });
+        }, { onConflict: "user_id,role" });
       }
 
-      // 5. Sync user_age_groups so coach/player sees team in POTM/Match Report dropdowns
+      // 5. Sync user_age_groups
       const ageGroup = TEAM_SLUG_TO_AGE_GROUP[req.team_slug];
       if (ageGroup) {
-        await supabase.from("user_age_groups").insert({
+        await supabase.from("user_age_groups").upsert({
           user_id: req.user_id,
           age_group: ageGroup,
-        });
+        }, { onConflict: "user_id,age_group" as any });
       }
 
       // 6. Update request status
