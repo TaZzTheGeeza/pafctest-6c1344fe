@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { CreditCard, Plus, Check, Clock, RefreshCw, ExternalLink, Loader2 } from "lucide-react";
+import { CreditCard, Plus, Check, Clock, RefreshCw, ExternalLink, Loader2, Users, ShieldCheck } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { useSearchParams } from "react-router-dom";
