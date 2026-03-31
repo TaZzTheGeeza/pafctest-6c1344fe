@@ -203,7 +203,7 @@ export function PaymentCenter({ teamSlug }: { teamSlug: string }) {
             <CreditCard className="h-5 w-5 text-primary" />
             <h3 className="font-display text-sm tracking-wider text-foreground uppercase">Monthly Player Subs</h3>
           </div>
-          <p className="text-muted-foreground text-sm mb-4">Direct debit subscription — £30/month per player</p>
+           <p className="text-muted-foreground text-sm mb-4">Direct debit subscription for training &amp; match days</p>
 
           {subLoading ? (
             <div className="flex items-center gap-2 text-muted-foreground text-sm">
