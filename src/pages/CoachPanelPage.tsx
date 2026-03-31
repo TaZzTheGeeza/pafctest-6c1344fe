@@ -502,33 +502,74 @@ export function MatchReportForm({ ageGroups }: { ageGroups: string[] }) {
       toast.error("Please fill in all required fields");
       return;
     }
+    if (!slug) {
+      toast.error("Could not map this age group to a team slug");
+      return;
+    }
+
     setSubmitting(true);
 
-    const { error } = await supabase.from("match_reports").insert({
-      team_name: `Peterborough Athletic ${ageGroup}`,
-      age_group: ageGroup,
-      opponent: opponent.trim(),
-      home_score: parseInt(homeScore) || 0,
-      away_score: parseInt(awayScore) || 0,
-      goal_scorers: buildText(goalEntries) || null,
-      assists: buildText(assistEntries) || null,
-      notes: notes.trim() || null,
-      match_date: (() => {
+    try {
+      const normalizedMatchDate = (() => {
         let d = matchDate || new Date().toISOString().split("T")[0];
         if (d.includes("/")) {
           const [dd, mm, yy] = d.split("/");
           d = `${yy.length === 4 ? yy : "20" + yy}-${mm}-${dd}`;
         }
         return d;
-      })(),
-    });
+      })();
 
-    setSubmitting(false);
-    if (error) {
-      toast.error("Failed to submit match report");
-    } else {
+      const trimmedOpponent = opponent.trim();
+
+      const { error: reportError } = await supabase.from("match_reports").insert({
+        team_name: `Peterborough Athletic ${ageGroup}`,
+        age_group: ageGroup,
+        opponent: trimmedOpponent,
+        home_score: parseInt(homeScore) || 0,
+        away_score: parseInt(awayScore) || 0,
+        goal_scorers: buildText(goalEntries) || null,
+        assists: buildText(assistEntries) || null,
+        notes: notes.trim() || null,
+        match_date: normalizedMatchDate,
+      });
+      if (reportError) throw reportError;
+
+      const playerMap = new Map<string, { goals: number; assists: number }>();
+
+      for (const entry of goalEntries.filter((g) => g.playerId)) {
+        const existing = playerMap.get(entry.playerId) || { goals: 0, assists: 0 };
+        existing.goals += entry.count;
+        playerMap.set(entry.playerId, existing);
+      }
+
+      for (const entry of assistEntries.filter((a) => a.playerId)) {
+        const existing = playerMap.get(entry.playerId) || { goals: 0, assists: 0 };
+        existing.assists += entry.count;
+        playerMap.set(entry.playerId, existing);
+      }
+
+      if (playerMap.size > 0) {
+        const matchStats = Array.from(playerMap.entries()).map(([playerId, stats]) => ({
+          player_stat_id: playerId,
+          team_slug: slug,
+          match_date: normalizedMatchDate,
+          opponent: trimmedOpponent,
+          goals: stats.goals,
+          assists: stats.assists,
+        }));
+
+        const { error: statsError } = await supabase
+          .from("match_player_stats")
+          .upsert(matchStats, { onConflict: "player_stat_id,match_date,opponent" });
+        if (statsError) throw statsError;
+      }
+
       toast.success("Match report submitted!");
       setSubmitted(true);
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to submit match report");
+    } finally {
+      setSubmitting(false);
     }
   };
 
