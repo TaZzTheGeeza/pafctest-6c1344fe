@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Save, Loader2, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -23,12 +23,71 @@ export function MatchReportTab({
   const { data: roster = [] } = useTeamRoster(teamSlug);
   const queryClient = useQueryClient();
 
+  const parseMatchDate = () => {
+    const [d, m, y] = fixture.date.split("/");
+    return y.length === 4 ? `${y}-${m}-${d}` : `20${y}-${m}-${d}`;
+  };
+
+  const dbDate = parseMatchDate();
+
+  // Load existing report if one exists
+  const { data: existingReport } = useQuery({
+    queryKey: ["existing-match-report", teamName, opponent, dbDate],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("match_reports")
+        .select("*")
+        .eq("team_name", teamName)
+        .eq("opponent", opponent)
+        .eq("match_date", dbDate)
+        .maybeSingle();
+      return data;
+    },
+  });
+
+  // Load existing match player stats
+  const { data: existingStats } = useQuery({
+    queryKey: ["existing-match-stats", teamSlug, opponent, dbDate],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("match_player_stats")
+        .select("player_stat_id, goals, assists")
+        .eq("team_slug", teamSlug)
+        .eq("opponent", opponent)
+        .eq("match_date", dbDate);
+      return data || [];
+    },
+  });
+
   const [homeScore, setHomeScore] = useState(fixture.homeScore?.toString() || "0");
   const [awayScore, setAwayScore] = useState(fixture.awayScore?.toString() || "0");
   const [goalEntries, setGoalEntries] = useState<GoalEntry[]>([]);
   const [assistEntries, setAssistEntries] = useState<AssistEntry[]>([]);
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+
+  // Pre-fill form with existing data
+  useEffect(() => {
+    if (loaded) return;
+    if (existingReport) {
+      setHomeScore(existingReport.home_score?.toString() || "0");
+      setAwayScore(existingReport.away_score?.toString() || "0");
+      setNotes(existingReport.notes || "");
+      setLoaded(true);
+    }
+    if (existingStats && existingStats.length > 0 && roster.length > 0) {
+      const goals: GoalEntry[] = existingStats
+        .filter(s => s.goals > 0)
+        .map(s => ({ playerId: s.player_stat_id, count: s.goals }));
+      const assists: AssistEntry[] = existingStats
+        .filter(s => s.assists > 0)
+        .map(s => ({ playerId: s.player_stat_id, count: s.assists }));
+      if (goals.length > 0) setGoalEntries(goals);
+      if (assists.length > 0) setAssistEntries(assists);
+      setLoaded(true);
+    }
+  }, [existingReport, existingStats, roster, loaded]);
 
   const addGoalEntry = () => setGoalEntries([...goalEntries, { playerId: "", count: 1 }]);
   const addAssistEntry = () => setAssistEntries([...assistEntries, { playerId: "", count: 1 }]);
