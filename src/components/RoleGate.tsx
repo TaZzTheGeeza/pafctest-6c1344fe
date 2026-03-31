@@ -36,6 +36,7 @@ export function RoleGate({ children, requiredRole, redirectTo = "/auth" }: Props
   }
 
   const hasAccess =
+    requiredRole === "authenticated" ? true :
     requiredRole === "admin" ? isAdmin :
     requiredRole === "coach" ? (isCoach || isAdmin || isTreasurer) :
     requiredRole === "treasurer" ? (isTreasurer || isAdmin) :
