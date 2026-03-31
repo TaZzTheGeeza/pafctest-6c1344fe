@@ -1,25 +1,28 @@
 import { Composition } from "remotion";
 import { MainVideo } from "./MainVideo";
+import { MainVideoV2 } from "./MainVideoV2";
 
-// Scene durations based on audio lengths (at 30fps) + padding
-// 01-intro: 11.75s = 353f + 30f pad = 383
-// 02-teams: 10.50s = 315f + 30f pad = 345
-// 03-tournament: 10.91s = 327f + 30f pad = 357
-// 04-shop: 9.24s = 277f + 30f pad = 307
-// 05-pafctv: 10.45s = 314f + 30f pad = 344
-// 06-raffle: 9.71s = 291f + 30f pad = 321
-// 07-contact: 7.89s = 237f + 20f pad = 257
-// 08-outro: 8.64s = 259f + 30f pad = 289
-// Total: 2603 frames, minus transitions (7 * 20f = 140) = ~2463
-// Add 60f intro black + 60f outro = ~2583
+const V2_SCENES = [446, 331, 490, 458, 537, 536, 478, 354, 548, 510, 515, 483, 375];
+const V2_TRANS = 20;
+const V2_TOTAL = V2_SCENES.reduce((a, b) => a + b, 0) - (V2_SCENES.length - 1) * V2_TRANS;
 
-export const RemotionRoot = () => (
-  <Composition
-    id="main"
-    component={MainVideo}
-    durationInFrames={2700}
-    fps={30}
-    width={1920}
-    height={1080}
-  />
+export const RemotionRoot: React.FC = () => (
+  <>
+    <Composition
+      id="main"
+      component={MainVideo}
+      durationInFrames={2700}
+      fps={30}
+      width={1920}
+      height={1080}
+    />
+    <Composition
+      id="sales-pitch"
+      component={MainVideoV2}
+      durationInFrames={V2_TOTAL}
+      fps={30}
+      width={1920}
+      height={1080}
+    />
+  </>
 );
