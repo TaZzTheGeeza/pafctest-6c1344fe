@@ -255,7 +255,7 @@ export function PaymentCenter({ teamSlug }: { teamSlug: string }) {
             <div className="space-y-3">
               {/* Tier selector */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                {SUB_TIERS.map((tier) => (
+                {availableTiers.map((tier) => (
                   <button
                     key={tier.key}
                     onClick={() => setSelectedTier(tier.key)}
