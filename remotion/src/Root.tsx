@@ -2,7 +2,7 @@ import { Composition } from "remotion";
 import { MainVideo } from "./MainVideo";
 import { MainVideoV2 } from "./MainVideoV2";
 
-const V2_SCENES = [446, 331, 490, 458, 537, 536, 478, 354, 548, 510, 515, 483, 375];
+const V2_SCENES = [462, 347, 506, 474, 553, 552, 893, 370, 564, 526, 531, 1017, 943, 709, 614];
 const V2_TRANS = 20;
 const V2_TOTAL = V2_SCENES.reduce((a, b) => a + b, 0) - (V2_SCENES.length - 1) * V2_TRANS;
 
