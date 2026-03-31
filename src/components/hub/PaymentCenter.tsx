@@ -35,6 +35,14 @@ interface SubStatus {
   subscription_end: string | null;
 }
 
+type SubTier = "standard" | "sibling" | "coach";
+
+const SUB_TIERS: { key: SubTier; label: string; price: string; description: string; icon: React.ReactNode }[] = [
+  { key: "standard", label: "Standard", price: "£30", description: "1 player per month", icon: <CreditCard className="h-4 w-4" /> },
+  { key: "sibling", label: "Sibling Discount", price: "£50", description: "2 children per month", icon: <Users className="h-4 w-4" /> },
+  { key: "coach", label: "Coach Discount", price: "£20", description: "Per child per month", icon: <ShieldCheck className="h-4 w-4" /> },
+];
+
 export function PaymentCenter({ teamSlug }: { teamSlug: string }) {
   const { user, isCoach, isAdmin } = useAuth();
   const [requests, setRequests] = useState<PaymentRequest[]>([]);
@@ -45,6 +53,7 @@ export function PaymentCenter({ teamSlug }: { teamSlug: string }) {
   const [subLoading, setSubLoading] = useState(true);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
+  const [selectedTier, setSelectedTier] = useState<SubTier>("standard");
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
