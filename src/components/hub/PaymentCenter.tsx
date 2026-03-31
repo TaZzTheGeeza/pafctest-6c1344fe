@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { CreditCard, Plus, Check, Clock, RefreshCw, ExternalLink, Loader2 } from "lucide-react";
+import { CreditCard, Plus, Check, Clock, RefreshCw, ExternalLink, Loader2, Users, ShieldCheck } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { useSearchParams } from "react-router-dom";
@@ -35,6 +35,14 @@ interface SubStatus {
   subscription_end: string | null;
 }
 
+type SubTier = "standard" | "sibling" | "coach";
+
+const SUB_TIERS: { key: SubTier; label: string; price: string; description: string; icon: React.ReactNode }[] = [
+  { key: "standard", label: "Standard", price: "£30", description: "1 player per month", icon: <CreditCard className="h-4 w-4" /> },
+  { key: "sibling", label: "Sibling Discount", price: "£50", description: "2 children per month", icon: <Users className="h-4 w-4" /> },
+  { key: "coach", label: "Coach Discount", price: "£20", description: "Per child per month", icon: <ShieldCheck className="h-4 w-4" /> },
+];
+
 export function PaymentCenter({ teamSlug }: { teamSlug: string }) {
   const { user, isCoach, isAdmin } = useAuth();
   const [requests, setRequests] = useState<PaymentRequest[]>([]);
@@ -45,6 +53,7 @@ export function PaymentCenter({ teamSlug }: { teamSlug: string }) {
   const [subLoading, setSubLoading] = useState(true);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
+  const [selectedTier, setSelectedTier] = useState<SubTier>("standard");
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
@@ -86,7 +95,7 @@ export function PaymentCenter({ teamSlug }: { teamSlug: string }) {
   async function startCheckout() {
     try {
       setCheckoutLoading(true);
-      const { data, error } = await supabase.functions.invoke("create-subs-checkout");
+      const { data, error } = await supabase.functions.invoke("create-subs-checkout", { body: { tier: selectedTier } });
       if (error) throw error;
       if (data?.error) { toast.error(data.error); return; }
       if (data?.url) window.open(data.url, "_blank");
@@ -194,7 +203,7 @@ export function PaymentCenter({ teamSlug }: { teamSlug: string }) {
             <CreditCard className="h-5 w-5 text-primary" />
             <h3 className="font-display text-sm tracking-wider text-foreground uppercase">Monthly Player Subs</h3>
           </div>
-          <p className="text-muted-foreground text-sm mb-4">Direct debit subscription — £30/month per player</p>
+           <p className="text-muted-foreground text-sm mb-4">Direct debit subscription for training &amp; match days</p>
 
           {subLoading ? (
             <div className="flex items-center gap-2 text-muted-foreground text-sm">
@@ -224,18 +233,43 @@ export function PaymentCenter({ teamSlug }: { teamSlug: string }) {
             </div>
           ) : (
             <div className="space-y-3">
-              <div className="bg-secondary/50 rounded-lg p-4">
-                <div className="flex items-baseline gap-1 mb-2">
-                  <span className="text-3xl font-bold font-display text-primary">£30</span>
-                  <span className="text-sm text-muted-foreground">/month</span>
-                </div>
-                <ul className="text-sm text-muted-foreground space-y-1">
-                  <li className="flex items-center gap-2"><Check className="h-3.5 w-3.5 text-primary" /> Weekly training sessions</li>
-                  <li className="flex items-center gap-2"><Check className="h-3.5 w-3.5 text-primary" /> Match day participation</li>
-                  <li className="flex items-center gap-2"><Check className="h-3.5 w-3.5 text-primary" /> FA-qualified coaching</li>
-                  <li className="flex items-center gap-2"><Check className="h-3.5 w-3.5 text-primary" /> Kit & equipment included</li>
-                </ul>
+              {/* Tier selector */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                {SUB_TIERS.map((tier) => (
+                  <button
+                    key={tier.key}
+                    onClick={() => setSelectedTier(tier.key)}
+                    className={`relative rounded-lg border-2 p-3 text-left transition-all ${
+                      selectedTier === tier.key
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:border-primary/40"
+                    }`}
+                  >
+                    {selectedTier === tier.key && (
+                      <div className="absolute top-1.5 right-1.5">
+                        <Check className="h-3.5 w-3.5 text-primary" />
+                      </div>
+                    )}
+                    <div className="flex items-center gap-1.5 mb-1 text-muted-foreground">
+                      {tier.icon}
+                      <span className="text-xs font-display tracking-wider uppercase">{tier.label}</span>
+                    </div>
+                    <div className="flex items-baseline gap-0.5">
+                      <span className="text-xl font-bold font-display text-primary">{tier.price}</span>
+                      <span className="text-xs text-muted-foreground">/mo</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-0.5">{tier.description}</p>
+                  </button>
+                ))}
               </div>
+
+              <ul className="text-sm text-muted-foreground space-y-1">
+                <li className="flex items-center gap-2"><Check className="h-3.5 w-3.5 text-primary" /> Weekly training sessions</li>
+                <li className="flex items-center gap-2"><Check className="h-3.5 w-3.5 text-primary" /> Match day participation</li>
+                <li className="flex items-center gap-2"><Check className="h-3.5 w-3.5 text-primary" /> FA-qualified coaching</li>
+                <li className="flex items-center gap-2"><Check className="h-3.5 w-3.5 text-primary" /> Kit & equipment included</li>
+              </ul>
+
               <button onClick={startCheckout} disabled={checkoutLoading} className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground rounded-lg px-4 py-3 font-display text-sm tracking-wider hover:bg-primary/90 transition-colors disabled:opacity-50">
                 {checkoutLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />}
                 Set Up Direct Debit
