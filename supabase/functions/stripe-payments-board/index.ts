@@ -94,21 +94,24 @@ serve(async (req) => {
     }
 
     // Build subscription data
-    const subscriptions = allSubscriptions.map((s) => ({
-      id: s.id,
-      customer_id: s.customer,
-      customer_email: customerMap[s.customer as string]?.email || null,
-      customer_name: customerMap[s.customer as string]?.name || null,
-      status: s.status,
-      current_period_start: s.current_period_start ? new Date(s.current_period_start * 1000).toISOString() : null,
-      current_period_end: s.current_period_end ? new Date(s.current_period_end * 1000).toISOString() : null,
-      cancel_at_period_end: s.cancel_at_period_end,
-      amount_cents: s.items?.data?.[0]?.price?.unit_amount || 0,
-      currency: s.items?.data?.[0]?.price?.currency || "gbp",
-      interval: s.items?.data?.[0]?.price?.recurring?.interval || null,
-      product_name: s.items?.data?.[0]?.price?.product || null,
-      created: new Date(s.created * 1000).toISOString(),
-    }));
+    const subscriptions = allSubscriptions.map((s) => {
+      console.log(`[SUB] id=${s.id} period_end=${s.current_period_end}`);
+      return {
+        id: s.id,
+        customer_id: s.customer,
+        customer_email: customerMap[s.customer as string]?.email || null,
+        customer_name: customerMap[s.customer as string]?.name || null,
+        status: s.status,
+        current_period_start: s.current_period_start ? new Date(s.current_period_start * 1000).toISOString() : null,
+        current_period_end: s.current_period_end ? new Date(s.current_period_end * 1000).toISOString() : null,
+        cancel_at_period_end: s.cancel_at_period_end,
+        amount_cents: s.items?.data?.[0]?.price?.unit_amount || 0,
+        currency: s.items?.data?.[0]?.price?.currency || "gbp",
+        interval: s.items?.data?.[0]?.price?.recurring?.interval || null,
+        product_name: s.items?.data?.[0]?.price?.product || null,
+        created: new Date(s.created * 1000).toISOString(),
+      };
+    });
 
     // Build payment data
     const payments = allPayments.map((p) => ({
