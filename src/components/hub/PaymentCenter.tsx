@@ -54,15 +54,35 @@ export function PaymentCenter({ teamSlug }: { teamSlug: string }) {
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
   const [selectedTier, setSelectedTier] = useState<SubTier>("standard");
+  const [guardianCount, setGuardianCount] = useState(0);
   const [searchParams] = useSearchParams();
+
+  // Determine which tiers this user can access
+  const availableTiers = SUB_TIERS.filter((tier) => {
+    if (tier.key === "standard") return true;
+    if (tier.key === "coach") return isCoach || isAdmin;
+    if (tier.key === "sibling") return guardianCount >= 2;
+    return false;
+  });
 
   useEffect(() => {
     if (user) {
       loadRequests();
       loadPayments();
       checkSubscription();
+      loadGuardianCount();
     }
   }, [user, teamSlug]);
+
+  async function loadGuardianCount() {
+    if (!user) return;
+    const { count } = await supabase
+      .from("guardians")
+      .select("*", { count: "exact", head: true })
+      .eq("parent_user_id", user.id)
+      .eq("status", "active");
+    setGuardianCount(count ?? 0);
+  }
 
   // Auto-check after returning from checkout
   useEffect(() => {
@@ -235,7 +255,7 @@ export function PaymentCenter({ teamSlug }: { teamSlug: string }) {
             <div className="space-y-3">
               {/* Tier selector */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                {SUB_TIERS.map((tier) => (
+                {availableTiers.map((tier) => (
                   <button
                     key={tier.key}
                     onClick={() => setSelectedTier(tier.key)}
