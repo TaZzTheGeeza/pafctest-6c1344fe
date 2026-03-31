@@ -115,17 +115,25 @@ export function MatchReportTab({
           opponent,
           goals: stats.goals,
           assists: stats.assists,
-          appeared: false, // appearance tracked via squad selection
+          appeared: false,
           potm: false,
         }));
 
+        console.log("Saving match_player_stats:", matchStats);
         const { error: statsError } = await supabase
           .from("match_player_stats")
           .upsert(matchStats, { onConflict: "player_stat_id,match_date,opponent" });
-        if (statsError) throw statsError;
+        if (statsError) {
+          console.error("match_player_stats upsert error:", statsError);
+          throw statsError;
+        }
+        console.log("match_player_stats saved successfully");
+      } else {
+        console.warn("No player entries to save - playerMap is empty");
       }
 
       queryClient.invalidateQueries({ queryKey: ["team-roster"] });
+      queryClient.invalidateQueries({ queryKey: ["team-stats"] });
       toast.success("Match report saved with player stats!");
     } catch (err: any) {
       toast.error(err.message || "Failed to save report");
