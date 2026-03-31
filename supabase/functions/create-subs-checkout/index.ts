@@ -91,11 +91,24 @@ serve(async (req) => {
       }
     }
 
+    // Anchor all subscriptions to the 1st of each month
+    const now = new Date();
+    const nextFirst = new Date(Date.UTC(
+      now.getUTCMonth() === 11 ? now.getUTCFullYear() + 1 : now.getUTCFullYear(),
+      now.getUTCMonth() === 11 ? 0 : now.getUTCMonth() + 1,
+      1, 0, 0, 0
+    ));
+    const billingAnchor = Math.floor(nextFirst.getTime() / 1000);
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
       line_items: [{ price: priceId, quantity: 1 }],
       mode: "subscription",
+      subscription_data: {
+        billing_cycle_anchor: billingAnchor,
+        proration_behavior: "create_prorations",
+      },
       success_url: `${req.headers.get("origin")}/hub?tab=payments&subscription=success`,
       cancel_url: `${req.headers.get("origin")}/hub?tab=payments`,
     });
