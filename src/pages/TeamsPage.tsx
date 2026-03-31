@@ -57,10 +57,30 @@ const allTeams: TeamData[] = [
 ];
 
 function formatFADate(dateStr: string): string {
-  // dateStr is "DD/MM/YY" format
+// dateStr is "DD/MM/YY" or "DD/MM/YYYY" format
   const [d, m, y] = dateStr.split("/");
-  const date = new Date(2000 + parseInt(y), parseInt(m) - 1, parseInt(d));
+  const fullYear = y.length === 2 ? 2000 + parseInt(y) : parseInt(y);
+  const date = new Date(fullYear, parseInt(m) - 1, parseInt(d));
   return date.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
+}
+
+function parseFADate(dateStr: string): Date | null {
+  try {
+    const parts = dateStr.split("/");
+    if (parts.length === 3) {
+      const year = parts[2].length === 2 ? 2000 + Number(parts[2]) : Number(parts[2]);
+      return new Date(year, Number(parts[1]) - 1, Number(parts[0]));
+    }
+  } catch {}
+  return null;
+}
+
+function isFutureFixture(f: { date: string }): boolean {
+  const fixDate = parseFADate(f.date);
+  if (!fixDate) return true;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return fixDate >= today;
 }
 
 function TeamDetail({ team }: { team: TeamData }) {
@@ -71,8 +91,9 @@ function TeamDetail({ team }: { team: TeamData }) {
   const [coachFixture, setCoachFixture] = useState<FAFixture | null>(null);
   const [expandedResult, setExpandedResult] = useState<number | null>(null);
 
-  // Determine next fixture from live data or fall back to hardcoded
-  const nextFixture = liveData?.fixtures?.[0];
+  // Determine next fixture from live data (future only) or fall back to hardcoded
+  const futureFixtures = liveData?.fixtures?.filter(isFutureFixture) || [];
+  const nextFixture = futureFixtures[0];
   const displayFixture = nextFixture
     ? {
         opponent: nextFixture.homeTeam.includes("Peterborough Ath") ? nextFixture.awayTeam : nextFixture.homeTeam,
@@ -138,36 +159,13 @@ function TeamDetail({ team }: { team: TeamData }) {
                 </div>
               )}
 
-              {liveData && liveData.fixtures.filter((f) => {
-                // Only show fixtures that haven't happened yet
-                try {
-                  const parts = f.date.split("/");
-                  if (parts.length === 3) {
-                    const fixDate = new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]));
-                    const today = new Date();
-                    today.setHours(0, 0, 0, 0);
-                    return fixDate >= today;
-                  }
-                } catch {}
-                return true;
-              }).length > 0 && (
+              {liveData && futureFixtures.length > 0 && (
                 <div className="bg-card border border-border rounded-lg overflow-hidden">
                   <div className="bg-primary/10 px-6 py-3 border-b border-border">
                     <h2 className="font-display text-sm font-bold text-primary tracking-wider">Upcoming Fixtures</h2>
                   </div>
                   <div className="divide-y divide-border">
-                    {liveData.fixtures.filter((f) => {
-                      try {
-                        const parts = f.date.split("/");
-                        if (parts.length === 3) {
-                          const fixDate = new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]));
-                          const today = new Date();
-                          today.setHours(0, 0, 0, 0);
-                          return fixDate >= today;
-                        }
-                      } catch {}
-                      return true;
-                    }).map((fix, i) => {
+                    {futureFixtures.map((fix, i) => {
                       const isHome = fix.homeTeam.includes("Peterborough Ath");
                       return (
                         <div key={i} className="px-6 py-3 flex items-center justify-between gap-4">
