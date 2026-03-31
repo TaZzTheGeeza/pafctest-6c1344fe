@@ -138,13 +138,36 @@ function TeamDetail({ team }: { team: TeamData }) {
                 </div>
               )}
 
-              {liveData && liveData.fixtures.length > 0 && (
+              {liveData && liveData.fixtures.filter((f) => {
+                // Only show fixtures that haven't happened yet
+                try {
+                  const parts = f.date.split("/");
+                  if (parts.length === 3) {
+                    const fixDate = new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]));
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    return fixDate >= today;
+                  }
+                } catch {}
+                return true;
+              }).length > 0 && (
                 <div className="bg-card border border-border rounded-lg overflow-hidden">
                   <div className="bg-primary/10 px-6 py-3 border-b border-border">
                     <h2 className="font-display text-sm font-bold text-primary tracking-wider">Upcoming Fixtures</h2>
                   </div>
                   <div className="divide-y divide-border">
-                    {liveData.fixtures.map((fix, i) => {
+                    {liveData.fixtures.filter((f) => {
+                      try {
+                        const parts = f.date.split("/");
+                        if (parts.length === 3) {
+                          const fixDate = new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]));
+                          const today = new Date();
+                          today.setHours(0, 0, 0, 0);
+                          return fixDate >= today;
+                        }
+                      } catch {}
+                      return true;
+                    }).map((fix, i) => {
                       const isHome = fix.homeTeam.includes("Peterborough Ath");
                       return (
                         <div key={i} className="px-6 py-3 flex items-center justify-between gap-4">
