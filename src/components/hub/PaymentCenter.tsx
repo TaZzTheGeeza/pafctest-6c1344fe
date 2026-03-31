@@ -233,18 +233,43 @@ export function PaymentCenter({ teamSlug }: { teamSlug: string }) {
             </div>
           ) : (
             <div className="space-y-3">
-              <div className="bg-secondary/50 rounded-lg p-4">
-                <div className="flex items-baseline gap-1 mb-2">
-                  <span className="text-3xl font-bold font-display text-primary">£30</span>
-                  <span className="text-sm text-muted-foreground">/month</span>
-                </div>
-                <ul className="text-sm text-muted-foreground space-y-1">
-                  <li className="flex items-center gap-2"><Check className="h-3.5 w-3.5 text-primary" /> Weekly training sessions</li>
-                  <li className="flex items-center gap-2"><Check className="h-3.5 w-3.5 text-primary" /> Match day participation</li>
-                  <li className="flex items-center gap-2"><Check className="h-3.5 w-3.5 text-primary" /> FA-qualified coaching</li>
-                  <li className="flex items-center gap-2"><Check className="h-3.5 w-3.5 text-primary" /> Kit & equipment included</li>
-                </ul>
+              {/* Tier selector */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                {SUB_TIERS.map((tier) => (
+                  <button
+                    key={tier.key}
+                    onClick={() => setSelectedTier(tier.key)}
+                    className={`relative rounded-lg border-2 p-3 text-left transition-all ${
+                      selectedTier === tier.key
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:border-primary/40"
+                    }`}
+                  >
+                    {selectedTier === tier.key && (
+                      <div className="absolute top-1.5 right-1.5">
+                        <Check className="h-3.5 w-3.5 text-primary" />
+                      </div>
+                    )}
+                    <div className="flex items-center gap-1.5 mb-1 text-muted-foreground">
+                      {tier.icon}
+                      <span className="text-xs font-display tracking-wider uppercase">{tier.label}</span>
+                    </div>
+                    <div className="flex items-baseline gap-0.5">
+                      <span className="text-xl font-bold font-display text-primary">{tier.price}</span>
+                      <span className="text-xs text-muted-foreground">/mo</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-0.5">{tier.description}</p>
+                  </button>
+                ))}
               </div>
+
+              <ul className="text-sm text-muted-foreground space-y-1">
+                <li className="flex items-center gap-2"><Check className="h-3.5 w-3.5 text-primary" /> Weekly training sessions</li>
+                <li className="flex items-center gap-2"><Check className="h-3.5 w-3.5 text-primary" /> Match day participation</li>
+                <li className="flex items-center gap-2"><Check className="h-3.5 w-3.5 text-primary" /> FA-qualified coaching</li>
+                <li className="flex items-center gap-2"><Check className="h-3.5 w-3.5 text-primary" /> Kit & equipment included</li>
+              </ul>
+
               <button onClick={startCheckout} disabled={checkoutLoading} className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground rounded-lg px-4 py-3 font-display text-sm tracking-wider hover:bg-primary/90 transition-colors disabled:opacity-50">
                 {checkoutLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />}
                 Set Up Direct Debit
