@@ -54,15 +54,35 @@ export function PaymentCenter({ teamSlug }: { teamSlug: string }) {
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
   const [selectedTier, setSelectedTier] = useState<SubTier>("standard");
+  const [guardianCount, setGuardianCount] = useState(0);
   const [searchParams] = useSearchParams();
+
+  // Determine which tiers this user can access
+  const availableTiers = SUB_TIERS.filter((tier) => {
+    if (tier.key === "standard") return true;
+    if (tier.key === "coach") return isCoach || isAdmin;
+    if (tier.key === "sibling") return guardianCount >= 2;
+    return false;
+  });
 
   useEffect(() => {
     if (user) {
       loadRequests();
       loadPayments();
       checkSubscription();
+      loadGuardianCount();
     }
   }, [user, teamSlug]);
+
+  async function loadGuardianCount() {
+    if (!user) return;
+    const { count } = await supabase
+      .from("guardians")
+      .select("*", { count: "exact", head: true })
+      .eq("parent_user_id", user.id)
+      .eq("status", "active");
+    setGuardianCount(count ?? 0);
+  }
 
   // Auto-check after returning from checkout
   useEffect(() => {

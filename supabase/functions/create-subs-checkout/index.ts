@@ -18,6 +18,12 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const supabaseAdmin = createClient(
+    Deno.env.get("SUPABASE_URL") ?? "",
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+    { auth: { persistSession: false } }
+  );
+
   const supabaseClient = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
     Deno.env.get("SUPABASE_ANON_KEY") ?? ""
@@ -34,6 +40,38 @@ serve(async (req) => {
     const tier = body.tier || "standard";
     const priceId = PRICE_IDS[tier];
     if (!priceId) throw new Error(`Invalid subscription tier: ${tier}`);
+
+    // ── Server-side eligibility checks ──
+    if (tier === "coach") {
+      const { data: hasCoach } = await supabaseAdmin.rpc("has_role", {
+        _user_id: user.id,
+        _role: "coach",
+      });
+      const { data: hasAdmin } = await supabaseAdmin.rpc("has_role", {
+        _user_id: user.id,
+        _role: "admin",
+      });
+      if (!hasCoach && !hasAdmin) {
+        return new Response(
+          JSON.stringify({ error: "Coach discount is only available to coaches" }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 403 }
+        );
+      }
+    }
+
+    if (tier === "sibling") {
+      const { count } = await supabaseAdmin
+        .from("guardians")
+        .select("*", { count: "exact", head: true })
+        .eq("parent_user_id", user.id)
+        .eq("status", "active");
+      if ((count ?? 0) < 2) {
+        return new Response(
+          JSON.stringify({ error: "Sibling discount requires 2 or more children registered at the club" }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 403 }
+        );
+      }
+    }
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", { apiVersion: "2025-08-27.basil" });
 
