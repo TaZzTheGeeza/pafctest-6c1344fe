@@ -107,7 +107,7 @@ function AppContent() {
         <Route path="/admin/player/:userId" element={<RoleGate requiredRole="admin"><AdminPlayerProfilePage /></RoleGate>} />
         <Route path="/admin/bulk-documents" element={<RoleGate requiredRole="admin"><BulkDocumentUploadPage /></RoleGate>} />
         <Route path="/admin/safeguarding-reports" element={<SafeguardingReportsPage />} />
-        <Route path="/my-profile" element={<RoleGate requiredRole="player"><MyProfilePage /></RoleGate>} />
+        <Route path="/my-profile" element={<RoleGate requiredRole="authenticated"><MyProfilePage /></RoleGate>} />
         <Route path="/auth" element={<AuthPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/unsubscribe" element={<UnsubscribePage />} />

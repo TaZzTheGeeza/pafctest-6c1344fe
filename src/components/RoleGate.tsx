@@ -7,7 +7,7 @@ import { ShieldX, Loader2 } from "lucide-react";
 
 interface Props {
   children: ReactNode;
-  requiredRole: "player" | "coach" | "admin" | "treasurer";
+  requiredRole: "player" | "coach" | "admin" | "treasurer" | "authenticated";
   redirectTo?: string;
 }
 
@@ -36,6 +36,7 @@ export function RoleGate({ children, requiredRole, redirectTo = "/auth" }: Props
   }
 
   const hasAccess =
+    requiredRole === "authenticated" ? true :
     requiredRole === "admin" ? isAdmin :
     requiredRole === "coach" ? (isCoach || isAdmin || isTreasurer) :
     requiredRole === "treasurer" ? (isTreasurer || isAdmin) :
