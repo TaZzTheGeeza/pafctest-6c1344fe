@@ -91,8 +91,9 @@ function TeamDetail({ team }: { team: TeamData }) {
   const [coachFixture, setCoachFixture] = useState<FAFixture | null>(null);
   const [expandedResult, setExpandedResult] = useState<number | null>(null);
 
-  // Determine next fixture from live data or fall back to hardcoded
-  const nextFixture = liveData?.fixtures?.[0];
+  // Determine next fixture from live data (future only) or fall back to hardcoded
+  const futureFixtures = liveData?.fixtures?.filter(isFutureFixture) || [];
+  const nextFixture = futureFixtures[0];
   const displayFixture = nextFixture
     ? {
         opponent: nextFixture.homeTeam.includes("Peterborough Ath") ? nextFixture.awayTeam : nextFixture.homeTeam,
