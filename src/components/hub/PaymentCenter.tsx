@@ -132,7 +132,7 @@ export function PaymentCenter({ teamSlug }: { teamSlug: string }) {
       const { data, error } = await supabase.functions.invoke("customer-portal");
       if (error) throw error;
       if (data?.error) { toast.error(data.error); return; }
-      if (data?.url) window.open(data.url, "_blank");
+      if (data?.url) window.location.href = data.url;
     } catch (e) {
       toast.error("Failed to open subscription management");
     } finally {
