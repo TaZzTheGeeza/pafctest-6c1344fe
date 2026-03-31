@@ -57,10 +57,30 @@ const allTeams: TeamData[] = [
 ];
 
 function formatFADate(dateStr: string): string {
-  // dateStr is "DD/MM/YY" format
+// dateStr is "DD/MM/YY" or "DD/MM/YYYY" format
   const [d, m, y] = dateStr.split("/");
-  const date = new Date(2000 + parseInt(y), parseInt(m) - 1, parseInt(d));
+  const fullYear = y.length === 2 ? 2000 + parseInt(y) : parseInt(y);
+  const date = new Date(fullYear, parseInt(m) - 1, parseInt(d));
   return date.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
+}
+
+function parseFADate(dateStr: string): Date | null {
+  try {
+    const parts = dateStr.split("/");
+    if (parts.length === 3) {
+      const year = parts[2].length === 2 ? 2000 + Number(parts[2]) : Number(parts[2]);
+      return new Date(year, Number(parts[1]) - 1, Number(parts[0]));
+    }
+  } catch {}
+  return null;
+}
+
+function isFutureFixture(f: { date: string }): boolean {
+  const fixDate = parseFADate(f.date);
+  if (!fixDate) return true;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return fixDate >= today;
 }
 
 function TeamDetail({ team }: { team: TeamData }) {
