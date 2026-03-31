@@ -13,7 +13,7 @@ const { fontFamily: oswald } = loadFont("normal", {
   subsets: ["latin"],
 });
 const { fontFamily: inter } = loadInter("normal", {
-  weights: ["300", "400"],
+  weights: ["300", "400", "600"],
   subsets: ["latin"],
 });
 
@@ -42,6 +42,19 @@ export const SceneOutroV2: React.FC = () => {
     "Raffle System", "Coach Tools", "Admin Dashboard"
   ];
 
+  // CTA section
+  const ctaSpring = spring({ frame: frame - 160, fps, config: { damping: 18 } });
+  const ctaScale = interpolate(ctaSpring, [0, 1], [0.9, 1]);
+
+  const nameSpring = spring({ frame: frame - 200, fps, config: { damping: 15, stiffness: 120 } });
+
+  // Bar 2 under CTA
+  const bar2Spring = spring({ frame: frame - 180, fps, config: { damping: 25 } });
+  const bar2Width = interpolate(bar2Spring, [0, 1], [0, 300]);
+
+  // Subtle glow pulse on "Ben Masters"
+  const glowPulse = Math.sin(frame * 0.05) * 0.3 + 0.7;
+
   return (
     <AbsoluteFill>
       <AbsoluteFill
@@ -57,14 +70,14 @@ export const SceneOutroV2: React.FC = () => {
           alignItems: "center",
           justifyContent: "center",
           height: "100%",
-          gap: 24,
+          gap: 18,
         }}
       >
         {/* Main title */}
         <div
           style={{
             fontFamily: oswald,
-            fontSize: 72,
+            fontSize: 68,
             fontWeight: 700,
             color: "#e8e0d0",
             letterSpacing: "0.06em",
@@ -89,7 +102,7 @@ export const SceneOutroV2: React.FC = () => {
         <div
           style={{
             fontFamily: inter,
-            fontSize: 22,
+            fontSize: 20,
             fontWeight: 300,
             color: "#a09880",
             letterSpacing: "0.12em",
@@ -107,10 +120,10 @@ export const SceneOutroV2: React.FC = () => {
           style={{
             display: "flex",
             flexWrap: "wrap",
-            gap: 12,
+            gap: 10,
             justifyContent: "center",
             maxWidth: 800,
-            marginTop: 20,
+            marginTop: 12,
           }}
         >
           {features.map((feat, i) => {
@@ -124,12 +137,12 @@ export const SceneOutroV2: React.FC = () => {
                 key={i}
                 style={{
                   fontFamily: inter,
-                  fontSize: 14,
+                  fontSize: 13,
                   fontWeight: 400,
                   color: "#d4a843",
                   border: "1px solid rgba(184,134,11,0.3)",
                   borderRadius: 20,
-                  padding: "8px 20px",
+                  padding: "6px 18px",
                   opacity: pillSpring,
                   transform: `scale(${interpolate(pillSpring, [0, 1], [0.8, 1])})`,
                   letterSpacing: "0.1em",
@@ -141,23 +154,65 @@ export const SceneOutroV2: React.FC = () => {
           })}
         </div>
 
-        {/* Contact */}
+        {/* Gold bar 2 */}
+        <div
+          style={{
+            width: bar2Width,
+            height: 2,
+            background: "linear-gradient(90deg, transparent, #b8860b, transparent)",
+            marginTop: 20,
+          }}
+        />
+
+        {/* CTA: Want this for your club? */}
+        <div
+          style={{
+            fontFamily: inter,
+            fontSize: 22,
+            fontWeight: 300,
+            color: "#c0b090",
+            letterSpacing: "0.15em",
+            textAlign: "center",
+            marginTop: 10,
+            opacity: ctaSpring,
+            transform: `scale(${ctaScale})`,
+          }}
+        >
+          WANT THIS FOR YOUR CLUB?
+        </div>
+
+        {/* Contact: Ben Masters */}
+        <div
+          style={{
+            fontFamily: oswald,
+            fontSize: 42,
+            fontWeight: 700,
+            color: "#d4a843",
+            letterSpacing: "0.08em",
+            textAlign: "center",
+            opacity: nameSpring,
+            transform: `scale(${interpolate(nameSpring, [0, 1], [0.85, 1])})`,
+            textShadow: `0 0 ${30 * glowPulse}px rgba(212,168,67,${0.3 * glowPulse})`,
+          }}
+        >
+          CONTACT BEN MASTERS
+        </div>
+
         <div
           style={{
             fontFamily: inter,
             fontSize: 16,
-            fontWeight: 300,
+            fontWeight: 400,
             color: "#706850",
             letterSpacing: "0.15em",
-            marginTop: 30,
             opacity: interpolate(
-              spring({ frame: frame - 140, fps, config: { damping: 20 } }),
+              spring({ frame: frame - 220, fps, config: { damping: 20 } }),
               [0, 1],
               [0, 1]
             ),
           }}
         >
-          LET'S BUILD SOMETHING AMAZING
+          CLUB CHAIRMAN · PAFC
         </div>
       </div>
     </AbsoluteFill>
