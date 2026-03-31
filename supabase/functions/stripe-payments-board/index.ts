@@ -64,7 +64,7 @@ serve(async (req) => {
       hasMore = true;
       startingAfter = undefined;
       while (hasMore) {
-        const params: any = { limit: 100, status };
+        const params: any = { limit: 100, status, expand: ["data.items.data.price"] };
         if (startingAfter) params.starting_after = startingAfter;
         const batch = await stripe.subscriptions.list(params);
         allSubscriptions.push(...batch.data);
@@ -94,21 +94,24 @@ serve(async (req) => {
     }
 
     // Build subscription data
-    const subscriptions = allSubscriptions.map((s) => ({
-      id: s.id,
-      customer_id: s.customer,
-      customer_email: customerMap[s.customer as string]?.email || null,
-      customer_name: customerMap[s.customer as string]?.name || null,
-      status: s.status,
-      current_period_start: s.current_period_start ? new Date(s.current_period_start * 1000).toISOString() : null,
-      current_period_end: s.current_period_end ? new Date(s.current_period_end * 1000).toISOString() : null,
-      cancel_at_period_end: s.cancel_at_period_end,
-      amount_cents: s.items?.data?.[0]?.price?.unit_amount || 0,
-      currency: s.items?.data?.[0]?.price?.currency || "gbp",
-      interval: s.items?.data?.[0]?.price?.recurring?.interval || null,
-      product_name: s.items?.data?.[0]?.price?.product || null,
-      created: new Date(s.created * 1000).toISOString(),
-    }));
+    const subscriptions = allSubscriptions.map((s) => {
+      const firstItem = s.items?.data?.[0];
+      return {
+        id: s.id,
+        customer_id: s.customer,
+        customer_email: customerMap[s.customer as string]?.email || null,
+        customer_name: customerMap[s.customer as string]?.name || null,
+        status: s.status,
+        current_period_start: firstItem?.current_period_start ? new Date(firstItem.current_period_start * 1000).toISOString() : null,
+        current_period_end: firstItem?.current_period_end ? new Date(firstItem.current_period_end * 1000).toISOString() : null,
+        cancel_at_period_end: s.cancel_at_period_end,
+        amount_cents: firstItem?.price?.unit_amount || 0,
+        currency: firstItem?.price?.currency || "gbp",
+        interval: firstItem?.price?.recurring?.interval || null,
+        product_name: firstItem?.price?.product || null,
+        created: new Date(s.created * 1000).toISOString(),
+      };
+    });
 
     // Build payment data
     const payments = allPayments.map((p) => ({
