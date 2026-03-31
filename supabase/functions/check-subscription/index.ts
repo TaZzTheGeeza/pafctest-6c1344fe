@@ -50,7 +50,7 @@ serve(async (req) => {
     const customerId = customers.data[0].id;
     logStep("Found customer", { customerId });
 
-    const subscriptions = await stripe.subscriptions.list({ customer: customerId, status: "active", limit: 1 });
+    const subscriptions = await stripe.subscriptions.list({ customer: customerId, status: "active", limit: 1, expand: ["data.items.data.price"] });
     const hasActiveSub = subscriptions.data.length > 0;
     let subscriptionEnd = null;
     let productId = null;
