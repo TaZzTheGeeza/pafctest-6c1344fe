@@ -95,7 +95,7 @@ export function PaymentCenter({ teamSlug }: { teamSlug: string }) {
   async function startCheckout() {
     try {
       setCheckoutLoading(true);
-      const { data, error } = await supabase.functions.invoke("create-subs-checkout");
+      const { data, error } = await supabase.functions.invoke("create-subs-checkout", { body: { tier: selectedTier } });
       if (error) throw error;
       if (data?.error) { toast.error(data.error); return; }
       if (data?.url) window.open(data.url, "_blank");
