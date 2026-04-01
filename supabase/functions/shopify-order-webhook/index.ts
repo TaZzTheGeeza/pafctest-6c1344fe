@@ -14,6 +14,11 @@ Deno.serve(async (req) => {
   try {
     const body = await req.json();
 
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+
     const orderName = body.name || `#${body.order_number}`;
     const customerName =
       body.customer
@@ -23,25 +28,51 @@ Deno.serve(async (req) => {
     const currency = body.currency || "GBP";
     const itemCount = (body.line_items || []).length;
 
+    // Store order in database (upsert to handle duplicate webhooks)
+    const lineItems = (body.line_items || []).map((li: any) => ({
+      id: li.id,
+      title: li.title,
+      variant_title: li.variant_title || null,
+      quantity: li.quantity,
+      price: li.price,
+    }));
+
+    await supabase
+      .from("shopify_orders")
+      .upsert(
+        {
+          shopify_order_id: body.id,
+          order_name: orderName,
+          order_number: body.order_number,
+          email: body.email || null,
+          customer_first_name: body.customer?.first_name || null,
+          customer_last_name: body.customer?.last_name || null,
+          customer_email: body.customer?.email || null,
+          financial_status: body.financial_status || "pending",
+          fulfillment_status: body.fulfillment_status || null,
+          total_price: parseFloat(totalPrice),
+          currency,
+          line_items: lineItems,
+          cancelled_at: body.cancelled_at || null,
+          shopify_created_at: body.created_at || new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "shopify_order_id" }
+      );
+
+    // Send notifications to admins
     const title = `🛒 New Order ${orderName}`;
     const message = `${customerName} placed an order for ${itemCount} item${itemCount !== 1 ? "s" : ""} — ${currency} ${totalPrice}`;
 
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-    );
-
-    // Get all admin user IDs
     const { data: adminRoles } = await supabase
       .from("user_roles")
       .select("user_id")
       .eq("role", "admin");
 
-    const adminIds = [...new Set((adminRoles ?? []).map((r) => r.user_id))];
+    const adminIds = [...new Set((adminRoles ?? []).map((r: any) => r.user_id))];
 
     if (adminIds.length > 0) {
-      // In-app notifications
-      const notifications = adminIds.map((uid) => ({
+      const notifications = adminIds.map((uid: string) => ({
         user_id: uid,
         title,
         message,
@@ -50,7 +81,6 @@ Deno.serve(async (req) => {
       }));
       await supabase.from("hub_notifications").insert(notifications);
 
-      // Email notifications
       for (const uid of adminIds) {
         const { data: profile } = await supabase
           .from("profiles")
@@ -75,7 +105,6 @@ Deno.serve(async (req) => {
         }
       }
 
-      // Push notifications
       await supabase.functions.invoke("send-push-notification", {
         body: {
           userIds: adminIds,
