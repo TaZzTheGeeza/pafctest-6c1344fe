@@ -193,7 +193,7 @@ export default function CalendarPage() {
           {/* Filters */}
           <div className="max-w-5xl mx-auto flex flex-wrap items-center gap-2 mb-6">
             <Filter className="h-4 w-4 text-muted-foreground" />
-            {["all", "match", "training", "social", "meeting", "general"].map((t) => (
+            {["all", "fixture", "match", "training", "social", "meeting", "general"].map((t) => (
               <button
                 key={t}
                 onClick={() => setFilterType(t)}
