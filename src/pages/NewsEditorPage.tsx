@@ -292,7 +292,7 @@ export default function NewsEditorPage() {
                     </Button>
                   </div>
                 )}
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <label className="cursor-pointer">
                     <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
                     <Button type="button" variant="outline" size="sm" className="gap-1.5" asChild>
@@ -302,11 +302,22 @@ export default function NewsEditorPage() {
                       </span>
                     </Button>
                   </label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="gap-1.5"
+                    onClick={handleAiGenerate}
+                    disabled={generatingAi || !title.trim()}
+                  >
+                    {generatingAi ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                    {generatingAi ? "Generating…" : "AI Generate"}
+                  </Button>
                   <Input
                     placeholder="Or paste image URL..."
                     value={coverImageUrl}
                     onChange={(e) => setCoverImageUrl(e.target.value)}
-                    className="flex-1"
+                    className="flex-1 min-w-[200px]"
                   />
                 </div>
               </div>
