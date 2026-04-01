@@ -8,6 +8,18 @@ const corsHeaders = {
 };
 
 const GC_API = "https://api.gocardless.com";
+const GC_DAILY_SNAPSHOT_HOUR_UTC = 13;
+const GC_DAILY_SNAPSHOT_MINUTE_UTC = 30;
+const GC_ACTIVE_MANDATE_STATUSES = new Set(["active", "submitted"]);
+const GC_POST_SNAPSHOT_DEACTIVATION_ACTIONS = new Set([
+  "cancelled",
+  "failed",
+  "expired",
+  "blocked",
+  "consumed",
+  "replaced",
+  "transferred",
+]);
 
 async function gcGet(path: string, token: string, params?: Record<string, string>) {
   const url = new URL(`${GC_API}${path}`);
@@ -46,6 +58,46 @@ async function gcGetAll(path: string, token: string, key: string, params?: Recor
   return all;
 }
 
+function getDashboardSnapshotCutoff(now = new Date()) {
+  const cutoff = new Date(now);
+  cutoff.setUTCHours(GC_DAILY_SNAPSHOT_HOUR_UTC, GC_DAILY_SNAPSHOT_MINUTE_UTC, 0, 0);
+
+  if (now.getTime() < cutoff.getTime()) {
+    cutoff.setUTCDate(cutoff.getUTCDate() - 1);
+  }
+
+  return cutoff;
+}
+
+function countDashboardActiveCustomers(mandates: any[], recentEvents: any[]): number {
+  const mandateById = new Map(mandates.map((mandate) => [mandate.id, mandate]));
+  const customerIds = new Set<string>();
+
+  for (const mandate of mandates) {
+    const customerId = mandate.links?.customer;
+    if (!customerId) continue;
+
+    if (GC_ACTIVE_MANDATE_STATUSES.has(mandate.status)) {
+      customerIds.add(customerId);
+    }
+  }
+
+  // GoCardless homepage reporting is refreshed daily, so keep customers whose
+  // mandates were deactivated after the latest snapshot cutoff in the count.
+  for (const event of recentEvents) {
+    if (event.resource_type !== "mandates") continue;
+    if (!GC_POST_SNAPSHOT_DEACTIVATION_ACTIONS.has(event.action)) continue;
+
+    const mandateId = event.links?.mandate;
+    const customerId = mandateId ? mandateById.get(mandateId)?.links?.customer : null;
+    if (customerId) {
+      customerIds.add(customerId);
+    }
+  }
+
+  return customerIds.size;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -78,10 +130,15 @@ serve(async (req) => {
     const gcToken = Deno.env.get("GOCARDLESS_ACCESS_TOKEN");
     if (!gcToken) throw new Error("GOCARDLESS_ACCESS_TOKEN not set");
 
-    // Fetch all customers, mandates, subscriptions, and payments in parallel
-    const [allCustomers, allMandates, activeSubscriptions, cancelledSubscriptions] = await Promise.all([
+    const dashboardSnapshotCutoff = getDashboardSnapshotCutoff();
+
+    // Fetch all customers, mandates, recent mandate events, subscriptions, and payments in parallel
+    const [allCustomers, allMandates, recentMandateEvents, activeSubscriptions, cancelledSubscriptions] = await Promise.all([
       gcGetAll("/customers", gcToken, "customers"),
       gcGetAll("/mandates", gcToken, "mandates"),
+      gcGetAll("/events", gcToken, "events", {
+        "created_at[gte]": dashboardSnapshotCutoff.toISOString(),
+      }),
       gcGetAll("/subscriptions", gcToken, "subscriptions", { status: "active" }),
       gcGetAll("/subscriptions", gcToken, "subscriptions", { status: "cancelled" }),
     ]);
@@ -121,6 +178,8 @@ serve(async (req) => {
         mandateCustomerMap[m.id] = m.links.customer;
       }
     }
+
+    const activeCustomerCount = countDashboardActiveCustomers(allMandates, recentMandateEvents);
 
     // Helper to resolve customer from various link types
     function resolveCustomer(links: any): { email: string | null; name: string | null } {
@@ -234,7 +293,7 @@ serve(async (req) => {
           active_subscriptions: activeSubCount,
           past_due: pastDueCount,
           canceled: canceledCount,
-          total_customers: allCustomers.length,
+          total_customers: activeCustomerCount,
           revenue_last_90_days_cents: totalRevenue,
           collected_last_30_days_cents: collectedTotal,
           pending_payments_cents: pendingPayments,
