@@ -132,11 +132,12 @@ export default function NewsPage() {
               <div className="bg-card rounded-lg w-[420px] h-[580px] animate-pulse border border-border" />
             </div>
           ) : monthlyEditions.length === 0 ? (
-            <div className="max-w-2xl mx-auto bg-card border border-border rounded-lg p-12 text-center">
-              <Newspaper className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground">
-                No news articles yet. Check back for the latest updates!
-              </p>
+            <div className="space-y-6">
+              <NewsFlipbook
+                articles={[]}
+                featured={undefined}
+                monthLabel={format(new Date(), "MMMM yyyy")}
+              />
             </div>
           ) : (
             <div className="space-y-6">
