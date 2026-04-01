@@ -26,6 +26,9 @@ serve(async (req) => {
     }
 
     const catHint = category && category !== "general" ? ` (category: ${category})` : "";
+    const promptExtra = customPrompt && typeof customPrompt === "string" && customPrompt.trim()
+      ? ` Additional guidance from the editor: ${customPrompt.trim()}`
+      : "";
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
