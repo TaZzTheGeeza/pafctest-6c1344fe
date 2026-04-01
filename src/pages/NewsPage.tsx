@@ -11,7 +11,7 @@ import { Newspaper, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { NewsSportsMagazine } from "@/components/news/NewsSportsMagazine";
+import { NewsMatchdayProgramme } from "@/components/news/NewsMatchdayProgramme";
 
 interface NewsArticle {
   id: string;
