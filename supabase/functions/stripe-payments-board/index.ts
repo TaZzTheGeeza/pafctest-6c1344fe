@@ -251,6 +251,23 @@ serve(async (req) => {
       ["failed", "cancelled", "customer_approval_denied", "charged_back"].includes(p.status)
     );
 
+    // GC "Recent failed payments" = failures since previous midday (matches their dashboard snapshot)
+    const recentFailedPayments = allPayments.filter((p: any) => {
+      if (!["failed", "cancelled", "customer_approval_denied", "charged_back"].includes(p.status)) return false;
+      const created = new Date(p.created_at);
+      return created >= dashboardSnapshotCutoff;
+    });
+    const recentFailedTotal = allPayments.filter((p: any) => {
+      if (!["failed", "cancelled", "customer_approval_denied", "charged_back"].includes(p.status)) return false;
+      const created = new Date(p.created_at);
+      return created >= dashboardSnapshotCutoff;
+    }).reduce((sum: number, p: any) => sum + (p.amount || 0), 0);
+    // Total attempted since previous midday (for "X out of Y" display)
+    const recentTotalAttempted = allPayments.filter((p: any) => {
+      const created = new Date(p.created_at);
+      return created >= dashboardSnapshotCutoff;
+    }).length;
+
     const totalRevenue = allPayments
       .filter((p: any) => ["confirmed", "paid_out"].includes(p.status))
       .reduce((sum: number, p: any) => sum + (p.amount || 0), 0);
@@ -302,6 +319,9 @@ serve(async (req) => {
           pending_payouts_cents: pendingPayouts,
           failed_payment_count: failedPayments.length,
           failed_payment_total_cents: failedPayments.reduce((s: number, p: any) => s + (p.amount || 0), 0),
+          recent_failed_count: recentFailedPayments.length,
+          recent_failed_total_cents: recentFailedTotal,
+          recent_total_attempted: recentTotalAttempted,
           currency: "GBP",
         },
         subscriptions,
