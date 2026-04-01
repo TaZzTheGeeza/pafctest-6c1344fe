@@ -225,7 +225,7 @@ export function TreasurerPaymentsBoard() {
                       tickLine={false}
                       width={45}
                     />
-                    <Tooltip
+                    <RechartsTooltip
                       contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }}
                       labelFormatter={(d: string) => new Date(d).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}
                       formatter={(value: number) => [fmt(value), "Collected"]}
