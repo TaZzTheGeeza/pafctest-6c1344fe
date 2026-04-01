@@ -3,10 +3,11 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   Loader2, CreditCard, TrendingUp, AlertTriangle, XCircle,
   Users, Search, RefreshCw, ChevronDown, ChevronUp,
-  Clock, CheckCircle, Banknote, Ban
+  Clock, CheckCircle, Banknote, Ban, Info
 } from "lucide-react";
 import { toast } from "sonner";
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import { AreaChart, Area, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer } from "recharts";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface SubRecord {
   id: string;
