@@ -253,7 +253,7 @@ export default function DashboardPage() {
     if (error) {
       toast.error("Failed to remove role");
     } else {
-      toast.success(`${ROLE_CONFIG[role].label} role removed`);
+      toast.success(`${ROLE_CONFIG[role]?.label ?? role} role removed`);
       loadUsers();
     }
   }
