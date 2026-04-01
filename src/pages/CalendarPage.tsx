@@ -268,7 +268,7 @@ export default function CalendarPage() {
                           >
                             <Download className="h-3 w-3" /> Add to Calendar
                           </button>
-                          <EventRSVP eventId={e.id} />
+                          {!e.id.startsWith("fa-") && <EventRSVP eventId={e.id} />}
                         </div>
                       ))}
                     </div>
