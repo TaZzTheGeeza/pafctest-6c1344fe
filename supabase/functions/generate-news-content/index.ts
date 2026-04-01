@@ -9,7 +9,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { title, category } = await req.json();
+    const { title, category, customPrompt } = await req.json();
     if (!title || typeof title !== "string" || title.trim().length < 3) {
       return new Response(JSON.stringify({ error: "A valid article title is required" }), {
         status: 400,
