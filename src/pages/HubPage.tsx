@@ -230,7 +230,7 @@ export default function HubPage() {
                       <>
                         {/* Mobile backdrop */}
                         <div className="fixed inset-0 z-40 md:hidden" onClick={() => setShowTeamPicker(false)} />
-                        <div className="absolute top-full left-0 mt-1 bg-card border border-border rounded-xl shadow-xl shadow-black/20 p-2 min-w-[200px] z-50">
+                        <div className="fixed md:absolute left-4 right-4 md:left-0 md:right-auto top-auto md:top-full mt-1 bg-card border border-border rounded-xl shadow-xl shadow-black/20 p-2 md:min-w-[200px] z-50">
                           <p className="text-[10px] font-display tracking-wider text-muted-foreground uppercase px-2 py-1">Your Teams</p>
                           {myTeams.map((slug) => {
                             const team = TEAMS.find((t) => t.slug === slug);
