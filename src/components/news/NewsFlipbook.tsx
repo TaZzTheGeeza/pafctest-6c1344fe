@@ -34,13 +34,13 @@ function CoverPage({ articleCount }: { articleCount: number }) {
   return (
     <div className="h-full w-full relative overflow-hidden rounded-r-lg rounded-l-sm">
       <img src={programmeCover} alt="PAFC Monthly Programme" className="absolute inset-0 w-full h-full object-cover" />
-      <div className="absolute inset-x-0 bottom-0 flex flex-col items-center gap-1 pb-4 bg-gradient-to-t from-black/60 to-transparent pt-10">
+      <div className="absolute bottom-3 right-3 flex flex-col items-end gap-1">
         <p className="text-white/60 text-xs font-body">
           {articleCount} {articleCount === 1 ? "story" : "stories"} inside
         </p>
-        <div className="flex items-center gap-2 text-white/40 text-[10px]">
+        <div className="flex items-center gap-1.5 text-white/40 text-[10px]">
           <BookOpen className="h-3 w-3" />
-          <span className="font-body">Swipe or drag to turn pages</span>
+          <span className="font-body">Swipe to turn pages</span>
         </div>
       </div>
     </div>
