@@ -84,9 +84,26 @@ export function PaymentCenter({ teamSlug }: { teamSlug: string }) {
     setGuardianCount(count ?? 0);
   }
 
-  // Auto-check after returning from checkout
+  // Auto-activate subscription after returning from GoCardless mandate setup
   useEffect(() => {
-    if (searchParams.get("subscription") === "success") {
+    const brId = searchParams.get("br_id");
+    const tier = searchParams.get("tier");
+    if (searchParams.get("subscription") === "success" && brId) {
+      (async () => {
+        try {
+          toast.info("Setting up your Direct Debit subscription...");
+          const { data, error } = await supabase.functions.invoke("activate-subscription", {
+            body: { br_id: brId, tier: tier || "standard" },
+          });
+          if (error) throw error;
+          if (data?.error) throw new Error(data.error);
+          toast.success("Subscription setup successful! Welcome aboard 🎉");
+        } catch (e: any) {
+          toast.error(e.message || "Failed to activate subscription. Please contact the club.");
+        }
+        checkSubscription();
+      })();
+    } else if (searchParams.get("subscription") === "success") {
       toast.success("Subscription setup successful! Welcome aboard 🎉");
       checkSubscription();
     }
