@@ -347,7 +347,7 @@ export default function NewsEditorPage() {
                     variant="outline"
                     size="sm"
                     className="gap-1.5"
-                    onClick={handleAiGenerate}
+                    onClick={openImagePrompt}
                     disabled={generatingAi || !title.trim()}
                   >
                     {generatingAi ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
