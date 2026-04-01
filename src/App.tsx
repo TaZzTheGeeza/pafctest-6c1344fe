@@ -16,6 +16,8 @@ import ProductPage from "./pages/ProductPage.tsx";
 import TeamsPage from "./pages/TeamsPage.tsx";
 import WhatsOnPage from "./pages/WhatsOnPage.tsx";
 import NewsPage from "./pages/NewsPage.tsx";
+import NewsArticlePage from "./pages/NewsArticlePage.tsx";
+import NewsEditorPage from "./pages/NewsEditorPage.tsx";
 import EventsPage from "./pages/EventsPage.tsx";
 import GalleryPage from "./pages/GalleryPage.tsx";
 import ClubDocumentsPage from "./pages/ClubDocumentsPage.tsx";
