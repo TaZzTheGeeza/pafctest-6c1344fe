@@ -15,7 +15,7 @@ interface Props {
 const DEV_BYPASS = false;
 
 export function RoleGate({ children, requiredRole, redirectTo = "/auth" }: Props) {
-  const { user, loading, isPlayer, isCoach, isAdmin, isTreasurer, rolesLoading } = useAuth();
+  const { user, loading, isPlayer, isCoach, isAdmin, isTreasurer, isNewsEditor, rolesLoading } = useAuth();
 
   const isLocalhost = window.location.hostname === "localhost" || window.location.hostname.includes("lovable.app") || window.location.hostname.includes("lovableproject.com");
 
