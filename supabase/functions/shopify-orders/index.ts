@@ -44,7 +44,8 @@ Deno.serve(async (req) => {
       });
     }
 
-    const SHOPIFY_ACCESS_TOKEN = Deno.env.get("SHOPIFY_ACCESS_TOKEN");
+    // Try the online access token from the Shopify connector first, fall back to manual token
+    const SHOPIFY_ACCESS_TOKEN = Deno.env.get("SHOPIFY_ONLINE_ACCESS_TOKEN") || Deno.env.get("SHOPIFY_ACCESS_TOKEN");
     if (!SHOPIFY_ACCESS_TOKEN) {
       return new Response(JSON.stringify({ error: "Shopify not configured" }), {
         status: 500,
