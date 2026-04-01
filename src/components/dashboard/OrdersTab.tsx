@@ -2,13 +2,13 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
-  ShoppingBag, Loader2, RefreshCw, Package, ExternalLink,
+  ShoppingBag, Loader2, RefreshCw, Package,
   ChevronDown, ChevronUp, Clock, CheckCircle, XCircle, AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
-interface ShopifyLineItem {
+interface LineItem {
   id: number;
   title: string;
   variant_title: string | null;
@@ -17,22 +17,21 @@ interface ShopifyLineItem {
 }
 
 interface ShopifyOrder {
-  id: number;
-  name: string;
+  id: string;
+  shopify_order_id: number;
+  order_name: string;
   order_number: number;
-  created_at: string;
+  email: string | null;
+  customer_first_name: string | null;
+  customer_last_name: string | null;
+  customer_email: string | null;
   financial_status: string;
   fulfillment_status: string | null;
-  total_price: string;
+  total_price: number;
   currency: string;
-  email: string;
-  customer: {
-    first_name: string | null;
-    last_name: string | null;
-    email: string | null;
-  } | null;
-  line_items: ShopifyLineItem[];
+  line_items: LineItem[];
   cancelled_at: string | null;
+  shopify_created_at: string;
 }
 
 const STATUS_STYLES: Record<string, { bg: string; text: string; icon: any }> = {
@@ -53,40 +52,29 @@ const FULFILLMENT_STYLES: Record<string, { bg: string; text: string }> = {
 export function OrdersTab() {
   const [orders, setOrders] = useState<ShopifyOrder[]>([]);
   const [loading, setLoading] = useState(true);
-  const [expandedOrder, setExpandedOrder] = useState<number | null>(null);
-  const [statusFilter, setStatusFilter] = useState<string>("any");
+  const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<string>("all");
 
   const fetchOrders = useCallback(async () => {
     setLoading(true);
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const token = sessionData?.session?.access_token;
-      if (!token) {
-        toast.error("Please sign in again");
-        return;
+      let query = supabase
+        .from("shopify_orders" as any)
+        .select("*")
+        .order("shopify_created_at", { ascending: false })
+        .limit(100);
+
+      if (statusFilter === "paid") {
+        query = query.eq("financial_status", "paid");
+      } else if (statusFilter === "pending") {
+        query = query.eq("financial_status", "pending");
+      } else if (statusFilter === "cancelled") {
+        query = query.not("cancelled_at", "is", null);
       }
 
-      const url = new URL(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/shopify-orders`
-      );
-      url.searchParams.set("limit", "50");
-      url.searchParams.set("status", statusFilter);
-
-      const res = await fetch(url.toString(), {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || `Error ${res.status}`);
-      }
-
-      const data = await res.json();
-      setOrders(data.orders ?? []);
+      const { data, error } = await query;
+      if (error) throw error;
+      setOrders((data as any) ?? []);
     } catch (err: any) {
       console.error("Failed to fetch orders:", err);
       toast.error(err.message || "Failed to load orders");
@@ -100,16 +88,13 @@ export function OrdersTab() {
   }, [fetchOrders]);
 
   const customerName = (order: ShopifyOrder) => {
-    if (order.customer) {
-      const name = `${order.customer.first_name || ""} ${order.customer.last_name || ""}`.trim();
-      return name || order.customer.email || order.email || "Unknown";
-    }
-    return order.email || "Unknown";
+    const name = `${order.customer_first_name || ""} ${order.customer_last_name || ""}`.trim();
+    return name || order.customer_email || order.email || "Unknown";
   };
 
   const totalRevenue = orders
     .filter((o) => !o.cancelled_at && (o.financial_status === "paid" || o.financial_status === "partially_paid"))
-    .reduce((sum, o) => sum + parseFloat(o.total_price || "0"), 0);
+    .reduce((sum, o) => sum + (o.total_price || 0), 0);
 
   return (
     <div className="space-y-6">
@@ -138,9 +123,9 @@ export function OrdersTab() {
           onChange={(e) => setStatusFilter(e.target.value)}
           className="bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground"
         >
-          <option value="any">All Statuses</option>
-          <option value="open">Open</option>
-          <option value="closed">Closed</option>
+          <option value="all">All Orders</option>
+          <option value="paid">Paid</option>
+          <option value="pending">Pending</option>
           <option value="cancelled">Cancelled</option>
         </select>
         <Button variant="outline" size="sm" onClick={fetchOrders} disabled={loading}>
@@ -165,6 +150,7 @@ export function OrdersTab() {
           <div className="py-16 text-center">
             <Package className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
             <p className="text-sm text-muted-foreground">No orders found</p>
+            <p className="text-xs text-muted-foreground mt-1">Orders will appear here automatically when customers purchase from the shop</p>
           </div>
         ) : (
           <div className="divide-y divide-border">
@@ -183,14 +169,14 @@ export function OrdersTab() {
                     <div className="flex items-center justify-between gap-3">
                       <div className="flex items-center gap-4 min-w-0">
                         <div className="flex-shrink-0">
-                          <span className="text-sm font-display font-bold text-primary">{order.name}</span>
+                          <span className="text-sm font-display font-bold text-primary">{order.order_name}</span>
                         </div>
                         <div className="min-w-0">
                           <p className="text-sm font-display font-semibold text-foreground truncate">
                             {customerName(order)}
                           </p>
                           <p className="text-[10px] text-muted-foreground">
-                            {new Date(order.created_at).toLocaleDateString("en-GB", {
+                            {new Date(order.shopify_created_at).toLocaleDateString("en-GB", {
                               day: "numeric", month: "short", year: "numeric",
                               hour: "2-digit", minute: "2-digit",
                             })}
@@ -206,7 +192,7 @@ export function OrdersTab() {
                           {(order.fulfillment_status || "unfulfilled").replace(/_/g, " ")}
                         </Badge>
                         <span className="text-sm font-display font-bold text-foreground ml-2">
-                          £{parseFloat(order.total_price).toFixed(2)}
+                          £{order.total_price.toFixed(2)}
                         </span>
                         {expanded ? (
                           <ChevronUp className="h-4 w-4 text-muted-foreground" />
@@ -229,7 +215,7 @@ export function OrdersTab() {
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-border">
-                            {order.line_items.map((item) => (
+                            {(order.line_items || []).map((item) => (
                               <tr key={item.id}>
                                 <td className="px-3 py-2 text-foreground">
                                   {item.title}
