@@ -111,7 +111,7 @@ export default function NewsPage() {
             </div>
           ) : (
             <div className="space-y-8">
-              <NewsSportsMagazine articles={published} featured={featured} />
+              <NewsMatchdayProgramme articles={published} featured={featured} />
 
               {/* Drafts section for editors */}
               {canEdit && drafts.length > 0 && (
