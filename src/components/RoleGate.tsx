@@ -7,7 +7,7 @@ import { ShieldX, Loader2 } from "lucide-react";
 
 interface Props {
   children: ReactNode;
-  requiredRole: "player" | "coach" | "admin" | "treasurer" | "authenticated";
+  requiredRole: "player" | "coach" | "admin" | "treasurer" | "news_editor" | "authenticated";
   redirectTo?: string;
 }
 
