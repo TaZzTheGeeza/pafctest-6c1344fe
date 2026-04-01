@@ -121,57 +121,31 @@ export default function NewsPage() {
             </div>
           ) : (
             <div className="space-y-8">
-              {/* Featured article - hero style */}
-              {featured && (
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-                  <Link to={`/news/${featured.slug}`} className="block group">
-                    <div className="relative overflow-hidden rounded-xl border border-border bg-card">
-                      <div className="grid md:grid-cols-2">
-                        {featured.cover_image_url ? (
-                          <div className="aspect-[16/10] md:aspect-auto md:min-h-[360px] overflow-hidden">
-                            <img
-                              src={featured.cover_image_url}
-                              alt={featured.title}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                            />
-                          </div>
-                        ) : (
-                          <div className="aspect-[16/10] md:aspect-auto md:min-h-[360px] bg-secondary flex items-center justify-center">
-                            <Newspaper className="h-16 w-16 text-muted-foreground" />
-                          </div>
-                        )}
-                        <div className="p-6 md:p-8 flex flex-col justify-center">
-                          <div className="flex items-center gap-2 mb-3">
-                            <Badge variant="default" className="bg-primary text-primary-foreground font-display uppercase text-xs">
-                              <Star className="h-3 w-3 mr-1" /> Featured
-                            </Badge>
-                            <Badge variant="outline" className="font-display uppercase text-xs">
-                              {featured.category}
-                            </Badge>
-                          </div>
-                          <h2 className="text-2xl md:text-3xl font-bold font-display leading-tight mb-3 group-hover:text-primary transition-colors">
-                            {featured.title}
-                          </h2>
-                          {featured.excerpt && (
-                            <p className="text-muted-foreground line-clamp-3 mb-4">{featured.excerpt}</p>
-                          )}
-                          <div className="flex items-center gap-4 text-xs text-muted-foreground mt-auto">
-                            <span className="flex items-center gap-1">
-                              <User className="h-3 w-3" /> {featured.author_name}
-                            </span>
-                            {featured.published_at && (
-                              <span className="flex items-center gap-1">
-                                <Clock className="h-3 w-3" /> {format(new Date(featured.published_at), "dd MMM yyyy")}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </Link>
-                </motion.div>
-              )}
+              <NewsBroadsheet articles={published} featured={featured} />
 
+              {/* Drafts section for editors */}
+              {canEdit && drafts.length > 0 && (
+                <div className="mt-12">
+                  <h2 className="text-xl font-display font-bold mb-4 flex items-center gap-2">
+                    <Newspaper className="h-5 w-5 text-muted-foreground" /> Drafts
+                  </h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {drafts.map((article) => (
+                      <Link key={article.id} to={`/news/editor/${article.id}`} className="block group">
+                        <div className="bg-card border border-dashed border-border rounded-lg p-4 hover:border-primary/40 transition-colors">
+                          <Badge variant="secondary" className="mb-2 text-xs">Draft</Badge>
+                          <h3 className="font-display font-bold group-hover:text-primary transition-colors line-clamp-1">{article.title}</h3>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {format(new Date(article.created_at), "dd MMM yyyy")}
+                          </p>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
               {/* Article grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {published.map((article, i) => (
