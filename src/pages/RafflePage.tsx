@@ -54,8 +54,20 @@ const RafflePage = () => {
 
   useEffect(() => {
     fetchRaffles();
-    if (searchParams.get("success") === "true") {
-      toast.success("Payment successful! Your raffle tickets have been confirmed.", { duration: 6000 });
+    const brId = searchParams.get("br");
+    if (searchParams.get("success") === "true" && brId) {
+      // Verify GoCardless payment and mark tickets as confirmed
+      supabase.functions.invoke("verify-raffle-payment", { body: { billingRequestId: brId } })
+        .then(({ data }) => {
+          if (data?.status === "paid") {
+            toast.success("Payment authorised! Your raffle tickets are confirmed.", { duration: 6000 });
+          } else {
+            toast.success("Direct Debit set up! Your tickets will be confirmed once payment clears (3-5 days).", { duration: 8000 });
+          }
+        })
+        .catch(() => toast.success("Direct Debit set up! Tickets will be confirmed shortly.", { duration: 6000 }));
+    } else if (searchParams.get("success") === "true") {
+      toast.success("Payment set up! Your raffle tickets will be confirmed once payment clears.", { duration: 6000 });
     }
     if (searchParams.get("cancelled") === "true") {
       toast.error("Payment cancelled. No tickets were purchased.");
