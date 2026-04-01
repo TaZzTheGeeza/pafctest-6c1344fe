@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
@@ -7,12 +6,32 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const GC_API = "https://api.gocardless.com";
+
+async function gcPost(path: string, body: Record<string, unknown>, token: string) {
+  const res = await fetch(`${GC_API}${path}`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+      "GoCardless-Version": "2015-07-06",
+    },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(JSON.stringify(data));
+  return data;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    const gcToken = Deno.env.get("GOCARDLESS_ACCESS_TOKEN");
+    if (!gcToken) throw new Error("GOCARDLESS_ACCESS_TOKEN not set");
+
     const { team_id } = await req.json();
     if (!team_id) throw new Error("team_id is required");
 
@@ -30,30 +49,43 @@ serve(async (req) => {
 
     if (teamError || !team) throw new Error("Team not found");
 
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
-      apiVersion: "2025-08-27.basil",
-    });
+    const entryFeeCents = team.tournament_age_groups?.tournaments?.entry_fee_cents || 4000;
+    const tournamentName = team.tournament_age_groups?.tournaments?.name || "Tournament";
 
-    const origin = req.headers.get("origin") || "https://id-preview--c7af7566-8e05-4dbb-bbff-7d75c302c9e9.lovable.app";
+    const origin = req.headers.get("origin") || "https://pafc.lovable.app";
 
-    const session = await stripe.checkout.sessions.create({
-      customer_email: team.manager_email,
-      line_items: [
-        {
-          price: "price_1TGmyGCLdtMESt0q7BmL7gJA",
-          quantity: 1,
+    // Create GoCardless Billing Request
+    const brResponse = await gcPost("/billing_requests", {
+      billing_requests: {
+        payment_request: {
+          description: `${tournamentName} Entry - ${team.team_name}`,
+          amount: entryFeeCents,
+          currency: "GBP",
+          metadata: {
+            team_id,
+            type: "tournament_entry",
+          },
         },
-      ],
-      mode: "payment",
-      success_url: `${origin}/tournament?payment=success&team_id=${team_id}&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/tournament?payment=cancelled`,
-      metadata: {
-        team_id,
-        type: "tournament_entry",
       },
-    });
+    }, gcToken);
 
-    return new Response(JSON.stringify({ url: session.url }), {
+    const billingRequestId = brResponse.billing_requests.id;
+
+    // Create Billing Request Flow
+    const brfResponse = await gcPost("/billing_request_flows", {
+      billing_request_flows: {
+        redirect_uri: `${origin}/tournament?payment=success&team_id=${team_id}&br_id=${billingRequestId}`,
+        exit_uri: `${origin}/tournament?payment=cancelled`,
+        prefilled_customer: {
+          email: team.manager_email,
+        },
+        links: {
+          billing_request: billingRequestId,
+        },
+      },
+    }, gcToken);
+
+    return new Response(JSON.stringify({ url: brfResponse.billing_request_flows.authorisation_url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
