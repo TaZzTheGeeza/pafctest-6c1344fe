@@ -11,7 +11,7 @@ import { Newspaper, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { NewsMatchdayProgramme } from "@/components/news/NewsMatchdayProgramme";
+import { NewsEditorialBlog } from "@/components/news/NewsEditorialBlog";
 
 interface NewsArticle {
   id: string;
@@ -111,7 +111,7 @@ export default function NewsPage() {
             </div>
           ) : (
             <div className="space-y-8">
-              <NewsMatchdayProgramme articles={published} featured={featured} />
+              <NewsEditorialBlog articles={published} featured={featured} />
 
               {/* Drafts section for editors */}
               {canEdit && drafts.length > 0 && (
