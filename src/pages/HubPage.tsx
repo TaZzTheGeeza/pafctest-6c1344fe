@@ -227,21 +227,25 @@ export default function HubPage() {
                       <ChevronDown className={`hidden md:block h-4 w-4 text-muted-foreground transition-transform ${showTeamPicker ? "rotate-180" : ""}`} />
                     </button>
                     {showTeamPicker && (
-                      <div className="absolute top-full left-0 mt-1 bg-card border border-border rounded-xl shadow-xl shadow-black/20 p-2 min-w-[200px] z-50">
-                        <p className="text-[10px] font-display tracking-wider text-muted-foreground uppercase px-2 py-1">Your Teams</p>
-                        {myTeams.map((slug) => {
-                          const team = TEAMS.find((t) => t.slug === slug);
-                          return (
-                            <button
-                              key={slug}
-                              onClick={() => selectTeam(slug)}
-                              className={`w-full text-left px-3 py-2 rounded-lg text-sm font-display tracking-wider transition-colors ${activeTeam === slug ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-secondary"}`}
-                            >
-                              {team?.name || slug}
-                            </button>
-                          );
-                        })}
-                      </div>
+                      <>
+                        {/* Mobile backdrop */}
+                        <div className="fixed inset-0 z-40 md:hidden" onClick={() => setShowTeamPicker(false)} />
+                        <div className="absolute top-full left-0 mt-1 bg-card border border-border rounded-xl shadow-xl shadow-black/20 p-2 min-w-[200px] z-50">
+                          <p className="text-[10px] font-display tracking-wider text-muted-foreground uppercase px-2 py-1">Your Teams</p>
+                          {myTeams.map((slug) => {
+                            const team = TEAMS.find((t) => t.slug === slug);
+                            return (
+                              <button
+                                key={slug}
+                                onClick={() => selectTeam(slug)}
+                                className={`w-full text-left px-3 py-2 rounded-lg text-sm font-display tracking-wider transition-colors ${activeTeam === slug ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-secondary"}`}
+                              >
+                                {team?.name || slug}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </>
                     )}
                   </div>
 
