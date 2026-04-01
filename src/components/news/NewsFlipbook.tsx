@@ -127,7 +127,7 @@ function BackCover() {
  * Going backward: previous page rotates from -180 → 0 around right edge
  */
 
-const SWIPE_THRESHOLD = 60;
+const SWIPE_THRESHOLD = 50;
 
 export function NewsFlipbook({ articles, featured, monthLabel }: Props) {
   const [currentPage, setCurrentPage] = useState(0);
@@ -157,7 +157,7 @@ export function NewsFlipbook({ articles, featured, monthLabel }: Props) {
       setTimeout(() => {
         setCurrentPage((p) => p + 1);
         setFlipState("idle");
-      }, 600);
+      }, 400);
     }
   }, [currentPage, totalPages, flipState]);
 
@@ -167,11 +167,10 @@ export function NewsFlipbook({ articles, featured, monthLabel }: Props) {
       setCurrentPage((p) => p - 1);
       setTimeout(() => {
         setFlipState("idle");
-      }, 600);
+      }, 400);
     }
   }, [currentPage, flipState]);
 
-  // Pointer-based swipe (works for mouse + touch)
   const handlePointerDown = (e: React.PointerEvent) => {
     dragStartX.current = e.clientX;
     isDragging.current = true;
@@ -182,7 +181,6 @@ export function NewsFlipbook({ articles, featured, monthLabel }: Props) {
     const diff = dragStartX.current - e.clientX;
     isDragging.current = false;
     dragStartX.current = null;
-
     if (Math.abs(diff) > SWIPE_THRESHOLD) {
       if (diff > 0) goNext();
       else goPrev();
@@ -214,61 +212,51 @@ export function NewsFlipbook({ articles, featured, monthLabel }: Props) {
       }}
       style={{ outline: "none" }}
     >
-      {/* Book container */}
       <div
         className="relative w-full max-w-[460px] mx-auto select-none touch-none"
-        style={{ perspective: "1800px" }}
+        style={{ perspective: "2400px" }}
         onPointerDown={handlePointerDown}
         onPointerUp={handlePointerUp}
         onPointerCancel={() => { isDragging.current = false; dragStartX.current = null; }}
       >
-        {/* Book spine */}
-        <div className="absolute -left-2 top-2 bottom-2 w-4 rounded-l-sm z-30 pointer-events-none"
-          style={{
-            background: "linear-gradient(to right, hsl(var(--muted)) 0%, rgba(0,0,0,0.3) 40%, rgba(0,0,0,0.1) 100%)",
-          }}
-        />
-        {/* Bottom shadow */}
-        <div className="absolute -bottom-4 left-6 right-6 h-5 bg-black/15 rounded-full blur-lg pointer-events-none" />
+        {/* Subtle programme shadow */}
+        <div className="absolute -bottom-3 left-8 right-8 h-4 bg-black/10 rounded-full blur-lg pointer-events-none" />
 
-        <div className="aspect-[3/4] w-full relative overflow-visible">
-          {/* LAYER 1: The page underneath (revealed during flip) */}
-          <div className="absolute inset-0 rounded-r-lg rounded-l-sm overflow-hidden">
+        <div className="aspect-[3/4] w-full relative overflow-hidden rounded-sm shadow-xl">
+          {/* Base layer — the page being revealed */}
+          <div className="absolute inset-0">
             {flipState === "flipping-forward" && renderPage(nextPage)}
             {flipState === "flipping-back" && renderPage(currentPage)}
             {flipState === "idle" && renderPage(currentPage)}
           </div>
 
-          {/* LAYER 2: The flipping page on top */}
+          {/* Flipping page overlay — programme-style: quick peel from right */}
           <AnimatePresence>
             {flipState === "flipping-forward" && (
               <motion.div
-                key={`flip-fwd-${currentPage}`}
-                className="absolute inset-0 rounded-r-lg rounded-l-sm overflow-hidden"
+                key={`fwd-${currentPage}`}
+                className="absolute inset-0"
                 style={{
                   transformOrigin: "left center",
                   transformStyle: "preserve-3d",
                   backfaceVisibility: "hidden",
                 }}
-                initial={{ rotateY: 0 }}
-                animate={{ rotateY: -180 }}
-                exit={{ rotateY: -180 }}
+                initial={{ rotateY: 0, scale: 1 }}
+                animate={{ rotateY: -95, scale: 0.98 }}
+                exit={{ rotateY: -95 }}
                 transition={{
-                  rotateY: {
-                    duration: 0.6,
-                    ease: [0.645, 0.045, 0.355, 1],
-                  },
+                  duration: 0.4,
+                  ease: [0.25, 0.46, 0.45, 0.94],
                 }}
               >
                 {renderPage(currentPage)}
-                {/* Shadow that intensifies as page flips */}
                 <motion.div
-                  className="absolute inset-0 pointer-events-none rounded-r-lg"
+                  className="absolute inset-0 pointer-events-none"
                   initial={{ opacity: 0 }}
-                  animate={{ opacity: 0.4 }}
-                  transition={{ duration: 0.6 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.35 }}
                   style={{
-                    background: "linear-gradient(to left, rgba(0,0,0,0.5) 0%, transparent 60%)",
+                    background: "linear-gradient(to left, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.08) 30%, transparent 70%)",
                   }}
                 />
               </motion.div>
@@ -276,41 +264,40 @@ export function NewsFlipbook({ articles, featured, monthLabel }: Props) {
 
             {flipState === "flipping-back" && (
               <motion.div
-                key={`flip-back-${prevPage}`}
-                className="absolute inset-0 rounded-r-lg rounded-l-sm overflow-hidden"
+                key={`back-${prevPage}`}
+                className="absolute inset-0"
                 style={{
                   transformOrigin: "left center",
                   transformStyle: "preserve-3d",
                   backfaceVisibility: "hidden",
                 }}
-                initial={{ rotateY: -180 }}
-                animate={{ rotateY: 0 }}
+                initial={{ rotateY: -95, scale: 0.98 }}
+                animate={{ rotateY: 0, scale: 1 }}
                 exit={{ rotateY: 0 }}
                 transition={{
-                  rotateY: {
-                    duration: 0.6,
-                    ease: [0.645, 0.045, 0.355, 1],
-                  },
+                  duration: 0.4,
+                  ease: [0.25, 0.46, 0.45, 0.94],
                 }}
               >
                 {renderPage(prevPage)}
                 <motion.div
-                  className="absolute inset-0 pointer-events-none rounded-r-lg"
-                  initial={{ opacity: 0.4 }}
+                  className="absolute inset-0 pointer-events-none"
+                  initial={{ opacity: 1 }}
                   animate={{ opacity: 0 }}
-                  transition={{ duration: 0.6 }}
+                  transition={{ duration: 0.35 }}
                   style={{
-                    background: "linear-gradient(to left, rgba(0,0,0,0.5) 0%, transparent 60%)",
+                    background: "linear-gradient(to left, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.08) 30%, transparent 70%)",
                   }}
                 />
               </motion.div>
             )}
           </AnimatePresence>
 
-          {/* Page edge lines for depth */}
-          <div className="absolute right-0 top-1 bottom-1 w-[3px] pointer-events-none z-20 rounded-r"
+          {/* Glossy sheen overlay */}
+          <div
+            className="absolute inset-0 pointer-events-none z-10"
             style={{
-              background: "linear-gradient(to left, rgba(0,0,0,0.15), transparent)",
+              background: "linear-gradient(135deg, rgba(255,255,255,0.03) 0%, transparent 40%, transparent 60%, rgba(255,255,255,0.02) 100%)",
             }}
           />
         </div>
@@ -321,7 +308,6 @@ export function NewsFlipbook({ articles, featured, monthLabel }: Props) {
         <Button variant="outline" size="sm" onClick={goPrev} disabled={currentPage === 0 || flipState !== "idle"} className="gap-1 font-display uppercase tracking-wider text-xs">
           <ChevronLeft className="h-4 w-4" /> Prev
         </Button>
-
         <div className="flex items-center gap-1.5">
           {Array.from({ length: totalPages }).map((_, i) => (
             <button
@@ -338,7 +324,6 @@ export function NewsFlipbook({ articles, featured, monthLabel }: Props) {
             />
           ))}
         </div>
-
         <Button variant="outline" size="sm" onClick={goNext} disabled={currentPage >= totalPages - 1 || flipState !== "idle"} className="gap-1 font-display uppercase tracking-wider text-xs">
           Next <ChevronRight className="h-4 w-4" />
         </Button>
