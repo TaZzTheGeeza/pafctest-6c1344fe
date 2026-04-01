@@ -398,30 +398,30 @@ export default function NewsEditorPage() {
         </div>
       </main>
 
-      {/* AI Image Prompt Dialog */}
-      <Dialog open={showImagePrompt} onOpenChange={setShowImagePrompt}>
+      {/* AI Content Prompt Dialog */}
+      <Dialog open={showContentPrompt} onOpenChange={setShowContentPrompt}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-primary" />
-              AI Image Generator
+              AI Article Writer
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <p className="text-sm text-muted-foreground">
-              Describe the image you'd like for <strong>"{title}"</strong>. Leave blank to auto-generate based on the title.
+              What should the article about <strong>"{title}"</strong> cover? Leave blank to let AI decide.
             </p>
             <Textarea
-              value={imagePrompt}
-              onChange={(e) => setImagePrompt(e.target.value)}
-              placeholder="e.g. A muddy football pitch on a rainy Saturday morning with kids celebrating a goal..."
-              rows={3}
+              value={contentPrompt}
+              onChange={(e) => setContentPrompt(e.target.value)}
+              placeholder="e.g. Focus on the last-minute goal by Jake, the muddy conditions, and the team spirit shown throughout the match..."
+              rows={4}
             />
           </div>
           <DialogFooter className="gap-2 sm:gap-0">
-            <Button variant="outline" onClick={() => setShowImagePrompt(false)}>Cancel</Button>
-            <Button onClick={handleAiGenerate} className="gap-1.5">
-              <Sparkles className="h-4 w-4" /> Generate Image
+            <Button variant="outline" onClick={() => setShowContentPrompt(false)}>Cancel</Button>
+            <Button onClick={handleAiContent} className="gap-1.5">
+              <Sparkles className="h-4 w-4" /> Write Article
             </Button>
           </DialogFooter>
         </DialogContent>
