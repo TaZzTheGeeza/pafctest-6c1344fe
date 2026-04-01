@@ -9,7 +9,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { title, category } = await req.json();
+    const { title, category, customPrompt } = await req.json();
     if (!title || typeof title !== "string" || title.trim().length < 3) {
       return new Response(JSON.stringify({ error: "A valid article title is required" }), {
         status: 400,
@@ -26,6 +26,9 @@ serve(async (req) => {
     }
 
     const catHint = category && category !== "general" ? ` (category: ${category})` : "";
+    const promptExtra = customPrompt && typeof customPrompt === "string" && customPrompt.trim()
+      ? ` Additional guidance from the editor: ${customPrompt.trim()}`
+      : "";
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -42,7 +45,7 @@ serve(async (req) => {
           },
           {
             role: "user",
-            content: `Write a news article with the title: "${title.trim()}"${catHint}`,
+            content: `Write a news article with the title: "${title.trim()}"${catHint}.${promptExtra}`,
           },
         ],
       }),

@@ -52,10 +52,9 @@ export default function NewsEditorPage() {
   const [isFeatured, setIsFeatured] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [generatingAi, setGeneratingAi] = useState(false);
   const [generatingContent, setGeneratingContent] = useState(false);
-  const [showImagePrompt, setShowImagePrompt] = useState(false);
-  const [imagePrompt, setImagePrompt] = useState("");
+  const [showContentPrompt, setShowContentPrompt] = useState(false);
+  const [contentPrompt, setContentPrompt] = useState("");
 
   const { data: article, isLoading } = useQuery({
     queryKey: ["news-article-edit", id],
@@ -111,45 +110,22 @@ export default function NewsEditorPage() {
     }
   };
 
-  const openImagePrompt = () => {
-    if (!title.trim()) {
-      toast.error("Enter a title first so AI knows what image to create");
-      return;
-    }
-    setImagePrompt("");
-    setShowImagePrompt(true);
-  };
-
-  const handleAiGenerate = async () => {
-    setShowImagePrompt(false);
-    setGeneratingAi(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("generate-news-image", {
-        body: { title: title.trim(), customPrompt: imagePrompt.trim() || undefined },
-      });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-      if (data?.url) {
-        setCoverImageUrl(data.url);
-        toast.success("AI cover image generated!");
-      }
-    } catch (err: any) {
-      toast.error(err.message || "Failed to generate image");
-    } finally {
-      setGeneratingAi(false);
-    }
-  };
-
-  const handleAiContent = async () => {
+  const openContentPrompt = () => {
     if (!title.trim()) {
       toast.error("Enter a title first so AI knows what to write");
       return;
     }
+    setContentPrompt("");
+    setShowContentPrompt(true);
+  };
+
+  const handleAiContent = async () => {
+    setShowContentPrompt(false);
     if (content.trim() && !confirm("This will replace your current content. Continue?")) return;
     setGeneratingContent(true);
     try {
       const { data, error } = await supabase.functions.invoke("generate-news-content", {
-        body: { title: title.trim(), category },
+        body: { title: title.trim(), category, customPrompt: contentPrompt.trim() || undefined },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
@@ -342,17 +318,6 @@ export default function NewsEditorPage() {
                       </span>
                     </Button>
                   </label>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="gap-1.5"
-                    onClick={openImagePrompt}
-                    disabled={generatingAi || !title.trim()}
-                  >
-                    {generatingAi ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-                    {generatingAi ? "Generating…" : "AI Generate"}
-                  </Button>
                   <Input
                     placeholder="Or paste image URL..."
                     value={coverImageUrl}
@@ -385,7 +350,7 @@ export default function NewsEditorPage() {
                   variant="outline"
                   size="sm"
                   className="gap-1.5"
-                  onClick={handleAiContent}
+                  onClick={openContentPrompt}
                   disabled={generatingContent || !title.trim()}
                 >
                   {generatingContent ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
@@ -433,30 +398,30 @@ export default function NewsEditorPage() {
         </div>
       </main>
 
-      {/* AI Image Prompt Dialog */}
-      <Dialog open={showImagePrompt} onOpenChange={setShowImagePrompt}>
+      {/* AI Content Prompt Dialog */}
+      <Dialog open={showContentPrompt} onOpenChange={setShowContentPrompt}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-primary" />
-              AI Image Generator
+              AI Article Writer
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <p className="text-sm text-muted-foreground">
-              Describe the image you'd like for <strong>"{title}"</strong>. Leave blank to auto-generate based on the title.
+              What should the article about <strong>"{title}"</strong> cover? Leave blank to let AI decide.
             </p>
             <Textarea
-              value={imagePrompt}
-              onChange={(e) => setImagePrompt(e.target.value)}
-              placeholder="e.g. A muddy football pitch on a rainy Saturday morning with kids celebrating a goal..."
-              rows={3}
+              value={contentPrompt}
+              onChange={(e) => setContentPrompt(e.target.value)}
+              placeholder="e.g. Focus on the last-minute goal by Jake, the muddy conditions, and the team spirit shown throughout the match..."
+              rows={4}
             />
           </div>
           <DialogFooter className="gap-2 sm:gap-0">
-            <Button variant="outline" onClick={() => setShowImagePrompt(false)}>Cancel</Button>
-            <Button onClick={handleAiGenerate} className="gap-1.5">
-              <Sparkles className="h-4 w-4" /> Generate Image
+            <Button variant="outline" onClick={() => setShowContentPrompt(false)}>Cancel</Button>
+            <Button onClick={handleAiContent} className="gap-1.5">
+              <Sparkles className="h-4 w-4" /> Write Article
             </Button>
           </DialogFooter>
         </DialogContent>
