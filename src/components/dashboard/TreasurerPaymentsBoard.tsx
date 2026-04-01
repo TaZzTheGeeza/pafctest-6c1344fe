@@ -47,6 +47,9 @@ interface Summary {
   pending_payouts_cents: number;
   failed_payment_count: number;
   failed_payment_total_cents: number;
+  recent_failed_count: number;
+  recent_failed_total_cents: number;
+  recent_total_attempted: number;
   currency: string;
 }
 
