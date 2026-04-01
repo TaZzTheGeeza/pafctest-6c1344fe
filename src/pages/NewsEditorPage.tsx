@@ -432,6 +432,35 @@ export default function NewsEditorPage() {
           </div>
         </div>
       </main>
+
+      {/* AI Image Prompt Dialog */}
+      <Dialog open={showImagePrompt} onOpenChange={setShowImagePrompt}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-primary" />
+              AI Image Generator
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Describe the image you'd like for <strong>"{title}"</strong>. Leave blank to auto-generate based on the title.
+            </p>
+            <Textarea
+              value={imagePrompt}
+              onChange={(e) => setImagePrompt(e.target.value)}
+              placeholder="e.g. A muddy football pitch on a rainy Saturday morning with kids celebrating a goal..."
+              rows={3}
+            />
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setShowImagePrompt(false)}>Cancel</Button>
+            <Button onClick={handleAiGenerate} className="gap-1.5">
+              <Sparkles className="h-4 w-4" /> Generate Image
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <Footer />
     </div>
   );
