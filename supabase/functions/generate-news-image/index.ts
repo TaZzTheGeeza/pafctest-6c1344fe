@@ -10,7 +10,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { title } = await req.json();
+    const { title, customPrompt } = await req.json();
     if (!title || typeof title !== "string" || title.trim().length < 3) {
       return new Response(JSON.stringify({ error: "A valid article title is required" }), {
         status: 400,
@@ -26,7 +26,9 @@ serve(async (req) => {
       });
     }
 
-    const prompt = `Create a professional, editorial-style newspaper cover photo for a grassroots football club news article titled: "${title.trim()}". The image should be vivid, dynamic, and suitable as a wide banner. Do not include any text or words in the image. Use a cinematic sports photography style with dramatic lighting.`;
+    const basePrompt = customPrompt && typeof customPrompt === "string" && customPrompt.trim().length > 0
+      ? `${customPrompt.trim()}. This is for a football club news article titled: "${title.trim()}". Do not include any text or words in the image.`
+      : `Create a professional, editorial-style newspaper cover photo for a grassroots football club news article titled: "${title.trim()}". The image should be vivid, dynamic, and suitable as a wide banner. Do not include any text or words in the image. Use a cinematic sports photography style with dramatic lighting.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -36,7 +38,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         model: "google/gemini-3.1-flash-image-preview",
-        messages: [{ role: "user", content: prompt }],
+        messages: [{ role: "user", content: basePrompt }],
         modalities: ["image", "text"],
       }),
     });

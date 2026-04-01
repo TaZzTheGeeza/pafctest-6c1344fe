@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import RichTextEditor from "@/components/RichTextEditor";
 import { ArrowLeft, Save, Eye, Trash2, Loader2, ImagePlus, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -53,6 +54,8 @@ export default function NewsEditorPage() {
   const [uploading, setUploading] = useState(false);
   const [generatingAi, setGeneratingAi] = useState(false);
   const [generatingContent, setGeneratingContent] = useState(false);
+  const [showImagePrompt, setShowImagePrompt] = useState(false);
+  const [imagePrompt, setImagePrompt] = useState("");
 
   const { data: article, isLoading } = useQuery({
     queryKey: ["news-article-edit", id],
@@ -108,15 +111,21 @@ export default function NewsEditorPage() {
     }
   };
 
-  const handleAiGenerate = async () => {
+  const openImagePrompt = () => {
     if (!title.trim()) {
       toast.error("Enter a title first so AI knows what image to create");
       return;
     }
+    setImagePrompt("");
+    setShowImagePrompt(true);
+  };
+
+  const handleAiGenerate = async () => {
+    setShowImagePrompt(false);
     setGeneratingAi(true);
     try {
       const { data, error } = await supabase.functions.invoke("generate-news-image", {
-        body: { title: title.trim() },
+        body: { title: title.trim(), customPrompt: imagePrompt.trim() || undefined },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
@@ -338,7 +347,7 @@ export default function NewsEditorPage() {
                     variant="outline"
                     size="sm"
                     className="gap-1.5"
-                    onClick={handleAiGenerate}
+                    onClick={openImagePrompt}
                     disabled={generatingAi || !title.trim()}
                   >
                     {generatingAi ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
@@ -423,6 +432,35 @@ export default function NewsEditorPage() {
           </div>
         </div>
       </main>
+
+      {/* AI Image Prompt Dialog */}
+      <Dialog open={showImagePrompt} onOpenChange={setShowImagePrompt}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-primary" />
+              AI Image Generator
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Describe the image you'd like for <strong>"{title}"</strong>. Leave blank to auto-generate based on the title.
+            </p>
+            <Textarea
+              value={imagePrompt}
+              onChange={(e) => setImagePrompt(e.target.value)}
+              placeholder="e.g. A muddy football pitch on a rainy Saturday morning with kids celebrating a goal..."
+              rows={3}
+            />
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setShowImagePrompt(false)}>Cancel</Button>
+            <Button onClick={handleAiGenerate} className="gap-1.5">
+              <Sparkles className="h-4 w-4" /> Generate Image
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <Footer />
     </div>
   );
