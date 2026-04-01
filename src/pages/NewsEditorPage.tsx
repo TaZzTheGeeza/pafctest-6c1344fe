@@ -52,10 +52,9 @@ export default function NewsEditorPage() {
   const [isFeatured, setIsFeatured] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [generatingAi, setGeneratingAi] = useState(false);
   const [generatingContent, setGeneratingContent] = useState(false);
-  const [showImagePrompt, setShowImagePrompt] = useState(false);
-  const [imagePrompt, setImagePrompt] = useState("");
+  const [showContentPrompt, setShowContentPrompt] = useState(false);
+  const [contentPrompt, setContentPrompt] = useState("");
 
   const { data: article, isLoading } = useQuery({
     queryKey: ["news-article-edit", id],
