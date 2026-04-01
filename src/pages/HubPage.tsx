@@ -213,7 +213,7 @@ export default function HubPage() {
             <div className="flex gap-0 md:gap-6">
               {/* Sidebar */}
               <TooltipProvider delayDuration={100}>
-                <aside className="shrink-0 w-14 md:w-56 bg-card border border-border rounded-xl overflow-hidden">
+                <aside className="shrink-0 w-14 md:w-56 bg-card border border-border rounded-xl overflow-visible md:overflow-hidden">
                   {/* Team Picker */}
                   <div className="relative border-b border-border">
                     <button
