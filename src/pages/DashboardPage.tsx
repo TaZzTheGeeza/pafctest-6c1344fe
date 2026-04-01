@@ -8,8 +8,8 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   Users, Shield, ShieldCheck, ShieldAlert, UserCog, Trash2,
   Search, ChevronDown, Trophy, Ticket, BarChart3, FileText,
-  MessageSquare, Settings, Eye, Plus, Loader2, Crown, Swords, ShoppingBag,
-  Star, LayoutDashboard, Mail, Clock, ExternalLink, Pencil, Check, X as XIcon, Megaphone, CreditCard, Video
+   MessageSquare, Settings, Eye, Plus, Loader2, Crown, Swords, ShoppingBag,
+   Star, LayoutDashboard, Mail, Clock, ExternalLink, Pencil, Check, X as XIcon, Megaphone, CreditCard, Video, Newspaper
 } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 import { isUserOnline, formatLastSeen } from "@/hooks/usePresence";
@@ -51,6 +51,7 @@ const ROLE_CONFIG: Record<AppRole, { label: string; color: string; icon: any }> 
   user: { label: "User", color: "bg-blue-500/20 text-blue-400 border-blue-500/30", icon: UserCog },
   treasurer: { label: "Treasurer", color: "bg-purple-500/20 text-purple-400 border-purple-500/30", icon: ShoppingBag },
   welfare_officer: { label: "Welfare Officer", color: "bg-pink-500/20 text-pink-400 border-pink-500/30", icon: Shield },
+  news_editor: { label: "News Editor", color: "bg-blue-600/20 text-blue-300 border-blue-500/30", icon: Newspaper },
 };
 
 const ADMIN_LINKS = [
@@ -722,7 +723,7 @@ function UserRow({
   const [togglingDocUploader, setTogglingDocUploader] = useState(false);
   const navigate = useNavigate();
   const isCurrentUser = user.id === currentUserId;
-  const availableRoles = (["admin", "coach", "player", "user", "welfare_officer"] as AppRole[]).filter(
+  const availableRoles = (["admin", "coach", "player", "user", "news_editor", "welfare_officer"] as AppRole[]).filter(
     (r) => !user.roles.includes(r)
   );
   const isCoachUser = user.roles.includes("coach");
