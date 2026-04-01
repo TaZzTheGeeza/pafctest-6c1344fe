@@ -68,7 +68,7 @@ serve(async (req) => {
 
     // Fetch recent payments (last 90 days)
     const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
-    const paymentsData = await gcGet(`/payments?created_at[gte]=${ninetyDaysAgo}&limit=500`, gcToken);
+    const paymentsData = await gcGet(`/payments?created_at%5Bgte%5D=${ninetyDaysAgo}&limit=500`, gcToken);
     const allPayments = paymentsData.payments || [];
 
     // Build customer map
