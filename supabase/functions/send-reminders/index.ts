@@ -49,14 +49,27 @@ serve(async (req) => {
       (recentNotifs || []).map((n) => `${n.user_id}::${n.title}`)
     );
 
-    // For each team, scrape fixtures and check who hasn't responded
+    // Fetch custom event titles so we can resolve "custom::UUID" opponent names
+    const { data: customEvents } = await supabaseAdmin
+      .from("hub_availability_events")
+      .select("id, title");
+    const customEventMap = new Map(
+      (customEvents || []).map((e) => [e.id, e.title])
+    );
+
+    function resolveOpponent(opponent: string): string {
+      if (opponent.startsWith("custom::")) {
+        const eventId = opponent.replace("custom::", "");
+        return customEventMap.get(eventId) || "Event";
+      }
+      return opponent;
+    }
+
+    // For each team, check who hasn't responded
     const teamSlugs = [...new Set(teamMembers.map((tm) => tm.team_slug))];
     let notificationsSent = 0;
 
     for (const teamSlug of teamSlugs) {
-      // We can't call the scrape function from here easily, so we check
-      // fixture_availability records that exist (they contain fixture dates/opponents)
-      // and find team members who haven't responded to any upcoming fixture
       const teamUsers = teamMembers.filter((tm) => tm.team_slug === teamSlug);
 
       // Get all fixture dates for this team from existing availability data
@@ -69,16 +82,16 @@ serve(async (req) => {
         }, new Map<string, { date: string; opponent: string }>());
 
       for (const [, fixture] of teamFixtures) {
+        const displayName = resolveOpponent(fixture.opponent);
         for (const member of teamUsers) {
           const key = `${member.user_id}::${teamSlug}::${fixture.date}::${fixture.opponent}`;
           if (!availSet.has(key)) {
-            // This user hasn't responded
-            const notifKey = `${member.user_id}::Availability reminder: ${fixture.opponent}`;
+            const notifKey = `${member.user_id}::Availability reminder: ${displayName}`;
             if (!recentNotifSet.has(notifKey)) {
               await supabaseAdmin.from("hub_notifications").insert({
                 user_id: member.user_id,
-                title: `Availability reminder: ${fixture.opponent}`,
-                message: `Please confirm your availability for the match against ${fixture.opponent} on ${fixture.date}.`,
+                title: `Availability reminder: ${displayName}`,
+                message: `Please confirm your availability for ${displayName} on ${fixture.date}.`,
                 type: "reminder",
                 team_slug: teamSlug,
                 link: `/hub?tab=availability&team=${teamSlug}`,
