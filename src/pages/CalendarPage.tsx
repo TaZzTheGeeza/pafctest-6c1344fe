@@ -171,7 +171,7 @@ export default function CalendarPage() {
   const startDayOfWeek = startOfMonth(currentMonth).getDay();
   const paddingDays = startDayOfWeek === 0 ? 6 : startDayOfWeek - 1;
 
-  const filteredEvents = events.filter((e) => filterType === "all" || e.event_type === filterType);
+  const filteredEvents = allEvents.filter((e) => filterType === "all" || e.event_type === filterType);
   const dayEvents = selectedDate ? filteredEvents.filter((e) => isSameDay(toUKDate(e.start_time), selectedDate)) : [];
 
   const upcomingEvents = filteredEvents
