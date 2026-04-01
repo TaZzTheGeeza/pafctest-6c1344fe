@@ -30,25 +30,17 @@ interface Props {
 }
 
 /* ── Cover page ── */
-function CoverPage({ monthLabel, articleCount }: { monthLabel: string; articleCount: number }) {
+function CoverPage({ articleCount }: { articleCount: number }) {
   return (
     <div className="h-full w-full relative overflow-hidden rounded-lg">
-      <img src={programmeCover} alt="PAFC News Programme" className="absolute inset-0 w-full h-full object-cover" />
-      {/* Overlay content */}
-      <div className="absolute inset-0 flex flex-col justify-end p-6 bg-gradient-to-t from-black/70 via-transparent to-transparent">
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <div className="h-px flex-1 bg-primary/50" />
-            <span className="text-primary font-display text-xs uppercase tracking-[0.3em] font-bold">{monthLabel}</span>
-            <div className="h-px flex-1 bg-primary/50" />
-          </div>
-          <p className="text-center text-white/60 text-xs font-body">
-            {articleCount} {articleCount === 1 ? "story" : "stories"} inside
-          </p>
-          <div className="flex items-center justify-center gap-2 text-white/40 text-[10px] pt-2">
-            <BookOpen className="h-3 w-3" />
-            <span className="font-body">Click or swipe to turn pages</span>
-          </div>
+      <img src={programmeCover} alt="PAFC Monthly Programme" className="absolute inset-0 w-full h-full object-cover" />
+      <div className="absolute inset-x-0 bottom-0 flex flex-col items-center gap-1 pb-4 bg-gradient-to-t from-black/60 to-transparent pt-10">
+        <p className="text-white/60 text-xs font-body">
+          {articleCount} {articleCount === 1 ? "story" : "stories"} inside
+        </p>
+        <div className="flex items-center gap-2 text-white/40 text-[10px]">
+          <BookOpen className="h-3 w-3" />
+          <span className="font-body">Click or swipe to turn pages</span>
         </div>
       </div>
     </div>
