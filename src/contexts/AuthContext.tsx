@@ -79,6 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setIsCoach(roles.includes("coach") || roles.includes("admin"));
         setIsPlayer(roles.includes("player") || roles.includes("coach") || roles.includes("admin"));
         setIsTreasurer(roles.includes("treasurer") || roles.includes("admin"));
+        setIsNewsEditor(roles.includes("news_editor") || roles.includes("admin"));
         setRolesLoading(false);
       });
   }, [user]);
