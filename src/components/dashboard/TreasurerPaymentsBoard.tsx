@@ -40,6 +40,7 @@ interface Summary {
   canceled: number;
   total_customers: number;
   revenue_last_90_days_cents: number;
+  collected_last_30_days_cents: number;
   pending_payments_cents: number;
   confirmed_funds_cents: number;
   paid_out_cents: number;
