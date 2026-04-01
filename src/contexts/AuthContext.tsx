@@ -63,6 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsPlayer(false);
       setIsAdmin(false);
       setIsTreasurer(false);
+      setIsNewsEditor(false);
       setRolesLoading(false);
       return;
     }
