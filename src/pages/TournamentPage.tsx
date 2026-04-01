@@ -102,22 +102,22 @@ const TournamentPage = () => {
   // Handle payment return
   useEffect(() => {
     const payment = searchParams.get("payment");
-    const sessionId = searchParams.get("session_id");
+    const brId = searchParams.get("br_id");
     const teamId = searchParams.get("team_id");
 
-    if (payment === "success" && sessionId && teamId && !verifying) {
+    if (payment === "success" && brId && teamId && !verifying) {
       setVerifying(true);
-      verifyPayment(sessionId, teamId);
+      verifyPayment(brId, teamId);
     } else if (payment === "cancelled") {
       toast.error("Payment was cancelled. Your registration is still pending.");
       setSearchParams({});
     }
   }, [searchParams]);
 
-  const verifyPayment = async (sessionId: string, teamId: string) => {
+  const verifyPayment = async (brId: string, teamId: string) => {
     try {
       const { data, error } = await supabase.functions.invoke("verify-tournament-payment", {
-        body: { session_id: sessionId, team_id: teamId },
+        body: { br_id: brId, team_id: teamId },
       });
 
       if (error) throw error;
