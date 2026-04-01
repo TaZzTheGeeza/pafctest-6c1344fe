@@ -38,6 +38,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isPlayer, setIsPlayer] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isTreasurer, setIsTreasurer] = useState(false);
+  const [isNewsEditor, setIsNewsEditor] = useState(false);
   const [rolesLoading, setRolesLoading] = useState(true);
 
   useEffect(() => {
