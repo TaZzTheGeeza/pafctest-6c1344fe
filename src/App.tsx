@@ -16,6 +16,8 @@ import ProductPage from "./pages/ProductPage.tsx";
 import TeamsPage from "./pages/TeamsPage.tsx";
 import WhatsOnPage from "./pages/WhatsOnPage.tsx";
 import NewsPage from "./pages/NewsPage.tsx";
+import NewsArticlePage from "./pages/NewsArticlePage.tsx";
+import NewsEditorPage from "./pages/NewsEditorPage.tsx";
 import EventsPage from "./pages/EventsPage.tsx";
 import GalleryPage from "./pages/GalleryPage.tsx";
 import ClubDocumentsPage from "./pages/ClubDocumentsPage.tsx";
@@ -79,6 +81,9 @@ function AppContent() {
         <Route path="/teams/:teamSlug" element={<TeamsPage />} />
         <Route path="/whats-on" element={<WhatsOnPage />} />
         <Route path="/news" element={<NewsPage />} />
+        <Route path="/news/editor" element={<RoleGate requiredRole="news_editor"><NewsEditorPage /></RoleGate>} />
+        <Route path="/news/editor/:id" element={<RoleGate requiredRole="news_editor"><NewsEditorPage /></RoleGate>} />
+        <Route path="/news/:slug" element={<NewsArticlePage />} />
         <Route path="/events" element={<EventsPage />} />
         <Route path="/gallery" element={<GalleryPage />} />
         <Route path="/club-documents" element={<RoleGate requiredRole="player"><ClubDocumentsPage /></RoleGate>} />

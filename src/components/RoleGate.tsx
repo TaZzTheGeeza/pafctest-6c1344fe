@@ -7,7 +7,7 @@ import { ShieldX, Loader2 } from "lucide-react";
 
 interface Props {
   children: ReactNode;
-  requiredRole: "player" | "coach" | "admin" | "treasurer" | "authenticated";
+  requiredRole: "player" | "coach" | "admin" | "treasurer" | "news_editor" | "authenticated";
   redirectTo?: string;
 }
 
@@ -15,7 +15,7 @@ interface Props {
 const DEV_BYPASS = false;
 
 export function RoleGate({ children, requiredRole, redirectTo = "/auth" }: Props) {
-  const { user, loading, isPlayer, isCoach, isAdmin, isTreasurer, rolesLoading } = useAuth();
+  const { user, loading, isPlayer, isCoach, isAdmin, isTreasurer, isNewsEditor, rolesLoading } = useAuth();
 
   const isLocalhost = window.location.hostname === "localhost" || window.location.hostname.includes("lovable.app") || window.location.hostname.includes("lovableproject.com");
 
@@ -40,6 +40,7 @@ export function RoleGate({ children, requiredRole, redirectTo = "/auth" }: Props
     requiredRole === "admin" ? isAdmin :
     requiredRole === "coach" ? (isCoach || isAdmin || isTreasurer) :
     requiredRole === "treasurer" ? (isTreasurer || isAdmin) :
+    requiredRole === "news_editor" ? (isNewsEditor || isAdmin) :
     isPlayer;
 
   if (!hasAccess) {

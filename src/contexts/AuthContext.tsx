@@ -10,6 +10,7 @@ interface AuthContextType {
   isPlayer: boolean;
   isAdmin: boolean;
   isTreasurer: boolean;
+  isNewsEditor: boolean;
   rolesLoading: boolean;
   signOut: () => Promise<void>;
 }
@@ -22,6 +23,7 @@ const AuthContext = createContext<AuthContextType>({
   isPlayer: false,
   isAdmin: false,
   isTreasurer: false,
+  isNewsEditor: false,
   rolesLoading: true,
   signOut: async () => {},
 });
@@ -36,6 +38,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isPlayer, setIsPlayer] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isTreasurer, setIsTreasurer] = useState(false);
+  const [isNewsEditor, setIsNewsEditor] = useState(false);
   const [rolesLoading, setRolesLoading] = useState(true);
 
   useEffect(() => {
@@ -60,6 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsPlayer(false);
       setIsAdmin(false);
       setIsTreasurer(false);
+      setIsNewsEditor(false);
       setRolesLoading(false);
       return;
     }
@@ -75,6 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setIsCoach(roles.includes("coach") || roles.includes("admin"));
         setIsPlayer(roles.includes("player") || roles.includes("coach") || roles.includes("admin"));
         setIsTreasurer(roles.includes("treasurer") || roles.includes("admin"));
+        setIsNewsEditor(roles.includes("news_editor") || roles.includes("admin"));
         setRolesLoading(false);
       });
   }, [user]);
@@ -84,7 +89,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, isCoach, isPlayer, isAdmin, isTreasurer, rolesLoading, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, isCoach, isPlayer, isAdmin, isTreasurer, isNewsEditor, rolesLoading, signOut }}>
       {children}
     </AuthContext.Provider>
   );
