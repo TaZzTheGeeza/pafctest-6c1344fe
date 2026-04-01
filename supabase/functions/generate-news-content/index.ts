@@ -45,7 +45,7 @@ serve(async (req) => {
           },
           {
             role: "user",
-            content: `Write a news article with the title: "${title.trim()}"${catHint}`,
+            content: `Write a news article with the title: "${title.trim()}"${catHint}.${promptExtra}`,
           },
         ],
       }),
