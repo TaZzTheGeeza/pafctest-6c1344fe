@@ -167,12 +167,16 @@ export function TreasurerPaymentsBoard() {
       {/* Financial Overview Cards */}
       {summary && (
         <>
-          {/* Top Row: Pending / Confirmed / Paid Out */}
+        <TooltipProvider delayDuration={200}>
+          {/* Top Row: Pending / Confirmed / Payouts */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div className="bg-card border border-border rounded-xl p-4">
               <div className="flex items-center gap-2 mb-1">
                 <Clock className="h-4 w-4 text-amber-400" />
                 <span className="text-[10px] text-muted-foreground font-display tracking-wider uppercase">Pending Payments</span>
+                <Tooltip><TooltipTrigger><Info className="h-3 w-3 text-muted-foreground" /></TooltipTrigger>
+                  <TooltipContent><p className="max-w-[200px] text-xs">All payments pending submission or submitted but not yet charged.</p></TooltipContent>
+                </Tooltip>
               </div>
               <p className="text-xl font-display font-bold text-amber-400">{fmt(summary.pending_payments_cents)}</p>
             </div>
@@ -180,6 +184,9 @@ export function TreasurerPaymentsBoard() {
               <div className="flex items-center gap-2 mb-1">
                 <CheckCircle className="h-4 w-4 text-emerald-400" />
                 <span className="text-[10px] text-muted-foreground font-display tracking-wider uppercase">Confirmed Funds</span>
+                <Tooltip><TooltipTrigger><Info className="h-3 w-3 text-muted-foreground" /></TooltipTrigger>
+                  <TooltipContent><p className="max-w-[200px] text-xs">Collected payments confirmed, minus fees and unclaimed debits for refunds, failures and chargebacks.</p></TooltipContent>
+                </Tooltip>
               </div>
               <p className="text-xl font-display font-bold text-emerald-400">{fmt(summary.confirmed_funds_cents)}</p>
             </div>
@@ -187,6 +194,9 @@ export function TreasurerPaymentsBoard() {
               <div className="flex items-center gap-2 mb-1">
                 <Banknote className="h-4 w-4 text-primary" />
                 <span className="text-[10px] text-muted-foreground font-display tracking-wider uppercase">Pending Payouts</span>
+                <Tooltip><TooltipTrigger><Info className="h-3 w-3 text-muted-foreground" /></TooltipTrigger>
+                  <TooltipContent><p className="max-w-[200px] text-xs">All payouts confirmed and ready for the next payout to your bank.</p></TooltipContent>
+                </Tooltip>
               </div>
               <p className="text-xl font-display font-bold text-primary">{fmt(summary.pending_payouts_cents)}</p>
             </div>
@@ -197,7 +207,12 @@ export function TreasurerPaymentsBoard() {
             <div className="lg:col-span-2 bg-card border border-border rounded-xl p-4">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <span className="text-[10px] text-muted-foreground font-display tracking-wider uppercase">Collected Payments (30d)</span>
+                  <div className="flex items-center gap-1">
+                    <span className="text-[10px] text-muted-foreground font-display tracking-wider uppercase">Collected Payments (30d)</span>
+                    <Tooltip><TooltipTrigger><Info className="h-3 w-3 text-muted-foreground" /></TooltipTrigger>
+                      <TooltipContent><p className="max-w-[200px] text-xs">Total value of payments collected from customers during the last 30 days, before fees.</p></TooltipContent>
+                    </Tooltip>
+                  </div>
                   <p className="text-xl font-display font-bold text-foreground">{fmt(collectedTotal)}</p>
                 </div>
               </div>
@@ -242,26 +257,40 @@ export function TreasurerPaymentsBoard() {
                 <div className="flex items-center gap-2 mb-1">
                   <Users className="h-4 w-4 text-foreground" />
                   <span className="text-[10px] text-muted-foreground font-display tracking-wider uppercase">Active Customers</span>
+                  <Tooltip><TooltipTrigger><Info className="h-3 w-3 text-muted-foreground" /></TooltipTrigger>
+                    <TooltipContent><p className="max-w-[200px] text-xs">Total number of customers with an active Direct Debit mandate.</p></TooltipContent>
+                  </Tooltip>
                 </div>
                 <p className="text-xl font-display font-bold text-foreground">{summary.total_customers}</p>
               </div>
               <div className="bg-card border border-border rounded-xl p-4">
                 <div className="flex items-center gap-2 mb-1">
                   <Ban className="h-4 w-4 text-red-400" />
-                  <span className="text-[10px] text-muted-foreground font-display tracking-wider uppercase">Failed Payments (90d)</span>
+                  <span className="text-[10px] text-muted-foreground font-display tracking-wider uppercase">Recent Failed Payments</span>
+                  <Tooltip><TooltipTrigger><Info className="h-3 w-3 text-muted-foreground" /></TooltipTrigger>
+                    <TooltipContent><p className="max-w-[200px] text-xs">Payments that have failed since the previous midday snapshot. Matches the payment provider dashboard.</p></TooltipContent>
+                  </Tooltip>
                 </div>
-                <p className="text-xl font-display font-bold text-red-400">{summary.failed_payment_count}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">{fmt(summary.failed_payment_total_cents)} total</p>
+                <p className="text-xl font-display font-bold text-red-400">
+                  {summary.recent_failed_count}/{summary.recent_total_attempted}
+                </p>
+                {summary.failed_payment_count > 0 && (
+                  <p className="text-xs text-muted-foreground mt-0.5">{summary.failed_payment_count} failed in last 90d ({fmt(summary.failed_payment_total_cents)})</p>
+                )}
               </div>
               <div className="bg-card border border-border rounded-xl p-4">
                 <div className="flex items-center gap-2 mb-1">
                   <CreditCard className="h-4 w-4 text-emerald-400" />
                   <span className="text-[10px] text-muted-foreground font-display tracking-wider uppercase">Paid Out (90d)</span>
+                  <Tooltip><TooltipTrigger><Info className="h-3 w-3 text-muted-foreground" /></TooltipTrigger>
+                    <TooltipContent><p className="max-w-[200px] text-xs">Total value of payments that have been paid out to your bank in the last 90 days.</p></TooltipContent>
+                  </Tooltip>
                 </div>
                 <p className="text-xl font-display font-bold text-emerald-400">{fmt(summary.paid_out_cents)}</p>
               </div>
             </div>
           </div>
+        </TooltipProvider>
 
           {/* Subscription Stats Row */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
