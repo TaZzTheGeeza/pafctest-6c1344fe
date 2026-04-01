@@ -107,6 +107,29 @@ export default function NewsEditorPage() {
     }
   };
 
+  const handleAiGenerate = async () => {
+    if (!title.trim()) {
+      toast.error("Enter a title first so AI knows what image to create");
+      return;
+    }
+    setGeneratingAi(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-news-image", {
+        body: { title: title.trim() },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      if (data?.url) {
+        setCoverImageUrl(data.url);
+        toast.success("AI cover image generated!");
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Failed to generate image");
+    } finally {
+      setGeneratingAi(false);
+    }
+  };
+
   const handleSave = async (publish?: boolean) => {
     if (!title.trim() || !content.trim()) {
       toast.error("Title and content are required");
