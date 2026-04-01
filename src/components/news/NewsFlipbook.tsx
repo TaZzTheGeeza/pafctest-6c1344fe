@@ -5,7 +5,7 @@ import { Newspaper, Clock, User, Trophy, ChevronLeft, ChevronRight, BookOpen } f
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { motion, AnimatePresence, useMotionValue, useTransform, PanInfo } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import programmeCover from "@/assets/news/programme-cover.jpg";
 
 interface NewsArticle {
@@ -32,7 +32,7 @@ interface Props {
 /* ── Cover page ── */
 function CoverPage({ articleCount }: { articleCount: number }) {
   return (
-    <div className="h-full w-full relative overflow-hidden rounded-lg">
+    <div className="h-full w-full relative overflow-hidden rounded-r-lg rounded-l-sm">
       <img src={programmeCover} alt="PAFC Monthly Programme" className="absolute inset-0 w-full h-full object-cover" />
       <div className="absolute inset-x-0 bottom-0 flex flex-col items-center gap-1 pb-4 bg-gradient-to-t from-black/60 to-transparent pt-10">
         <p className="text-white/60 text-xs font-body">
@@ -40,7 +40,7 @@ function CoverPage({ articleCount }: { articleCount: number }) {
         </p>
         <div className="flex items-center gap-2 text-white/40 text-[10px]">
           <BookOpen className="h-3 w-3" />
-          <span className="font-body">Swipe to turn pages</span>
+          <span className="font-body">Swipe or drag to turn pages</span>
         </div>
       </div>
     </div>
@@ -50,12 +50,11 @@ function CoverPage({ articleCount }: { articleCount: number }) {
 /* ── Article page ── */
 function ArticlePage({ article, pageNum }: { article: NewsArticle; pageNum: number }) {
   return (
-    <div className="h-full flex flex-col rounded-lg border border-border bg-card overflow-hidden">
+    <div className="h-full flex flex-col rounded-r-lg rounded-l-sm border border-border bg-card overflow-hidden">
       <div className="flex items-center justify-between px-5 py-2 border-b border-border/50">
         <span className="text-[10px] text-muted-foreground font-display uppercase tracking-widest">PAFC News</span>
         <span className="text-[10px] text-muted-foreground font-body">Page {pageNum}</span>
       </div>
-
       <div className="flex-1 flex flex-col overflow-hidden">
         {article.cover_image_url ? (
           <div className="h-[40%] overflow-hidden relative flex-shrink-0">
@@ -70,23 +69,16 @@ function ArticlePage({ article, pageNum }: { article: NewsArticle; pageNum: numb
             <Newspaper className="h-10 w-10 text-muted-foreground/20" />
           </div>
         )}
-
         <div className="flex-1 p-5 flex flex-col overflow-hidden">
-          <Badge
-            variant="outline"
-            className="w-fit mb-2 font-display uppercase text-[9px] tracking-widest border-primary/30 text-primary"
-          >
+          <Badge variant="outline" className="w-fit mb-2 font-display uppercase text-[9px] tracking-widest border-primary/30 text-primary">
             {article.category}
           </Badge>
-
           <h3 className="font-display font-bold text-xl md:text-2xl leading-tight mb-3">{article.title}</h3>
-
           {article.excerpt && (
             <p className="text-muted-foreground text-sm leading-relaxed mb-4 line-clamp-4 first-letter:text-2xl first-letter:font-display first-letter:font-bold first-letter:float-left first-letter:mr-1.5 first-letter:leading-none first-letter:text-primary">
               {article.excerpt}
             </p>
           )}
-
           <div className="mt-auto pt-3 border-t border-border/50">
             <div className="flex items-center justify-between text-[11px] text-muted-foreground">
               <span className="flex items-center gap-1.5">
@@ -98,10 +90,7 @@ function ArticlePage({ article, pageNum }: { article: NewsArticle; pageNum: numb
                 </span>
               )}
             </div>
-            <Link
-              to={`/news/${article.slug}`}
-              className="inline-flex items-center gap-1 mt-2 text-primary text-xs font-display uppercase tracking-wider hover:underline"
-            >
+            <Link to={`/news/${article.slug}`} className="inline-flex items-center gap-1 mt-2 text-primary text-xs font-display uppercase tracking-wider hover:underline">
               Read full article →
             </Link>
           </div>
@@ -114,7 +103,7 @@ function ArticlePage({ article, pageNum }: { article: NewsArticle; pageNum: numb
 /* ── Back cover ── */
 function BackCover() {
   return (
-    <div className="h-full flex flex-col items-center justify-center relative rounded-lg border border-border bg-card">
+    <div className="h-full flex flex-col items-center justify-center relative rounded-r-lg rounded-l-sm border border-border bg-card">
       <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none">
         <Trophy className="h-[300px] w-[300px]" />
       </div>
@@ -130,73 +119,22 @@ function BackCover() {
   );
 }
 
-/* ── Draggable page that flips like a real book ── */
-const DRAG_THRESHOLD = 80;
+/*
+ * TRUE PAGE-FLIP: The current page folds over from the RIGHT edge
+ * like a real book. The next page is revealed underneath.
+ *
+ * Going forward: current page rotates from 0 → -180 around right edge
+ * Going backward: previous page rotates from -180 → 0 around right edge
+ */
 
-function FlippablePage({
-  children,
-  onFlipNext,
-  onFlipPrev,
-  canNext,
-  canPrev,
-}: {
-  children: React.ReactNode;
-  onFlipNext: () => void;
-  onFlipPrev: () => void;
-  canNext: boolean;
-  canPrev: boolean;
-}) {
-  const x = useMotionValue(0);
-  // Map drag distance to a Y rotation — dragging left rotates page away (like turning a page)
-  const rotateY = useTransform(x, [-300, 0, 300], [90, 0, -90]);
-  const shadow = useTransform(x, [-300, 0, 300], [0.4, 0, 0.4]);
-
-  const handleDragEnd = (_: unknown, info: PanInfo) => {
-    const offset = info.offset.x;
-    const velocity = info.velocity.x;
-    // Swipe left = next page, swipe right = previous page
-    if ((offset < -DRAG_THRESHOLD || velocity < -400) && canNext) {
-      onFlipNext();
-    } else if ((offset > DRAG_THRESHOLD || velocity > 400) && canPrev) {
-      onFlipPrev();
-    }
-  };
-
-  return (
-    <motion.div
-      className="absolute inset-0 cursor-grab active:cursor-grabbing"
-      style={{
-        x,
-        rotateY,
-        transformStyle: "preserve-3d",
-        transformOrigin: "left center",
-        backfaceVisibility: "hidden",
-      }}
-      drag="x"
-      dragConstraints={{ left: 0, right: 0 }}
-      dragElastic={0.15}
-      onDragEnd={handleDragEnd}
-      whileTap={{ cursor: "grabbing" }}
-    >
-      {/* Dynamic page shadow based on drag */}
-      <motion.div
-        className="absolute inset-0 pointer-events-none z-10 rounded-lg"
-        style={{
-          background: useTransform(
-            shadow,
-            (s) => `linear-gradient(to right, rgba(0,0,0,${s * 0.3}) 0%, transparent 20%, transparent 80%, rgba(0,0,0,${s * 0.15}) 100%)`
-          ),
-        }}
-      />
-      {children}
-    </motion.div>
-  );
-}
+const SWIPE_THRESHOLD = 60;
 
 export function NewsFlipbook({ articles, featured, monthLabel }: Props) {
-  const [[currentPage, direction], setPage] = useState([0, 0]);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [flipState, setFlipState] = useState<"idle" | "flipping-forward" | "flipping-back">("idle");
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isAnimating, setIsAnimating] = useState(false);
+  const dragStartX = useRef<number | null>(null);
+  const isDragging = useRef(false);
 
   const allArticles = useMemo(() => {
     const list: NewsArticle[] = [];
@@ -207,21 +145,49 @@ export function NewsFlipbook({ articles, featured, monthLabel }: Props) {
 
   const totalPages = allArticles.length + 2;
 
+  const renderPage = useCallback((pageIndex: number) => {
+    if (pageIndex === 0) return <CoverPage articleCount={allArticles.length} />;
+    if (pageIndex === totalPages - 1) return <BackCover />;
+    return <ArticlePage article={allArticles[pageIndex - 1]} pageNum={pageIndex} />;
+  }, [allArticles, totalPages]);
+
   const goNext = useCallback(() => {
-    if (currentPage < totalPages - 1 && !isAnimating) {
-      setIsAnimating(true);
-      setPage([currentPage + 1, 1]);
-      setTimeout(() => setIsAnimating(false), 500);
+    if (currentPage < totalPages - 1 && flipState === "idle") {
+      setFlipState("flipping-forward");
+      setTimeout(() => {
+        setCurrentPage((p) => p + 1);
+        setFlipState("idle");
+      }, 600);
     }
-  }, [currentPage, totalPages, isAnimating]);
+  }, [currentPage, totalPages, flipState]);
 
   const goPrev = useCallback(() => {
-    if (currentPage > 0 && !isAnimating) {
-      setIsAnimating(true);
-      setPage([currentPage - 1, -1]);
-      setTimeout(() => setIsAnimating(false), 500);
+    if (currentPage > 0 && flipState === "idle") {
+      setFlipState("flipping-back");
+      setCurrentPage((p) => p - 1);
+      setTimeout(() => {
+        setFlipState("idle");
+      }, 600);
     }
-  }, [currentPage, isAnimating]);
+  }, [currentPage, flipState]);
+
+  // Pointer-based swipe (works for mouse + touch)
+  const handlePointerDown = (e: React.PointerEvent) => {
+    dragStartX.current = e.clientX;
+    isDragging.current = true;
+  };
+
+  const handlePointerUp = (e: React.PointerEvent) => {
+    if (dragStartX.current === null || !isDragging.current) return;
+    const diff = dragStartX.current - e.clientX;
+    isDragging.current = false;
+    dragStartX.current = null;
+
+    if (Math.abs(diff) > SWIPE_THRESHOLD) {
+      if (diff > 0) goNext();
+      else goPrev();
+    }
+  };
 
   if (allArticles.length === 0) {
     return (
@@ -232,30 +198,8 @@ export function NewsFlipbook({ articles, featured, monthLabel }: Props) {
     );
   }
 
-  const renderPage = (pageIndex: number) => {
-    if (pageIndex === 0) return <CoverPage articleCount={allArticles.length} />;
-    if (pageIndex === totalPages - 1) return <BackCover />;
-    return <ArticlePage article={allArticles[pageIndex - 1]} pageNum={pageIndex} />;
-  };
-
-  /* Page-turn animation variants — hinged from left like a real book */
-  const pageVariants = {
-    enter: (dir: number) => ({
-      rotateY: dir > 0 ? -120 : 40,
-      opacity: 0,
-      x: dir > 0 ? 60 : -30,
-    }),
-    center: {
-      rotateY: 0,
-      opacity: 1,
-      x: 0,
-    },
-    exit: (dir: number) => ({
-      rotateY: dir > 0 ? 40 : -120,
-      opacity: 0,
-      x: dir > 0 ? -30 : 60,
-    }),
-  };
+  const nextPage = Math.min(currentPage + 1, totalPages - 1);
+  const prevPage = Math.max(currentPage - 1, 0);
 
   return (
     <motion.div
@@ -272,77 +216,121 @@ export function NewsFlipbook({ articles, featured, monthLabel }: Props) {
     >
       {/* Book container */}
       <div
-        className="relative w-full max-w-[460px] mx-auto select-none"
-        style={{ perspective: "1200px" }}
+        className="relative w-full max-w-[460px] mx-auto select-none touch-none"
+        style={{ perspective: "1800px" }}
+        onPointerDown={handlePointerDown}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={() => { isDragging.current = false; dragStartX.current = null; }}
       >
-        {/* Book spine shadow */}
-        <div className="absolute -left-1 top-4 bottom-4 w-3 bg-gradient-to-r from-black/40 to-transparent rounded-l z-20 pointer-events-none" />
-        {/* Bottom book shadow */}
-        <div className="absolute -bottom-3 left-4 right-4 h-4 bg-black/20 rounded-full blur-md pointer-events-none" />
+        {/* Book spine */}
+        <div className="absolute -left-2 top-2 bottom-2 w-4 rounded-l-sm z-30 pointer-events-none"
+          style={{
+            background: "linear-gradient(to right, hsl(var(--muted)) 0%, rgba(0,0,0,0.3) 40%, rgba(0,0,0,0.1) 100%)",
+          }}
+        />
+        {/* Bottom shadow */}
+        <div className="absolute -bottom-4 left-6 right-6 h-5 bg-black/15 rounded-full blur-lg pointer-events-none" />
 
-        <div className="aspect-[3/4] w-full relative overflow-hidden rounded-r-lg">
-          <AnimatePresence mode="wait" custom={direction} initial={false}>
-            <motion.div
-              key={currentPage}
-              custom={direction}
-              variants={pageVariants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={{
-                rotateY: { type: "spring", stiffness: 200, damping: 30 },
-                opacity: { duration: 0.3 },
-                x: { type: "spring", stiffness: 300, damping: 30 },
-              }}
-              className="absolute inset-0"
-              style={{
-                transformStyle: "preserve-3d",
-                transformOrigin: "left center",
-              }}
-              drag="x"
-              dragConstraints={{ left: 0, right: 0 }}
-              dragElastic={0.12}
-              onDragEnd={(_, info) => {
-                const { offset, velocity } = info;
-                if ((offset.x < -DRAG_THRESHOLD || velocity.x < -400) && currentPage < totalPages - 1) {
-                  goNext();
-                } else if ((offset.x > DRAG_THRESHOLD || velocity.x > 400) && currentPage > 0) {
-                  goPrev();
-                }
-              }}
-            >
-              {/* Page fold shadow */}
-              <div
-                className="absolute inset-0 pointer-events-none z-10 rounded-lg"
+        <div className="aspect-[3/4] w-full relative overflow-visible">
+          {/* LAYER 1: The page underneath (revealed during flip) */}
+          <div className="absolute inset-0 rounded-r-lg rounded-l-sm overflow-hidden">
+            {flipState === "flipping-forward" && renderPage(nextPage)}
+            {flipState === "flipping-back" && renderPage(currentPage)}
+            {flipState === "idle" && renderPage(currentPage)}
+          </div>
+
+          {/* LAYER 2: The flipping page on top */}
+          <AnimatePresence>
+            {flipState === "flipping-forward" && (
+              <motion.div
+                key={`flip-fwd-${currentPage}`}
+                className="absolute inset-0 rounded-r-lg rounded-l-sm overflow-hidden"
                 style={{
-                  background:
-                    "linear-gradient(to right, rgba(0,0,0,0.06) 0%, transparent 8%, transparent 92%, rgba(0,0,0,0.04) 100%)",
+                  transformOrigin: "left center",
+                  transformStyle: "preserve-3d",
+                  backfaceVisibility: "hidden",
                 }}
-              />
-              {renderPage(currentPage)}
-            </motion.div>
+                initial={{ rotateY: 0 }}
+                animate={{ rotateY: -180 }}
+                exit={{ rotateY: -180 }}
+                transition={{
+                  rotateY: {
+                    duration: 0.6,
+                    ease: [0.645, 0.045, 0.355, 1],
+                  },
+                }}
+              >
+                {renderPage(currentPage)}
+                {/* Shadow that intensifies as page flips */}
+                <motion.div
+                  className="absolute inset-0 pointer-events-none rounded-r-lg"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 0.4 }}
+                  transition={{ duration: 0.6 }}
+                  style={{
+                    background: "linear-gradient(to left, rgba(0,0,0,0.5) 0%, transparent 60%)",
+                  }}
+                />
+              </motion.div>
+            )}
+
+            {flipState === "flipping-back" && (
+              <motion.div
+                key={`flip-back-${prevPage}`}
+                className="absolute inset-0 rounded-r-lg rounded-l-sm overflow-hidden"
+                style={{
+                  transformOrigin: "left center",
+                  transformStyle: "preserve-3d",
+                  backfaceVisibility: "hidden",
+                }}
+                initial={{ rotateY: -180 }}
+                animate={{ rotateY: 0 }}
+                exit={{ rotateY: 0 }}
+                transition={{
+                  rotateY: {
+                    duration: 0.6,
+                    ease: [0.645, 0.045, 0.355, 1],
+                  },
+                }}
+              >
+                {renderPage(prevPage)}
+                <motion.div
+                  className="absolute inset-0 pointer-events-none rounded-r-lg"
+                  initial={{ opacity: 0.4 }}
+                  animate={{ opacity: 0 }}
+                  transition={{ duration: 0.6 }}
+                  style={{
+                    background: "linear-gradient(to left, rgba(0,0,0,0.5) 0%, transparent 60%)",
+                  }}
+                />
+              </motion.div>
+            )}
           </AnimatePresence>
+
+          {/* Page edge lines for depth */}
+          <div className="absolute right-0 top-1 bottom-1 w-[3px] pointer-events-none z-20 rounded-r"
+            style={{
+              background: "linear-gradient(to left, rgba(0,0,0,0.15), transparent)",
+            }}
+          />
         </div>
       </div>
 
-      {/* Navigation controls */}
+      {/* Navigation */}
       <div className="flex items-center gap-4">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={goPrev}
-          disabled={currentPage === 0}
-          className="gap-1 font-display uppercase tracking-wider text-xs"
-        >
+        <Button variant="outline" size="sm" onClick={goPrev} disabled={currentPage === 0 || flipState !== "idle"} className="gap-1 font-display uppercase tracking-wider text-xs">
           <ChevronLeft className="h-4 w-4" /> Prev
         </Button>
 
-        {/* Page dots */}
         <div className="flex items-center gap-1.5">
           {Array.from({ length: totalPages }).map((_, i) => (
             <button
               key={i}
-              onClick={() => setPage([i, i > currentPage ? 1 : -1])}
+              onClick={() => {
+                if (flipState !== "idle" || i === currentPage) return;
+                if (i > currentPage) goNext();
+                else goPrev();
+              }}
               className={`w-2 h-2 rounded-full transition-all ${
                 i === currentPage ? "bg-primary w-4" : "bg-muted-foreground/30 hover:bg-muted-foreground/50"
               }`}
@@ -351,13 +339,7 @@ export function NewsFlipbook({ articles, featured, monthLabel }: Props) {
           ))}
         </div>
 
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={goNext}
-          disabled={currentPage >= totalPages - 1}
-          className="gap-1 font-display uppercase tracking-wider text-xs"
-        >
+        <Button variant="outline" size="sm" onClick={goNext} disabled={currentPage >= totalPages - 1 || flipState !== "idle"} className="gap-1 font-display uppercase tracking-wider text-xs">
           Next <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
