@@ -1,18 +1,18 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { CalendarDays, MapPin, Clock, Download, Filter } from "lucide-react";
 import { EventRSVP } from "@/components/EventRSVP";
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isSameMonth, addMonths, subMonths } from "date-fns";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths, parse } from "date-fns";
+import { faTeamConfigs } from "@/lib/faFixtureConfig";
+import type { FAFixture } from "@/hooks/useTeamFixtures";
 
 /** Format a UTC date string to UK time display */
 function formatUK(dateStr: string, fmt: string): string {
-  // Use Intl to get the UK-offset parts, then format with date-fns
   const d = new Date(dateStr);
   const ukString = d.toLocaleString("en-GB", { timeZone: "Europe/London" });
-  // Parse "DD/MM/YYYY, HH:MM:SS" back into a Date we can pass to date-fns
   const [datePart, timePart] = ukString.split(", ");
   const [day, month, year] = datePart.split("/").map(Number);
   const [hours, minutes, seconds] = timePart.split(":").map(Number);
@@ -43,6 +43,7 @@ interface ClubEvent {
 
 const typeColors: Record<string, string> = {
   match: "bg-green-500",
+  fixture: "bg-green-500",
   training: "bg-blue-500",
   social: "bg-purple-500",
   meeting: "bg-yellow-500",
@@ -80,13 +81,49 @@ function downloadICS(event: ClubEvent) {
   URL.revokeObjectURL(url);
 }
 
+/** Convert an FA fixture into a ClubEvent shape */
+function fixtureToEvent(f: FAFixture, teamName: string): ClubEvent {
+  // Parse date like "Saturday 12 Apr 2025"
+  let startDate: Date;
+  try {
+    startDate = parse(f.date, "EEEE d MMM yyyy", new Date());
+  } catch {
+    startDate = new Date(f.date);
+  }
+  // Apply time if present
+  if (f.time && f.time !== "TBC") {
+    const [h, m] = f.time.split(":").map(Number);
+    if (!isNaN(h)) startDate.setHours(h, m || 0);
+  }
+
+  const isHome = f.homeTeam.toLowerCase().includes("pinner");
+  const opponent = isHome ? f.awayTeam : f.homeTeam;
+  const prefix = isHome ? "vs" : "@";
+  const hasScore = f.type === "result" && f.homeScore != null;
+  const scoreStr = hasScore ? ` (${f.homeScore}-${f.awayScore})` : "";
+
+  return {
+    id: `fa-${teamName}-${f.date}-${opponent}`,
+    title: `${teamName}: ${prefix} ${opponent}${scoreStr}`,
+    description: f.competition || null,
+    event_type: "fixture",
+    start_time: startDate.toISOString(),
+    end_time: null,
+    location: f.venue || null,
+    team: teamName,
+    is_all_day: !f.time || f.time === "TBC",
+  };
+}
+
 export default function CalendarPage() {
   const [events, setEvents] = useState<ClubEvent[]>([]);
+  const [fixtureEvents, setFixtureEvents] = useState<ClubEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [filterType, setFilterType] = useState<string>("all");
 
+  // Fetch club_events from DB
   useEffect(() => {
     supabase
       .from("club_events")
@@ -98,11 +135,43 @@ export default function CalendarPage() {
       });
   }, []);
 
+  // Fetch FA fixtures for all teams
+  useEffect(() => {
+    let cancelled = false;
+    async function fetchAll() {
+      const results: ClubEvent[] = [];
+      // Fetch all teams in parallel
+      const promises = faTeamConfigs.map(async (config) => {
+        try {
+          const { data, error } = await supabase.functions.invoke("scrape-fixtures", {
+            body: { team: config.team, fixtureUrl: config.fixtureUrl, resultUrl: config.resultUrl },
+          });
+          if (error || !data?.success) return [];
+          const fixtures: FAFixture[] = [...(data.fixtures || []), ...(data.results || [])];
+          return fixtures.map((f) => fixtureToEvent(f, config.team));
+        } catch {
+          return [];
+        }
+      });
+      const allTeams = await Promise.all(promises);
+      allTeams.forEach((teamEvents) => results.push(...teamEvents));
+      if (!cancelled) setFixtureEvents(results);
+    }
+    fetchAll();
+    return () => { cancelled = true; };
+  }, []);
+
+  const allEvents = useMemo(() => {
+    return [...events, ...fixtureEvents].sort(
+      (a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime()
+    );
+  }, [events, fixtureEvents]);
+
   const days = eachDayOfInterval({ start: startOfMonth(currentMonth), end: endOfMonth(currentMonth) });
   const startDayOfWeek = startOfMonth(currentMonth).getDay();
   const paddingDays = startDayOfWeek === 0 ? 6 : startDayOfWeek - 1;
 
-  const filteredEvents = events.filter((e) => filterType === "all" || e.event_type === filterType);
+  const filteredEvents = allEvents.filter((e) => filterType === "all" || e.event_type === filterType);
   const dayEvents = selectedDate ? filteredEvents.filter((e) => isSameDay(toUKDate(e.start_time), selectedDate)) : [];
 
   const upcomingEvents = filteredEvents
@@ -124,7 +193,7 @@ export default function CalendarPage() {
           {/* Filters */}
           <div className="max-w-5xl mx-auto flex flex-wrap items-center gap-2 mb-6">
             <Filter className="h-4 w-4 text-muted-foreground" />
-            {["all", "match", "training", "social", "meeting", "general"].map((t) => (
+            {["all", "fixture", "match", "training", "social", "meeting", "general"].map((t) => (
               <button
                 key={t}
                 onClick={() => setFilterType(t)}
@@ -199,7 +268,7 @@ export default function CalendarPage() {
                           >
                             <Download className="h-3 w-3" /> Add to Calendar
                           </button>
-                          <EventRSVP eventId={e.id} />
+                          {!e.id.startsWith("fa-") && <EventRSVP eventId={e.id} />}
                         </div>
                       ))}
                     </div>
