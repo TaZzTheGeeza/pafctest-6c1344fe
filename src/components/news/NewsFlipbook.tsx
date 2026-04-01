@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
-import programmeCover from "@/assets/news/programme-cover.jpg";
+import programmeCover from "@/assets/news/programme-cover.png";
 
 interface NewsArticle {
   id: string;
