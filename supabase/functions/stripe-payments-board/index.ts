@@ -9,15 +9,24 @@ const corsHeaders = {
 
 const GC_API = "https://api.gocardless.com";
 
-async function gcGet(path: string, token: string) {
-  const res = await fetch(`${GC_API}${path}`, {
+async function gcGet(path: string, token: string, params?: Record<string, string>) {
+  const url = new URL(`${GC_API}${path}`);
+  if (params) {
+    for (const [key, value] of Object.entries(params)) {
+      url.searchParams.set(key, value);
+    }
+  }
+  const res = await fetch(url.toString(), {
     headers: {
       Authorization: `Bearer ${token}`,
       "GoCardless-Version": "2015-07-06",
     },
   });
   const data = await res.json();
-  if (!res.ok) throw new Error(JSON.stringify(data));
+  if (!res.ok) {
+    console.error("GoCardless API error:", path, JSON.stringify(data));
+    throw new Error(JSON.stringify(data));
+  }
   return data;
 }
 
@@ -40,12 +49,11 @@ serve(async (req) => {
     const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
     if (userError || !userData.user) throw new Error("Not authenticated");
 
-    // Check if user has admin or treasurer role
     const { data: roles } = await supabaseClient
       .from("user_roles")
       .select("role")
       .eq("user_id", userData.user.id);
-    
+
     const userRoles = roles?.map((r: any) => r.role) || [];
     if (!userRoles.includes("admin") && !userRoles.includes("treasurer")) {
       throw new Error("Unauthorized: admin or treasurer role required");
@@ -55,20 +63,25 @@ serve(async (req) => {
     if (!gcToken) throw new Error("GOCARDLESS_ACCESS_TOKEN not set");
 
     // Fetch customers
-    const customersData = await gcGet("/customers?limit=500", gcToken);
+    const customersData = await gcGet("/customers", gcToken, { limit: "500" });
     const allCustomers = customersData.customers || [];
 
-    // Fetch subscriptions (active + cancelled)
-    const activeSubsData = await gcGet("/subscriptions?status=active&limit=500", gcToken);
-    const cancelledSubsData = await gcGet("/subscriptions?status=cancelled&limit=500", gcToken);
+    // Fetch subscriptions — separate calls per status
+    const [activeSubsData, cancelledSubsData] = await Promise.all([
+      gcGet("/subscriptions", gcToken, { status: "active", limit: "500" }),
+      gcGet("/subscriptions", gcToken, { status: "cancelled", limit: "500" }),
+    ]);
     const allSubscriptions = [
       ...(activeSubsData.subscriptions || []),
       ...(cancelledSubsData.subscriptions || []),
     ];
 
     // Fetch recent payments (last 90 days)
-    const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
-    const paymentsData = await gcGet(`/payments?created_at%5Bgte%5D=${ninetyDaysAgo}&limit=500`, gcToken);
+    const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
+    const paymentsData = await gcGet("/payments", gcToken, {
+      limit: "500",
+      "created_at[gte]": ninetyDaysAgo,
+    });
     const allPayments = paymentsData.payments || [];
 
     // Build customer map
@@ -94,7 +107,7 @@ serve(async (req) => {
       created: s.created_at,
     }));
 
-    // Build payment data
+    // Build payment data — map GC statuses to display statuses
     const payments = allPayments.map((p: any) => ({
       id: p.id,
       amount_cents: p.amount,
@@ -131,6 +144,7 @@ serve(async (req) => {
     );
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
+    console.error("stripe-payments-board error:", msg);
     return new Response(JSON.stringify({ error: msg }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: error instanceof Error && msg.includes("Unauthorized") ? 403 : 500,
