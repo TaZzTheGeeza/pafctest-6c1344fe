@@ -913,6 +913,7 @@ function UserRow({
             )}
             {user.roles.map((role) => {
               const config = ROLE_CONFIG[role];
+              if (!config) return null;
               const Icon = config.icon;
               return (
                 <span
