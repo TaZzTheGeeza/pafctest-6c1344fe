@@ -202,17 +202,23 @@ serve(async (req) => {
       .reduce((sum: number, p: any) => sum + (p.amount || 0), 0);
 
     // Collected payments by day (last 30 days) for chart
+    // Use charge_date (the date GC actually collects) to match GoCardless dashboard
     const thirtyDaysAgoDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const thirtyDaysAgoKey = thirtyDaysAgoDate.toISOString().slice(0, 10);
     const dailyCollected: Record<string, number> = {};
     for (const p of allPayments) {
+      // GoCardless "collected" = confirmed or paid_out
       if (["confirmed", "paid_out"].includes(p.status)) {
-        const d = new Date(p.created_at);
-        if (d >= thirtyDaysAgoDate) {
-          const key = d.toISOString().slice(0, 10);
+        // Use charge_date if available, fall back to created_at
+        const key = p.charge_date || new Date(p.created_at).toISOString().slice(0, 10);
+        if (key >= thirtyDaysAgoKey) {
           dailyCollected[key] = (dailyCollected[key] || 0) + (p.amount || 0);
         }
       }
     }
+
+    // Also compute the collected total for the chart header to match GC dashboard
+    const collectedTotal = Object.values(dailyCollected).reduce((a, b) => a + b, 0);
 
     // Fill in missing days
     const chartData: { date: string; amount_cents: number }[] = [];
