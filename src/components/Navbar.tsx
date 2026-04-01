@@ -9,12 +9,11 @@ import clubLogo from "@/assets/club-logo.jpg";
 
 const communityItems = [
   { label: "News", path: "/news", icon: Newspaper, desc: "Latest club updates" },
-  { label: "Events", path: "/events", icon: CalendarDays, desc: "Upcoming events" },
+  { label: "Events & Calendar", path: "/events", icon: CalendarDays, desc: "Events & full schedule" },
   { label: "Gallery", path: "/gallery", icon: Image, desc: "Photos & media" },
   
   { label: "Results", path: "/results", icon: ClipboardList, desc: "Match reports & POTM" },
   { label: "Player of the Match", path: "/player-of-the-match", icon: Award, desc: "Weekly awards" },
-  { label: "Calendar", path: "/calendar", icon: Clock, desc: "Full schedule" },
 ];
 
 const playerItems = [
