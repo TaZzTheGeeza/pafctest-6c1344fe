@@ -52,6 +52,7 @@ export default function NewsEditorPage() {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [generatingAi, setGeneratingAi] = useState(false);
+  const [generatingContent, setGeneratingContent] = useState(false);
 
   const { data: article, isLoading } = useQuery({
     queryKey: ["news-article-edit", id],
