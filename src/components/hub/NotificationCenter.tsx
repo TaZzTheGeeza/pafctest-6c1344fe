@@ -25,6 +25,7 @@ const typeIcons: Record<string, any> = {
 
 export function NotificationCenter() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [filter, setFilter] = useState<"all" | "unread">("all");
 
