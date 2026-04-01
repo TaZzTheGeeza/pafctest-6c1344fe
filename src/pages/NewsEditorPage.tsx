@@ -110,45 +110,22 @@ export default function NewsEditorPage() {
     }
   };
 
-  const openImagePrompt = () => {
-    if (!title.trim()) {
-      toast.error("Enter a title first so AI knows what image to create");
-      return;
-    }
-    setImagePrompt("");
-    setShowImagePrompt(true);
-  };
-
-  const handleAiGenerate = async () => {
-    setShowImagePrompt(false);
-    setGeneratingAi(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("generate-news-image", {
-        body: { title: title.trim(), customPrompt: imagePrompt.trim() || undefined },
-      });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-      if (data?.url) {
-        setCoverImageUrl(data.url);
-        toast.success("AI cover image generated!");
-      }
-    } catch (err: any) {
-      toast.error(err.message || "Failed to generate image");
-    } finally {
-      setGeneratingAi(false);
-    }
-  };
-
-  const handleAiContent = async () => {
+  const openContentPrompt = () => {
     if (!title.trim()) {
       toast.error("Enter a title first so AI knows what to write");
       return;
     }
+    setContentPrompt("");
+    setShowContentPrompt(true);
+  };
+
+  const handleAiContent = async () => {
+    setShowContentPrompt(false);
     if (content.trim() && !confirm("This will replace your current content. Continue?")) return;
     setGeneratingContent(true);
     try {
       const { data, error } = await supabase.functions.invoke("generate-news-content", {
-        body: { title: title.trim(), category },
+        body: { title: title.trim(), category, customPrompt: contentPrompt.trim() || undefined },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
