@@ -98,7 +98,7 @@ export function NotificationCenter() {
           {filtered.map((n) => {
             const Icon = typeIcons[n.type] || Info;
             return (
-              <div key={n.id} onClick={() => !n.is_read && markAsRead(n.id)} className={`bg-card border rounded-xl p-4 transition-colors cursor-pointer ${n.is_read ? "border-border opacity-70" : "border-primary/30 hover:border-primary/50"}`}>
+              <div key={n.id} onClick={() => { if (!n.is_read) markAsRead(n.id); if (n.link) navigate(n.link); }} className={`bg-card border rounded-xl p-4 transition-colors cursor-pointer ${n.is_read ? "border-border opacity-70" : "border-primary/30 hover:border-primary/50"}`}>
                 <div className="flex items-start gap-3">
                   <div className={`flex items-center justify-center w-8 h-8 rounded-lg shrink-0 ${n.is_read ? "bg-secondary" : "bg-primary/20"}`}>
                     <Icon className={`h-4 w-4 ${n.is_read ? "text-muted-foreground" : "text-primary"}`} />
