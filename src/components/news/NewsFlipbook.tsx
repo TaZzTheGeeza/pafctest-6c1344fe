@@ -191,14 +191,7 @@ export function NewsFlipbook({ articles, featured, monthLabel }: Props) {
     }
   };
 
-  if (allArticles.length === 0) {
-    return (
-      <div className="py-16 text-center">
-        <Newspaper className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-        <p className="text-muted-foreground">No articles this month.</p>
-      </div>
-    );
-  }
+  /* Even with no articles, show the cover page */
 
   return (
     <motion.div
