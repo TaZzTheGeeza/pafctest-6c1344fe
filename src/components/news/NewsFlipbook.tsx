@@ -1,11 +1,12 @@
-import { forwardRef, useRef, useState, useCallback, useMemo } from "react";
+import { useRef, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
-import { Newspaper, Clock, User, Star, Trophy, ChevronLeft, ChevronRight, BookOpen } from "lucide-react";
+import { Newspaper, Clock, User, Trophy, ChevronLeft, ChevronRight, BookOpen } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
+import programmeCover from "@/assets/news/programme-cover.jpg";
 
 interface NewsArticle {
   id: string;
@@ -31,58 +32,24 @@ interface Props {
 /* ── Cover page ── */
 function CoverPage({ monthLabel, articleCount }: { monthLabel: string; articleCount: number }) {
   return (
-    <div className="h-full flex flex-col relative overflow-hidden rounded-lg border border-border bg-card">
-      <div className="bg-gold-gradient py-3 px-6 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Trophy className="h-4 w-4 text-primary-foreground" />
-          <span className="font-display text-xs uppercase tracking-[0.3em] text-primary-foreground font-bold">
-            Official Programme
-          </span>
-        </div>
-        <span className="font-body text-[10px] text-primary-foreground/80 uppercase tracking-wider">Est. 2024</span>
-      </div>
-
-      <div className="flex-1 flex flex-col items-center justify-center relative px-8 py-10">
-        <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none">
-          <Trophy className="h-[300px] w-[300px]" />
-        </div>
-        <div
-          className="absolute inset-0 opacity-[0.02] pointer-events-none"
-          style={{
-            backgroundImage:
-              "repeating-linear-gradient(45deg, transparent, transparent 10px, currentColor 10px, currentColor 11px)",
-          }}
-        />
-
-        <div className="relative z-10 text-center space-y-6">
-          <div className="space-y-1">
-            <h1 className="text-5xl md:text-6xl font-display font-bold tracking-tight">
-              <span className="text-gold-gradient">PAFC</span>
-            </h1>
-            <h2 className="text-3xl md:text-4xl font-display font-bold tracking-tight text-foreground">NEWS</h2>
+    <div className="h-full w-full relative overflow-hidden rounded-lg">
+      <img src={programmeCover} alt="PAFC News Programme" className="absolute inset-0 w-full h-full object-cover" />
+      {/* Overlay content */}
+      <div className="absolute inset-0 flex flex-col justify-end p-6 bg-gradient-to-t from-black/70 via-transparent to-transparent">
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <div className="h-px flex-1 bg-primary/50" />
+            <span className="text-primary font-display text-xs uppercase tracking-[0.3em] font-bold">{monthLabel}</span>
+            <div className="h-px flex-1 bg-primary/50" />
           </div>
-
-          <div className="flex items-center justify-center gap-3">
-            <div className="h-px w-12 bg-primary/40" />
-            <span className="text-primary font-display text-sm uppercase tracking-[0.3em] font-bold">{monthLabel}</span>
-            <div className="h-px w-12 bg-primary/40" />
-          </div>
-
-          <p className="text-muted-foreground text-sm font-body">
+          <p className="text-center text-white/60 text-xs font-body">
             {articleCount} {articleCount === 1 ? "story" : "stories"} inside
           </p>
-
-          <div className="mt-8 flex items-center justify-center gap-2 text-muted-foreground/60 text-xs">
-            <BookOpen className="h-4 w-4" />
-            <span className="font-body">Use arrows to turn pages</span>
+          <div className="flex items-center justify-center gap-2 text-white/40 text-[10px] pt-2">
+            <BookOpen className="h-3 w-3" />
+            <span className="font-body">Click or swipe to turn pages</span>
           </div>
         </div>
-      </div>
-
-      <div className="bg-gold-gradient py-2 px-6">
-        <p className="text-center text-[10px] text-primary-foreground/80 uppercase tracking-[0.2em] font-display">
-          Peterborough Athletic Football Club
-        </p>
       </div>
     </div>
   );
@@ -171,28 +138,28 @@ function BackCover() {
   );
 }
 
-/* ── Page flip animation variants ── */
-const pageVariants = {
-  enter: (direction: number) => ({
-    rotateY: direction > 0 ? 90 : -90,
-    opacity: 0,
-    scale: 0.95,
+/* ── Book-style page flip (hinged on left like a real book) ── */
+const bookFlipVariants = {
+  enter: (dir: number) => ({
+    rotateY: dir > 0 ? -90 : 90,
+    originX: dir > 0 ? 0 : 1,
+    opacity: 0.3,
   }),
   center: {
     rotateY: 0,
+    originX: 0,
     opacity: 1,
-    scale: 1,
   },
-  exit: (direction: number) => ({
-    rotateY: direction < 0 ? 90 : -90,
-    opacity: 0,
-    scale: 0.95,
+  exit: (dir: number) => ({
+    rotateY: dir > 0 ? 90 : -90,
+    originX: dir > 0 ? 0 : 1,
+    opacity: 0.3,
   }),
 };
 
-/* ── Main Flipbook Component ── */
 export function NewsFlipbook({ articles, featured, monthLabel }: Props) {
   const [[currentPage, direction], setPage] = useState([0, 0]);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const allArticles = useMemo(() => {
     const list: NewsArticle[] = [];
@@ -201,7 +168,6 @@ export function NewsFlipbook({ articles, featured, monthLabel }: Props) {
     return list;
   }, [articles, featured]);
 
-  // total pages = cover + articles + back cover
   const totalPages = allArticles.length + 2;
 
   const goNext = () => {
@@ -211,8 +177,20 @@ export function NewsFlipbook({ articles, featured, monthLabel }: Props) {
     if (currentPage > 0) setPage([currentPage - 1, -1]);
   };
 
-  // Keyboard navigation
-  const containerRef = useRef<HTMLDivElement>(null);
+  // Swipe support
+  const touchStart = useRef<number | null>(null);
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStart.current = e.touches[0].clientX;
+  };
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStart.current === null) return;
+    const diff = touchStart.current - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) {
+      if (diff > 0) goNext();
+      else goPrev();
+    }
+    touchStart.current = null;
+  };
 
   if (allArticles.length === 0) {
     return (
@@ -224,14 +202,9 @@ export function NewsFlipbook({ articles, featured, monthLabel }: Props) {
   }
 
   const renderPage = (pageIndex: number) => {
-    if (pageIndex === 0) {
-      return <CoverPage monthLabel={monthLabel} articleCount={allArticles.length} />;
-    }
-    if (pageIndex === totalPages - 1) {
-      return <BackCover />;
-    }
-    const article = allArticles[pageIndex - 1];
-    return <ArticlePage article={article} pageNum={pageIndex} />;
+    if (pageIndex === 0) return <CoverPage monthLabel={monthLabel} articleCount={allArticles.length} />;
+    if (pageIndex === totalPages - 1) return <BackCover />;
+    return <ArticlePage article={allArticles[pageIndex - 1]} pageNum={pageIndex} />;
   };
 
   return (
@@ -247,44 +220,59 @@ export function NewsFlipbook({ articles, featured, monthLabel }: Props) {
       }}
       style={{ outline: "none" }}
     >
-      {/* Page display with flip animation */}
+      {/* Book container with perspective */}
       <div
         className="relative w-full max-w-[460px] mx-auto"
-        style={{ perspective: "1200px" }}
+        style={{ perspective: "1400px" }}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
       >
-        <div className="aspect-[3/4] w-full">
+        {/* Book shadow/spine effect */}
+        <div className="absolute -left-1 top-4 bottom-4 w-2 bg-gradient-to-r from-black/30 to-transparent rounded-l z-20 pointer-events-none" />
+        
+        <div className="aspect-[3/4] w-full relative">
           <AnimatePresence mode="wait" custom={direction}>
             <motion.div
               key={currentPage}
               custom={direction}
-              variants={pageVariants}
+              variants={bookFlipVariants}
               initial="enter"
               animate="center"
               exit="exit"
               transition={{
-                rotateY: { type: "spring", stiffness: 200, damping: 30, duration: 0.5 },
-                opacity: { duration: 0.3 },
-                scale: { duration: 0.3 },
+                rotateY: { type: "tween", duration: 0.5, ease: [0.4, 0, 0.2, 1] },
+                opacity: { duration: 0.35 },
               }}
               className="absolute inset-0"
-              style={{ transformStyle: "preserve-3d" }}
+              style={{
+                transformStyle: "preserve-3d",
+                transformOrigin: direction >= 0 ? "left center" : "right center",
+                backfaceVisibility: "hidden",
+              }}
             >
+              {/* Page shadow during flip */}
+              <div
+                className="absolute inset-0 pointer-events-none z-10 rounded-lg"
+                style={{
+                  background: "linear-gradient(to right, rgba(0,0,0,0.08) 0%, transparent 15%, transparent 85%, rgba(0,0,0,0.03) 100%)",
+                }}
+              />
               {renderPage(currentPage)}
             </motion.div>
           </AnimatePresence>
         </div>
 
-        {/* Click zones for flipping */}
+        {/* Invisible click zones */}
         <button
           onClick={goPrev}
           disabled={currentPage === 0}
-          className="absolute left-0 top-0 bottom-0 w-1/3 z-10 cursor-w-resize opacity-0 disabled:cursor-default"
+          className="absolute left-0 top-0 bottom-0 w-1/3 z-30 cursor-w-resize opacity-0 disabled:cursor-default"
           aria-label="Previous page"
         />
         <button
           onClick={goNext}
           disabled={currentPage >= totalPages - 1}
-          className="absolute right-0 top-0 bottom-0 w-1/3 z-10 cursor-e-resize opacity-0 disabled:cursor-default"
+          className="absolute right-0 top-0 bottom-0 w-1/3 z-30 cursor-e-resize opacity-0 disabled:cursor-default"
           aria-label="Next page"
         />
       </div>
