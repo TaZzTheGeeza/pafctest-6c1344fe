@@ -11,6 +11,7 @@ import { Newspaper, Plus, Clock, User, ChevronRight, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { NewsBroadsheet } from "@/components/news/NewsBroadsheet";
 
 interface NewsArticle {
   id: string;
