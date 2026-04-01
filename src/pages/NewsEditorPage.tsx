@@ -111,15 +111,21 @@ export default function NewsEditorPage() {
     }
   };
 
-  const handleAiGenerate = async () => {
+  const openImagePrompt = () => {
     if (!title.trim()) {
       toast.error("Enter a title first so AI knows what image to create");
       return;
     }
+    setImagePrompt("");
+    setShowImagePrompt(true);
+  };
+
+  const handleAiGenerate = async () => {
+    setShowImagePrompt(false);
     setGeneratingAi(true);
     try {
       const { data, error } = await supabase.functions.invoke("generate-news-image", {
-        body: { title: title.trim() },
+        body: { title: title.trim(), customPrompt: imagePrompt.trim() || undefined },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
