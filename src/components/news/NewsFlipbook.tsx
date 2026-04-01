@@ -1,11 +1,11 @@
-import { useRef, useState, useMemo } from "react";
+import { useRef, useState, useMemo, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { Newspaper, Clock, User, Trophy, ChevronLeft, ChevronRight, BookOpen } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useMotionValue, useTransform, PanInfo } from "framer-motion";
 import programmeCover from "@/assets/news/programme-cover.jpg";
 
 interface NewsArticle {
@@ -40,7 +40,7 @@ function CoverPage({ articleCount }: { articleCount: number }) {
         </p>
         <div className="flex items-center gap-2 text-white/40 text-[10px]">
           <BookOpen className="h-3 w-3" />
-          <span className="font-body">Click or swipe to turn pages</span>
+          <span className="font-body">Swipe to turn pages</span>
         </div>
       </div>
     </div>
@@ -130,28 +130,73 @@ function BackCover() {
   );
 }
 
-/* ── Book-style page flip (hinged on left like a real book) ── */
-const bookFlipVariants = {
-  enter: (dir: number) => ({
-    rotateY: dir > 0 ? -90 : 90,
-    originX: dir > 0 ? 0 : 1,
-    opacity: 0.3,
-  }),
-  center: {
-    rotateY: 0,
-    originX: 0,
-    opacity: 1,
-  },
-  exit: (dir: number) => ({
-    rotateY: dir > 0 ? 90 : -90,
-    originX: dir > 0 ? 0 : 1,
-    opacity: 0.3,
-  }),
-};
+/* ── Draggable page that flips like a real book ── */
+const DRAG_THRESHOLD = 80;
+
+function FlippablePage({
+  children,
+  onFlipNext,
+  onFlipPrev,
+  canNext,
+  canPrev,
+}: {
+  children: React.ReactNode;
+  onFlipNext: () => void;
+  onFlipPrev: () => void;
+  canNext: boolean;
+  canPrev: boolean;
+}) {
+  const x = useMotionValue(0);
+  // Map drag distance to a Y rotation — dragging left rotates page away (like turning a page)
+  const rotateY = useTransform(x, [-300, 0, 300], [90, 0, -90]);
+  const shadow = useTransform(x, [-300, 0, 300], [0.4, 0, 0.4]);
+
+  const handleDragEnd = (_: unknown, info: PanInfo) => {
+    const offset = info.offset.x;
+    const velocity = info.velocity.x;
+    // Swipe left = next page, swipe right = previous page
+    if ((offset < -DRAG_THRESHOLD || velocity < -400) && canNext) {
+      onFlipNext();
+    } else if ((offset > DRAG_THRESHOLD || velocity > 400) && canPrev) {
+      onFlipPrev();
+    }
+  };
+
+  return (
+    <motion.div
+      className="absolute inset-0 cursor-grab active:cursor-grabbing"
+      style={{
+        x,
+        rotateY,
+        transformStyle: "preserve-3d",
+        transformOrigin: "left center",
+        backfaceVisibility: "hidden",
+      }}
+      drag="x"
+      dragConstraints={{ left: 0, right: 0 }}
+      dragElastic={0.15}
+      onDragEnd={handleDragEnd}
+      whileTap={{ cursor: "grabbing" }}
+    >
+      {/* Dynamic page shadow based on drag */}
+      <motion.div
+        className="absolute inset-0 pointer-events-none z-10 rounded-lg"
+        style={{
+          background: useTransform(
+            shadow,
+            (s) => `linear-gradient(to right, rgba(0,0,0,${s * 0.3}) 0%, transparent 20%, transparent 80%, rgba(0,0,0,${s * 0.15}) 100%)`
+          ),
+        }}
+      />
+      {children}
+    </motion.div>
+  );
+}
 
 export function NewsFlipbook({ articles, featured, monthLabel }: Props) {
   const [[currentPage, direction], setPage] = useState([0, 0]);
   const containerRef = useRef<HTMLDivElement>(null);
+  const [isAnimating, setIsAnimating] = useState(false);
 
   const allArticles = useMemo(() => {
     const list: NewsArticle[] = [];
@@ -162,27 +207,21 @@ export function NewsFlipbook({ articles, featured, monthLabel }: Props) {
 
   const totalPages = allArticles.length + 2;
 
-  const goNext = () => {
-    if (currentPage < totalPages - 1) setPage([currentPage + 1, 1]);
-  };
-  const goPrev = () => {
-    if (currentPage > 0) setPage([currentPage - 1, -1]);
-  };
-
-  // Swipe support
-  const touchStart = useRef<number | null>(null);
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStart.current = e.touches[0].clientX;
-  };
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (touchStart.current === null) return;
-    const diff = touchStart.current - e.changedTouches[0].clientX;
-    if (Math.abs(diff) > 50) {
-      if (diff > 0) goNext();
-      else goPrev();
+  const goNext = useCallback(() => {
+    if (currentPage < totalPages - 1 && !isAnimating) {
+      setIsAnimating(true);
+      setPage([currentPage + 1, 1]);
+      setTimeout(() => setIsAnimating(false), 500);
     }
-    touchStart.current = null;
-  };
+  }, [currentPage, totalPages, isAnimating]);
+
+  const goPrev = useCallback(() => {
+    if (currentPage > 0 && !isAnimating) {
+      setIsAnimating(true);
+      setPage([currentPage - 1, -1]);
+      setTimeout(() => setIsAnimating(false), 500);
+    }
+  }, [currentPage, isAnimating]);
 
   if (allArticles.length === 0) {
     return (
@@ -199,6 +238,25 @@ export function NewsFlipbook({ articles, featured, monthLabel }: Props) {
     return <ArticlePage article={allArticles[pageIndex - 1]} pageNum={pageIndex} />;
   };
 
+  /* Page-turn animation variants — hinged from left like a real book */
+  const pageVariants = {
+    enter: (dir: number) => ({
+      rotateY: dir > 0 ? -120 : 40,
+      opacity: 0,
+      x: dir > 0 ? 60 : -30,
+    }),
+    center: {
+      rotateY: 0,
+      opacity: 1,
+      x: 0,
+    },
+    exit: (dir: number) => ({
+      rotateY: dir > 0 ? 40 : -120,
+      opacity: 0,
+      x: dir > 0 ? -30 : 60,
+    }),
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -212,61 +270,59 @@ export function NewsFlipbook({ articles, featured, monthLabel }: Props) {
       }}
       style={{ outline: "none" }}
     >
-      {/* Book container with perspective */}
+      {/* Book container */}
       <div
-        className="relative w-full max-w-[460px] mx-auto"
-        style={{ perspective: "1400px" }}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
+        className="relative w-full max-w-[460px] mx-auto select-none"
+        style={{ perspective: "1200px" }}
       >
-        {/* Book shadow/spine effect */}
-        <div className="absolute -left-1 top-4 bottom-4 w-2 bg-gradient-to-r from-black/30 to-transparent rounded-l z-20 pointer-events-none" />
-        
-        <div className="aspect-[3/4] w-full relative">
-          <AnimatePresence mode="wait" custom={direction}>
+        {/* Book spine shadow */}
+        <div className="absolute -left-1 top-4 bottom-4 w-3 bg-gradient-to-r from-black/40 to-transparent rounded-l z-20 pointer-events-none" />
+        {/* Bottom book shadow */}
+        <div className="absolute -bottom-3 left-4 right-4 h-4 bg-black/20 rounded-full blur-md pointer-events-none" />
+
+        <div className="aspect-[3/4] w-full relative overflow-hidden rounded-r-lg">
+          <AnimatePresence mode="wait" custom={direction} initial={false}>
             <motion.div
               key={currentPage}
               custom={direction}
-              variants={bookFlipVariants}
+              variants={pageVariants}
               initial="enter"
               animate="center"
               exit="exit"
               transition={{
-                rotateY: { type: "tween", duration: 0.5, ease: [0.4, 0, 0.2, 1] },
-                opacity: { duration: 0.35 },
+                rotateY: { type: "spring", stiffness: 200, damping: 30 },
+                opacity: { duration: 0.3 },
+                x: { type: "spring", stiffness: 300, damping: 30 },
               }}
               className="absolute inset-0"
               style={{
                 transformStyle: "preserve-3d",
-                transformOrigin: direction >= 0 ? "left center" : "right center",
-                backfaceVisibility: "hidden",
+                transformOrigin: "left center",
+              }}
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.12}
+              onDragEnd={(_, info) => {
+                const { offset, velocity } = info;
+                if ((offset.x < -DRAG_THRESHOLD || velocity.x < -400) && currentPage < totalPages - 1) {
+                  goNext();
+                } else if ((offset.x > DRAG_THRESHOLD || velocity.x > 400) && currentPage > 0) {
+                  goPrev();
+                }
               }}
             >
-              {/* Page shadow during flip */}
+              {/* Page fold shadow */}
               <div
                 className="absolute inset-0 pointer-events-none z-10 rounded-lg"
                 style={{
-                  background: "linear-gradient(to right, rgba(0,0,0,0.08) 0%, transparent 15%, transparent 85%, rgba(0,0,0,0.03) 100%)",
+                  background:
+                    "linear-gradient(to right, rgba(0,0,0,0.06) 0%, transparent 8%, transparent 92%, rgba(0,0,0,0.04) 100%)",
                 }}
               />
               {renderPage(currentPage)}
             </motion.div>
           </AnimatePresence>
         </div>
-
-        {/* Invisible click zones */}
-        <button
-          onClick={goPrev}
-          disabled={currentPage === 0}
-          className="absolute left-0 top-0 bottom-0 w-1/3 z-30 cursor-w-resize opacity-0 disabled:cursor-default"
-          aria-label="Previous page"
-        />
-        <button
-          onClick={goNext}
-          disabled={currentPage >= totalPages - 1}
-          className="absolute right-0 top-0 bottom-0 w-1/3 z-30 cursor-e-resize opacity-0 disabled:cursor-default"
-          aria-label="Next page"
-        />
       </div>
 
       {/* Navigation controls */}
