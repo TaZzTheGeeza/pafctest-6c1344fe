@@ -40,6 +40,7 @@ export function RoleGate({ children, requiredRole, redirectTo = "/auth" }: Props
     requiredRole === "admin" ? isAdmin :
     requiredRole === "coach" ? (isCoach || isAdmin || isTreasurer) :
     requiredRole === "treasurer" ? (isTreasurer || isAdmin) :
+    requiredRole === "news_editor" ? (isNewsEditor || isAdmin) :
     isPlayer;
 
   if (!hasAccess) {
