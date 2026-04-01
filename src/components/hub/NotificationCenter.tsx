@@ -43,9 +43,42 @@ export function NotificationCenter() {
     return () => { supabase.removeChannel(channel); };
   }, [user]);
 
+  // Resolve custom::UUID references in notification text to human-readable event names
+  function resolveCustomIds(text: string, eventMap: Map<string, string>): string {
+    return text.replace(/custom::[0-9a-f-]{36}/gi, (match) => {
+      const id = match.replace("custom::", "");
+      return eventMap.get(id) || "Event";
+    });
+  }
+
   async function loadNotifications() {
     const { data } = await supabase.from("hub_notifications").select("*").eq("user_id", user!.id).order("created_at", { ascending: false }).limit(50);
-    if (data) setNotifications(data);
+    if (!data) return;
+
+    // Find any custom::UUID references that need resolving
+    const customIds = new Set<string>();
+    for (const n of data) {
+      const matches = `${n.title} ${n.message}`.match(/custom::([0-9a-f-]{36})/gi);
+      if (matches) matches.forEach((m) => customIds.add(m.replace("custom::", "")));
+    }
+
+    let eventMap = new Map<string, string>();
+    if (customIds.size > 0) {
+      const { data: events } = await supabase
+        .from("hub_availability_events")
+        .select("id, title")
+        .in("id", [...customIds]);
+      if (events) events.forEach((e) => eventMap.set(e.id, e.title));
+    }
+
+    // Replace custom IDs with real names in title and message
+    const resolved = data.map((n) => ({
+      ...n,
+      title: resolveCustomIds(n.title, eventMap),
+      message: resolveCustomIds(n.message, eventMap),
+    }));
+
+    setNotifications(resolved);
   }
 
   async function markAsRead(id: string) {
