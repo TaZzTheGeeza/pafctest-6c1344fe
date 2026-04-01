@@ -194,7 +194,7 @@ export function NewsFlipbook({ articles, featured, monthLabel }: Props) {
   }
 
   const renderPage = (pageIndex: number) => {
-    if (pageIndex === 0) return <CoverPage monthLabel={monthLabel} articleCount={allArticles.length} />;
+    if (pageIndex === 0) return <CoverPage articleCount={allArticles.length} />;
     if (pageIndex === totalPages - 1) return <BackCover />;
     return <ArticlePage article={allArticles[pageIndex - 1]} pageNum={pageIndex} />;
   };
