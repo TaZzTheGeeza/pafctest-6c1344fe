@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import RichTextEditor from "@/components/RichTextEditor";
-import { ArrowLeft, Save, Eye, Trash2, Loader2, ImagePlus } from "lucide-react";
+import { ArrowLeft, Save, Eye, Trash2, Loader2, ImagePlus, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const CATEGORIES = [
@@ -51,6 +51,7 @@ export default function NewsEditorPage() {
   const [isFeatured, setIsFeatured] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [generatingAi, setGeneratingAi] = useState(false);
 
   const { data: article, isLoading } = useQuery({
     queryKey: ["news-article-edit", id],
@@ -103,6 +104,29 @@ export default function NewsEditorPage() {
       toast.error("Failed to upload image");
     } finally {
       setUploading(false);
+    }
+  };
+
+  const handleAiGenerate = async () => {
+    if (!title.trim()) {
+      toast.error("Enter a title first so AI knows what image to create");
+      return;
+    }
+    setGeneratingAi(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-news-image", {
+        body: { title: title.trim() },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      if (data?.url) {
+        setCoverImageUrl(data.url);
+        toast.success("AI cover image generated!");
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Failed to generate image");
+    } finally {
+      setGeneratingAi(false);
     }
   };
 
@@ -268,7 +292,7 @@ export default function NewsEditorPage() {
                     </Button>
                   </div>
                 )}
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <label className="cursor-pointer">
                     <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
                     <Button type="button" variant="outline" size="sm" className="gap-1.5" asChild>
@@ -278,11 +302,22 @@ export default function NewsEditorPage() {
                       </span>
                     </Button>
                   </label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="gap-1.5"
+                    onClick={handleAiGenerate}
+                    disabled={generatingAi || !title.trim()}
+                  >
+                    {generatingAi ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                    {generatingAi ? "Generating…" : "AI Generate"}
+                  </Button>
                   <Input
                     placeholder="Or paste image URL..."
                     value={coverImageUrl}
                     onChange={(e) => setCoverImageUrl(e.target.value)}
-                    className="flex-1"
+                    className="flex-1 min-w-[200px]"
                   />
                 </div>
               </div>
