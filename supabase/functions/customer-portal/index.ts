@@ -8,6 +8,32 @@ const corsHeaders = {
 
 const GC_API = "https://api.gocardless.com";
 
+async function gcGet(path: string, token: string) {
+  const res = await fetch(`${GC_API}${path}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "GoCardless-Version": "2015-07-06",
+    },
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(JSON.stringify(data));
+  return data;
+}
+
+async function findCustomerByEmail(email: string, token: string): Promise<string | null> {
+  let after: string | undefined;
+  while (true) {
+    const query = after ? `?after=${after}&limit=100` : "?limit=100";
+    const data = await gcGet(`/customers${query}`, token);
+    const customers = data.customers || [];
+    const match = customers.find((c: any) => c.email?.toLowerCase() === email.toLowerCase());
+    if (match) return match.id;
+    if (!data.meta?.cursors?.after) break;
+    after = data.meta.cursors.after;
+  }
+  return null;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -32,36 +58,19 @@ serve(async (req) => {
     const user = userData.user;
     if (!user?.email) throw new Error("User not authenticated");
 
-    // Search GoCardless customers by email
-    const custRes = await fetch(`${GC_API}/customers?email=${encodeURIComponent(user.email)}`, {
-      headers: {
-        Authorization: `Bearer ${gcToken}`,
-        "GoCardless-Version": "2015-07-06",
-      },
-    });
-    const custData = await custRes.json();
-    if (!custRes.ok) throw new Error(JSON.stringify(custData));
+    const customerId = await findCustomerByEmail(user.email, gcToken);
 
-    const customers = custData.customers || [];
-    if (customers.length === 0) throw new Error("No payment account found");
-
-    const customerId = customers[0].id;
+    if (!customerId) {
+      return new Response(JSON.stringify({ error: "No payment account found" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
 
     // Get active subscriptions for this customer
-    const subRes = await fetch(`${GC_API}/subscriptions?customer=${customerId}&status=active`, {
-      headers: {
-        Authorization: `Bearer ${gcToken}`,
-        "GoCardless-Version": "2015-07-06",
-      },
-    });
-    const subData = await subRes.json();
-    if (!subRes.ok) throw new Error(JSON.stringify(subData));
-
+    const subData = await gcGet(`/subscriptions?customer=${customerId}&status=active`, gcToken);
     const subscriptions = subData.subscriptions || [];
 
-    // GoCardless doesn't have a hosted portal like Stripe.
-    // We return subscription details so the frontend can display them,
-    // and provide a cancel action if needed.
     return new Response(JSON.stringify({
       customer_id: customerId,
       subscriptions: subscriptions.map((s: any) => ({
@@ -70,7 +79,7 @@ serve(async (req) => {
         currency: s.currency,
         status: s.status,
         name: s.name,
-        interval: `${s.interval_unit}`,
+        interval: s.interval_unit,
         start_date: s.start_date,
         upcoming_payments: s.upcoming_payments?.slice(0, 3) || [],
       })),

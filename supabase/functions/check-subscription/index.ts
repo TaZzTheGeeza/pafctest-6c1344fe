@@ -8,6 +8,34 @@ const corsHeaders = {
 
 const GC_API = "https://api.gocardless.com";
 
+async function gcGet(path: string, token: string) {
+  const res = await fetch(`${GC_API}${path}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "GoCardless-Version": "2015-07-06",
+    },
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(JSON.stringify(data));
+  return data;
+}
+
+async function findCustomerByEmail(email: string, token: string): Promise<string | null> {
+  // GoCardless doesn't support filtering customers by email directly.
+  // We paginate through customers and match by email.
+  let after: string | undefined;
+  while (true) {
+    const query = after ? `?after=${after}&limit=100` : "?limit=100";
+    const data = await gcGet(`/customers${query}`, token);
+    const customers = data.customers || [];
+    const match = customers.find((c: any) => c.email?.toLowerCase() === email.toLowerCase());
+    if (match) return match.id;
+    if (!data.meta?.cursors?.after) break;
+    after = data.meta.cursors.after;
+  }
+  return null;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -32,44 +60,23 @@ serve(async (req) => {
     const user = userData.user;
     if (!user?.email) throw new Error("User not authenticated");
 
-    // Search GoCardless customers by email
-    const custRes = await fetch(`${GC_API}/customers?email=${encodeURIComponent(user.email)}`, {
-      headers: {
-        Authorization: `Bearer ${gcToken}`,
-        "GoCardless-Version": "2015-07-06",
-      },
-    });
-    const custData = await custRes.json();
-    if (!custRes.ok) throw new Error(JSON.stringify(custData));
+    const customerId = await findCustomerByEmail(user.email, gcToken);
 
-    const customers = custData.customers || [];
-    if (customers.length === 0) {
+    if (!customerId) {
       return new Response(JSON.stringify({ subscribed: false }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
       });
     }
 
-    const customerId = customers[0].id;
-
-    // Check for active subscriptions
-    const subRes = await fetch(`${GC_API}/subscriptions?customer=${customerId}&status=active`, {
-      headers: {
-        Authorization: `Bearer ${gcToken}`,
-        "GoCardless-Version": "2015-07-06",
-      },
-    });
-    const subData = await subRes.json();
-    if (!subRes.ok) throw new Error(JSON.stringify(subData));
-
+    // Check for active subscriptions for this customer
+    const subData = await gcGet(`/subscriptions?customer=${customerId}&status=active`, gcToken);
     const subscriptions = subData.subscriptions || [];
     const hasActiveSub = subscriptions.length > 0;
 
     let subscriptionEnd = null;
     if (hasActiveSub) {
       const sub = subscriptions[0];
-      // GoCardless subscriptions don't have a "current_period_end" like Stripe.
-      // Use upcoming_payments or the next charge date.
       subscriptionEnd = sub.upcoming_payments?.[0]?.charge_date || null;
     }
 
