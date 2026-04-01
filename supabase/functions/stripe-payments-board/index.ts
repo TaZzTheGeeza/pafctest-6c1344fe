@@ -30,6 +30,22 @@ async function gcGet(path: string, token: string, params?: Record<string, string
   return data;
 }
 
+/** Paginate through all records for a given endpoint */
+async function gcGetAll(path: string, token: string, key: string, params?: Record<string, string>): Promise<any[]> {
+  const all: any[] = [];
+  let after: string | undefined;
+  while (true) {
+    const p: Record<string, string> = { limit: "500", ...params };
+    if (after) p.after = after;
+    const data = await gcGet(path, token, p);
+    const items = data[key] || [];
+    all.push(...items);
+    if (!data.meta?.cursors?.after || items.length === 0) break;
+    after = data.meta.cursors.after;
+  }
+  return all;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -62,70 +78,149 @@ serve(async (req) => {
     const gcToken = Deno.env.get("GOCARDLESS_ACCESS_TOKEN");
     if (!gcToken) throw new Error("GOCARDLESS_ACCESS_TOKEN not set");
 
-    // Fetch customers
-    const customersData = await gcGet("/customers", gcToken, { limit: "500" });
-    const allCustomers = customersData.customers || [];
-
-    // Fetch subscriptions — separate calls per status
-    const [activeSubsData, cancelledSubsData] = await Promise.all([
-      gcGet("/subscriptions", gcToken, { status: "active", limit: "500" }),
-      gcGet("/subscriptions", gcToken, { status: "cancelled", limit: "500" }),
+    // Fetch all customers, mandates, subscriptions, and payments in parallel
+    const [allCustomers, allMandates, activeSubscriptions, cancelledSubscriptions] = await Promise.all([
+      gcGetAll("/customers", gcToken, "customers"),
+      gcGetAll("/mandates", gcToken, "mandates"),
+      gcGetAll("/subscriptions", gcToken, "subscriptions", { status: "active" }),
+      gcGetAll("/subscriptions", gcToken, "subscriptions", { status: "cancelled" }),
     ]);
-    const allSubscriptions = [
-      ...(activeSubsData.subscriptions || []),
-      ...(cancelledSubsData.subscriptions || []),
-    ];
 
-    // Fetch recent payments (last 90 days)
+    const allSubscriptions = [...activeSubscriptions, ...cancelledSubscriptions];
+
+    // Fetch payments for last 90 days
     const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
-    const paymentsData = await gcGet("/payments", gcToken, {
-      limit: "500",
+    const allPayments = await gcGetAll("/payments", gcToken, "payments", {
       "created_at[gte]": ninetyDaysAgo,
     });
-    const allPayments = paymentsData.payments || [];
 
-    // Build customer map
-    const customerMap: Record<string, any> = {};
+    // Fetch payouts
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    let allPayouts: any[] = [];
+    try {
+      allPayouts = await gcGetAll("/payouts", gcToken, "payouts", {
+        "created_at[gte]": thirtyDaysAgo,
+      });
+    } catch {
+      // payouts endpoint may not be available
+    }
+
+    // Build customer map: id -> { email, name }
+    const customerMap: Record<string, { email: string; name: string }> = {};
     for (const c of allCustomers) {
-      customerMap[c.id] = { id: c.id, email: c.email, name: `${c.given_name || ""} ${c.family_name || ""}`.trim() };
+      customerMap[c.id] = {
+        email: c.email || "",
+        name: `${c.given_name || ""} ${c.family_name || ""}`.trim(),
+      };
+    }
+
+    // Build mandate -> customer map
+    const mandateCustomerMap: Record<string, string> = {};
+    for (const m of allMandates) {
+      if (m.links?.customer) {
+        mandateCustomerMap[m.id] = m.links.customer;
+      }
+    }
+
+    // Helper to resolve customer from various link types
+    function resolveCustomer(links: any): { email: string | null; name: string | null } {
+      let custId = links?.customer;
+      if (!custId && links?.mandate) {
+        custId = mandateCustomerMap[links.mandate];
+      }
+      if (custId && customerMap[custId]) {
+        return { email: customerMap[custId].email, name: customerMap[custId].name };
+      }
+      return { email: null, name: null };
     }
 
     // Build subscription data
-    const subscriptions = allSubscriptions.map((s: any) => ({
-      id: s.id,
-      customer_id: s.links?.customer,
-      customer_email: customerMap[s.links?.customer]?.email || null,
-      customer_name: customerMap[s.links?.customer]?.name || null,
-      status: s.status,
-      current_period_start: s.start_date,
-      current_period_end: s.upcoming_payments?.[0]?.charge_date || null,
-      cancel_at_period_end: false,
-      amount_cents: s.amount,
-      currency: s.currency || "gbp",
-      interval: s.interval_unit,
-      product_name: s.name || null,
-      created: s.created_at,
-    }));
+    const subscriptions = allSubscriptions.map((s: any) => {
+      const cust = resolveCustomer(s.links);
+      return {
+        id: s.id,
+        customer_id: s.links?.customer,
+        customer_email: cust.email,
+        customer_name: cust.name,
+        status: s.status,
+        current_period_start: s.start_date,
+        current_period_end: s.upcoming_payments?.[0]?.charge_date || null,
+        cancel_at_period_end: false,
+        amount_cents: s.amount,
+        currency: s.currency || "GBP",
+        interval: s.interval_unit,
+        product_name: s.name || null,
+        created: s.created_at,
+      };
+    });
 
-    // Build payment data — map GC statuses to display statuses
-    const payments = allPayments.map((p: any) => ({
-      id: p.id,
-      amount_cents: p.amount,
-      currency: p.currency || "gbp",
-      status: p.status === "confirmed" || p.status === "paid_out" ? "succeeded" : p.status,
-      customer_email: customerMap[p.links?.customer]?.email || null,
-      customer_name: customerMap[p.links?.customer]?.name || null,
-      description: p.description,
-      created: p.created_at,
-    }));
+    // Build payment data with proper status mapping and customer resolution
+    const payments = allPayments.map((p: any) => {
+      const cust = resolveCustomer(p.links);
+      return {
+        id: p.id,
+        amount_cents: p.amount,
+        currency: p.currency || "GBP",
+        status: p.status,
+        customer_email: cust.email,
+        customer_name: cust.name,
+        description: p.description,
+        created: p.created_at,
+        charge_date: p.charge_date || null,
+      };
+    });
 
-    // Summary stats
+    // Compute financial summary stats
     const activeSubCount = subscriptions.filter((s) => s.status === "active").length;
     const pastDueCount = subscriptions.filter((s) => s.status === "past_due").length;
     const canceledCount = subscriptions.filter((s) => s.status === "cancelled").length;
-    const totalRevenue = payments
-      .filter((p) => p.status === "succeeded")
-      .reduce((sum, p) => sum + p.amount_cents, 0);
+
+    // Payment status breakdowns
+    const pendingPayments = allPayments
+      .filter((p: any) => ["pending_submission", "submitted", "pending_customer_approval"].includes(p.status))
+      .reduce((sum: number, p: any) => sum + (p.amount || 0), 0);
+
+    const confirmedPayments = allPayments
+      .filter((p: any) => p.status === "confirmed")
+      .reduce((sum: number, p: any) => sum + (p.amount || 0), 0);
+
+    const paidOutPayments = allPayments
+      .filter((p: any) => p.status === "paid_out")
+      .reduce((sum: number, p: any) => sum + (p.amount || 0), 0);
+
+    const failedPayments = allPayments.filter((p: any) =>
+      ["failed", "cancelled", "customer_approval_denied", "charged_back"].includes(p.status)
+    );
+
+    const totalRevenue = allPayments
+      .filter((p: any) => ["confirmed", "paid_out"].includes(p.status))
+      .reduce((sum: number, p: any) => sum + (p.amount || 0), 0);
+
+    // Payouts summary
+    const pendingPayouts = allPayouts
+      .filter((p: any) => p.status === "pending")
+      .reduce((sum: number, p: any) => sum + (p.amount || 0), 0);
+
+    // Collected payments by day (last 30 days) for chart
+    const thirtyDaysAgoDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const dailyCollected: Record<string, number> = {};
+    for (const p of allPayments) {
+      if (["confirmed", "paid_out"].includes(p.status)) {
+        const d = new Date(p.created_at);
+        if (d >= thirtyDaysAgoDate) {
+          const key = d.toISOString().slice(0, 10);
+          dailyCollected[key] = (dailyCollected[key] || 0) + (p.amount || 0);
+        }
+      }
+    }
+
+    // Fill in missing days
+    const chartData: { date: string; amount_cents: number }[] = [];
+    for (let i = 30; i >= 0; i--) {
+      const d = new Date(Date.now() - i * 24 * 60 * 60 * 1000);
+      const key = d.toISOString().slice(0, 10);
+      chartData.push({ date: key, amount_cents: dailyCollected[key] || 0 });
+    }
 
     return new Response(
       JSON.stringify({
@@ -135,10 +230,17 @@ serve(async (req) => {
           canceled: canceledCount,
           total_customers: allCustomers.length,
           revenue_last_90_days_cents: totalRevenue,
-          currency: "gbp",
+          pending_payments_cents: pendingPayments,
+          confirmed_funds_cents: confirmedPayments,
+          paid_out_cents: paidOutPayments,
+          pending_payouts_cents: pendingPayouts,
+          failed_payment_count: failedPayments.length,
+          failed_payment_total_cents: failedPayments.reduce((s: number, p: any) => s + (p.amount || 0), 0),
+          currency: "GBP",
         },
         subscriptions,
         payments,
+        chart_data: chartData,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
     );
