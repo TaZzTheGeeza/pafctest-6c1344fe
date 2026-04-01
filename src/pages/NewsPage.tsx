@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
-import { Newspaper, Plus, Clock, User, ChevronRight, Star } from "lucide-react";
+import { Newspaper, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -72,17 +72,7 @@ export default function NewsPage() {
           {/* Header */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
             <div className="flex items-center justify-between mb-2">
-              <div>
-                <h1 className="text-4xl md:text-6xl font-bold font-display tracking-tight">
-                  <span className="text-gold-gradient">PAFC</span> NEWS
-                </h1>
-                <div className="flex items-center gap-2 mt-1">
-                  <Separator className="w-16 bg-primary" />
-                  <p className="text-muted-foreground text-sm uppercase tracking-widest font-display">
-                    Club news, reports &amp; updates
-                  </p>
-                </div>
-              </div>
+              <div />
               {canEdit && (
                 <Link to="/news/editor">
                   <Button className="gap-2">
@@ -93,7 +83,7 @@ export default function NewsPage() {
             </div>
 
             {/* Category filter */}
-            <div className="flex flex-wrap gap-2 mt-6">
+            <div className="flex flex-wrap gap-2 mt-4">
               {CATEGORIES.map((cat) => (
                 <Button
                   key={cat.value}
@@ -109,9 +99,9 @@ export default function NewsPage() {
           </motion.div>
 
           {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[...Array(6)].map((_, i) => (
-                <div key={i} className="bg-card rounded-lg h-72 animate-pulse border border-border" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="bg-card rounded-lg h-48 animate-pulse border border-border" />
               ))}
             </div>
           ) : published.length === 0 && !featured ? (
@@ -122,78 +112,6 @@ export default function NewsPage() {
           ) : (
             <div className="space-y-8">
               <NewsBroadsheet articles={published} featured={featured} />
-
-              {/* Drafts section for editors */}
-              {canEdit && drafts.length > 0 && (
-                <div className="mt-12">
-                  <h2 className="text-xl font-display font-bold mb-4 flex items-center gap-2">
-                    <Newspaper className="h-5 w-5 text-muted-foreground" /> Drafts
-                  </h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {drafts.map((article) => (
-                      <Link key={article.id} to={`/news/editor/${article.id}`} className="block group">
-                        <div className="bg-card border border-dashed border-border rounded-lg p-4 hover:border-primary/40 transition-colors">
-                          <Badge variant="secondary" className="mb-2 text-xs">Draft</Badge>
-                          <h3 className="font-display font-bold group-hover:text-primary transition-colors line-clamp-1">{article.title}</h3>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {format(new Date(article.created_at), "dd MMM yyyy")}
-                          </p>
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-              {/* Article grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {published.map((article, i) => (
-                  <motion.div
-                    key={article.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.05 * i }}
-                  >
-                    <Link to={`/news/${article.slug}`} className="block group h-full">
-                      <article className="bg-card border border-border rounded-lg overflow-hidden h-full flex flex-col hover:border-primary/40 transition-colors">
-                        {article.cover_image_url ? (
-                          <div className="aspect-[16/9] overflow-hidden">
-                            <img
-                              src={article.cover_image_url}
-                              alt={article.title}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                            />
-                          </div>
-                        ) : (
-                          <div className="aspect-[16/9] bg-secondary flex items-center justify-center">
-                            <Newspaper className="h-10 w-10 text-muted-foreground" />
-                          </div>
-                        )}
-                        <div className="p-5 flex flex-col flex-1">
-                          <Badge variant="outline" className="w-fit mb-2 font-display uppercase text-[10px] tracking-wider">
-                            {article.category}
-                          </Badge>
-                          <h3 className="font-display font-bold text-lg leading-tight mb-2 group-hover:text-primary transition-colors line-clamp-2">
-                            {article.title}
-                          </h3>
-                          {article.excerpt && (
-                            <p className="text-muted-foreground text-sm line-clamp-2 mb-4 flex-1">{article.excerpt}</p>
-                          )}
-                          <div className="flex items-center justify-between text-xs text-muted-foreground mt-auto pt-3 border-t border-border">
-                            <span className="flex items-center gap-1">
-                              <User className="h-3 w-3" /> {article.author_name}
-                            </span>
-                            {article.published_at && (
-                              <span>{format(new Date(article.published_at), "dd MMM yyyy")}</span>
-                            )}
-                          </div>
-                        </div>
-                      </article>
-                    </Link>
-                  </motion.div>
-                ))}
-              </div>
 
               {/* Drafts section for editors */}
               {canEdit && drafts.length > 0 && (
