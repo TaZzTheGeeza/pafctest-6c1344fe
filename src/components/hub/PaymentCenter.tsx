@@ -132,9 +132,15 @@ export function PaymentCenter({ teamSlug }: { teamSlug: string }) {
       const { data, error } = await supabase.functions.invoke("customer-portal");
       if (error) throw error;
       if (data?.error) { toast.error(data.error); return; }
-      if (data?.url) window.location.href = data.url;
+      if (data?.subscriptions?.length > 0) {
+        const sub = data.subscriptions[0];
+        const amount = (sub.amount / 100).toFixed(2);
+        toast.info(`Your ${sub.name || "subscription"} is £${amount}/${sub.interval}. To make changes, please contact the club.`);
+      } else {
+        toast.info("No active subscriptions found. Contact the club if you need help.");
+      }
     } catch (e) {
-      toast.error("Failed to open subscription management");
+      toast.error("Failed to load subscription details");
     } finally {
       setPortalLoading(false);
     }
