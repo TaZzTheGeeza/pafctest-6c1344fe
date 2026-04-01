@@ -84,7 +84,7 @@ function AppContent() {
         <Route path="/news/editor" element={<RoleGate requiredRole="news_editor"><NewsEditorPage /></RoleGate>} />
         <Route path="/news/editor/:id" element={<RoleGate requiredRole="news_editor"><NewsEditorPage /></RoleGate>} />
         <Route path="/news/:slug" element={<NewsArticlePage />} />
-        <Route path="/events" element={<EventsPage />} />
+        <Route path="/events" element={<CalendarPage />} />
         <Route path="/gallery" element={<GalleryPage />} />
         <Route path="/club-documents" element={<RoleGate requiredRole="player"><ClubDocumentsPage /></RoleGate>} />
         <Route path="/sponsors" element={<SponsorsPage />} />
@@ -101,7 +101,7 @@ function AppContent() {
         <Route path="/tournament/team/:teamId" element={<TeamProfilePage />} />
         
         <Route path="/player-of-the-match" element={<RoleGate requiredRole="player"><POTMPage /></RoleGate>} />
-        <Route path="/calendar" element={<CalendarPage />} />
+        <Route path="/calendar" element={<Navigate to="/events" replace />} />
         <Route path="/coach-panel" element={<Navigate to="/dashboard" replace />} />
         <Route path="/results" element={<ResultsPage />} />
         <Route path="/potm-demo" element={<POTMDemoPage />} />

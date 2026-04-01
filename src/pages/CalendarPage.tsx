@@ -116,9 +116,9 @@ export default function CalendarPage() {
         <div className="container mx-auto px-4">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
             <h1 className="text-4xl md:text-5xl font-bold font-display text-center mb-2">
-              <span className="text-gold-gradient">Club</span> Calendar
+              <span className="text-gold-gradient">Events</span> & Calendar
             </h1>
-            <p className="text-muted-foreground text-center mb-8">Training, matches, events & more</p>
+            <p className="text-muted-foreground text-center mb-8">Upcoming events, training, matches & more</p>
           </motion.div>
 
           {/* Filters */}
