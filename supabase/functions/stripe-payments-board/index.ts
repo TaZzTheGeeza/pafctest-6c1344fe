@@ -236,6 +236,7 @@ serve(async (req) => {
           canceled: canceledCount,
           total_customers: allCustomers.length,
           revenue_last_90_days_cents: totalRevenue,
+          collected_last_30_days_cents: collectedTotal,
           pending_payments_cents: pendingPayments,
           confirmed_funds_cents: confirmedPayments,
           paid_out_cents: paidOutPayments,
