@@ -52,6 +52,7 @@ export default function NewsEditorPage() {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [generatingAi, setGeneratingAi] = useState(false);
+  const [generatingContent, setGeneratingContent] = useState(false);
 
   const { data: article, isLoading } = useQuery({
     queryKey: ["news-article-edit", id],
@@ -127,6 +128,36 @@ export default function NewsEditorPage() {
       toast.error(err.message || "Failed to generate image");
     } finally {
       setGeneratingAi(false);
+    }
+  };
+
+  const handleAiContent = async () => {
+    if (!title.trim()) {
+      toast.error("Enter a title first so AI knows what to write");
+      return;
+    }
+    if (content.trim() && !confirm("This will replace your current content. Continue?")) return;
+    setGeneratingContent(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-news-content", {
+        body: { title: title.trim(), category },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      if (data?.content) {
+        setContent(data.content);
+        if (!excerpt.trim()) {
+          const tmp = document.createElement("div");
+          tmp.innerHTML = data.content;
+          const firstP = tmp.querySelector("p")?.textContent || "";
+          if (firstP) setExcerpt(firstP.slice(0, 200));
+        }
+        toast.success("Article content generated!");
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Failed to generate content");
+    } finally {
+      setGeneratingContent(false);
     }
   };
 
@@ -338,7 +369,20 @@ export default function NewsEditorPage() {
 
             {/* Content */}
             <div>
-              <Label>Content *</Label>
+              <div className="flex items-center justify-between mb-1">
+                <Label>Content *</Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5"
+                  onClick={handleAiContent}
+                  disabled={generatingContent || !title.trim()}
+                >
+                  {generatingContent ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                  {generatingContent ? "Writing…" : "AI Write Article"}
+                </Button>
+              </div>
               <RichTextEditor
                 value={content}
                 onChange={setContent}
