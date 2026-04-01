@@ -944,7 +944,7 @@ function UserRow({
                 </button>
                 {showAddMenu && (
                   <div className="absolute right-0 top-full mt-1 bg-card border border-border rounded-lg shadow-xl z-50 py-1 min-w-[140px]">
-                    {availableRoles.map((role) => {
+                    {availableRoles.filter((role) => ROLE_CONFIG[role]).map((role) => {
                       const config = ROLE_CONFIG[role];
                       const Icon = config.icon;
                       const isAdding = addingRole === `${user.id}-${role}`;
