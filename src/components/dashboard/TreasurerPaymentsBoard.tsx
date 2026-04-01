@@ -117,7 +117,7 @@ export function TreasurerPaymentsBoard() {
     return (
       <div className="flex items-center justify-center py-20">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <span className="ml-3 text-muted-foreground text-sm">Loading Stripe data...</span>
+        <span className="ml-3 text-muted-foreground text-sm">Loading payment data...</span>
       </div>
     );
   }
