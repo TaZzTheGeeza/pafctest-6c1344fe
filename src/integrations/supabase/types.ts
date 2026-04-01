@@ -1419,6 +1419,66 @@ export type Database = {
         }
         Relationships: []
       }
+      shopify_orders: {
+        Row: {
+          cancelled_at: string | null
+          created_at: string
+          currency: string
+          customer_email: string | null
+          customer_first_name: string | null
+          customer_last_name: string | null
+          email: string | null
+          financial_status: string
+          fulfillment_status: string | null
+          id: string
+          line_items: Json
+          order_name: string
+          order_number: number | null
+          shopify_created_at: string
+          shopify_order_id: number
+          total_price: number
+          updated_at: string
+        }
+        Insert: {
+          cancelled_at?: string | null
+          created_at?: string
+          currency?: string
+          customer_email?: string | null
+          customer_first_name?: string | null
+          customer_last_name?: string | null
+          email?: string | null
+          financial_status?: string
+          fulfillment_status?: string | null
+          id?: string
+          line_items?: Json
+          order_name: string
+          order_number?: number | null
+          shopify_created_at?: string
+          shopify_order_id: number
+          total_price?: number
+          updated_at?: string
+        }
+        Update: {
+          cancelled_at?: string | null
+          created_at?: string
+          currency?: string
+          customer_email?: string | null
+          customer_first_name?: string | null
+          customer_last_name?: string | null
+          email?: string | null
+          financial_status?: string
+          fulfillment_status?: string | null
+          id?: string
+          line_items?: Json
+          order_name?: string
+          order_number?: number | null
+          shopify_created_at?: string
+          shopify_order_id?: number
+          total_price?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       site_settings: {
         Row: {
           key: string
