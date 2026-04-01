@@ -23,6 +23,7 @@ const AuthContext = createContext<AuthContextType>({
   isPlayer: false,
   isAdmin: false,
   isTreasurer: false,
+  isNewsEditor: false,
   rolesLoading: true,
   signOut: async () => {},
 });
