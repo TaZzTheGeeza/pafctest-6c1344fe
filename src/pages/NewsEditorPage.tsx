@@ -131,6 +131,36 @@ export default function NewsEditorPage() {
     }
   };
 
+  const handleAiContent = async () => {
+    if (!title.trim()) {
+      toast.error("Enter a title first so AI knows what to write");
+      return;
+    }
+    if (content.trim() && !confirm("This will replace your current content. Continue?")) return;
+    setGeneratingContent(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-news-content", {
+        body: { title: title.trim(), category },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      if (data?.content) {
+        setContent(data.content);
+        if (!excerpt.trim()) {
+          const tmp = document.createElement("div");
+          tmp.innerHTML = data.content;
+          const firstP = tmp.querySelector("p")?.textContent || "";
+          if (firstP) setExcerpt(firstP.slice(0, 200));
+        }
+        toast.success("Article content generated!");
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Failed to generate content");
+    } finally {
+      setGeneratingContent(false);
+    }
+  };
+
   const handleSave = async (publish?: boolean) => {
     if (!title.trim() || !content.trim()) {
       toast.error("Title and content are required");
