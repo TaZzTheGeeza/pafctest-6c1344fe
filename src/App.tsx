@@ -81,6 +81,9 @@ function AppContent() {
         <Route path="/teams/:teamSlug" element={<TeamsPage />} />
         <Route path="/whats-on" element={<WhatsOnPage />} />
         <Route path="/news" element={<NewsPage />} />
+        <Route path="/news/editor" element={<RoleGate requiredRole="news_editor"><NewsEditorPage /></RoleGate>} />
+        <Route path="/news/editor/:id" element={<RoleGate requiredRole="news_editor"><NewsEditorPage /></RoleGate>} />
+        <Route path="/news/:slug" element={<NewsArticlePage />} />
         <Route path="/events" element={<EventsPage />} />
         <Route path="/gallery" element={<GalleryPage />} />
         <Route path="/club-documents" element={<RoleGate requiredRole="player"><ClubDocumentsPage /></RoleGate>} />
