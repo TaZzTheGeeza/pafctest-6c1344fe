@@ -211,7 +211,7 @@ export default function DashboardPage() {
       if (error.code === "23505") toast.info("User already has this role");
       else toast.error("Failed to add role");
     } else {
-      toast.success(`${ROLE_CONFIG[role].label} role added`);
+      toast.success(`${ROLE_CONFIG[role]?.label ?? role} role added`);
 
       // Auto-add to Hub team_members based on age group assignments
       if (role === "coach" || role === "player") {
@@ -253,7 +253,7 @@ export default function DashboardPage() {
     if (error) {
       toast.error("Failed to remove role");
     } else {
-      toast.success(`${ROLE_CONFIG[role].label} role removed`);
+      toast.success(`${ROLE_CONFIG[role]?.label ?? role} role removed`);
       loadUsers();
     }
   }
@@ -913,6 +913,7 @@ function UserRow({
             )}
             {user.roles.map((role) => {
               const config = ROLE_CONFIG[role];
+              if (!config) return null;
               const Icon = config.icon;
               return (
                 <span
@@ -943,7 +944,7 @@ function UserRow({
                 </button>
                 {showAddMenu && (
                   <div className="absolute right-0 top-full mt-1 bg-card border border-border rounded-lg shadow-xl z-50 py-1 min-w-[140px]">
-                    {availableRoles.map((role) => {
+                    {availableRoles.filter((role) => ROLE_CONFIG[role]).map((role) => {
                       const config = ROLE_CONFIG[role];
                       const Icon = config.icon;
                       const isAdding = addingRole === `${user.id}-${role}`;
