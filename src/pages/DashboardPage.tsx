@@ -211,7 +211,7 @@ export default function DashboardPage() {
       if (error.code === "23505") toast.info("User already has this role");
       else toast.error("Failed to add role");
     } else {
-      toast.success(`${ROLE_CONFIG[role].label} role added`);
+      toast.success(`${ROLE_CONFIG[role]?.label ?? role} role added`);
 
       // Auto-add to Hub team_members based on age group assignments
       if (role === "coach" || role === "player") {
