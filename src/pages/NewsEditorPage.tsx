@@ -339,7 +339,20 @@ export default function NewsEditorPage() {
 
             {/* Content */}
             <div>
-              <Label>Content *</Label>
+              <div className="flex items-center justify-between mb-1">
+                <Label>Content *</Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5"
+                  onClick={handleAiContent}
+                  disabled={generatingContent || !title.trim()}
+                >
+                  {generatingContent ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                  {generatingContent ? "Writing…" : "AI Write Article"}
+                </Button>
+              </div>
               <RichTextEditor
                 value={content}
                 onChange={setContent}
