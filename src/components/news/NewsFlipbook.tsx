@@ -200,9 +200,6 @@ export function NewsFlipbook({ articles, featured, monthLabel }: Props) {
     );
   }
 
-  const nextPage = Math.min(currentPage + 1, totalPages - 1);
-  const prevPage = Math.max(currentPage - 1, 0);
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -227,18 +224,18 @@ export function NewsFlipbook({ articles, featured, monthLabel }: Props) {
         <div className="absolute -bottom-3 left-8 right-8 h-4 bg-black/10 rounded-full blur-lg pointer-events-none" />
 
         <div className="aspect-[3/4] w-full relative overflow-hidden rounded-sm shadow-xl">
-          {/* Base layer — the page being revealed */}
+          {/* Base layer — the page being revealed underneath */}
           <div className="absolute inset-0">
-            {flipState === "flipping-forward" && renderPage(nextPage)}
-            {flipState === "flipping-back" && renderPage(currentPage)}
+            {flipState === "flipping-forward" && renderPage(flipFromPage + 1)}
+            {flipState === "flipping-back" && renderPage(flipFromPage - 1)}
             {flipState === "idle" && renderPage(currentPage)}
           </div>
 
-          {/* Flipping page overlay — programme-style: quick peel from right */}
+          {/* Flipping page overlay */}
           <AnimatePresence>
             {flipState === "flipping-forward" && (
               <motion.div
-                key={`fwd-${currentPage}`}
+                key={`fwd-${flipFromPage}`}
                 className="absolute inset-0"
                 style={{
                   transformOrigin: "left center",
@@ -248,27 +245,22 @@ export function NewsFlipbook({ articles, featured, monthLabel }: Props) {
                 initial={{ rotateY: 0, scale: 1 }}
                 animate={{ rotateY: -95, scale: 0.98 }}
                 exit={{ rotateY: -95 }}
-                transition={{
-                  duration: 0.4,
-                  ease: [0.25, 0.46, 0.45, 0.94],
-                }}
+                transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
               >
-                {renderPage(currentPage)}
+                {renderPage(flipFromPage)}
                 <motion.div
                   className="absolute inset-0 pointer-events-none"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.35 }}
-                  style={{
-                    background: "linear-gradient(to left, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.08) 30%, transparent 70%)",
-                  }}
+                  style={{ background: "linear-gradient(to left, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.08) 30%, transparent 70%)" }}
                 />
               </motion.div>
             )}
 
             {flipState === "flipping-back" && (
               <motion.div
-                key={`back-${prevPage}`}
+                key={`back-${flipFromPage}`}
                 className="absolute inset-0"
                 style={{
                   transformOrigin: "left center",
@@ -278,20 +270,15 @@ export function NewsFlipbook({ articles, featured, monthLabel }: Props) {
                 initial={{ rotateY: -95, scale: 0.98 }}
                 animate={{ rotateY: 0, scale: 1 }}
                 exit={{ rotateY: 0 }}
-                transition={{
-                  duration: 0.4,
-                  ease: [0.25, 0.46, 0.45, 0.94],
-                }}
+                transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
               >
-                {renderPage(prevPage)}
+                {renderPage(flipFromPage)}
                 <motion.div
                   className="absolute inset-0 pointer-events-none"
                   initial={{ opacity: 1 }}
                   animate={{ opacity: 0 }}
                   transition={{ duration: 0.35 }}
-                  style={{
-                    background: "linear-gradient(to left, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.08) 30%, transparent 70%)",
-                  }}
+                  style={{ background: "linear-gradient(to left, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.08) 30%, transparent 70%)" }}
                 />
               </motion.div>
             )}
