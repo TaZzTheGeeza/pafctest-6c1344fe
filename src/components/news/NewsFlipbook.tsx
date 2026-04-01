@@ -132,6 +132,8 @@ const SWIPE_THRESHOLD = 50;
 export function NewsFlipbook({ articles, featured, monthLabel }: Props) {
   const [currentPage, setCurrentPage] = useState(0);
   const [flipState, setFlipState] = useState<"idle" | "flipping-forward" | "flipping-back">("idle");
+  // Track which page is animating so renders stay correct throughout the flip
+  const [flipFromPage, setFlipFromPage] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const dragStartX = useRef<number | null>(null);
   const isDragging = useRef(false);
@@ -153,9 +155,10 @@ export function NewsFlipbook({ articles, featured, monthLabel }: Props) {
 
   const goNext = useCallback(() => {
     if (currentPage < totalPages - 1 && flipState === "idle") {
+      setFlipFromPage(currentPage);
       setFlipState("flipping-forward");
       setTimeout(() => {
-        setCurrentPage((p) => p + 1);
+        setCurrentPage(currentPage + 1);
         setFlipState("idle");
       }, 400);
     }
@@ -163,9 +166,10 @@ export function NewsFlipbook({ articles, featured, monthLabel }: Props) {
 
   const goPrev = useCallback(() => {
     if (currentPage > 0 && flipState === "idle") {
+      setFlipFromPage(currentPage);
       setFlipState("flipping-back");
-      setCurrentPage((p) => p - 1);
       setTimeout(() => {
+        setCurrentPage(currentPage - 1);
         setFlipState("idle");
       }, 400);
     }
