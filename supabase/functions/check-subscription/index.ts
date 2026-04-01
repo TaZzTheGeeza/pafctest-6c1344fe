@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
@@ -7,9 +6,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const logStep = (step: string, details?: any) => {
-  console.log(`[CHECK-SUBS] ${step}${details ? ` - ${JSON.stringify(details)}` : ""}`);
-};
+const GC_API = "https://api.gocardless.com";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -23,8 +20,8 @@ serve(async (req) => {
   );
 
   try {
-    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
+    const gcToken = Deno.env.get("GOCARDLESS_ACCESS_TOKEN");
+    if (!gcToken) throw new Error("GOCARDLESS_ACCESS_TOKEN not set");
 
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("No authorization header");
@@ -34,42 +31,50 @@ serve(async (req) => {
     if (userError) throw new Error(`Auth error: ${userError.message}`);
     const user = userData.user;
     if (!user?.email) throw new Error("User not authenticated");
-    logStep("User authenticated", { email: user.email });
 
-    const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
-    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+    // Search GoCardless customers by email
+    const custRes = await fetch(`${GC_API}/customers?email=${encodeURIComponent(user.email)}`, {
+      headers: {
+        Authorization: `Bearer ${gcToken}`,
+        "GoCardless-Version": "2015-07-06",
+      },
+    });
+    const custData = await custRes.json();
+    if (!custRes.ok) throw new Error(JSON.stringify(custData));
 
-    if (customers.data.length === 0) {
-      logStep("No Stripe customer found");
+    const customers = custData.customers || [];
+    if (customers.length === 0) {
       return new Response(JSON.stringify({ subscribed: false }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
       });
     }
 
-    const customerId = customers.data[0].id;
-    logStep("Found customer", { customerId });
+    const customerId = customers[0].id;
 
-    const subscriptions = await stripe.subscriptions.list({ customer: customerId, status: "active", limit: 1, expand: ["data.items.data.price"] });
-    const hasActiveSub = subscriptions.data.length > 0;
+    // Check for active subscriptions
+    const subRes = await fetch(`${GC_API}/subscriptions?customer=${customerId}&status=active`, {
+      headers: {
+        Authorization: `Bearer ${gcToken}`,
+        "GoCardless-Version": "2015-07-06",
+      },
+    });
+    const subData = await subRes.json();
+    if (!subRes.ok) throw new Error(JSON.stringify(subData));
+
+    const subscriptions = subData.subscriptions || [];
+    const hasActiveSub = subscriptions.length > 0;
+
     let subscriptionEnd = null;
-    let productId = null;
-
     if (hasActiveSub) {
-      const sub = subscriptions.data[0];
-      const firstItem = sub.items.data[0];
-      subscriptionEnd = firstItem.current_period_end
-        ? new Date(firstItem.current_period_end * 1000).toISOString()
-        : null;
-      productId = firstItem.price.product;
-      logStep("Active subscription", { subscriptionEnd, productId });
-    } else {
-      logStep("No active subscription");
+      const sub = subscriptions[0];
+      // GoCardless subscriptions don't have a "current_period_end" like Stripe.
+      // Use upcoming_payments or the next charge date.
+      subscriptionEnd = sub.upcoming_payments?.[0]?.charge_date || null;
     }
 
     return new Response(JSON.stringify({
       subscribed: hasActiveSub,
-      product_id: productId,
       subscription_end: subscriptionEnd,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -77,7 +82,6 @@ serve(async (req) => {
     });
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
-    logStep("ERROR", { message: msg });
     return new Response(JSON.stringify({ error: msg }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,

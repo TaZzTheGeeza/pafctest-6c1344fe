@@ -1,11 +1,28 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
+
+const GC_API = "https://api.gocardless.com";
+
+async function gcPost(path: string, body: Record<string, unknown>, token: string) {
+  const res = await fetch(`${GC_API}${path}`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+      "GoCardless-Version": "2015-07-06",
+    },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(JSON.stringify(data));
+  return data;
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -13,13 +30,15 @@ serve(async (req) => {
   }
 
   try {
+    const gcToken = Deno.env.get("GOCARDLESS_ACCESS_TOKEN");
+    if (!gcToken) throw new Error("GOCARDLESS_ACCESS_TOKEN not set");
+
     const { raffleId, quantity, buyerName, buyerEmail, buyerPhone, chosenNumbers } = await req.json();
 
     if (!raffleId || !buyerName || !buyerEmail) {
       throw new Error("Missing required fields: raffleId, buyerName, buyerEmail");
     }
 
-    // Must have either chosenNumbers or quantity
     const ticketCount = chosenNumbers?.length || quantity;
     if (!ticketCount || ticketCount < 1) {
       throw new Error("Must provide chosenNumbers or quantity");
@@ -30,7 +49,7 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    // Get the raffle details
+    // Get raffle details
     const { data: raffle, error: raffleError } = await supabaseAdmin
       .from("raffles")
       .select("*")
@@ -38,11 +57,9 @@ serve(async (req) => {
       .eq("status", "active")
       .single();
 
-    if (raffleError || !raffle) {
-      throw new Error("Raffle not found or not active");
-    }
+    if (raffleError || !raffle) throw new Error("Raffle not found or not active");
 
-    // Validate chosen numbers are within range
+    // Validate chosen numbers
     if (chosenNumbers && chosenNumbers.length > 0) {
       const range = raffle.number_range || raffle.max_tickets || 100;
       for (const num of chosenNumbers) {
@@ -51,7 +68,6 @@ serve(async (req) => {
         }
       }
 
-      // Check none of the chosen numbers are already taken
       const { data: existingTickets } = await supabaseAdmin
         .from("raffle_tickets")
         .select("ticket_number")
@@ -81,7 +97,6 @@ serve(async (req) => {
     if (chosenNumbers && chosenNumbers.length > 0) {
       ticketNumbers = chosenNumbers;
     } else {
-      // Auto-assign: get next available numbers
       const { data: lastTicket } = await supabaseAdmin
         .from("raffle_tickets")
         .select("ticket_number")
@@ -110,48 +125,50 @@ serve(async (req) => {
 
     if (insertError) throw new Error("Failed to create tickets: " + insertError.message);
 
-    // Create Stripe checkout
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
-      apiVersion: "2025-08-27.basil",
-    });
-
+    const totalAmountPence = raffle.ticket_price_cents * ticketCount;
     const numbersLabel = ticketNumbers.join(", ");
+    const origin = req.headers.get("origin") || "https://pafc.lovable.app";
 
-    const session = await stripe.checkout.sessions.create({
-      customer_email: buyerEmail,
-      line_items: [
-        {
-          price_data: {
-            currency: raffle.currency || "gbp",
-            product_data: {
-              name: `${raffle.title} - Raffle Ticket${ticketCount > 1 ? "s" : ""}`,
-              description: `${ticketCount} ticket${ticketCount > 1 ? "s" : ""} (Numbers: ${numbersLabel})`,
-            },
-            unit_amount: raffle.ticket_price_cents,
+    // Create GoCardless Billing Request for one-off payment
+    const brResponse = await gcPost("/billing_requests", {
+      billing_requests: {
+        payment_request: {
+          description: `${raffle.title} - Ticket${ticketCount > 1 ? "s" : ""} (${numbersLabel})`,
+          amount: totalAmountPence,
+          currency: (raffle.currency || "gbp").toUpperCase(),
+          metadata: {
+            raffle_id: raffleId,
+            ticket_ids: insertedTickets!.map((t: any) => t.id).join(","),
+            type: "raffle",
           },
-          quantity: ticketCount,
         },
-      ],
-      mode: "payment",
-      success_url: `${req.headers.get("origin")}/raffle?success=true&raffle=${raffleId}`,
-      cancel_url: `${req.headers.get("origin")}/raffle?cancelled=true`,
-      metadata: {
-        raffle_id: raffleId,
-        ticket_ids: insertedTickets!.map((t: any) => t.id).join(","),
       },
-    });
+    }, gcToken);
 
-    // Store the session reference
-    if (session.id) {
-      for (const ticket of insertedTickets!) {
-        await supabaseAdmin
-          .from("raffle_tickets")
-          .update({ stripe_payment_intent_id: session.id })
-          .eq("id", ticket.id);
-      }
+    const billingRequestId = brResponse.billing_requests.id;
+
+    // Create Billing Request Flow (hosted checkout page)
+    const brfResponse = await gcPost("/billing_request_flows", {
+      billing_request_flows: {
+        redirect_uri: `${origin}/raffle?success=true&raffle=${raffleId}&br=${billingRequestId}`,
+        exit_uri: `${origin}/raffle?cancelled=true`,
+        links: {
+          billing_request: billingRequestId,
+        },
+      },
+    }, gcToken);
+
+    const checkoutUrl = brfResponse.billing_request_flows.authorisation_url;
+
+    // Store the billing request ID on tickets for later verification
+    for (const ticket of insertedTickets!) {
+      await supabaseAdmin
+        .from("raffle_tickets")
+        .update({ stripe_payment_intent_id: billingRequestId })
+        .eq("id", ticket.id);
     }
 
-    return new Response(JSON.stringify({ url: session.url, ticketNumbers }), {
+    return new Response(JSON.stringify({ url: checkoutUrl, ticketNumbers }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });

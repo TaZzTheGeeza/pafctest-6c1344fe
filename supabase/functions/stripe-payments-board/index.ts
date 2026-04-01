@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
@@ -7,6 +6,20 @@ const corsHeaders = {
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
+
+const GC_API = "https://api.gocardless.com";
+
+async function gcGet(path: string, token: string) {
+  const res = await fetch(`${GC_API}${path}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "GoCardless-Version": "2015-07-06",
+    },
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(JSON.stringify(data));
+  return data;
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -38,97 +51,65 @@ serve(async (req) => {
       throw new Error("Unauthorized: admin or treasurer role required");
     }
 
-    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeKey) throw new Error("STRIPE_SECRET_KEY not set");
+    const gcToken = Deno.env.get("GOCARDLESS_ACCESS_TOKEN");
+    if (!gcToken) throw new Error("GOCARDLESS_ACCESS_TOKEN not set");
 
-    const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
+    // Fetch customers
+    const customersData = await gcGet("/customers?limit=500", gcToken);
+    const allCustomers = customersData.customers || [];
 
-    // Fetch all customers
-    const allCustomers: any[] = [];
-    let hasMore = true;
-    let startingAfter: string | undefined;
-    while (hasMore) {
-      const params: any = { limit: 100 };
-      if (startingAfter) params.starting_after = startingAfter;
-      const batch = await stripe.customers.list(params);
-      allCustomers.push(...batch.data);
-      hasMore = batch.has_more;
-      if (batch.data.length > 0) startingAfter = batch.data[batch.data.length - 1].id;
-    }
-
-    // Fetch all subscriptions (active, past_due, canceled, trialing)
-    const allSubscriptions: any[] = [];
-    hasMore = true;
-    startingAfter = undefined;
-    for (const status of ["active", "past_due", "canceled", "trialing", "unpaid"] as const) {
-      hasMore = true;
-      startingAfter = undefined;
-      while (hasMore) {
-        const params: any = { limit: 100, status, expand: ["data.items.data.price"] };
-        if (startingAfter) params.starting_after = startingAfter;
-        const batch = await stripe.subscriptions.list(params);
-        allSubscriptions.push(...batch.data);
-        hasMore = batch.has_more;
-        if (batch.data.length > 0) startingAfter = batch.data[batch.data.length - 1].id;
-      }
-    }
+    // Fetch subscriptions (active + cancelled)
+    const activeSubsData = await gcGet("/subscriptions?status=active&limit=500", gcToken);
+    const cancelledSubsData = await gcGet("/subscriptions?status=cancelled&limit=500", gcToken);
+    const allSubscriptions = [
+      ...(activeSubsData.subscriptions || []),
+      ...(cancelledSubsData.subscriptions || []),
+    ];
 
     // Fetch recent payments (last 90 days)
-    const ninetyDaysAgo = Math.floor((Date.now() - 90 * 24 * 60 * 60 * 1000) / 1000);
-    const allPayments: any[] = [];
-    hasMore = true;
-    startingAfter = undefined;
-    while (hasMore) {
-      const params: any = { limit: 100, created: { gte: ninetyDaysAgo } };
-      if (startingAfter) params.starting_after = startingAfter;
-      const batch = await stripe.paymentIntents.list(params);
-      allPayments.push(...batch.data);
-      hasMore = batch.has_more;
-      if (batch.data.length > 0) startingAfter = batch.data[batch.data.length - 1].id;
-    }
+    const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+    const paymentsData = await gcGet(`/payments?created_at[gte]=${ninetyDaysAgo}&limit=500`, gcToken);
+    const allPayments = paymentsData.payments || [];
 
     // Build customer map
     const customerMap: Record<string, any> = {};
     for (const c of allCustomers) {
-      customerMap[c.id] = { id: c.id, email: c.email, name: c.name };
+      customerMap[c.id] = { id: c.id, email: c.email, name: `${c.given_name || ""} ${c.family_name || ""}`.trim() };
     }
 
     // Build subscription data
-    const subscriptions = allSubscriptions.map((s) => {
-      const firstItem = s.items?.data?.[0];
-      return {
-        id: s.id,
-        customer_id: s.customer,
-        customer_email: customerMap[s.customer as string]?.email || null,
-        customer_name: customerMap[s.customer as string]?.name || null,
-        status: s.status,
-        current_period_start: firstItem?.current_period_start ? new Date(firstItem.current_period_start * 1000).toISOString() : null,
-        current_period_end: firstItem?.current_period_end ? new Date(firstItem.current_period_end * 1000).toISOString() : null,
-        cancel_at_period_end: s.cancel_at_period_end,
-        amount_cents: firstItem?.price?.unit_amount || 0,
-        currency: firstItem?.price?.currency || "gbp",
-        interval: firstItem?.price?.recurring?.interval || null,
-        product_name: firstItem?.price?.product || null,
-        created: new Date(s.created * 1000).toISOString(),
-      };
-    });
+    const subscriptions = allSubscriptions.map((s: any) => ({
+      id: s.id,
+      customer_id: s.links?.customer,
+      customer_email: customerMap[s.links?.customer]?.email || null,
+      customer_name: customerMap[s.links?.customer]?.name || null,
+      status: s.status,
+      current_period_start: s.start_date,
+      current_period_end: s.upcoming_payments?.[0]?.charge_date || null,
+      cancel_at_period_end: false,
+      amount_cents: s.amount,
+      currency: s.currency || "gbp",
+      interval: s.interval_unit,
+      product_name: s.name || null,
+      created: s.created_at,
+    }));
 
     // Build payment data
-    const payments = allPayments.map((p) => ({
+    const payments = allPayments.map((p: any) => ({
       id: p.id,
       amount_cents: p.amount,
-      currency: p.currency,
-      status: p.status,
-      customer_email: p.receipt_email || customerMap[p.customer as string]?.email || null,
-      customer_name: customerMap[p.customer as string]?.name || null,
+      currency: p.currency || "gbp",
+      status: p.status === "confirmed" || p.status === "paid_out" ? "succeeded" : p.status,
+      customer_email: customerMap[p.links?.customer]?.email || null,
+      customer_name: customerMap[p.links?.customer]?.name || null,
       description: p.description,
-      created: new Date(p.created * 1000).toISOString(),
+      created: p.created_at,
     }));
 
     // Summary stats
     const activeSubCount = subscriptions.filter((s) => s.status === "active").length;
     const pastDueCount = subscriptions.filter((s) => s.status === "past_due").length;
-    const canceledCount = subscriptions.filter((s) => s.status === "canceled").length;
+    const canceledCount = subscriptions.filter((s) => s.status === "cancelled").length;
     const totalRevenue = payments
       .filter((p) => p.status === "succeeded")
       .reduce((sum, p) => sum + p.amount_cents, 0);

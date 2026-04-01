@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
@@ -7,11 +6,29 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const PRICE_IDS: Record<string, string> = {
-  standard: "price_1TGmyECLdtMESt0qp7LHFeIF",   // £30/month
-  sibling:  "price_1TH8xfCLdtMESt0q6WVBbswR",    // £50/month (2 children)
-  coach:    "price_1TH8xgCLdtMESt0qjzzLyWez",    // £20/month
+const GC_API = "https://api.gocardless.com";
+
+// Monthly amounts in pence
+const TIER_AMOUNTS: Record<string, { amount: number; label: string }> = {
+  standard: { amount: 3000, label: "Standard Subscription (£30/month)" },
+  sibling: { amount: 5000, label: "Sibling Subscription (£50/month)" },
+  coach: { amount: 2000, label: "Coach Subscription (£20/month)" },
 };
+
+async function gcPost(path: string, body: Record<string, unknown>, token: string) {
+  const res = await fetch(`${GC_API}${path}`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+      "GoCardless-Version": "2015-07-06",
+    },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(JSON.stringify(data));
+  return data;
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -30,6 +47,9 @@ serve(async (req) => {
   );
 
   try {
+    const gcToken = Deno.env.get("GOCARDLESS_ACCESS_TOKEN");
+    if (!gcToken) throw new Error("GOCARDLESS_ACCESS_TOKEN not set");
+
     const authHeader = req.headers.get("Authorization")!;
     const token = authHeader.replace("Bearer ", "");
     const { data } = await supabaseClient.auth.getUser(token);
@@ -38,19 +58,13 @@ serve(async (req) => {
 
     const body = await req.json().catch(() => ({}));
     const tier = body.tier || "standard";
-    const priceId = PRICE_IDS[tier];
-    if (!priceId) throw new Error(`Invalid subscription tier: ${tier}`);
+    const tierConfig = TIER_AMOUNTS[tier];
+    if (!tierConfig) throw new Error(`Invalid subscription tier: ${tier}`);
 
-    // ── Server-side eligibility checks ──
+    // Server-side eligibility checks
     if (tier === "coach") {
-      const { data: hasCoach } = await supabaseAdmin.rpc("has_role", {
-        _user_id: user.id,
-        _role: "coach",
-      });
-      const { data: hasAdmin } = await supabaseAdmin.rpc("has_role", {
-        _user_id: user.id,
-        _role: "admin",
-      });
+      const { data: hasCoach } = await supabaseAdmin.rpc("has_role", { _user_id: user.id, _role: "coach" });
+      const { data: hasAdmin } = await supabaseAdmin.rpc("has_role", { _user_id: user.id, _role: "admin" });
       if (!hasCoach && !hasAdmin) {
         return new Response(
           JSON.stringify({ error: "Coach discount is only available to coaches" }),
@@ -73,47 +87,40 @@ serve(async (req) => {
       }
     }
 
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", { apiVersion: "2025-08-27.basil" });
+    const origin = req.headers.get("origin") || "https://pafc.lovable.app";
 
-    // Check for existing customer
-    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
-    let customerId;
-    if (customers.data.length > 0) {
-      customerId = customers.data[0].id;
-
-      // Check if already subscribed
-      const subs = await stripe.subscriptions.list({ customer: customerId, status: "active", limit: 1 });
-      if (subs.data.length > 0) {
-        return new Response(JSON.stringify({ error: "You already have an active subscription" }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 400,
-        });
-      }
-    }
-
-    // Anchor all subscriptions to the 1st of each month
-    const now = new Date();
-    const nextFirst = new Date(Date.UTC(
-      now.getUTCMonth() === 11 ? now.getUTCFullYear() + 1 : now.getUTCFullYear(),
-      now.getUTCMonth() === 11 ? 0 : now.getUTCMonth() + 1,
-      1, 0, 0, 0
-    ));
-    const billingAnchor = Math.floor(nextFirst.getTime() / 1000);
-
-    const session = await stripe.checkout.sessions.create({
-      customer: customerId,
-      customer_email: customerId ? undefined : user.email,
-      line_items: [{ price: priceId, quantity: 1 }],
-      mode: "subscription",
-      subscription_data: {
-        billing_cycle_anchor: billingAnchor,
-        proration_behavior: "create_prorations",
+    // Create a Billing Request to set up a Direct Debit mandate for recurring payments
+    const brResponse = await gcPost("/billing_requests", {
+      billing_requests: {
+        mandate_request: {
+          scheme: "bacs",
+          currency: "GBP",
+          metadata: {
+            user_id: user.id,
+            tier,
+            type: "monthly_subscription",
+          },
+        },
       },
-      success_url: `${req.headers.get("origin")}/hub?tab=payments&subscription=success`,
-      cancel_url: `${req.headers.get("origin")}/hub?tab=payments`,
-    });
+    }, gcToken);
 
-    return new Response(JSON.stringify({ url: session.url }), {
+    const billingRequestId = brResponse.billing_requests.id;
+
+    // Create Billing Request Flow
+    const brfResponse = await gcPost("/billing_request_flows", {
+      billing_request_flows: {
+        redirect_uri: `${origin}/hub?tab=payments&subscription=success&br_id=${billingRequestId}&tier=${tier}`,
+        exit_uri: `${origin}/hub?tab=payments`,
+        prefilled_customer: {
+          email: user.email,
+        },
+        links: {
+          billing_request: billingRequestId,
+        },
+      },
+    }, gcToken);
+
+    return new Response(JSON.stringify({ url: brfResponse.billing_request_flows.authorisation_url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });

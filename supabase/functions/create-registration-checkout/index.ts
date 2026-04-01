@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@18.5.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -7,12 +6,32 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const GC_API = "https://api.gocardless.com";
+
+async function gcPost(path: string, body: Record<string, unknown>, token: string) {
+  const res = await fetch(`${GC_API}${path}`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+      "GoCardless-Version": "2015-07-06",
+    },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(JSON.stringify(data));
+  return data;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    const gcToken = Deno.env.get("GOCARDLESS_ACCESS_TOKEN");
+    if (!gcToken) throw new Error("GOCARDLESS_ACCESS_TOKEN not set");
+
     const { email, childName } = await req.json();
     if (!email || !childName) {
       return new Response(JSON.stringify({ error: "Email and child name are required" }), {
@@ -21,36 +40,40 @@ serve(async (req) => {
       });
     }
 
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
-      apiVersion: "2025-08-27.basil",
-    });
+    const origin = req.headers.get("origin") || "https://pafc.lovable.app";
 
-    // Check for existing customer
-    const customers = await stripe.customers.list({ email, limit: 1 });
-    let customerId: string | undefined;
-    if (customers.data.length > 0) {
-      customerId = customers.data[0].id;
-    }
-
-    const session = await stripe.checkout.sessions.create({
-      customer: customerId,
-      customer_email: customerId ? undefined : email,
-      line_items: [
-        {
-          price: "price_1TGmyFCLdtMESt0qJdvDmnsO",
-          quantity: 1,
+    // Create GoCardless Billing Request for £40 one-off payment
+    const brResponse = await gcPost("/billing_requests", {
+      billing_requests: {
+        payment_request: {
+          description: `Player Registration 2026/27 - ${childName}`,
+          amount: 4000, // £40 in pence
+          currency: "GBP",
+          metadata: {
+            child_name: childName,
+            type: "player_registration",
+          },
         },
-      ],
-      mode: "payment",
-      metadata: {
-        child_name: childName,
-        type: "player_registration",
       },
-      success_url: `${req.headers.get("origin")}/register?status=success`,
-      cancel_url: `${req.headers.get("origin")}/register?status=cancelled`,
-    });
+    }, gcToken);
 
-    return new Response(JSON.stringify({ url: session.url }), {
+    const billingRequestId = brResponse.billing_requests.id;
+
+    // Create Billing Request Flow
+    const brfResponse = await gcPost("/billing_request_flows", {
+      billing_request_flows: {
+        redirect_uri: `${origin}/register?status=success`,
+        exit_uri: `${origin}/register?status=cancelled`,
+        prefilled_customer: {
+          email,
+        },
+        links: {
+          billing_request: billingRequestId,
+        },
+      },
+    }, gcToken);
+
+    return new Response(JSON.stringify({ url: brfResponse.billing_request_flows.authorisation_url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });

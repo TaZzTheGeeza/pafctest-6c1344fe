@@ -84,9 +84,26 @@ export function PaymentCenter({ teamSlug }: { teamSlug: string }) {
     setGuardianCount(count ?? 0);
   }
 
-  // Auto-check after returning from checkout
+  // Auto-activate subscription after returning from GoCardless mandate setup
   useEffect(() => {
-    if (searchParams.get("subscription") === "success") {
+    const brId = searchParams.get("br_id");
+    const tier = searchParams.get("tier");
+    if (searchParams.get("subscription") === "success" && brId) {
+      (async () => {
+        try {
+          toast.info("Setting up your Direct Debit subscription...");
+          const { data, error } = await supabase.functions.invoke("activate-subscription", {
+            body: { br_id: brId, tier: tier || "standard" },
+          });
+          if (error) throw error;
+          if (data?.error) throw new Error(data.error);
+          toast.success("Subscription setup successful! Welcome aboard 🎉");
+        } catch (e: any) {
+          toast.error(e.message || "Failed to activate subscription. Please contact the club.");
+        }
+        checkSubscription();
+      })();
+    } else if (searchParams.get("subscription") === "success") {
       toast.success("Subscription setup successful! Welcome aboard 🎉");
       checkSubscription();
     }
@@ -132,9 +149,15 @@ export function PaymentCenter({ teamSlug }: { teamSlug: string }) {
       const { data, error } = await supabase.functions.invoke("customer-portal");
       if (error) throw error;
       if (data?.error) { toast.error(data.error); return; }
-      if (data?.url) window.location.href = data.url;
+      if (data?.subscriptions?.length > 0) {
+        const sub = data.subscriptions[0];
+        const amount = (sub.amount / 100).toFixed(2);
+        toast.info(`Your ${sub.name || "subscription"} is £${amount}/${sub.interval}. To make changes, please contact the club.`);
+      } else {
+        toast.info("No active subscriptions found. Contact the club if you need help.");
+      }
     } catch (e) {
-      toast.error("Failed to open subscription management");
+      toast.error("Failed to load subscription details");
     } finally {
       setPortalLoading(false);
     }
