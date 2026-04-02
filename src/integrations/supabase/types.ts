@@ -1183,6 +1183,8 @@ export type Database = {
           first_name: string
           goals: number
           id: string
+          photo_url: string | null
+          position: string | null
           potm_awards: number
           shirt_number: number | null
           team_name: string
@@ -1196,6 +1198,8 @@ export type Database = {
           first_name: string
           goals?: number
           id?: string
+          photo_url?: string | null
+          position?: string | null
           potm_awards?: number
           shirt_number?: number | null
           team_name: string
@@ -1209,6 +1213,8 @@ export type Database = {
           first_name?: string
           goals?: number
           id?: string
+          photo_url?: string | null
+          position?: string | null
           potm_awards?: number
           shirt_number?: number | null
           team_name?: string

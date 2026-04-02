@@ -1,12 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, Plus, Trash2, Save, Loader2, BarChart3 } from "lucide-react";
+import { Users, Plus, Trash2, Save, Loader2, BarChart3, Camera, X } from "lucide-react";
 import { toast } from "sonner";
 
 const ageGroups = [
   "U7", "U8 Black", "U8 Gold", "U9", "U10",
   "U11 Black", "U11 Gold", "U13 Black", "U13 Gold", "U14",
 ];
+
+const POSITIONS = ["Goalkeeper", "Defender", "Midfielder", "Forward"];
 
 interface PlayerStat {
   id?: string;
@@ -18,6 +20,8 @@ interface PlayerStat {
   assists: number;
   appearances: number;
   potm_awards: number;
+  photo_url?: string | null;
+  position?: string | null;
   isNew?: boolean;
 }
 
@@ -28,6 +32,8 @@ export function PlayerStatsForm({ allowedAgeGroups }: { allowedAgeGroups?: strin
   const [players, setPlayers] = useState<PlayerStat[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState<number | null>(null);
+  const fileInputRefs = useRef<Record<number, HTMLInputElement | null>>({});
 
   useEffect(() => {
     if (selectedGroup) fetchPlayers();
@@ -44,7 +50,7 @@ export function PlayerStatsForm({ allowedAgeGroups }: { allowedAgeGroups?: strin
     if (error) {
       toast.error("Failed to load players");
     } else {
-      setPlayers((data || []).map((p) => ({ ...p, isNew: false })));
+      setPlayers((data || []).map((p: any) => ({ ...p, isNew: false })));
     }
     setLoading(false);
   };
@@ -61,6 +67,8 @@ export function PlayerStatsForm({ allowedAgeGroups }: { allowedAgeGroups?: strin
         assists: 0,
         appearances: 0,
         potm_awards: 0,
+        photo_url: null,
+        position: null,
         isNew: true,
       },
     ]);
@@ -70,6 +78,51 @@ export function PlayerStatsForm({ allowedAgeGroups }: { allowedAgeGroups?: strin
     const updated = [...players];
     (updated[index] as any)[field] = value;
     setPlayers(updated);
+  };
+
+  const handlePhotoUpload = async (index: number, file: File) => {
+    const player = players[index];
+    if (!file) return;
+
+    // Validate
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image file");
+      return;
+    }
+    if (file.size > 20 * 1024 * 1024) {
+      toast.error("Image must be under 20MB");
+      return;
+    }
+
+    setUploadingPhoto(index);
+
+    try {
+      // Resize to max 1024px
+      const resized = await resizeImage(file, 1024);
+      const ext = file.name.split(".").pop() || "jpg";
+      const path = `${selectedGroup.toLowerCase().replace(/\s+/g, "-")}/${player.first_name || `player-${index}`}-${Date.now()}.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("player-photos")
+        .upload(path, resized, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage
+        .from("player-photos")
+        .getPublicUrl(path);
+
+      updatePlayer(index, "photo_url", urlData.publicUrl);
+      toast.success("Photo uploaded!");
+    } catch (err: any) {
+      toast.error("Upload failed: " + (err.message || "Unknown error"));
+    } finally {
+      setUploadingPhoto(null);
+    }
+  };
+
+  const removePhoto = (index: number) => {
+    updatePlayer(index, "photo_url", null);
   };
 
   const removePlayer = async (index: number) => {
@@ -153,78 +206,143 @@ export function PlayerStatsForm({ allowedAgeGroups }: { allowedAgeGroups?: strin
             </div>
           ) : (
             <>
-              {/* Header */}
-              <div className="hidden md:grid grid-cols-[1fr_80px_70px_70px_70px_70px_40px] gap-2 text-[10px] font-display tracking-widest text-muted-foreground uppercase px-1">
-                <span>Name</span>
-                <span className="text-center">Shirt #</span>
-                <span className="text-center">Goals</span>
-                <span className="text-center">Assists</span>
-                <span className="text-center">Apps</span>
-                <span className="text-center">POTM</span>
-                <span></span>
-              </div>
-
-              <div className="space-y-2 max-h-[400px] overflow-y-auto">
+              <div className="space-y-3 max-h-[500px] overflow-y-auto">
                 {players.map((player, i) => (
                   <div
                     key={player.id || `new-${i}`}
-                    className="grid grid-cols-2 md:grid-cols-[1fr_80px_70px_70px_70px_70px_40px] gap-2 bg-secondary/50 rounded-lg p-2 items-center"
+                    className="bg-secondary/50 rounded-lg p-3 space-y-2"
                   >
-                    <input
-                      value={player.first_name}
-                      onChange={(e) => updatePlayer(i, "first_name", e.target.value)}
-                      placeholder="First name"
-                      disabled={!canEdit}
-                      className="bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground placeholder:text-muted-foreground col-span-2 md:col-span-1 disabled:opacity-60"
-                    />
-                    <input
-                      type="number"
-                      value={player.shirt_number ?? ""}
-                      onChange={(e) => updatePlayer(i, "shirt_number", e.target.value ? parseInt(e.target.value) : null)}
-                      placeholder="#"
-                      disabled={!canEdit}
-                      className="bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground text-center placeholder:text-muted-foreground disabled:opacity-60"
-                    />
-                    <input
-                      type="number"
-                      min="0"
-                      value={player.goals}
-                      onChange={(e) => updatePlayer(i, "goals", parseInt(e.target.value) || 0)}
-                      disabled={!canEdit}
-                      className="bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground text-center disabled:opacity-60"
-                    />
-                    <input
-                      type="number"
-                      min="0"
-                      value={player.assists}
-                      onChange={(e) => updatePlayer(i, "assists", parseInt(e.target.value) || 0)}
-                      disabled={!canEdit}
-                      className="bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground text-center disabled:opacity-60"
-                    />
-                    <input
-                      type="number"
-                      min="0"
-                      value={player.appearances}
-                      onChange={(e) => updatePlayer(i, "appearances", parseInt(e.target.value) || 0)}
-                      disabled={!canEdit}
-                      className="bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground text-center disabled:opacity-60"
-                    />
-                    <input
-                      type="number"
-                      min="0"
-                      value={player.potm_awards}
-                      onChange={(e) => updatePlayer(i, "potm_awards", parseInt(e.target.value) || 0)}
-                      disabled={!canEdit}
-                      className="bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground text-center disabled:opacity-60"
-                    />
-                    {canEdit && (
-                      <button
-                        onClick={() => removePlayer(i)}
-                        className="text-destructive hover:text-destructive/80 transition-colors flex items-center justify-center"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    )}
+                    {/* Row 1: Photo + Name + Position + Shirt # */}
+                    <div className="flex items-start gap-3">
+                      {/* Photo thumbnail */}
+                      <div className="relative shrink-0">
+                        {player.photo_url ? (
+                          <div className="relative w-14 h-14 rounded-lg overflow-hidden border border-border">
+                            <img src={player.photo_url} alt="" className="w-full h-full object-cover object-top" />
+                            {canEdit && (
+                              <button
+                                onClick={() => removePhoto(i)}
+                                className="absolute -top-1 -right-1 bg-destructive text-white rounded-full w-4 h-4 flex items-center justify-center"
+                              >
+                                <X className="w-2.5 h-2.5" />
+                              </button>
+                            )}
+                          </div>
+                        ) : canEdit ? (
+                          <button
+                            onClick={() => fileInputRefs.current[i]?.click()}
+                            disabled={uploadingPhoto === i}
+                            className="w-14 h-14 rounded-lg border border-dashed border-border bg-secondary flex items-center justify-center hover:border-primary transition-colors"
+                          >
+                            {uploadingPhoto === i ? (
+                              <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                            ) : (
+                              <Camera className="w-4 h-4 text-muted-foreground" />
+                            )}
+                          </button>
+                        ) : (
+                          <div className="w-14 h-14 rounded-lg border border-border bg-secondary flex items-center justify-center">
+                            <Users className="w-4 h-4 text-muted-foreground" />
+                          </div>
+                        )}
+                        <input
+                          ref={(el) => { fileInputRefs.current[i] = el; }}
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const f = e.target.files?.[0];
+                            if (f) handlePhotoUpload(i, f);
+                            e.target.value = "";
+                          }}
+                        />
+                      </div>
+
+                      <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-2">
+                        <input
+                          value={player.first_name}
+                          onChange={(e) => updatePlayer(i, "first_name", e.target.value)}
+                          placeholder="First name"
+                          disabled={!canEdit}
+                          className="bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground placeholder:text-muted-foreground disabled:opacity-60 col-span-2 md:col-span-1"
+                        />
+                        <select
+                          value={player.position || ""}
+                          onChange={(e) => updatePlayer(i, "position", e.target.value || null)}
+                          disabled={!canEdit}
+                          className="bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground disabled:opacity-60"
+                        >
+                          <option value="">Position...</option>
+                          {POSITIONS.map((p) => (
+                            <option key={p} value={p}>{p}</option>
+                          ))}
+                        </select>
+                        <input
+                          type="number"
+                          value={player.shirt_number ?? ""}
+                          onChange={(e) => updatePlayer(i, "shirt_number", e.target.value ? parseInt(e.target.value) : null)}
+                          placeholder="Shirt #"
+                          disabled={!canEdit}
+                          className="bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground text-center placeholder:text-muted-foreground disabled:opacity-60"
+                        />
+                        {canEdit && (
+                          <button
+                            onClick={() => removePlayer(i)}
+                            className="text-destructive hover:text-destructive/80 transition-colors flex items-center justify-center md:justify-end"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Row 2: Stats */}
+                    <div className="grid grid-cols-4 gap-2 pl-[68px]">
+                      <div>
+                        <label className="text-[9px] font-display tracking-wider text-muted-foreground uppercase block mb-0.5">Goals</label>
+                        <input
+                          type="number"
+                          min="0"
+                          value={player.goals}
+                          onChange={(e) => updatePlayer(i, "goals", parseInt(e.target.value) || 0)}
+                          disabled={!canEdit}
+                          className="w-full bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground text-center disabled:opacity-60"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[9px] font-display tracking-wider text-muted-foreground uppercase block mb-0.5">Assists</label>
+                        <input
+                          type="number"
+                          min="0"
+                          value={player.assists}
+                          onChange={(e) => updatePlayer(i, "assists", parseInt(e.target.value) || 0)}
+                          disabled={!canEdit}
+                          className="w-full bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground text-center disabled:opacity-60"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[9px] font-display tracking-wider text-muted-foreground uppercase block mb-0.5">Apps</label>
+                        <input
+                          type="number"
+                          min="0"
+                          value={player.appearances}
+                          onChange={(e) => updatePlayer(i, "appearances", parseInt(e.target.value) || 0)}
+                          disabled={!canEdit}
+                          className="w-full bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground text-center disabled:opacity-60"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[9px] font-display tracking-wider text-muted-foreground uppercase block mb-0.5">POTM</label>
+                        <input
+                          type="number"
+                          min="0"
+                          value={player.potm_awards}
+                          onChange={(e) => updatePlayer(i, "potm_awards", parseInt(e.target.value) || 0)}
+                          disabled={!canEdit}
+                          className="w-full bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground text-center disabled:opacity-60"
+                        />
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -263,4 +381,29 @@ export function PlayerStatsForm({ allowedAgeGroups }: { allowedAgeGroups?: strin
       )}
     </div>
   );
+}
+
+async function resizeImage(file: File, maxSize: number): Promise<Blob> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      let { width, height } = img;
+      if (width > maxSize || height > maxSize) {
+        if (width > height) {
+          height = (height / width) * maxSize;
+          width = maxSize;
+        } else {
+          width = (width / height) * maxSize;
+          height = maxSize;
+        }
+      }
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d")!;
+      ctx.drawImage(img, 0, 0, width, height);
+      canvas.toBlob((blob) => resolve(blob!), "image/jpeg", 0.85);
+    };
+    img.src = URL.createObjectURL(file);
+  });
 }

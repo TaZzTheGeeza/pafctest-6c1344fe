@@ -4,6 +4,7 @@ import { useParams, Link } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Clock, MapPin, Calendar, ChevronRight, Shield, Trophy, TrendingUp, BarChart3, Loader2, Navigation, ClipboardEdit, ChevronDown } from "lucide-react";
+import { TeamTradingCards } from "@/components/showcase/TeamTradingCards";
 import { TeamStatsTable } from "@/components/TeamStatsTable";
 import { LeagueTable } from "@/components/LeagueTable";
 import { useTeamFixtures, FAFixture } from "@/hooks/useTeamFixtures";
@@ -267,6 +268,9 @@ function TeamDetail({ team }: { team: TeamData }) {
                   faUrl={leagueTableConfig[team.slug].faUrl}
                 />
               )}
+
+              {/* Trading Card Squad Showcase */}
+              <TeamTradingCards ageGroup={team.name} />
 
               {/* Player Stats - restricted to player/coach/admin */}
               {(isCoach || isAdmin || isPlayer) && (
