@@ -694,6 +694,19 @@ const TournamentPage = () => {
                   </Card>
                 )}
               </TabsContent>
+
+              {/* PHOTOS */}
+              <TabsContent value="photos" className="space-y-6">
+                {activeTournament && ageGroups && (
+                  <>
+                    <TournamentPhotoGallery
+                      tournamentId={activeTournament.id}
+                      ageGroups={ageGroups}
+                    />
+                    <PhotoUploadAdmin tournamentId={activeTournament.id} ageGroups={ageGroups || []} />
+                  </>
+                )}
+              </TabsContent>
             </Tabs>
           )}
         </div>
