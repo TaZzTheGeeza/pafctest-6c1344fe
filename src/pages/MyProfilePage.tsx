@@ -53,6 +53,20 @@ interface AvailabilityRecord {
   note: string | null;
 }
 
+interface PhotoPurchase {
+  id: string;
+  created_at: string;
+  download_count: number;
+  photo_id: string;
+  tournament_photos: {
+    id: string;
+    preview_url: string;
+    storage_path: string;
+    caption: string | null;
+    age_group: string | null;
+  } | null;
+}
+
 export default function MyProfilePage() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
