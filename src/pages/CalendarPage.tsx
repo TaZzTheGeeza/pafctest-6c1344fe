@@ -157,7 +157,7 @@ export default function CalendarPage() {
           });
           if (error || !data?.success) return [];
           const fixtures: FAFixture[] = [...(data.fixtures || []), ...(data.results || [])];
-          return fixtures.map((f) => fixtureToEvent(f, config.team));
+          return fixtures.map((f) => fixtureToEvent(f, config.team)).filter((e): e is ClubEvent => e !== null);
         } catch {
           return [];
         }
