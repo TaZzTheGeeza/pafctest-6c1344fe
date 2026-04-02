@@ -88,6 +88,42 @@ export function EventRSVP({ eventId }: { eventId: string }) {
       setMyStatus(status);
       toast.success(`Marked as ${statusConfig[status as keyof typeof statusConfig]?.label || status}`);
       fetchRSVPs();
+
+      // Notify coaches/admins about the RSVP
+      try {
+        const [{ data: event }, { data: profile }] = await Promise.all([
+          supabase.from("club_events").select("title, team").eq("id", eventId).single(),
+          supabase.from("profiles").select("full_name").eq("id", user.id).single(),
+        ]);
+
+        const playerName = profile?.full_name || "A member";
+        const statusLabel = statusConfig[status as keyof typeof statusConfig]?.label || status;
+
+        // Get coach & admin user IDs
+        const { data: roleRows } = await supabase
+          .from("user_roles")
+          .select("user_id, role")
+          .in("role", ["coach", "admin"]);
+
+        const coachAdminIds = (roleRows || [])
+          .map((r) => r.user_id)
+          .filter((id) => id !== user.id);
+
+        const uniqueIds = [...new Set(coachAdminIds)];
+
+        if (uniqueIds.length > 0) {
+          const notifications = uniqueIds.map((uid) => ({
+            user_id: uid,
+            title: "Event RSVP",
+            message: `${playerName} marked "${statusLabel}" for ${event?.title || "an event"}`,
+            type: "event",
+            link: "/events",
+          }));
+          await supabase.from("hub_notifications").insert(notifications);
+        }
+      } catch (notifyErr) {
+        console.error("Failed to send RSVP notifications:", notifyErr);
+      }
     } catch (err: any) {
       toast.error(err.message || "Failed to update RSVP");
     } finally {
