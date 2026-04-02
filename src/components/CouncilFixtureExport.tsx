@@ -204,8 +204,21 @@ export function CouncilFixtureExport() {
             <DateInput value={dateTo} onChange={setDateTo} placeholder="End date" />
           </div>
         </div>
+        <div className="space-y-1.5">
+          <label className="text-sm font-medium text-foreground">Home / Away</label>
+          <div className="flex gap-2">
+            {(["all", "home", "away"] as VenueFilter[]).map((v) => (
+              <button
+                key={v}
+                onClick={() => setVenueFilter(v)}
+                className={`text-xs font-display tracking-wider px-3 py-1.5 rounded-full border transition-colors ${venueFilter === v ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:text-foreground"}`}
+              >
+                {v === "all" ? "All" : v === "home" ? "Home" : "Away"}
+              </button>
+            ))}
+          </div>
+        </div>
 
-        {fixtureCount !== null && (
           <p className="text-sm text-muted-foreground">
             {fixtureCount === 0
               ? "No fixtures found in the selected range."
