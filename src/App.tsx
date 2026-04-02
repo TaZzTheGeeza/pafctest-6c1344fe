@@ -50,6 +50,7 @@ import PafcTvPage from "./pages/PafcTvPage.tsx";
 import ResetPasswordPage from "./pages/ResetPasswordPage.tsx";
 import UnsubscribePage from "./pages/UnsubscribePage.tsx";
 import MeetingsPage from "./pages/MeetingsPage.tsx";
+import PlayerShowcaseDemo from "./pages/PlayerShowcaseDemo.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -117,6 +118,7 @@ function AppContent() {
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/unsubscribe" element={<UnsubscribePage />} />
         <Route path="/meetings" element={<RoleGate requiredRole="player"><MeetingsPage /></RoleGate>} />
+        <Route path="/player-showcase-demo" element={<PlayerShowcaseDemo />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
