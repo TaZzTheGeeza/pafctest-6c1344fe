@@ -84,9 +84,6 @@ export const CartDrawer = () => {
                       </div>
                     </div>
                     );
-                  })}
-                    </div>
-                  ))}
                 </div>
               </div>
               <div className="flex-shrink-0 space-y-4 pt-4 border-t">
