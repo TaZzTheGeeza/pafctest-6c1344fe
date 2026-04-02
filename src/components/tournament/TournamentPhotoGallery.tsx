@@ -226,6 +226,15 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups }: TournamentPh
           <p className="text-sm text-muted-foreground">
             High-resolution action shots — £2 each. All proceeds go back into the club.
           </p>
+          <div className="flex items-start gap-2 mt-2 bg-primary/10 border border-primary/20 rounded-lg px-3 py-2">
+            <Info className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+            <p className="text-xs text-muted-foreground">
+              After purchasing, collect your full-resolution downloads from{" "}
+              <a href="/my-profile" className="text-primary font-semibold hover:underline">
+                My Profile → Purchases
+              </a>.
+            </p>
+          </div>
         </div>
         <Select value={filterAgeGroup} onValueChange={setFilterAgeGroup}>
           <SelectTrigger className="w-[160px]">
