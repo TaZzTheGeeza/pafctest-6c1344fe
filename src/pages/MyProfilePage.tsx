@@ -225,6 +225,7 @@ export default function MyProfilePage() {
 
   const TABS = [
     { key: "overview", label: "Overview", icon: User },
+    { key: "purchases", label: "Purchases", icon: ShoppingBag },
     { key: "stats", label: "Stats", icon: Activity },
     { key: "documents", label: "Documents", icon: FileText },
     { key: "availability", label: "Availability", icon: Calendar },
