@@ -142,7 +142,7 @@ export function TournamentPhotoUpload({ tournamentId, ageGroups }: TournamentPho
               <SelectValue placeholder="All / General" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">General</SelectItem>
+              <SelectItem value="__general__">General</SelectItem>
               {ageGroups.map((ag) => (
                 <SelectItem key={ag.id} value={ag.age_group}>
                   {ag.age_group}
