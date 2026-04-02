@@ -21,33 +21,22 @@ export function TournamentPhotoUpload({ tournamentId, ageGroups }: TournamentPho
   const fileRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
 
-  const createWatermarkedPreview = (file: File): Promise<Blob> => {
+  const createResizedPreview = (file: File): Promise<Blob> => {
     return new Promise((resolve, reject) => {
       const img = new Image();
       img.onload = () => {
         const canvas = document.createElement("canvas");
-        const maxW = 600;
-        const scale = maxW / img.width;
-        canvas.width = maxW;
+        const maxW = 800;
+        const scale = Math.min(maxW / img.width, 1);
+        canvas.width = img.width * scale;
         canvas.height = img.height * scale;
         const ctx = canvas.getContext("2d")!;
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-        // Watermark
-        ctx.save();
-        ctx.globalAlpha = 0.3;
-        ctx.fillStyle = "#ffffff";
-        ctx.font = `bold ${Math.max(canvas.width / 10, 24)}px sans-serif`;
-        ctx.textAlign = "center";
-        ctx.translate(canvas.width / 2, canvas.height / 2);
-        ctx.rotate(-Math.PI / 6);
-        ctx.fillText("PAFC PREVIEW", 0, 0);
-        ctx.restore();
-
         canvas.toBlob(
           (blob) => (blob ? resolve(blob) : reject(new Error("Failed to create preview"))),
           "image/jpeg",
-          0.7
+          0.8
         );
       };
       img.onerror = reject;
