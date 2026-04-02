@@ -11,7 +11,6 @@ import {
   ShoppingBag, Download, Image
 } from "lucide-react";
 import { toast } from "sonner";
-import { toast } from "sonner";
 
 interface PlayerDocument {
   id: string;
