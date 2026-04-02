@@ -14,6 +14,13 @@ export interface CartItem {
   customImageUrl?: string;
 }
 
+// Generate a unique key for cart items - uses photo_id attribute if present to distinguish
+// different tournament photos that share the same Shopify variant
+function getItemKey(item: { variantId: string; attributes?: Array<{ key: string; value: string }> }): string {
+  const photoId = item.attributes?.find(a => a.key === 'photo_id')?.value;
+  return photoId ? `${item.variantId}::${photoId}` : item.variantId;
+}
+
 interface CartStore {
   items: CartItem[];
   cartId: string | null;
@@ -21,8 +28,8 @@ interface CartStore {
   isLoading: boolean;
   isSyncing: boolean;
   addItem: (item: Omit<CartItem, 'lineId'>) => Promise<void>;
-  updateQuantity: (variantId: string, quantity: number) => Promise<void>;
-  removeItem: (variantId: string) => Promise<void>;
+  updateQuantity: (itemKey: string, quantity: number) => Promise<void>;
+  removeItem: (itemKey: string) => Promise<void>;
   clearCart: () => void;
   syncCart: () => Promise<void>;
   getCheckoutUrl: () => string | null;
