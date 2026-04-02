@@ -584,29 +584,6 @@ const TournamentPage = () => {
                   </Card>
                 </div>
 
-                {/* Photo Gallery Preview */}
-                {activeTournament && ageGroups && (
-                  <Card className="border-primary/30 bg-gradient-to-r from-primary/5 to-transparent">
-                    <CardHeader>
-                      <CardTitle className="text-lg flex items-center gap-2">
-                        <Camera className="h-5 w-5 text-primary" />
-                        Action Photos
-                      </CardTitle>
-                      <CardDescription>
-                        Browse & purchase high-resolution action shots from the tournament — £2 each
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <Button
-                        onClick={() => setActiveSection("photos")}
-                        className="bg-gold-gradient text-primary-foreground font-display tracking-wider"
-                      >
-                        <Camera className="h-4 w-4 mr-2" />
-                        View Photo Gallery
-                      </Button>
-                    </CardContent>
-                  </Card>
-                )}
               </TabsContent>
 
               {/* GROUPS */}
