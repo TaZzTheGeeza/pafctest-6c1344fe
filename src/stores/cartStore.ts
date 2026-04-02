@@ -105,7 +105,9 @@ async function createShopifyCart(item: CartItem): Promise<{ cartId: string; chec
 }
 
 async function addLineToShopifyCart(cartId: string, item: CartItem): Promise<{ success: boolean; lineId?: string; cartNotFound?: boolean }> {
-  const data = await storefrontApiRequest(CART_LINES_ADD_MUTATION, { cartId, lines: [{ quantity: item.quantity, merchandiseId: item.variantId }] });
+  const line: Record<string, unknown> = { quantity: item.quantity, merchandiseId: item.variantId };
+  if (item.attributes?.length) line.attributes = item.attributes;
+  const data = await storefrontApiRequest(CART_LINES_ADD_MUTATION, { cartId, lines: [line] });
   const userErrors = data?.data?.cartLinesAdd?.userErrors || [];
   if (isCartNotFoundError(userErrors)) return { success: false, cartNotFound: true };
   if (userErrors.length > 0) return { success: false };
