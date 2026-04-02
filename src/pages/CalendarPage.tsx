@@ -1,4 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { CouncilFixtureExport } from "@/components/CouncilFixtureExport";
 import { motion } from "framer-motion";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -138,6 +140,7 @@ function fixtureToEvent(f: FAFixture, teamName: string): ClubEvent | null {
 }
 
 export default function CalendarPage() {
+  const { isAdmin } = useAuth();
   const [events, setEvents] = useState<ClubEvent[]>([]);
   const [fixtureEvents, setFixtureEvents] = useState<ClubEvent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -225,6 +228,12 @@ export default function CalendarPage() {
               </button>
             ))}
           </div>
+
+          {isAdmin && (
+            <div className="max-w-5xl mx-auto mb-6">
+              <CouncilFixtureExport />
+            </div>
+          )}
 
           <div className="max-w-5xl mx-auto grid lg:grid-cols-[1fr_350px] gap-8">
             {/* Calendar Grid */}
