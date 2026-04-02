@@ -114,7 +114,8 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups }: TournamentPh
         customImageUrl: photo?.preview_url,
       });
       toast.success("Photo added to cart!", {
-        description: "Head to checkout when you're ready.",
+        description: "After purchase, download your full-resolution photos from My Profile → Purchases.",
+        duration: 6000,
       });
     } catch (err: any) {
       toast.error(err.message || "Failed to add to cart");
