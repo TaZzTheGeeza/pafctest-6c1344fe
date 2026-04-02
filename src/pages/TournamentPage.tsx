@@ -105,6 +105,7 @@ const TournamentPage = () => {
     const payment = searchParams.get("payment");
     const brId = searchParams.get("br_id");
     const teamId = searchParams.get("team_id");
+    const photoPurchased = searchParams.get("photo_purchased");
 
     if (payment === "success" && brId && teamId && !verifying) {
       setVerifying(true);
@@ -112,6 +113,20 @@ const TournamentPage = () => {
     } else if (payment === "cancelled") {
       toast.error("Payment was cancelled. Your registration is still pending.");
       setSearchParams({});
+    }
+
+    // Handle photo purchase return
+    if (photoPurchased) {
+      setActiveSection("photos");
+      toast.success("Photo purchased! You can now download it from the gallery.");
+      // Verify and record the purchase
+      supabase.functions.invoke("verify-photo-purchase", {
+        body: { photo_id: photoPurchased },
+      }).then(() => {
+        setSearchParams({});
+      }).catch(() => {
+        setSearchParams({});
+      });
     }
   }, [searchParams]);
 
