@@ -88,6 +88,8 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups }: TournamentPh
       return;
     }
 
+    const photo = photos?.find((p: any) => p.id === photoId);
+
     setBuyingPhotoId(photoId);
     try {
       await addItem({
@@ -101,6 +103,7 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups }: TournamentPh
           { key: "photo_id", value: photoId },
           { key: "user_id", value: user.id },
         ],
+        customImageUrl: photo?.preview_url,
       });
       toast.success("Photo added to cart!", {
         description: "Head to checkout when you're ready.",
