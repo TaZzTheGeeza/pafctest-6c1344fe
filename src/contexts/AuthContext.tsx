@@ -11,6 +11,7 @@ interface AuthContextType {
   isAdmin: boolean;
   isTreasurer: boolean;
   isNewsEditor: boolean;
+  isPhotographer: boolean;
   rolesLoading: boolean;
   signOut: () => Promise<void>;
 }
