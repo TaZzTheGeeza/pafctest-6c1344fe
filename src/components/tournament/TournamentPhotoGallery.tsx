@@ -469,7 +469,7 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
         </DialogContent>
       </Dialog>
 
-      {isAdmin && (
+      {(isAdmin || isPhotographer) && (
         <TournamentPhotoUpload tournamentId={tournamentId} ageGroups={ageGroups} />
       )}
     </div>
