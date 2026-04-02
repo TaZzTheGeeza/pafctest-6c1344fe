@@ -434,6 +434,70 @@ export default function MyProfilePage() {
             </div>
           )}
 
+          {/* Purchases */}
+          {activeTab === "purchases" && (
+            <div className="bg-card border border-border rounded-xl p-5">
+              <h3 className="text-sm font-display tracking-wider uppercase text-muted-foreground mb-4 flex items-center gap-2">
+                <ShoppingBag className="h-4 w-4 text-primary" /> My Photo Purchases
+              </h3>
+              {purchasesLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                </div>
+              ) : purchases.length === 0 ? (
+                <div className="text-center py-12">
+                  <Image className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+                  <p className="text-sm text-muted-foreground">No photo purchases yet</p>
+                  <Link to="/tournament?tab=photos" className="text-xs text-primary hover:underline mt-2 inline-block">
+                    Browse tournament photos →
+                  </Link>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {purchases.map(p => (
+                    <div key={p.id} className="rounded-lg border border-border overflow-hidden bg-secondary/20">
+                      {p.tournament_photos?.preview_url && (
+                        <div className="aspect-[4/3] overflow-hidden">
+                          <img
+                            src={p.tournament_photos.preview_url}
+                            alt={p.tournament_photos.caption || "Tournament photo"}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      )}
+                      <div className="p-3 space-y-2">
+                        <p className="text-sm font-display font-semibold text-foreground">
+                          {p.tournament_photos?.caption || "Tournament Action Photo"}
+                        </p>
+                        {p.tournament_photos?.age_group && (
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+                            {p.tournament_photos.age_group}
+                          </span>
+                        )}
+                        <p className="text-xs text-muted-foreground">
+                          Purchased {new Date(p.created_at).toLocaleDateString()}
+                          {p.download_count > 0 && ` • Downloaded ${p.download_count}x`}
+                        </p>
+                        <button
+                          onClick={() => handleDownloadPhoto(p.photo_id)}
+                          disabled={downloadingId === p.photo_id}
+                          className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-display font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50"
+                        >
+                          {downloadingId === p.photo_id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Download className="h-4 w-4" />
+                          )}
+                          Download Full Resolution
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Stats */}
           {activeTab === "stats" && (
             <div className="bg-card border border-border rounded-xl p-5">
