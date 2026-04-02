@@ -1,0 +1,2 @@
+ALTER TABLE public.tournament_photo_purchases
+ADD CONSTRAINT tournament_photo_purchases_user_photo_unique UNIQUE (user_id, photo_id);

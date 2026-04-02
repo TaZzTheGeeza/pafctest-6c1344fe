@@ -60,6 +60,28 @@ Deno.serve(async (req) => {
         { onConflict: "shopify_order_id" }
       );
 
+    // Handle tournament photo purchases from line item properties
+    if (body.financial_status === "paid") {
+      for (const li of body.line_items || []) {
+        if (li.sku === "TOURNAMENT-PHOTO" && li.properties) {
+          const photoId = li.properties.find((p: any) => p.name === "photo_id")?.value;
+          const userId = li.properties.find((p: any) => p.name === "user_id")?.value;
+          if (photoId && userId) {
+            await supabase
+              .from("tournament_photo_purchases")
+              .upsert(
+                {
+                  photo_id: photoId,
+                  user_id: userId,
+                  stripe_session_id: `shopify-${body.id}`,
+                },
+                { onConflict: "user_id,photo_id" }
+              );
+          }
+        }
+      }
+    }
+
     // Send notifications to admins
     const title = `🛒 New Order ${orderName}`;
     const message = `${customerName} placed an order for ${itemCount} item${itemCount !== 1 ? "s" : ""} — ${currency} ${totalPrice}`;
