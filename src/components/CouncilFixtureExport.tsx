@@ -172,7 +172,7 @@ export function CouncilFixtureExport() {
       <CardHeader>
         <div className="flex items-center gap-2">
           <Sparkles className="h-5 w-5 text-primary" />
-          <CardTitle className="text-lg">Council Fixture Export</CardTitle>
+          <CardTitle className="text-lg">Fixture Export</CardTitle>
         </div>
         <CardDescription>
           Download all team fixtures for a date range to submit to the council for pitch usage billing.
