@@ -78,6 +78,9 @@ export default function MyProfilePage() {
   const [documents, setDocuments] = useState<PlayerDocument[]>([]);
   const [availability, setAvailability] = useState<AvailabilityRecord[]>([]);
   const [teamMemberships, setTeamMemberships] = useState<{ team_slug: string; role: string }[]>([]);
+  const [purchases, setPurchases] = useState<PhotoPurchase[]>([]);
+  const [purchasesLoading, setPurchasesLoading] = useState(false);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("overview");
 
   // Edit state
