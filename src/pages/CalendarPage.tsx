@@ -82,14 +82,23 @@ function downloadICS(event: ClubEvent) {
 }
 
 /** Convert an FA fixture into a ClubEvent shape */
-function fixtureToEvent(f: FAFixture, teamName: string): ClubEvent {
-  // Parse date like "Saturday 12 Apr 2025"
-  let startDate: Date;
-  try {
-    startDate = parse(f.date, "EEEE d MMM yyyy", new Date());
-  } catch {
+function fixtureToEvent(f: FAFixture, teamName: string): ClubEvent | null {
+  // Try multiple date formats
+  let startDate: Date | null = null;
+  const formats = ["EEEE d MMM yyyy", "EEE d MMM yyyy", "d MMM yyyy", "EEEE dd MMM yyyy"];
+  for (const fmt of formats) {
+    try {
+      const d = parse(f.date, fmt, new Date());
+      if (!isNaN(d.getTime())) { startDate = d; break; }
+    } catch { /* try next */ }
+  }
+  // Fallback: native Date constructor
+  if (!startDate || isNaN(startDate.getTime())) {
     startDate = new Date(f.date);
   }
+  // If still invalid, skip this fixture
+  if (isNaN(startDate.getTime())) return null;
+
   // Apply time if present
   if (f.time && f.time !== "TBC") {
     const [h, m] = f.time.split(":").map(Number);
