@@ -20,14 +20,15 @@ import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 interface TournamentPhotoGalleryProps {
   tournamentId: string;
   ageGroups: { id: string; age_group: string }[];
+  defaultAgeGroup?: string;
 }
 
 const PHOTO_VARIANT_ID = "gid://shopify/ProductVariant/53198621409623";
 
-export function TournamentPhotoGallery({ tournamentId, ageGroups }: TournamentPhotoGalleryProps) {
+export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGroup }: TournamentPhotoGalleryProps) {
   const { user, isAdmin } = useAuth();
   const queryClient = useQueryClient();
-  const [filterAgeGroup, setFilterAgeGroup] = useState("all");
+  const [filterAgeGroup, setFilterAgeGroup] = useState(defaultAgeGroup || "all");
   const [buyingPhotoId, setBuyingPhotoId] = useState<string | null>(null);
   const [downloadingPhotoId, setDownloadingPhotoId] = useState<string | null>(null);
   const [deletingPhotoId, setDeletingPhotoId] = useState<string | null>(null);
