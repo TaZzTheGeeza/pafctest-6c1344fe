@@ -101,7 +101,7 @@ export function TournamentPhotoUpload({ tournamentId, ageGroups }: TournamentPho
           .from("tournament_photos" as any)
           .insert({
             tournament_id: tournamentId,
-            age_group: ageGroup || null,
+            age_group: ageGroup && ageGroup !== "__general__" ? ageGroup : null,
             caption: caption || null,
             preview_url: previewUrl.publicUrl,
             storage_path: storagePath,
@@ -142,7 +142,7 @@ export function TournamentPhotoUpload({ tournamentId, ageGroups }: TournamentPho
               <SelectValue placeholder="All / General" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">General</SelectItem>
+              <SelectItem value="__general__">General</SelectItem>
               {ageGroups.map((ag) => (
                 <SelectItem key={ag.id} value={ag.age_group}>
                   {ag.age_group}
