@@ -269,6 +269,9 @@ function TeamDetail({ team }: { team: TeamData }) {
                 />
               )}
 
+              {/* Trading Card Squad Showcase */}
+              <TeamTradingCards ageGroup={team.name} />
+
               {/* Player Stats - restricted to player/coach/admin */}
               {(isCoach || isAdmin || isPlayer) && (
                 <div>
