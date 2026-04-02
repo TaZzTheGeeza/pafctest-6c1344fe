@@ -42,7 +42,9 @@ export function TeamTradingCards({ ageGroup }: { ageGroup: string }) {
   }
 
   const coachPositions = ["Coach", "Head Coach", "Assistant Coach"];
-  const coaches = players.filter((p) => p.photo_url && coachPositions.includes(p.position || ""));
+  const coaches = players
+    .filter((p) => p.photo_url && coachPositions.includes(p.position || ""))
+    .sort((a, b) => (a.position === "Head Coach" ? -1 : b.position === "Head Coach" ? 1 : 0));
   const squad = players.filter((p) => p.photo_url && !coachPositions.includes(p.position || ""));
   if (squad.length === 0 && coaches.length === 0) return null;
 
