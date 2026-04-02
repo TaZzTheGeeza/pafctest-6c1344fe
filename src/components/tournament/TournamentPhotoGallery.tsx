@@ -18,6 +18,7 @@ interface TournamentPhotoGalleryProps {
 
 export function TournamentPhotoGallery({ tournamentId, ageGroups }: TournamentPhotoGalleryProps) {
   const { user } = useAuth();
+  const { hasPermission } = useRolePermissions();
   const [filterAgeGroup, setFilterAgeGroup] = useState("all");
   const [buyingPhotoId, setBuyingPhotoId] = useState<string | null>(null);
   const [downloadingPhotoId, setDownloadingPhotoId] = useState<string | null>(null);
