@@ -104,7 +104,7 @@ export function TeamTradingCards({ ageGroup }: { ageGroup: string }) {
             <Users className="h-5 w-5 text-primary" />
             <h2 className="font-display text-sm font-bold text-primary tracking-wider">THE SQUAD</h2>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-5">
             {squad.map((player, i) => renderCard(player, i))}
           </div>
         </div>
@@ -116,7 +116,7 @@ export function TeamTradingCards({ ageGroup }: { ageGroup: string }) {
             <Users className="h-5 w-5 text-primary" />
             <h2 className="font-display text-sm font-bold text-primary tracking-wider">COACHING STAFF</h2>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-5">
             {coaches.map((player, i) => renderCard(player, i, true))}
           </div>
         </div>

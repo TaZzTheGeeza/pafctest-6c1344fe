@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useParams, Link } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { Clock, MapPin, Calendar, ChevronRight, Shield, Trophy, TrendingUp, BarChart3, Loader2, Navigation, ClipboardEdit, ChevronDown } from "lucide-react";
+import { Clock, MapPin, Calendar, ChevronRight, Shield, Trophy, TrendingUp, BarChart3, Loader2, Navigation, ClipboardEdit, ChevronDown, Users } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { TeamTradingCards } from "@/components/showcase/TeamTradingCards";
 import { TeamStatsTable } from "@/components/TeamStatsTable";
 import { LeagueTable } from "@/components/LeagueTable";
@@ -123,166 +124,182 @@ function TeamDetail({ team }: { team: TeamData }) {
               </div>
             </div>
 
-            <div className="max-w-2xl mx-auto space-y-6">
-              {/* Next Fixture */}
-              <div className="bg-card border border-border rounded-lg overflow-hidden">
-                <div className="bg-primary/10 px-6 py-3 border-b border-border">
-                  <h2 className="font-display text-sm font-bold text-primary tracking-wider">Next Fixture</h2>
-                </div>
-                <div className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div>
-                        <p className="font-display font-bold text-sm">{team.name}</p>
-                        <p className="text-xs text-muted-foreground">Peterborough Athletic</p>
+            <Tabs defaultValue="overview" className="max-w-4xl mx-auto">
+              <TabsList className="grid w-full grid-cols-2 mb-6">
+                <TabsTrigger value="overview" className="font-display tracking-wider">
+                  <Trophy className="w-4 h-4 mr-2" />Overview
+                </TabsTrigger>
+                <TabsTrigger value="squad" className="font-display tracking-wider">
+                  <Users className="w-4 h-4 mr-2" />Squad
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="overview">
+                <div className="max-w-2xl mx-auto space-y-6">
+                  {/* Next Fixture */}
+                  <div className="bg-card border border-border rounded-lg overflow-hidden">
+                    <div className="bg-primary/10 px-6 py-3 border-b border-border">
+                      <h2 className="font-display text-sm font-bold text-primary tracking-wider">Next Fixture</h2>
+                    </div>
+                    <div className="p-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                          <div>
+                            <p className="font-display font-bold text-sm">{team.name}</p>
+                            <p className="text-xs text-muted-foreground">Peterborough Athletic</p>
+                          </div>
+                        </div>
+                        <span className="font-display text-lg text-muted-foreground">VS</span>
+                        <div className="text-right">
+                          <p className="font-display font-bold text-sm">{displayFixture.opponent}</p>
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{displayFixture.date}</span>
+                        <span className="flex items-center gap-1"><Clock className="w-3 h-3" />KO {displayFixture.kickoff}</span>
+                        <span className={`flex items-center gap-1 font-bold ${displayFixture.venue === "Home" ? "text-green-400" : "text-blue-400"}`}>
+                          <MapPin className="w-3 h-3" />{displayFixture.venue}
+                        </span>
                       </div>
                     </div>
-                    <span className="font-display text-lg text-muted-foreground">VS</span>
-                    <div className="text-right">
-                      <p className="font-display font-bold text-sm">{displayFixture.opponent}</p>
+                  </div>
+
+                  {/* All Fixtures from FA */}
+                  {fixturesLoading && (
+                    <div className="flex items-center justify-center py-8 text-muted-foreground gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span className="text-sm">Loading fixtures from FA Full-Time...</span>
                     </div>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
-                    <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{displayFixture.date}</span>
-                    <span className="flex items-center gap-1"><Clock className="w-3 h-3" />KO {displayFixture.kickoff}</span>
-                    <span className={`flex items-center gap-1 font-bold ${displayFixture.venue === "Home" ? "text-green-400" : "text-blue-400"}`}>
-                      <MapPin className="w-3 h-3" />{displayFixture.venue}
-                    </span>
-                  </div>
-                </div>
-              </div>
+                  )}
 
-              {/* All Fixtures from FA */}
-              {fixturesLoading && (
-                <div className="flex items-center justify-center py-8 text-muted-foreground gap-2">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <span className="text-sm">Loading fixtures from FA Full-Time...</span>
-                </div>
-              )}
-
-              {liveData && futureFixtures.length > 0 && (
-                <div className="bg-card border border-border rounded-lg overflow-hidden">
-                  <div className="bg-primary/10 px-6 py-3 border-b border-border">
-                    <h2 className="font-display text-sm font-bold text-primary tracking-wider">Upcoming Fixtures</h2>
-                  </div>
-                  <div className="divide-y divide-border">
-                    {futureFixtures.map((fix, i) => {
-                      const isHome = fix.homeTeam.includes("Peterborough Ath");
-                      return (
-                        <div key={i} className="px-6 py-3 flex items-center justify-between gap-4">
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium truncate">
-                              {isHome ? "vs" : "@"} {isHome ? fix.awayTeam : fix.homeTeam}
-                            </p>
-                            <div className="flex items-center gap-2 mt-0.5">
-                              <p className="text-[10px] text-muted-foreground">{fix.competition}</p>
-                              {fix.venue && (
-                                <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
-                                  <MapPin className="w-2.5 h-2.5" />{fix.venue}
+                  {liveData && futureFixtures.length > 0 && (
+                    <div className="bg-card border border-border rounded-lg overflow-hidden">
+                      <div className="bg-primary/10 px-6 py-3 border-b border-border">
+                        <h2 className="font-display text-sm font-bold text-primary tracking-wider">Upcoming Fixtures</h2>
+                      </div>
+                      <div className="divide-y divide-border">
+                        {futureFixtures.map((fix, i) => {
+                          const isHome = fix.homeTeam.includes("Peterborough Ath");
+                          return (
+                            <div key={i} className="px-6 py-3 flex items-center justify-between gap-4">
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium truncate">
+                                  {isHome ? "vs" : "@"} {isHome ? fix.awayTeam : fix.homeTeam}
+                                </p>
+                                <div className="flex items-center gap-2 mt-0.5">
+                                  <p className="text-[10px] text-muted-foreground">{fix.competition}</p>
+                                  {fix.venue && (
+                                    <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                                      <MapPin className="w-2.5 h-2.5" />{fix.venue}
+                                    </span>
+                                  )}
+                                  {fix.venue && (
+                                    <button
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(fix.venue)}`, '_system');
+                                      }}
+                                      className="text-[10px] text-primary hover:text-primary/80 flex items-center gap-0.5 transition-colors"
+                                    >
+                                      <Navigation className="w-2.5 h-2.5" />Directions
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2 text-xs text-muted-foreground shrink-0">
+                                <span className={`font-bold ${isHome ? "text-green-400" : "text-blue-400"}`}>
+                                  {isHome ? "H" : "A"}
                                 </span>
-                              )}
-                              {fix.venue && (
-                                <button
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(fix.venue)}`, '_system');
-                                  }}
-                                  className="text-[10px] text-primary hover:text-primary/80 flex items-center gap-0.5 transition-colors"
-                                >
-                                  <Navigation className="w-2.5 h-2.5" />Directions
-                                </button>
-                              )}
+                                <span>{formatFADate(fix.date)}</span>
+                                <span className="font-mono">{fix.time}</span>
+                              </div>
                             </div>
-                          </div>
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground shrink-0">
-                            <span className={`font-bold ${isHome ? "text-green-400" : "text-blue-400"}`}>
-                              {isHome ? "H" : "A"}
-                            </span>
-                            <span>{formatFADate(fix.date)}</span>
-                            <span className="font-mono">{fix.time}</span>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
 
-              {/* Results from FA - restricted to player/coach/admin */}
-              {(isCoach || isAdmin || isPlayer) && liveData && liveData.results.length > 0 && (
-                <div className="bg-card border border-border rounded-lg overflow-hidden">
-                  <div className="bg-primary/10 px-6 py-3 border-b border-border">
-                    <h2 className="font-display text-sm font-bold text-primary tracking-wider">Results</h2>
-                  </div>
-                  <div className="divide-y divide-border">
-                    {liveData.results.slice(0, 10).map((res, i) => {
-                      const isHome = res.homeTeam.includes("Peterborough Ath");
-                      const scored = isHome ? (res.homeScore ?? 0) : (res.awayScore ?? 0);
-                      const conceded = isHome ? (res.awayScore ?? 0) : (res.homeScore ?? 0);
-                      const result = scored > conceded ? "W" : scored < conceded ? "L" : "D";
-                      const resultColor = result === "W" ? "bg-green-600" : result === "L" ? "bg-red-600" : "bg-yellow-600";
-                      const isExpanded = expandedResult === i;
-                      const opponent = isHome ? res.awayTeam : res.homeTeam;
-                      return (
-                        <div key={i}>
-                          <div
-                            className="px-6 py-3 flex items-center gap-3 cursor-pointer hover:bg-muted/30 transition-colors"
-                            onClick={() => setExpandedResult(isExpanded ? null : i)}
-                          >
-                            <span className={`${resultColor} text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded`}>
-                              {result}
-                            </span>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium truncate">
-                                {isHome ? "vs" : "@"} {opponent}
-                              </p>
-                              <p className="text-[10px] text-muted-foreground">{formatFADate(res.date)}</p>
+                  {/* Results from FA - restricted to player/coach/admin */}
+                  {(isCoach || isAdmin || isPlayer) && liveData && liveData.results.length > 0 && (
+                    <div className="bg-card border border-border rounded-lg overflow-hidden">
+                      <div className="bg-primary/10 px-6 py-3 border-b border-border">
+                        <h2 className="font-display text-sm font-bold text-primary tracking-wider">Results</h2>
+                      </div>
+                      <div className="divide-y divide-border">
+                        {liveData.results.slice(0, 10).map((res, i) => {
+                          const isHome = res.homeTeam.includes("Peterborough Ath");
+                          const scored = isHome ? (res.homeScore ?? 0) : (res.awayScore ?? 0);
+                          const conceded = isHome ? (res.awayScore ?? 0) : (res.homeScore ?? 0);
+                          const result = scored > conceded ? "W" : scored < conceded ? "L" : "D";
+                          const resultColor = result === "W" ? "bg-green-600" : result === "L" ? "bg-red-600" : "bg-yellow-600";
+                          const isExpanded = expandedResult === i;
+                          const opponent = isHome ? res.awayTeam : res.homeTeam;
+                          return (
+                            <div key={i}>
+                              <div
+                                className="px-6 py-3 flex items-center gap-3 cursor-pointer hover:bg-muted/30 transition-colors"
+                                onClick={() => setExpandedResult(isExpanded ? null : i)}
+                              >
+                                <span className={`${resultColor} text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded`}>
+                                  {result}
+                                </span>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium truncate">
+                                    {isHome ? "vs" : "@"} {opponent}
+                                  </p>
+                                  <p className="text-[10px] text-muted-foreground">{formatFADate(res.date)}</p>
+                                </div>
+                                <span className="font-mono font-bold text-sm">{res.homeScore} - {res.awayScore}</span>
+                                <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+                              </div>
+                              <AnimatePresence>
+                                {isExpanded && (
+                                  <MatchDetailPanel
+                                    teamSlug={team.slug}
+                                    teamName={team.name}
+                                    opponent={opponent}
+                                    matchDate={res.date}
+                                  />
+                                )}
+                              </AnimatePresence>
                             </div>
-                            <span className="font-mono font-bold text-sm">{res.homeScore} - {res.awayScore}</span>
-                            <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground transition-transform ${isExpanded ? "rotate-180" : ""}`} />
-                          </div>
-                          <AnimatePresence>
-                            {isExpanded && (
-                              <MatchDetailPanel
-                                teamSlug={team.slug}
-                                teamName={team.name}
-                                opponent={opponent}
-                                matchDate={res.date}
-                              />
-                            )}
-                          </AnimatePresence>
-                        </div>
-                      );
-                    })}
-                  </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* League Table */}
+                  {leagueTableConfig[team.slug] && (
+                    <LeagueTable
+                      divisionSeason={leagueTableConfig[team.slug].divisionSeason}
+                      tableUrl={leagueTableConfig[team.slug].tableUrl}
+                      highlightTeams={leagueTableConfig[team.slug].highlightTeams}
+                      faUrl={leagueTableConfig[team.slug].faUrl}
+                    />
+                  )}
+
+                  {/* Player Stats - restricted to player/coach/admin */}
+                  {(isCoach || isAdmin || isPlayer) && (
+                    <div>
+                      <div className="flex items-center gap-2 mb-4">
+                        <BarChart3 className="h-5 w-5 text-primary" />
+                        <h2 className="font-display text-sm font-bold text-primary tracking-wider">Player Stats</h2>
+                      </div>
+                      <TeamStatsTable ageGroup={team.name} />
+                    </div>
+                  )}
                 </div>
-              )}
+              </TabsContent>
 
-              {/* League Table */}
-              {leagueTableConfig[team.slug] && (
-                <LeagueTable
-                  divisionSeason={leagueTableConfig[team.slug].divisionSeason}
-                  tableUrl={leagueTableConfig[team.slug].tableUrl}
-                  highlightTeams={leagueTableConfig[team.slug].highlightTeams}
-                  faUrl={leagueTableConfig[team.slug].faUrl}
-                />
-              )}
-
-              {/* Trading Card Squad Showcase */}
-              <TeamTradingCards ageGroup={team.name} />
-
-              {/* Player Stats - restricted to player/coach/admin */}
-              {(isCoach || isAdmin || isPlayer) && (
-                <div>
-                  <div className="flex items-center gap-2 mb-4">
-                    <BarChart3 className="h-5 w-5 text-primary" />
-                    <h2 className="font-display text-sm font-bold text-primary tracking-wider">Player Stats</h2>
-                  </div>
-                  <TeamStatsTable ageGroup={team.name} />
+              <TabsContent value="squad">
+                <div className="max-w-4xl mx-auto">
+                  <TeamTradingCards ageGroup={team.name} />
                 </div>
-              )}
-            </div>
+              </TabsContent>
+            </Tabs>
           </motion.div>
         </div>
       </main>
