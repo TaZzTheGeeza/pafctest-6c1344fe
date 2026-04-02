@@ -359,6 +359,19 @@ const TeamProfilePage = () => {
               </CardContent>
             </Card>
           )}
+          {/* Photo Gallery for this age group */}
+          {team && (team as any).tournament_age_groups?.tournaments?.id && (
+            <div className="mt-6">
+              <TournamentPhotoGallery
+                tournamentId={(team as any).tournament_age_groups.tournaments.id}
+                ageGroups={[{
+                  id: team.age_group_id,
+                  age_group: (team as any).tournament_age_groups?.age_group || "",
+                }]}
+                defaultAgeGroup={(team as any).tournament_age_groups?.age_group}
+              />
+            </div>
+          )}
         </div>
       </main>
       <Footer />
