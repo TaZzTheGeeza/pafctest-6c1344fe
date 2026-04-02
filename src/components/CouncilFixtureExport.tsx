@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { format, parse, isValid, startOfMonth, endOfMonth } from "date-fns";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { DateInput } from "@/components/ui/date-input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Download, FileText, Table, Loader2, Sparkles } from "lucide-react";
@@ -114,12 +115,25 @@ function downloadBlob(content: string, filename: string, mimeType: string) {
   URL.revokeObjectURL(url);
 }
 
+type VenueFilter = "all" | "home" | "away";
+
+const CLUB_NAME = "Peterborough Athletic";
+
+function filterByVenue(fixtures: FixtureRow[], venue: VenueFilter): FixtureRow[] {
+  if (venue === "all") return fixtures;
+  return fixtures.filter((f) => {
+    const isHome = f.homeTeam.includes(CLUB_NAME);
+    return venue === "home" ? isHome : !isHome;
+  });
+}
+
 export function CouncilFixtureExport() {
   const now = new Date();
   const [dateFrom, setDateFrom] = useState(format(startOfMonth(now), "yyyy-MM-dd"));
   const [dateTo, setDateTo] = useState(format(endOfMonth(now), "yyyy-MM-dd"));
   const [loading, setLoading] = useState(false);
   const [fixtureCount, setFixtureCount] = useState<number | null>(null);
+  const [venueFilter, setVenueFilter] = useState<VenueFilter>("all");
 
   const fetchAndExport = async (type: "csv" | "pdf") => {
     setLoading(true);
@@ -129,7 +143,7 @@ export function CouncilFixtureExport() {
       if (error) throw error;
       if (!data?.success) throw new Error(data?.error || "Failed to fetch fixtures");
 
-      const filtered = sortByDate(filterByDateRange(data.fixtures as FixtureRow[], dateFrom, dateTo));
+      const filtered = sortByDate(filterByVenue(filterByDateRange(data.fixtures as FixtureRow[], dateFrom, dateTo), venueFilter));
       setFixtureCount(filtered.length);
 
       if (filtered.length === 0) {
@@ -137,9 +151,10 @@ export function CouncilFixtureExport() {
         return;
       }
 
+      const venueLabel = venueFilter === "all" ? "" : `-${venueFilter.toUpperCase()}`;
       const fromLabel = format(parse(dateFrom, "yyyy-MM-dd", new Date()), "MMM-yyyy");
       const toLabel = format(parse(dateTo, "yyyy-MM-dd", new Date()), "MMM-yyyy");
-      const filename = `PAFC-Council-Fixtures_${fromLabel}_to_${toLabel}`;
+      const filename = `PAFC-Fixtures${venueLabel}_${fromLabel}_to_${toLabel}`;
 
       if (type === "csv") {
         downloadBlob(generateCSV(filtered, dateFrom, dateTo), `${filename}.csv`, "text/csv");
@@ -187,6 +202,20 @@ export function CouncilFixtureExport() {
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-foreground">To</label>
             <DateInput value={dateTo} onChange={setDateTo} placeholder="End date" />
+          </div>
+        </div>
+        <div className="space-y-1.5">
+          <label className="text-sm font-medium text-foreground">Home / Away</label>
+          <div className="flex gap-2">
+            {(["all", "home", "away"] as VenueFilter[]).map((v) => (
+              <button
+                key={v}
+                onClick={() => setVenueFilter(v)}
+                className={`text-xs font-display tracking-wider px-3 py-1.5 rounded-full border transition-colors ${venueFilter === v ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:text-foreground"}`}
+              >
+                {v === "all" ? "All" : v === "home" ? "Home" : "Away"}
+              </button>
+            ))}
           </div>
         </div>
 
