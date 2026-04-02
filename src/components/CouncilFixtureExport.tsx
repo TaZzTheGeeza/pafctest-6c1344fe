@@ -219,6 +219,7 @@ export function CouncilFixtureExport() {
           </div>
         </div>
 
+        {fixtureCount !== null && (
           <p className="text-sm text-muted-foreground">
             {fixtureCount === 0
               ? "No fixtures found in the selected range."
