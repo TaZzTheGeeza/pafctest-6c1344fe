@@ -180,29 +180,29 @@ export const useCartStore = create<CartStore>()(
         }
       },
 
-      updateQuantity: async (variantId, quantity) => {
-        if (quantity <= 0) { await get().removeItem(variantId); return; }
+      updateQuantity: async (itemKey, quantity) => {
+        if (quantity <= 0) { await get().removeItem(itemKey); return; }
         const { items, cartId, clearCart } = get();
-        const item = items.find(i => i.variantId === variantId);
+        const item = items.find(i => getItemKey(i) === itemKey);
         if (!item?.lineId || !cartId) return;
         set({ isLoading: true });
         try {
           const result = await updateShopifyCartLine(cartId, item.lineId, quantity);
-          if (result.success) set({ items: get().items.map(i => i.variantId === variantId ? { ...i, quantity } : i) });
+          if (result.success) set({ items: get().items.map(i => getItemKey(i) === itemKey ? { ...i, quantity } : i) });
           else if (result.cartNotFound) clearCart();
         } catch (error) { console.error('Failed to update quantity:', error); }
         finally { set({ isLoading: false }); }
       },
 
-      removeItem: async (variantId) => {
+      removeItem: async (itemKey) => {
         const { items, cartId, clearCart } = get();
-        const item = items.find(i => i.variantId === variantId);
+        const item = items.find(i => getItemKey(i) === itemKey);
         if (!item?.lineId || !cartId) return;
         set({ isLoading: true });
         try {
           const result = await removeLineFromShopifyCart(cartId, item.lineId);
           if (result.success) {
-            const newItems = get().items.filter(i => i.variantId !== variantId);
+            const newItems = get().items.filter(i => getItemKey(i) !== itemKey);
             newItems.length === 0 ? clearCart() : set({ items: newItems });
           } else if (result.cartNotFound) clearCart();
         } catch (error) { console.error('Failed to remove item:', error); }
