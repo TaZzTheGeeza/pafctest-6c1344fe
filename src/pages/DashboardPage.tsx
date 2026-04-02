@@ -52,6 +52,7 @@ const ROLE_CONFIG: Record<AppRole, { label: string; color: string; icon: any }> 
   treasurer: { label: "Treasurer", color: "bg-purple-500/20 text-purple-400 border-purple-500/30", icon: ShoppingBag },
   welfare_officer: { label: "Welfare Officer", color: "bg-pink-500/20 text-pink-400 border-pink-500/30", icon: Shield },
   news_editor: { label: "News Editor", color: "bg-blue-600/20 text-blue-300 border-blue-500/30", icon: Newspaper },
+  photographer: { label: "Photographer", color: "bg-violet-500/20 text-violet-400 border-violet-500/30", icon: Eye },
 };
 
 const ADMIN_LINKS = [
