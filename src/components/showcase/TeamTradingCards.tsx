@@ -41,8 +41,9 @@ export function TeamTradingCards({ ageGroup }: { ageGroup: string }) {
     );
   }
 
-  const coaches = players.filter((p) => p.photo_url && p.position === "Coach");
-  const squad = players.filter((p) => p.photo_url && p.position !== "Coach");
+  const coachPositions = ["Coach", "Head Coach", "Assistant Coach"];
+  const coaches = players.filter((p) => p.photo_url && coachPositions.includes(p.position || ""));
+  const squad = players.filter((p) => p.photo_url && !coachPositions.includes(p.position || ""));
   if (squad.length === 0 && coaches.length === 0) return null;
 
   const renderCard = (player: PlayerStat, i: number, isCoach = false) => (
