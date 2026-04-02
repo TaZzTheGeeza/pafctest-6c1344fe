@@ -151,7 +151,8 @@ export const useCartStore = create<CartStore>()(
 
       addItem: async (item) => {
         const { items, cartId, clearCart } = get();
-        const existingItem = items.find(i => i.variantId === item.variantId);
+        const itemKey = getItemKey(item);
+        const existingItem = items.find(i => getItemKey(i) === itemKey);
         set({ isLoading: true });
         try {
           if (!cartId) {
@@ -164,7 +165,7 @@ export const useCartStore = create<CartStore>()(
             if (!existingItem.lineId) return;
             const result = await updateShopifyCartLine(cartId, existingItem.lineId, newQuantity);
             if (result.success) {
-              set({ items: get().items.map(i => i.variantId === item.variantId ? { ...i, quantity: newQuantity } : i) });
+              set({ items: get().items.map(i => getItemKey(i) === itemKey ? { ...i, quantity: newQuantity } : i) });
             } else if (result.cartNotFound) clearCart();
           } else {
             const result = await addLineToShopifyCart(cartId, { ...item, lineId: null });
