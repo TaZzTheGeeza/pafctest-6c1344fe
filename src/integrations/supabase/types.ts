@@ -1855,6 +1855,82 @@ export type Database = {
           },
         ]
       }
+      tournament_photo_purchases: {
+        Row: {
+          created_at: string
+          download_count: number
+          id: string
+          photo_id: string
+          stripe_session_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          download_count?: number
+          id?: string
+          photo_id: string
+          stripe_session_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          download_count?: number
+          id?: string
+          photo_id?: string
+          stripe_session_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_photo_purchases_photo_id_fkey"
+            columns: ["photo_id"]
+            isOneToOne: false
+            referencedRelation: "tournament_photos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tournament_photos: {
+        Row: {
+          age_group: string | null
+          caption: string | null
+          created_at: string
+          id: string
+          preview_url: string
+          price_cents: number
+          storage_path: string
+          tournament_id: string
+        }
+        Insert: {
+          age_group?: string | null
+          caption?: string | null
+          created_at?: string
+          id?: string
+          preview_url: string
+          price_cents?: number
+          storage_path: string
+          tournament_id: string
+        }
+        Update: {
+          age_group?: string | null
+          caption?: string | null
+          created_at?: string
+          id?: string
+          preview_url?: string
+          price_cents?: number
+          storage_path?: string
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_photos_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tournament_team_players: {
         Row: {
           created_at: string
