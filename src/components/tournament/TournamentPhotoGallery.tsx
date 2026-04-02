@@ -9,7 +9,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Camera, Download, Loader2, ShoppingCart, Lock } from "lucide-react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Camera, Download, Loader2, ShoppingCart, X } from "lucide-react";
 import { toast } from "sonner";
 import { TournamentPhotoUpload } from "./TournamentPhotoUpload";
 
@@ -25,10 +26,10 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups }: TournamentPh
   const [filterAgeGroup, setFilterAgeGroup] = useState("all");
   const [buyingPhotoId, setBuyingPhotoId] = useState<string | null>(null);
   const [downloadingPhotoId, setDownloadingPhotoId] = useState<string | null>(null);
+  const [lightboxPhoto, setLightboxPhoto] = useState<any | null>(null);
   const addItem = useCartStore((s) => s.addItem);
   const isCartLoading = useCartStore((s) => s.isLoading);
 
-  // Fetch the Shopify product for building cart items
   const { data: photoProduct } = useQuery({
     queryKey: ["shopify-photo-product"],
     queryFn: async () => {
@@ -184,7 +185,10 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups }: TournamentPh
           const owned = purchasedIds.has(photo.id);
           return (
             <Card key={photo.id} className="overflow-hidden group">
-              <div className="relative aspect-[4/3]">
+              <div
+                className="relative aspect-[4/3] cursor-pointer"
+                onClick={() => setLightboxPhoto(photo)}
+              >
                 <img
                   src={photo.preview_url}
                   alt={photo.caption || "Tournament action photo"}
@@ -195,6 +199,11 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups }: TournamentPh
                     {photo.age_group}
                   </Badge>
                 )}
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                  <span className="text-white text-xs font-medium bg-black/50 px-3 py-1.5 rounded-full">
+                    Tap to view
+                  </span>
+                </div>
               </div>
               <CardContent className="p-2.5">
                 {photo.caption && (
@@ -235,6 +244,68 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups }: TournamentPh
           );
         })}
       </div>
+
+      {/* Lightbox */}
+      <Dialog open={!!lightboxPhoto} onOpenChange={(open) => !open && setLightboxPhoto(null)}>
+        <DialogContent className="max-w-4xl w-[95vw] p-0 bg-black/95 border-none">
+          {lightboxPhoto && (
+            <div className="relative">
+              <img
+                src={lightboxPhoto.preview_url}
+                alt={lightboxPhoto.caption || "Tournament action photo"}
+                className="w-full h-auto max-h-[80vh] object-contain"
+              />
+              <div className="absolute top-3 right-3">
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="text-white hover:bg-white/20 h-8 w-8"
+                  onClick={() => setLightboxPhoto(null)}
+                >
+                  <X className="h-5 w-5" />
+                </Button>
+              </div>
+              <div className="p-4 flex items-center justify-between gap-3">
+                <div>
+                  {lightboxPhoto.caption && (
+                    <p className="text-white/80 text-sm">{lightboxPhoto.caption}</p>
+                  )}
+                  {lightboxPhoto.age_group && (
+                    <Badge variant="secondary" className="mt-1">{lightboxPhoto.age_group}</Badge>
+                  )}
+                </div>
+                {purchasedIds.has(lightboxPhoto.id) ? (
+                  <Button
+                    size="sm"
+                    onClick={() => handleDownload(lightboxPhoto.id)}
+                    disabled={downloadingPhotoId === lightboxPhoto.id}
+                  >
+                    {downloadingPhotoId === lightboxPhoto.id ? (
+                      <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                    ) : (
+                      <Download className="h-3 w-3 mr-1" />
+                    )}
+                    Download Hi-Res
+                  </Button>
+                ) : (
+                  <Button
+                    size="sm"
+                    onClick={() => handleBuy(lightboxPhoto.id)}
+                    disabled={buyingPhotoId === lightboxPhoto.id || isCartLoading}
+                  >
+                    {buyingPhotoId === lightboxPhoto.id || isCartLoading ? (
+                      <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                    ) : (
+                      <ShoppingCart className="h-3 w-3 mr-1" />
+                    )}
+                    Buy Hi-Res · £2
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {isAdmin && (
         <TournamentPhotoUpload tournamentId={tournamentId} ageGroups={ageGroups} />
