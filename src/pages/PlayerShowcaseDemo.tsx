@@ -25,8 +25,8 @@ const SAMPLE_PLAYERS = [
 ];
 
 const SAMPLE_COACHES = [
-  { name: "Coach Williams", role: "Head Coach", photo: "/sample-player.jpg" },
-  { name: "Coach Davies", role: "Assistant Coach", photo: "/sample-player.jpg" },
+  { name: "Coach Williams", role: "Head Coach", photo: "/sample-player-hero.jpg" },
+  { name: "Coach Davies", role: "Assistant Coach", photo: "/sample-player-hero.jpg" },
 ];
 
 const PlayerShowcaseDemo = () => {
