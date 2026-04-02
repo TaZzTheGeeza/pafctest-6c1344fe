@@ -16,7 +16,7 @@ export interface CartItem {
 
 // Generate a unique key for cart items - uses photo_id attribute if present to distinguish
 // different tournament photos that share the same Shopify variant
-function getItemKey(item: { variantId: string; attributes?: Array<{ key: string; value: string }> }): string {
+export function getItemKey(item: { variantId: string; attributes?: Array<{ key: string; value: string }> }): string {
   const photoId = item.attributes?.find(a => a.key === 'photo_id')?.value;
   return photoId ? `${item.variantId}::${photoId}` : item.variantId;
 }
