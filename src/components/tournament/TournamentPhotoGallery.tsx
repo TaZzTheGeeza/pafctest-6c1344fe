@@ -190,11 +190,6 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups }: TournamentPh
                   alt={photo.caption || "Tournament action photo"}
                   className="w-full h-full object-cover"
                 />
-                {!owned && (
-                  <div className="absolute inset-0 bg-black/10 flex items-center justify-center">
-                    <Lock className="h-6 w-6 text-white/70" />
-                  </div>
-                )}
                 {photo.age_group && (
                   <Badge className="absolute top-2 left-2 text-[10px]" variant="secondary">
                     {photo.age_group}

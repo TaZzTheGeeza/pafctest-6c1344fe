@@ -69,8 +69,8 @@ export function TournamentPhotoUpload({ tournamentId, ageGroups }: TournamentPho
           continue;
         }
 
-        // Create watermarked preview and upload to public gallery-photos bucket
-        const previewBlob = await createWatermarkedPreview(file);
+        // Create resized preview and upload to public gallery-photos bucket
+        const previewBlob = await createResizedPreview(file);
         const previewPath = `tournament-previews/${tournamentId}/${Date.now()}-${i}.jpg`;
         const { error: previewErr } = await supabase.storage
           .from("gallery-photos")
