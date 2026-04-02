@@ -15,9 +15,6 @@ import { Trophy, Users, Calendar, MapPin, ClipboardList, Megaphone, Shield, Cloc
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { TournamentEntryForm } from "@/components/tournament/TournamentEntryForm";
 import { TournamentPhotoGallery } from "@/components/tournament/TournamentPhotoGallery";
-import { TournamentPhotoUpload } from "@/components/tournament/TournamentPhotoUpload";
-import { useAuth } from "@/contexts/AuthContext";
-import { useRolePermissions } from "@/hooks/useRolePermissions";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import PitchLayoutSVG from "@/components/tournament/PitchLayoutSVG";
