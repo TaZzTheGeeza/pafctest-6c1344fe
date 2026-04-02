@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Trophy, Users, Calendar, MapPin, ClipboardList, Megaphone, Shield, Clock, PoundSterling, CheckCircle, Loader2, AlertTriangle, Phone, Mail, Award, Utensils, Dog, Info } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { TournamentEntryForm } from "@/components/tournament/TournamentEntryForm";
+import { TournamentPhotoGallery } from "@/components/tournament/TournamentPhotoGallery";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import PitchLayoutSVG from "@/components/tournament/PitchLayoutSVG";
@@ -104,6 +105,7 @@ const TournamentPage = () => {
     const payment = searchParams.get("payment");
     const brId = searchParams.get("br_id");
     const teamId = searchParams.get("team_id");
+    const photoPurchased = searchParams.get("photo_purchased");
 
     if (payment === "success" && brId && teamId && !verifying) {
       setVerifying(true);
@@ -111,6 +113,20 @@ const TournamentPage = () => {
     } else if (payment === "cancelled") {
       toast.error("Payment was cancelled. Your registration is still pending.");
       setSearchParams({});
+    }
+
+    // Handle photo purchase return
+    if (photoPurchased) {
+      setActiveSection("photos");
+      toast.success("Photo purchased! You can now download it from the gallery.");
+      // Verify and record the purchase
+      supabase.functions.invoke("verify-photo-purchase", {
+        body: { photo_id: photoPurchased },
+      }).then(() => {
+        setSearchParams({});
+      }).catch(() => {
+        setSearchParams({});
+      });
     }
   }, [searchParams]);
 
@@ -256,6 +272,7 @@ const TournamentPage = () => {
                         <SelectItem value="groups">Groups</SelectItem>
                         <SelectItem value="fixtures">Fixtures</SelectItem>
                         <SelectItem value="knockout">Knockout</SelectItem>
+                        <SelectItem value="photos">Photos</SelectItem>
                         <SelectItem value="register">ENTER HERE!</SelectItem>
                       </SelectContent>
                   </Select>
@@ -687,6 +704,18 @@ const TournamentPage = () => {
                       <p className="text-muted-foreground">Registration not yet open — check back soon!</p>
                     </CardContent>
                   </Card>
+                )}
+              </TabsContent>
+
+              {/* PHOTOS */}
+              <TabsContent value="photos" className="space-y-6">
+                {activeTournament && ageGroups && (
+                  <>
+                    <TournamentPhotoGallery
+                      tournamentId={activeTournament.id}
+                      ageGroups={ageGroups}
+                    />
+                  </>
                 )}
               </TabsContent>
             </Tabs>
