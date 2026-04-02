@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCartStore } from "@/stores/cartStore";
@@ -9,10 +9,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Camera, Download, Loader2, ShoppingCart, X } from "lucide-react";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Camera, Download, Loader2, ShoppingCart, X, Trash2, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { TournamentPhotoUpload } from "./TournamentPhotoUpload";
+import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 
 interface TournamentPhotoGalleryProps {
   tournamentId: string;
@@ -23,9 +26,14 @@ const PHOTO_VARIANT_ID = "gid://shopify/ProductVariant/53198621409623";
 
 export function TournamentPhotoGallery({ tournamentId, ageGroups }: TournamentPhotoGalleryProps) {
   const { user, isAdmin } = useAuth();
+  const queryClient = useQueryClient();
   const [filterAgeGroup, setFilterAgeGroup] = useState("all");
   const [buyingPhotoId, setBuyingPhotoId] = useState<string | null>(null);
   const [downloadingPhotoId, setDownloadingPhotoId] = useState<string | null>(null);
+  const [deletingPhotoId, setDeletingPhotoId] = useState<string | null>(null);
+  const [editingPhoto, setEditingPhoto] = useState<any | null>(null);
+  const [editCaption, setEditCaption] = useState("");
+  const [editAgeGroup, setEditAgeGroup] = useState("");
   const [lightboxPhoto, setLightboxPhoto] = useState<any | null>(null);
   const addItem = useCartStore((s) => s.addItem);
   const isCartLoading = useCartStore((s) => s.isLoading);
@@ -139,6 +147,56 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups }: TournamentPh
     }
   };
 
+  const handleDelete = async (photo: any) => {
+    if (!confirm("Delete this photo? This cannot be undone.")) return;
+    setDeletingPhotoId(photo.id);
+    try {
+      // Delete from storage buckets
+      await supabase.storage.from("tournament-photos").remove([photo.storage_path]);
+      // Extract preview path from URL
+      const previewUrl = new URL(photo.preview_url);
+      const previewPath = previewUrl.pathname.split("/gallery-photos/")[1];
+      if (previewPath) {
+        await supabase.storage.from("gallery-photos").remove([decodeURIComponent(previewPath)]);
+      }
+      // Delete DB record
+      const { error } = await supabase.from("tournament_photos" as any).delete().eq("id", photo.id);
+      if (error) throw error;
+      toast.success("Photo deleted");
+      queryClient.invalidateQueries({ queryKey: ["tournament-photos"] });
+      if (lightboxPhoto?.id === photo.id) setLightboxPhoto(null);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to delete photo");
+    } finally {
+      setDeletingPhotoId(null);
+    }
+  };
+
+  const openEdit = (photo: any) => {
+    setEditingPhoto(photo);
+    setEditCaption(photo.caption || "");
+    setEditAgeGroup(photo.age_group || "__general__");
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingPhoto) return;
+    try {
+      const { error } = await supabase
+        .from("tournament_photos" as any)
+        .update({
+          caption: editCaption || null,
+          age_group: editAgeGroup && editAgeGroup !== "__general__" ? editAgeGroup : null,
+        })
+        .eq("id", editingPhoto.id);
+      if (error) throw error;
+      toast.success("Photo updated");
+      queryClient.invalidateQueries({ queryKey: ["tournament-photos"] });
+      setEditingPhoto(null);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update photo");
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -207,6 +265,31 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups }: TournamentPh
                     Tap to view
                   </span>
                 </div>
+                {isAdmin && (
+                  <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button
+                      size="icon"
+                      variant="secondary"
+                      className="h-7 w-7"
+                      onClick={(e) => { e.stopPropagation(); openEdit(photo); }}
+                    >
+                      <Pencil className="h-3 w-3" />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="destructive"
+                      className="h-7 w-7"
+                      onClick={(e) => { e.stopPropagation(); handleDelete(photo); }}
+                      disabled={deletingPhotoId === photo.id}
+                    >
+                      {deletingPhotoId === photo.id ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : (
+                        <Trash2 className="h-3 w-3" />
+                      )}
+                    </Button>
+                  </div>
+                )}
               </div>
               <CardContent className="p-2.5">
                 {photo.caption && (
@@ -250,7 +333,8 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups }: TournamentPh
 
       {/* Lightbox */}
       <Dialog open={!!lightboxPhoto} onOpenChange={(open) => !open && setLightboxPhoto(null)}>
-        <DialogContent className="max-w-4xl w-[95vw] p-0 bg-black/95 border-none">
+        <DialogContent className="max-w-4xl w-[95vw] p-0 bg-black/95 border-none" aria-describedby={undefined}>
+          <VisuallyHidden.Root><DialogTitle>Photo Preview</DialogTitle></VisuallyHidden.Root>
           {lightboxPhoto && (
             <div className="relative">
               <img
@@ -258,7 +342,32 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups }: TournamentPh
                 alt={lightboxPhoto.caption || "Tournament action photo"}
                 className="w-full h-auto max-h-[80vh] object-contain"
               />
-              <div className="absolute top-3 right-3">
+              <div className="absolute top-3 right-3 flex gap-2">
+                {isAdmin && (
+                  <>
+                    <Button
+                      size="icon"
+                      variant="secondary"
+                      className="h-8 w-8"
+                      onClick={() => { openEdit(lightboxPhoto); setLightboxPhoto(null); }}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="destructive"
+                      className="h-8 w-8"
+                      onClick={() => handleDelete(lightboxPhoto)}
+                      disabled={deletingPhotoId === lightboxPhoto.id}
+                    >
+                      {deletingPhotoId === lightboxPhoto.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </>
+                )}
                 <Button
                   size="icon"
                   variant="ghost"
@@ -307,6 +416,45 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups }: TournamentPh
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Dialog */}
+      <Dialog open={!!editingPhoto} onOpenChange={(open) => !open && setEditingPhoto(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogTitle>Edit Photo</DialogTitle>
+          <DialogDescription>Update caption and age group for this photo.</DialogDescription>
+          <div className="space-y-4 pt-2">
+            <div>
+              <Label>Caption</Label>
+              <Input
+                value={editCaption}
+                onChange={(e) => setEditCaption(e.target.value)}
+                placeholder="e.g. Semi-final action"
+                maxLength={200}
+              />
+            </div>
+            <div>
+              <Label>Age Group</Label>
+              <Select value={editAgeGroup} onValueChange={setEditAgeGroup}>
+                <SelectTrigger>
+                  <SelectValue placeholder="General" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__general__">General</SelectItem>
+                  {ageGroups.map((ag) => (
+                    <SelectItem key={ag.id} value={ag.age_group}>
+                      {ag.age_group}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" onClick={() => setEditingPhoto(null)}>Cancel</Button>
+              <Button onClick={handleSaveEdit}>Save Changes</Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
 
