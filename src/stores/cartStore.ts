@@ -91,8 +91,10 @@ function isCartNotFoundError(userErrors: Array<{ field: string[] | null; message
 }
 
 async function createShopifyCart(item: CartItem): Promise<{ cartId: string; checkoutUrl: string; lineId: string } | null> {
+  const line: Record<string, unknown> = { quantity: item.quantity, merchandiseId: item.variantId };
+  if (item.attributes?.length) line.attributes = item.attributes;
   const data = await storefrontApiRequest(CART_CREATE_MUTATION, {
-    input: { lines: [{ quantity: item.quantity, merchandiseId: item.variantId }] },
+    input: { lines: [line] },
   });
   if (data?.data?.cartCreate?.userErrors?.length > 0) return null;
   const cart = data?.data?.cartCreate?.cart;
