@@ -14,6 +14,13 @@ export interface CartItem {
   customImageUrl?: string;
 }
 
+// Generate a unique key for cart items - uses photo_id attribute if present to distinguish
+// different tournament photos that share the same Shopify variant
+export function getItemKey(item: { variantId: string; attributes?: Array<{ key: string; value: string }> }): string {
+  const photoId = item.attributes?.find(a => a.key === 'photo_id')?.value;
+  return photoId ? `${item.variantId}::${photoId}` : item.variantId;
+}
+
 interface CartStore {
   items: CartItem[];
   cartId: string | null;
@@ -21,8 +28,8 @@ interface CartStore {
   isLoading: boolean;
   isSyncing: boolean;
   addItem: (item: Omit<CartItem, 'lineId'>) => Promise<void>;
-  updateQuantity: (variantId: string, quantity: number) => Promise<void>;
-  removeItem: (variantId: string) => Promise<void>;
+  updateQuantity: (itemKey: string, quantity: number) => Promise<void>;
+  removeItem: (itemKey: string) => Promise<void>;
   clearCart: () => void;
   syncCart: () => Promise<void>;
   getCheckoutUrl: () => string | null;
@@ -144,7 +151,8 @@ export const useCartStore = create<CartStore>()(
 
       addItem: async (item) => {
         const { items, cartId, clearCart } = get();
-        const existingItem = items.find(i => i.variantId === item.variantId);
+        const itemKey = getItemKey(item);
+        const existingItem = items.find(i => getItemKey(i) === itemKey);
         set({ isLoading: true });
         try {
           if (!cartId) {
@@ -157,7 +165,7 @@ export const useCartStore = create<CartStore>()(
             if (!existingItem.lineId) return;
             const result = await updateShopifyCartLine(cartId, existingItem.lineId, newQuantity);
             if (result.success) {
-              set({ items: get().items.map(i => i.variantId === item.variantId ? { ...i, quantity: newQuantity } : i) });
+              set({ items: get().items.map(i => getItemKey(i) === itemKey ? { ...i, quantity: newQuantity } : i) });
             } else if (result.cartNotFound) clearCart();
           } else {
             const result = await addLineToShopifyCart(cartId, { ...item, lineId: null });
@@ -172,29 +180,29 @@ export const useCartStore = create<CartStore>()(
         }
       },
 
-      updateQuantity: async (variantId, quantity) => {
-        if (quantity <= 0) { await get().removeItem(variantId); return; }
+      updateQuantity: async (itemKey, quantity) => {
+        if (quantity <= 0) { await get().removeItem(itemKey); return; }
         const { items, cartId, clearCart } = get();
-        const item = items.find(i => i.variantId === variantId);
+        const item = items.find(i => getItemKey(i) === itemKey);
         if (!item?.lineId || !cartId) return;
         set({ isLoading: true });
         try {
           const result = await updateShopifyCartLine(cartId, item.lineId, quantity);
-          if (result.success) set({ items: get().items.map(i => i.variantId === variantId ? { ...i, quantity } : i) });
+          if (result.success) set({ items: get().items.map(i => getItemKey(i) === itemKey ? { ...i, quantity } : i) });
           else if (result.cartNotFound) clearCart();
         } catch (error) { console.error('Failed to update quantity:', error); }
         finally { set({ isLoading: false }); }
       },
 
-      removeItem: async (variantId) => {
+      removeItem: async (itemKey) => {
         const { items, cartId, clearCart } = get();
-        const item = items.find(i => i.variantId === variantId);
+        const item = items.find(i => getItemKey(i) === itemKey);
         if (!item?.lineId || !cartId) return;
         set({ isLoading: true });
         try {
           const result = await removeLineFromShopifyCart(cartId, item.lineId);
           if (result.success) {
-            const newItems = get().items.filter(i => i.variantId !== variantId);
+            const newItems = get().items.filter(i => getItemKey(i) !== itemKey);
             newItems.length === 0 ? clearCart() : set({ items: newItems });
           } else if (result.cartNotFound) clearCart();
         } catch (error) { console.error('Failed to remove item:', error); }
