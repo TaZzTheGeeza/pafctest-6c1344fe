@@ -424,7 +424,7 @@ export function TournamentEntryForm({ ageGroups, onSuccess }: TournamentEntryFor
                   onCheckedChange={v => setConsentPhotography(v === true)}
                 />
                 <Label htmlFor="consent-photography" className="text-xs leading-relaxed cursor-pointer">
-                  I am aware that photography and/or video will be taking place during the course of the PAFC Tourney. *
+                  I confirm that I have obtained consent from the parents/guardians of all players listed in this entry for photography and video to be taken during the PAFC Tourney. I understand that images may be used by PAFC for promotional purposes including social media, the club website, and printed materials. *
                 </Label>
               </div>
             </div>
