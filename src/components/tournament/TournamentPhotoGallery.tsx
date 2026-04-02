@@ -26,7 +26,7 @@ interface TournamentPhotoGalleryProps {
 const PHOTO_VARIANT_ID = "gid://shopify/ProductVariant/53198621409623";
 
 export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGroup }: TournamentPhotoGalleryProps) {
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, isPhotographer } = useAuth();
   const queryClient = useQueryClient();
   const [filterAgeGroup, setFilterAgeGroup] = useState(defaultAgeGroup || "all");
   const [buyingPhotoId, setBuyingPhotoId] = useState<string | null>(null);
@@ -469,7 +469,7 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
         </DialogContent>
       </Dialog>
 
-      {isAdmin && (
+      {(isAdmin || isPhotographer) && (
         <TournamentPhotoUpload tournamentId={tournamentId} ageGroups={ageGroups} />
       )}
     </div>
