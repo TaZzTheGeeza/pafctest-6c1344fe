@@ -101,7 +101,7 @@ export function TournamentPhotoUpload({ tournamentId, ageGroups }: TournamentPho
           .from("tournament_photos" as any)
           .insert({
             tournament_id: tournamentId,
-            age_group: ageGroup || null,
+            age_group: ageGroup && ageGroup !== "__general__" ? ageGroup : null,
             caption: caption || null,
             preview_url: previewUrl.publicUrl,
             storage_path: storagePath,
