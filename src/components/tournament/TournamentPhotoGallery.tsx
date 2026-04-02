@@ -26,9 +26,14 @@ const PHOTO_VARIANT_ID = "gid://shopify/ProductVariant/53198621409623";
 
 export function TournamentPhotoGallery({ tournamentId, ageGroups }: TournamentPhotoGalleryProps) {
   const { user, isAdmin } = useAuth();
+  const queryClient = useQueryClient();
   const [filterAgeGroup, setFilterAgeGroup] = useState("all");
   const [buyingPhotoId, setBuyingPhotoId] = useState<string | null>(null);
   const [downloadingPhotoId, setDownloadingPhotoId] = useState<string | null>(null);
+  const [deletingPhotoId, setDeletingPhotoId] = useState<string | null>(null);
+  const [editingPhoto, setEditingPhoto] = useState<any | null>(null);
+  const [editCaption, setEditCaption] = useState("");
+  const [editAgeGroup, setEditAgeGroup] = useState("");
   const [lightboxPhoto, setLightboxPhoto] = useState<any | null>(null);
   const addItem = useCartStore((s) => s.addItem);
   const isCartLoading = useCartStore((s) => s.isLoading);
