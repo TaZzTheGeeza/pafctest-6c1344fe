@@ -122,6 +122,40 @@ export default function MyProfilePage() {
     setLoading(false);
   }
 
+  async function loadPurchases() {
+    if (!user) return;
+    setPurchasesLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("my-photo-purchases", {
+        body: { action: "list" },
+      });
+      if (error) throw error;
+      setPurchases(data?.purchases || []);
+    } catch (e) {
+      console.error("Failed to load purchases:", e);
+    }
+    setPurchasesLoading(false);
+  }
+
+  async function handleDownloadPhoto(photoId: string) {
+    setDownloadingId(photoId);
+    try {
+      const { data, error } = await supabase.functions.invoke("my-photo-purchases", {
+        body: { action: "download", photo_id: photoId },
+      });
+      if (error) throw error;
+      if (data?.download_url) {
+        window.open(data.download_url, "_blank");
+        toast.success("Download started");
+        // Refresh to update download count
+        loadPurchases();
+      }
+    } catch (e: any) {
+      toast.error(e.message || "Download failed");
+    }
+    setDownloadingId(null);
+  }
+
   const playerName = profile?.full_name || "";
   const matchedPotm = potmAwards.filter(p => p.player_name.toLowerCase() === playerName.toLowerCase());
   const matchedStats = playerStats.filter(s => s.first_name.toLowerCase() === playerName.toLowerCase());
