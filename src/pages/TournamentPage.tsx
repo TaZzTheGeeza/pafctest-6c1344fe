@@ -703,7 +703,6 @@ const TournamentPage = () => {
                       tournamentId={activeTournament.id}
                       ageGroups={ageGroups}
                     />
-                    <PhotoUploadAdmin tournamentId={activeTournament.id} ageGroups={ageGroups || []} />
                   </>
                 )}
               </TabsContent>
