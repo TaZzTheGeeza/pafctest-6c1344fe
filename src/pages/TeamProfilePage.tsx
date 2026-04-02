@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ArrowLeft, Calendar, Trophy, Target, Shield, TrendingUp, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { TournamentPhotoGallery } from "@/components/tournament/TournamentPhotoGallery";
 
 const TeamProfilePage = () => {
   const { teamId } = useParams<{ teamId: string }>();
