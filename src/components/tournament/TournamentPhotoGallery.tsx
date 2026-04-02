@@ -265,6 +265,31 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups }: TournamentPh
                     Tap to view
                   </span>
                 </div>
+                {isAdmin && (
+                  <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button
+                      size="icon"
+                      variant="secondary"
+                      className="h-7 w-7"
+                      onClick={(e) => { e.stopPropagation(); openEdit(photo); }}
+                    >
+                      <Pencil className="h-3 w-3" />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="destructive"
+                      className="h-7 w-7"
+                      onClick={(e) => { e.stopPropagation(); handleDelete(photo); }}
+                      disabled={deletingPhotoId === photo.id}
+                    >
+                      {deletingPhotoId === photo.id ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : (
+                        <Trash2 className="h-3 w-3" />
+                      )}
+                    </Button>
+                  </div>
+                )}
               </div>
               <CardContent className="p-2.5">
                 {photo.caption && (
