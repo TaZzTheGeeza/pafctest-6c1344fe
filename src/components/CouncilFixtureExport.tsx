@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { format, parse, isValid, startOfMonth, endOfMonth } from "date-fns";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { DateInput } from "@/components/ui/date-input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Download, FileText, Table, Loader2, Sparkles } from "lucide-react";
