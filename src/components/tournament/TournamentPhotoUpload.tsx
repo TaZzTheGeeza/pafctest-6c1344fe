@@ -33,12 +33,39 @@ export function TournamentPhotoUpload({ tournamentId, ageGroups }: TournamentPho
         const ctx = canvas.getContext("2d")!;
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-        // Watermark
+        // Tiled watermark pattern across entire image
         ctx.save();
-        ctx.globalAlpha = 0.25;
+        ctx.globalAlpha = 0.18;
         ctx.fillStyle = "#ffffff";
-        ctx.font = `bold ${Math.max(canvas.width / 10, 24)}px sans-serif`;
+        const fontSize = Math.max(canvas.width / 12, 20);
+        ctx.font = `bold ${fontSize}px sans-serif`;
         ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+
+        const text = "PAFC";
+        const spacingX = fontSize * 4;
+        const spacingY = fontSize * 3;
+
+        for (let row = -1; row < canvas.height / spacingY + 1; row++) {
+          for (let col = -1; col < canvas.width / spacingX + 1; col++) {
+            ctx.save();
+            const x = col * spacingX + (row % 2 === 0 ? 0 : spacingX / 2);
+            const y = row * spacingY;
+            ctx.translate(x, y);
+            ctx.rotate(-Math.PI / 6);
+            ctx.fillText(text, 0, 0);
+            ctx.restore();
+          }
+        }
+        ctx.restore();
+
+        // Large central watermark
+        ctx.save();
+        ctx.globalAlpha = 0.15;
+        ctx.fillStyle = "#ffffff";
+        ctx.font = `bold ${Math.max(canvas.width / 5, 48)}px sans-serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
         ctx.translate(canvas.width / 2, canvas.height / 2);
         ctx.rotate(-Math.PI / 6);
         ctx.fillText("PAFC PREVIEW", 0, 0);
