@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ArrowLeft, Calendar, Trophy, Target, Shield, TrendingUp, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { TournamentPhotoGallery } from "@/components/tournament/TournamentPhotoGallery";
 
 const TeamProfilePage = () => {
   const { teamId } = useParams<{ teamId: string }>();
@@ -357,6 +358,19 @@ const TeamProfilePage = () => {
                 </Table>
               </CardContent>
             </Card>
+          )}
+          {/* Photo Gallery for this age group */}
+          {team && (team as any).tournament_age_groups?.tournaments?.id && (
+            <div className="mt-6">
+              <TournamentPhotoGallery
+                tournamentId={(team as any).tournament_age_groups.tournaments.id}
+                ageGroups={[{
+                  id: team.age_group_id,
+                  age_group: (team as any).tournament_age_groups?.age_group || "",
+                }]}
+                defaultAgeGroup={(team as any).tournament_age_groups?.age_group}
+              />
+            </div>
           )}
         </div>
       </main>

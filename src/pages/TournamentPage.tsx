@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Users, Calendar, MapPin, ClipboardList, Megaphone, Shield, Clock, PoundSterling, CheckCircle, Loader2, AlertTriangle, Phone, Mail, Award, Utensils, Dog, Info } from "lucide-react";
+import { Trophy, Users, Calendar, MapPin, ClipboardList, Megaphone, Shield, Clock, PoundSterling, CheckCircle, Loader2, AlertTriangle, Phone, Mail, Award, Utensils, Dog, Info, Camera } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { TournamentEntryForm } from "@/components/tournament/TournamentEntryForm";
 import { TournamentPhotoGallery } from "@/components/tournament/TournamentPhotoGallery";
@@ -571,6 +571,30 @@ const TournamentPage = () => {
                     </CardContent>
                   </Card>
                 </div>
+
+                {/* Photo Gallery Preview */}
+                {activeTournament && ageGroups && (
+                  <Card className="border-primary/30 bg-gradient-to-r from-primary/5 to-transparent">
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <Camera className="h-5 w-5 text-primary" />
+                        Action Photos
+                      </CardTitle>
+                      <CardDescription>
+                        Browse & purchase high-resolution action shots from the tournament — £2 each
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Button
+                        onClick={() => setActiveSection("photos")}
+                        className="bg-gold-gradient text-primary-foreground font-display tracking-wider"
+                      >
+                        <Camera className="h-4 w-4 mr-2" />
+                        View Photo Gallery
+                      </Button>
+                    </CardContent>
+                  </Card>
+                )}
               </TabsContent>
 
               {/* GROUPS */}
