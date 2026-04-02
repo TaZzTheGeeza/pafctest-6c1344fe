@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Camera, Download, Loader2, ShoppingCart, X, Trash2, Pencil } from "lucide-react";
+import { Camera, Download, Loader2, ShoppingCart, X, Trash2, Pencil, Info } from "lucide-react";
 import { toast } from "sonner";
 import { TournamentPhotoUpload } from "./TournamentPhotoUpload";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
@@ -114,7 +114,8 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups }: TournamentPh
         customImageUrl: photo?.preview_url,
       });
       toast.success("Photo added to cart!", {
-        description: "Head to checkout when you're ready.",
+        description: "After purchase, download your full-resolution photos from My Profile → Purchases.",
+        duration: 6000,
       });
     } catch (err: any) {
       toast.error(err.message || "Failed to add to cart");
@@ -225,6 +226,15 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups }: TournamentPh
           <p className="text-sm text-muted-foreground">
             High-resolution action shots — £2 each. All proceeds go back into the club.
           </p>
+          <div className="flex items-start gap-2 mt-2 bg-primary/10 border border-primary/20 rounded-lg px-3 py-2">
+            <Info className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+            <p className="text-xs text-muted-foreground">
+              After purchasing, collect your full-resolution downloads from{" "}
+              <a href="/my-profile" className="text-primary font-semibold hover:underline">
+                My Profile → Purchases
+              </a>.
+            </p>
+          </div>
         </div>
         <Select value={filterAgeGroup} onValueChange={setFilterAgeGroup}>
           <SelectTrigger className="w-[160px]">
