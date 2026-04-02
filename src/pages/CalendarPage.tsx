@@ -81,28 +81,41 @@ function downloadICS(event: ClubEvent) {
   URL.revokeObjectURL(url);
 }
 
-/** Convert an FA fixture into a ClubEvent shape */
-function fixtureToEvent(f: FAFixture, teamName: string): ClubEvent | null {
-  // Try multiple date formats
-  let startDate: Date | null = null;
+/** Parse FA fixture dates from either DD/MM/YY or text formats */
+function parseFAFixtureDate(dateStr: string): Date | null {
+  const trimmed = dateStr.trim();
+  if (!trimmed) return null;
+
+  const slashParts = trimmed.split("/");
+  if (slashParts.length === 3) {
+    const [day, month, year] = slashParts;
+    const fullYear = year.length === 2 ? 2000 + Number(year) : Number(year);
+    const slashDate = new Date(fullYear, Number(month) - 1, Number(day));
+    if (!Number.isNaN(slashDate.getTime())) {
+      return slashDate;
+    }
+  }
+
   const formats = ["EEEE d MMM yyyy", "EEE d MMM yyyy", "d MMM yyyy", "EEEE dd MMM yyyy"];
   for (const fmt of formats) {
-    try {
-      const d = parse(f.date, fmt, new Date());
-      if (!isNaN(d.getTime())) { startDate = d; break; }
-    } catch { /* try next */ }
+    const parsedDate = parse(trimmed, fmt, new Date());
+    if (!Number.isNaN(parsedDate.getTime())) {
+      return parsedDate;
+    }
   }
-  // Fallback: native Date constructor
-  if (!startDate || isNaN(startDate.getTime())) {
-    startDate = new Date(f.date);
-  }
-  // If still invalid, skip this fixture
-  if (isNaN(startDate.getTime())) return null;
 
-  // Apply time if present
+  const fallback = new Date(trimmed);
+  return Number.isNaN(fallback.getTime()) ? null : fallback;
+}
+
+/** Convert an FA fixture into a ClubEvent shape */
+function fixtureToEvent(f: FAFixture, teamName: string): ClubEvent | null {
+  const startDate = parseFAFixtureDate(f.date);
+  if (!startDate) return null;
+
   if (f.time && f.time !== "TBC") {
     const [h, m] = f.time.split(":").map(Number);
-    if (!isNaN(h)) startDate.setHours(h, m || 0);
+    if (!Number.isNaN(h)) startDate.setHours(h, m || 0);
   }
 
   const isHome = f.homeTeam.toLowerCase().includes("pinner");
