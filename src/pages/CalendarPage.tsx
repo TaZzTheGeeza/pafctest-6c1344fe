@@ -140,7 +140,7 @@ function fixtureToEvent(f: FAFixture, teamName: string): ClubEvent | null {
 }
 
 export default function CalendarPage() {
-  const [events, setEvents] = useState<ClubEvent[]>([]);
+  const { isAdmin } = useAuth();
   const [fixtureEvents, setFixtureEvents] = useState<ClubEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentMonth, setCurrentMonth] = useState(new Date());
