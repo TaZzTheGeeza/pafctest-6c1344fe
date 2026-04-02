@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCartStore } from "@/stores/cartStore";
+import { storefrontApiRequest, STOREFRONT_PRODUCTS_QUERY, ShopifyProduct } from "@/lib/shopify";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,11 +18,29 @@ interface TournamentPhotoGalleryProps {
   ageGroups: { id: string; age_group: string }[];
 }
 
+const PHOTO_VARIANT_ID = "gid://shopify/ProductVariant/53198621409623";
+
 export function TournamentPhotoGallery({ tournamentId, ageGroups }: TournamentPhotoGalleryProps) {
   const { user, isAdmin } = useAuth();
   const [filterAgeGroup, setFilterAgeGroup] = useState("all");
   const [buyingPhotoId, setBuyingPhotoId] = useState<string | null>(null);
   const [downloadingPhotoId, setDownloadingPhotoId] = useState<string | null>(null);
+  const addItem = useCartStore((s) => s.addItem);
+  const isCartLoading = useCartStore((s) => s.isLoading);
+
+  // Fetch the Shopify product for building cart items
+  const { data: photoProduct } = useQuery({
+    queryKey: ["shopify-photo-product"],
+    queryFn: async () => {
+      const res = await storefrontApiRequest(STOREFRONT_PRODUCTS_QUERY, {
+        first: 1,
+        query: "title:Tournament Action Photo",
+      });
+      const edges = res?.data?.products?.edges as ShopifyProduct[] | undefined;
+      return edges?.[0] ?? null;
+    },
+    staleTime: 1000 * 60 * 30,
+  });
 
   const { data: photos, isLoading } = useQuery({
     queryKey: ["tournament-photos", tournamentId, filterAgeGroup],
@@ -62,20 +82,30 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups }: TournamentPh
       toast.error("Please log in to purchase photos");
       return;
     }
+    if (!photoProduct) {
+      toast.error("Photo product not available, please try again");
+      return;
+    }
 
     setBuyingPhotoId(photoId);
     try {
-      const { data, error } = await supabase.functions.invoke("create-photo-checkout", {
-        body: { photo_id: photoId },
+      await addItem({
+        product: photoProduct,
+        variantId: PHOTO_VARIANT_ID,
+        variantTitle: "Tournament Action Photo",
+        price: { amount: "2.00", currencyCode: "GBP" },
+        quantity: 1,
+        selectedOptions: [],
+        attributes: [
+          { key: "photo_id", value: photoId },
+          { key: "user_id", value: user.id },
+        ],
       });
-      if (error) throw error;
-      if (data?.url) {
-        window.location.href = data.url;
-      } else {
-        throw new Error("No checkout URL received");
-      }
+      toast.success("Photo added to cart!", {
+        description: "Head to checkout when you're ready.",
+      });
     } catch (err: any) {
-      toast.error(err.message || "Failed to start purchase");
+      toast.error(err.message || "Failed to add to cart");
     } finally {
       setBuyingPhotoId(null);
     }
@@ -195,9 +225,9 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups }: TournamentPh
                     variant="outline"
                     className="w-full text-xs"
                     onClick={() => handleBuy(photo.id)}
-                    disabled={buyingPhotoId === photo.id}
+                    disabled={buyingPhotoId === photo.id || isCartLoading}
                   >
-                    {buyingPhotoId === photo.id ? (
+                    {buyingPhotoId === photo.id || isCartLoading ? (
                       <Loader2 className="h-3 w-3 animate-spin mr-1" />
                     ) : (
                       <ShoppingCart className="h-3 w-3 mr-1" />
