@@ -17,11 +17,11 @@ const OPTIONS = [
 
 const SAMPLE_PLAYERS = [
   { name: "Oliver", number: 1, role: "Goalkeeper", photo: "/sample-player.jpg", appearances: 18, goals: 0, assists: 2, potm: 3 },
-  { name: "Harry", number: 2, role: "Defender", photo: "/sample-player.jpg", appearances: 16, goals: 1, assists: 4, potm: 1 },
+  { name: "Lily", number: 2, role: "Defender", photo: "/sample-player-2.jpg", appearances: 16, goals: 1, assists: 4, potm: 1 },
   { name: "Jack", number: 7, role: "Midfielder", photo: "/sample-player.jpg", appearances: 20, goals: 8, assists: 6, potm: 5 },
-  { name: "Charlie", number: 9, role: "Forward", photo: "/sample-player.jpg", appearances: 19, goals: 14, assists: 3, potm: 4 },
+  { name: "Charlie", number: 9, role: "Forward", photo: "/sample-player-2.jpg", appearances: 19, goals: 14, assists: 3, potm: 4 },
   { name: "George", number: 4, role: "Defender", photo: "/sample-player.jpg", appearances: 17, goals: 2, assists: 1, potm: 0 },
-  { name: "Freddie", number: 10, role: "Midfielder", photo: "/sample-player.jpg", appearances: 15, goals: 5, assists: 7, potm: 2 },
+  { name: "Freddie", number: 10, role: "Midfielder", photo: "/sample-player-2.jpg", appearances: 15, goals: 5, assists: 7, potm: 2 },
 ];
 
 const SAMPLE_COACHES = [
