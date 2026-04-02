@@ -11,6 +11,7 @@ export interface CartItem {
   quantity: number;
   selectedOptions: Array<{ name: string; value: string }>;
   attributes?: Array<{ key: string; value: string }>;
+  customImageUrl?: string;
 }
 
 interface CartStore {

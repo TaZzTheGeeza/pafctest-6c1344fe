@@ -55,9 +55,11 @@ export const CartDrawer = () => {
                   {items.map((item) => (
                     <div key={item.variantId} className="flex gap-4 p-2">
                       <div className="w-16 h-16 bg-secondary rounded-md overflow-hidden flex-shrink-0">
-                        {item.product.node.images?.edges?.[0]?.node && (
+                        {item.customImageUrl ? (
+                          <img src={item.customImageUrl} alt={item.product.node.title} className="w-full h-full object-cover" />
+                        ) : item.product.node.images?.edges?.[0]?.node ? (
                           <img src={item.product.node.images.edges[0].node.url} alt={item.product.node.title} className="w-full h-full object-cover" />
-                        )}
+                        ) : null}
                       </div>
                       <div className="flex-1 min-w-0">
                         <h4 className="font-display text-sm truncate">{item.product.node.title}</h4>
