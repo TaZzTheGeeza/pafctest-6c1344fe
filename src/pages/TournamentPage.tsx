@@ -304,11 +304,23 @@ const TournamentPage = () => {
 
                 {/* Schedule & Age Groups */}
                 <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      <Clock className="h-5 w-5 text-primary" />Schedule & Age Groups
-                    </CardTitle>
-                    <CardDescription>Two weekends of football across all age groups</CardDescription>
+                  <CardHeader className="flex flex-row items-start justify-between gap-4">
+                    <div>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <Clock className="h-5 w-5 text-primary" />Schedule & Age Groups
+                      </CardTitle>
+                      <CardDescription className="mt-1.5">Two weekends of football across all age groups</CardDescription>
+                    </div>
+                    {activeTournament && ageGroups && (
+                      <Button
+                        size="sm"
+                        onClick={() => setActiveSection("photos")}
+                        className="bg-gold-gradient text-primary-foreground font-display tracking-wider shrink-0"
+                      >
+                        <Camera className="h-4 w-4 mr-1.5" />
+                        Action Photos
+                      </Button>
+                    )}
                   </CardHeader>
                   <CardContent>
                     <div className="grid sm:grid-cols-2 gap-3">
