@@ -33,6 +33,17 @@ export function TournamentPhotoUpload({ tournamentId, ageGroups }: TournamentPho
         const ctx = canvas.getContext("2d")!;
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
+        // Watermark
+        ctx.save();
+        ctx.globalAlpha = 0.25;
+        ctx.fillStyle = "#ffffff";
+        ctx.font = `bold ${Math.max(canvas.width / 10, 24)}px sans-serif`;
+        ctx.textAlign = "center";
+        ctx.translate(canvas.width / 2, canvas.height / 2);
+        ctx.rotate(-Math.PI / 6);
+        ctx.fillText("PAFC PREVIEW", 0, 0);
+        ctx.restore();
+
         canvas.toBlob(
           (blob) => (blob ? resolve(blob) : reject(new Error("Failed to create preview"))),
           "image/jpeg",
