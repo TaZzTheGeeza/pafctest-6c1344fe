@@ -52,8 +52,10 @@ export const CartDrawer = () => {
             <>
               <div className="flex-1 overflow-y-auto pr-2 min-h-0">
                 <div className="space-y-4">
-                  {items.map((item) => (
-                    <div key={item.variantId} className="flex gap-4 p-2">
+                  {items.map((item) => {
+                    const key = getItemKey(item);
+                    return (
+                    <div key={key} className="flex gap-4 p-2">
                       <div className="w-16 h-16 bg-secondary rounded-md overflow-hidden flex-shrink-0">
                         {item.customImageUrl ? (
                           <img src={item.customImageUrl} alt={item.product.node.title} className="w-full h-full object-cover" />
@@ -67,19 +69,22 @@ export const CartDrawer = () => {
                         <p className="font-bold text-primary">{item.price.currencyCode} {parseFloat(item.price.amount).toFixed(2)}</p>
                       </div>
                       <div className="flex flex-col items-end gap-2 flex-shrink-0">
-                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => removeItem(item.variantId)}>
+                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => removeItem(key)}>
                           <Trash2 className="h-3 w-3" />
                         </Button>
                         <div className="flex items-center gap-1">
-                          <Button variant="outline" size="icon" className="h-6 w-6" onClick={() => updateQuantity(item.variantId, item.quantity - 1)}>
+                          <Button variant="outline" size="icon" className="h-6 w-6" onClick={() => updateQuantity(key, item.quantity - 1)}>
                             <Minus className="h-3 w-3" />
                           </Button>
                           <span className="w-8 text-center text-sm">{item.quantity}</span>
-                          <Button variant="outline" size="icon" className="h-6 w-6" onClick={() => updateQuantity(item.variantId, item.quantity + 1)}>
+                          <Button variant="outline" size="icon" className="h-6 w-6" onClick={() => updateQuantity(key, item.quantity + 1)}>
                             <Plus className="h-3 w-3" />
                           </Button>
                         </div>
                       </div>
+                    </div>
+                    );
+                  })}
                     </div>
                   ))}
                 </div>
