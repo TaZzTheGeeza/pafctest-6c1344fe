@@ -229,6 +229,12 @@ export default function CalendarPage() {
             ))}
           </div>
 
+          {isAdmin && (
+            <div className="max-w-5xl mx-auto mb-6">
+              <CouncilFixtureExport />
+            </div>
+          )}
+
           <div className="max-w-5xl mx-auto grid lg:grid-cols-[1fr_350px] gap-8">
             {/* Calendar Grid */}
             <div className="bg-card border border-border rounded-xl p-6">
