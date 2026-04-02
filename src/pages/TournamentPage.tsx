@@ -260,6 +260,7 @@ const TournamentPage = () => {
                         <SelectItem value="groups">Groups</SelectItem>
                         <SelectItem value="fixtures">Fixtures</SelectItem>
                         <SelectItem value="knockout">Knockout</SelectItem>
+                        <SelectItem value="photos">Photos</SelectItem>
                         <SelectItem value="register">ENTER HERE!</SelectItem>
                       </SelectContent>
                   </Select>
