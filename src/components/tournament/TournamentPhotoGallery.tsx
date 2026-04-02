@@ -147,7 +147,56 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups }: TournamentPh
     }
   };
 
-  if (isLoading) {
+  const handleDelete = async (photo: any) => {
+    if (!confirm("Delete this photo? This cannot be undone.")) return;
+    setDeletingPhotoId(photo.id);
+    try {
+      // Delete from storage buckets
+      await supabase.storage.from("tournament-photos").remove([photo.storage_path]);
+      // Extract preview path from URL
+      const previewUrl = new URL(photo.preview_url);
+      const previewPath = previewUrl.pathname.split("/gallery-photos/")[1];
+      if (previewPath) {
+        await supabase.storage.from("gallery-photos").remove([decodeURIComponent(previewPath)]);
+      }
+      // Delete DB record
+      const { error } = await supabase.from("tournament_photos" as any).delete().eq("id", photo.id);
+      if (error) throw error;
+      toast.success("Photo deleted");
+      queryClient.invalidateQueries({ queryKey: ["tournament-photos"] });
+      if (lightboxPhoto?.id === photo.id) setLightboxPhoto(null);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to delete photo");
+    } finally {
+      setDeletingPhotoId(null);
+    }
+  };
+
+  const openEdit = (photo: any) => {
+    setEditingPhoto(photo);
+    setEditCaption(photo.caption || "");
+    setEditAgeGroup(photo.age_group || "__general__");
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingPhoto) return;
+    try {
+      const { error } = await supabase
+        .from("tournament_photos" as any)
+        .update({
+          caption: editCaption || null,
+          age_group: editAgeGroup && editAgeGroup !== "__general__" ? editAgeGroup : null,
+        })
+        .eq("id", editingPhoto.id);
+      if (error) throw error;
+      toast.success("Photo updated");
+      queryClient.invalidateQueries({ queryKey: ["tournament-photos"] });
+      setEditingPhoto(null);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update photo");
+    }
+  };
+
     return (
       <div className="flex items-center justify-center py-12">
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
