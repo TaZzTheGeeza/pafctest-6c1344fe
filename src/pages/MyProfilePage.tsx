@@ -7,7 +7,8 @@ import { Footer } from "@/components/Footer";
 import { TeamAccessRequest } from "@/components/hub/TeamAccessRequest";
 import {
   User, Trophy, FileText, Calendar, Loader2,
-  Activity, Award, Star, ArrowLeft, Camera, Pencil, Check, X, UserPlus, Shield
+  Activity, Award, Star, ArrowLeft, Camera, Pencil, Check, X, UserPlus, Shield,
+  ShoppingBag, Download, Image
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -52,6 +53,20 @@ interface AvailabilityRecord {
   note: string | null;
 }
 
+interface PhotoPurchase {
+  id: string;
+  created_at: string;
+  download_count: number;
+  photo_id: string;
+  tournament_photos: {
+    id: string;
+    preview_url: string;
+    storage_path: string;
+    caption: string | null;
+    age_group: string | null;
+  } | null;
+}
+
 export default function MyProfilePage() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
@@ -63,6 +78,9 @@ export default function MyProfilePage() {
   const [documents, setDocuments] = useState<PlayerDocument[]>([]);
   const [availability, setAvailability] = useState<AvailabilityRecord[]>([]);
   const [teamMemberships, setTeamMemberships] = useState<{ team_slug: string; role: string }[]>([]);
+  const [purchases, setPurchases] = useState<PhotoPurchase[]>([]);
+  const [purchasesLoading, setPurchasesLoading] = useState(false);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("overview");
 
   // Edit state
@@ -73,7 +91,10 @@ export default function MyProfilePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (user) loadAll();
+    if (user) {
+      loadAll();
+      loadPurchases();
+    }
   }, [user]);
 
   async function loadAll() {
@@ -99,6 +120,40 @@ export default function MyProfilePage() {
     setAvailability(availRes.data ?? []);
     setTeamMemberships(teamRes.data ?? []);
     setLoading(false);
+  }
+
+  async function loadPurchases() {
+    if (!user) return;
+    setPurchasesLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("my-photo-purchases", {
+        body: { action: "list" },
+      });
+      if (error) throw error;
+      setPurchases(data?.purchases || []);
+    } catch (e) {
+      console.error("Failed to load purchases:", e);
+    }
+    setPurchasesLoading(false);
+  }
+
+  async function handleDownloadPhoto(photoId: string) {
+    setDownloadingId(photoId);
+    try {
+      const { data, error } = await supabase.functions.invoke("my-photo-purchases", {
+        body: { action: "download", photo_id: photoId },
+      });
+      if (error) throw error;
+      if (data?.download_url) {
+        window.open(data.download_url, "_blank");
+        toast.success("Download started");
+        // Refresh to update download count
+        loadPurchases();
+      }
+    } catch (e: any) {
+      toast.error(e.message || "Download failed");
+    }
+    setDownloadingId(null);
   }
 
   const playerName = profile?.full_name || "";
@@ -170,6 +225,7 @@ export default function MyProfilePage() {
 
   const TABS = [
     { key: "overview", label: "Overview", icon: User },
+    { key: "purchases", label: "Purchases", icon: ShoppingBag },
     { key: "stats", label: "Stats", icon: Activity },
     { key: "documents", label: "Documents", icon: FileText },
     { key: "availability", label: "Availability", icon: Calendar },
@@ -375,6 +431,70 @@ export default function MyProfilePage() {
                   </div>
                 )}
               </div>
+            </div>
+          )}
+
+          {/* Purchases */}
+          {activeTab === "purchases" && (
+            <div className="bg-card border border-border rounded-xl p-5">
+              <h3 className="text-sm font-display tracking-wider uppercase text-muted-foreground mb-4 flex items-center gap-2">
+                <ShoppingBag className="h-4 w-4 text-primary" /> My Photo Purchases
+              </h3>
+              {purchasesLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                </div>
+              ) : purchases.length === 0 ? (
+                <div className="text-center py-12">
+                  <Image className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+                  <p className="text-sm text-muted-foreground">No photo purchases yet</p>
+                  <Link to="/tournament?tab=photos" className="text-xs text-primary hover:underline mt-2 inline-block">
+                    Browse tournament photos →
+                  </Link>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {purchases.map(p => (
+                    <div key={p.id} className="rounded-lg border border-border overflow-hidden bg-secondary/20">
+                      {p.tournament_photos?.preview_url && (
+                        <div className="aspect-[4/3] overflow-hidden">
+                          <img
+                            src={p.tournament_photos.preview_url}
+                            alt={p.tournament_photos.caption || "Tournament photo"}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      )}
+                      <div className="p-3 space-y-2">
+                        <p className="text-sm font-display font-semibold text-foreground">
+                          {p.tournament_photos?.caption || "Tournament Action Photo"}
+                        </p>
+                        {p.tournament_photos?.age_group && (
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+                            {p.tournament_photos.age_group}
+                          </span>
+                        )}
+                        <p className="text-xs text-muted-foreground">
+                          Purchased {new Date(p.created_at).toLocaleDateString()}
+                          {p.download_count > 0 && ` • Downloaded ${p.download_count}x`}
+                        </p>
+                        <button
+                          onClick={() => handleDownloadPhoto(p.photo_id)}
+                          disabled={downloadingId === p.photo_id}
+                          className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-display font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50"
+                        >
+                          {downloadingId === p.photo_id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Download className="h-4 w-4" />
+                          )}
+                          Download Full Resolution
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
