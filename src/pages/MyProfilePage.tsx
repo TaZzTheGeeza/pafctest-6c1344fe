@@ -91,7 +91,10 @@ export default function MyProfilePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (user) loadAll();
+    if (user) {
+      loadAll();
+      loadPurchases();
+    }
   }, [user]);
 
   async function loadAll() {
