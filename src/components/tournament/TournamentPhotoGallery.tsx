@@ -333,7 +333,8 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups }: TournamentPh
 
       {/* Lightbox */}
       <Dialog open={!!lightboxPhoto} onOpenChange={(open) => !open && setLightboxPhoto(null)}>
-        <DialogContent className="max-w-4xl w-[95vw] p-0 bg-black/95 border-none">
+        <DialogContent className="max-w-4xl w-[95vw] p-0 bg-black/95 border-none" aria-describedby={undefined}>
+          <VisuallyHidden.Root><DialogTitle>Photo Preview</DialogTitle></VisuallyHidden.Root>
           {lightboxPhoto && (
             <div className="relative">
               <img
@@ -341,7 +342,32 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups }: TournamentPh
                 alt={lightboxPhoto.caption || "Tournament action photo"}
                 className="w-full h-auto max-h-[80vh] object-contain"
               />
-              <div className="absolute top-3 right-3">
+              <div className="absolute top-3 right-3 flex gap-2">
+                {isAdmin && (
+                  <>
+                    <Button
+                      size="icon"
+                      variant="secondary"
+                      className="h-8 w-8"
+                      onClick={() => { openEdit(lightboxPhoto); setLightboxPhoto(null); }}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="destructive"
+                      className="h-8 w-8"
+                      onClick={() => handleDelete(lightboxPhoto)}
+                      disabled={deletingPhotoId === lightboxPhoto.id}
+                    >
+                      {deletingPhotoId === lightboxPhoto.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </>
+                )}
                 <Button
                   size="icon"
                   variant="ghost"
@@ -390,6 +416,45 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups }: TournamentPh
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Dialog */}
+      <Dialog open={!!editingPhoto} onOpenChange={(open) => !open && setEditingPhoto(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogTitle>Edit Photo</DialogTitle>
+          <DialogDescription>Update caption and age group for this photo.</DialogDescription>
+          <div className="space-y-4 pt-2">
+            <div>
+              <Label>Caption</Label>
+              <Input
+                value={editCaption}
+                onChange={(e) => setEditCaption(e.target.value)}
+                placeholder="e.g. Semi-final action"
+                maxLength={200}
+              />
+            </div>
+            <div>
+              <Label>Age Group</Label>
+              <Select value={editAgeGroup} onValueChange={setEditAgeGroup}>
+                <SelectTrigger>
+                  <SelectValue placeholder="General" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__general__">General</SelectItem>
+                  {ageGroups.map((ag) => (
+                    <SelectItem key={ag.id} value={ag.age_group}>
+                      {ag.age_group}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" onClick={() => setEditingPhoto(null)}>Cancel</Button>
+              <Button onClick={handleSaveEdit}>Save Changes</Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
 
