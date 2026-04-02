@@ -210,6 +210,10 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups }: TournamentPh
           );
         })}
       </div>
+
+      {isAdmin && (
+        <TournamentPhotoUpload tournamentId={tournamentId} ageGroups={ageGroups} />
+      )}
     </div>
   );
 }
