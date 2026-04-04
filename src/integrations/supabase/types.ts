@@ -2252,6 +2252,15 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      get_safe_profile: {
+        Args: { _user_id: string }
+        Returns: {
+          avatar_url: string
+          full_name: string
+          id: string
+          last_seen_at: string
+        }[]
+      }
       get_taken_ticket_numbers: {
         Args: { _raffle_id: string }
         Returns: {
