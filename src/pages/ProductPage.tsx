@@ -181,7 +181,22 @@ export default function ProductPage() {
                 )
               ))}
 
-              {shopOpen ? (
+              {canPersonalise && (
+                <div className="mb-6">
+                  <Label htmlFor="initials" className="font-display text-sm font-bold mb-2 block">
+                    Initials for printing <span className="text-muted-foreground font-normal">(optional, max 4 characters)</span>
+                  </Label>
+                  <Input
+                    id="initials"
+                    placeholder="e.g. JD"
+                    value={initials}
+                    onChange={(e) => setInitials(e.target.value.replace(/[^a-zA-Z]/g, '').slice(0, 4))}
+                    maxLength={4}
+                    className="max-w-[200px] uppercase"
+                  />
+                </div>
+              )}
+
                 <Button
                   onClick={handleAddToCart}
                   disabled={isCartLoading || !selectedVariant?.availableForSale}
