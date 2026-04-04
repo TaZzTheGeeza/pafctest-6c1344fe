@@ -18,7 +18,34 @@ export interface CartItem {
 // different tournament photos that share the same Shopify variant
 export function getItemKey(item: { variantId: string; attributes?: Array<{ key: string; value: string }> }): string {
   const photoId = item.attributes?.find(a => a.key === 'photo_id')?.value;
-  return photoId ? `${item.variantId}::${photoId}` : item.variantId;
+  const initials = item.attributes?.find(a => a.key === 'Initials')?.value;
+  const suffix = [photoId, initials].filter(Boolean).join('::');
+  return suffix ? `${item.variantId}::${suffix}` : item.variantId;
+}
+
+// Products that support initials personalisation
+export const PERSONALISABLE_TITLES = [
+  'PAFC Training 1/4 Zip Top',
+  'PAFC Training Bottoms',
+  'PAFC Training Shorts',
+  'PAFC Rain Jacket',
+  'PAFC Players All Weather Robe',
+  'PAFC Bomber Jacket',
+  'PAFC Gloves',
+  'PAFC Snood',
+  'PAFC Beanie',
+  'PAFC Boot Bag',
+  'PAFC Sports Bottle',
+  'PAFC Supporters All Weather Robe',
+  'PAFC Supporters Rain Jacket',
+  'PAFC Bench Coat',
+  'PAFC Coaches Gilet',
+  'PAFC Hoodie',
+  'PAFC Training Top',
+];
+
+export function isPersonalisable(title: string): boolean {
+  return PERSONALISABLE_TITLES.some(t => title.toLowerCase() === t.toLowerCase());
 }
 
 interface CartStore {
