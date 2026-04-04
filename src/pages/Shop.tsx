@@ -42,7 +42,9 @@ export default function ShopPage() {
         const queryVar = activeCategory ? `tag:${activeCategory}` : undefined;
         const data = await storefrontApiRequest(STOREFRONT_PRODUCTS_QUERY, { first: 50, query: queryVar });
         if (data?.data?.products?.edges) {
-          setProducts(data.data.products.edges);
+          setProducts(data.data.products.edges.filter(
+            (p: any) => p.node.title !== 'Tournament Action Photo'
+          ));
         }
       } catch (error) {
         console.error("Failed to fetch products:", error);
