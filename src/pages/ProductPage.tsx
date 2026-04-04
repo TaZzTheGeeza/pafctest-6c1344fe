@@ -50,11 +50,17 @@ export default function ProductPage() {
     if (handle) fetchProduct();
   }, [handle]);
 
+  const canPersonalise = product ? isPersonalisable(product.title) : false;
+
   const handleAddToCart = async () => {
     if (!product) return;
     const variant = product.variants.edges[selectedVariantIndex]?.node;
     if (!variant) return;
     const shopifyProduct: ShopifyProduct = { node: product };
+    const attributes: Array<{ key: string; value: string }> = [];
+    if (canPersonalise && initials.trim()) {
+      attributes.push({ key: 'Initials', value: initials.trim().toUpperCase() });
+    }
     await addItem({
       product: shopifyProduct,
       variantId: variant.id,
@@ -62,6 +68,7 @@ export default function ProductPage() {
       price: variant.price,
       quantity: 1,
       selectedOptions: variant.selectedOptions || [],
+      ...(attributes.length > 0 ? { attributes } : {}),
     });
     toast.success("Added to cart", { description: product.title });
   };
