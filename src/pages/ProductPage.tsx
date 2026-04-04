@@ -4,8 +4,10 @@ import { motion } from "framer-motion";
 import { ArrowLeft, Loader2, ShoppingBag, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ShopifyProduct, storefrontApiRequest, PRODUCT_BY_HANDLE_QUERY } from "@/lib/shopify";
-import { useCartStore } from "@/stores/cartStore";
+import { useCartStore, isPersonalisable } from "@/stores/cartStore";
 import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,6 +18,7 @@ export default function ProductPage() {
   const [loading, setLoading] = useState(true);
   const [selectedVariantIndex, setSelectedVariantIndex] = useState(0);
   const [selectedImage, setSelectedImage] = useState(0);
+  const [initials, setInitials] = useState("");
   const addItem = useCartStore(state => state.addItem);
   const isCartLoading = useCartStore(state => state.isLoading);
   const [shopOpen, setShopOpen] = useState(true);
@@ -47,11 +50,17 @@ export default function ProductPage() {
     if (handle) fetchProduct();
   }, [handle]);
 
+  const canPersonalise = product ? isPersonalisable(product.title) : false;
+
   const handleAddToCart = async () => {
     if (!product) return;
     const variant = product.variants.edges[selectedVariantIndex]?.node;
     if (!variant) return;
     const shopifyProduct: ShopifyProduct = { node: product };
+    const attributes: Array<{ key: string; value: string }> = [];
+    if (canPersonalise && initials.trim()) {
+      attributes.push({ key: 'Initials', value: initials.trim().toUpperCase() });
+    }
     await addItem({
       product: shopifyProduct,
       variantId: variant.id,
@@ -59,6 +68,7 @@ export default function ProductPage() {
       price: variant.price,
       quantity: 1,
       selectedOptions: variant.selectedOptions || [],
+      ...(attributes.length > 0 ? { attributes } : {}),
     });
     toast.success("Added to cart", { description: product.title });
   };
@@ -170,6 +180,22 @@ export default function ProductPage() {
                   </div>
                 )
               ))}
+
+              {canPersonalise && (
+                <div className="mb-6">
+                  <Label htmlFor="initials" className="font-display text-sm font-bold mb-2 block">
+                    Initials for printing <span className="text-muted-foreground font-normal">(optional, max 4 characters)</span>
+                  </Label>
+                  <Input
+                    id="initials"
+                    placeholder="e.g. JD"
+                    value={initials}
+                    onChange={(e) => setInitials(e.target.value.replace(/[^a-zA-Z]/g, '').slice(0, 4))}
+                    maxLength={4}
+                    className="max-w-[200px] uppercase"
+                  />
+                </div>
+              )}
 
               {shopOpen ? (
                 <Button
