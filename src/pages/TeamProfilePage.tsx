@@ -17,7 +17,7 @@ const TeamProfilePage = () => {
     queryKey: ["team-profile", teamId],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("tournament_teams")
+        .from("tournament_teams_public")
         .select("*, tournament_age_groups(age_group, tournaments(name))")
         .eq("id", teamId!)
         .single();
@@ -31,7 +31,7 @@ const TeamProfilePage = () => {
     queryKey: ["all-teams-for-profile", team?.age_group_id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("tournament_teams")
+        .from("tournament_teams_public")
         .select("id, team_name")
         .eq("age_group_id", team!.age_group_id)
         .eq("status", "confirmed");
@@ -75,7 +75,7 @@ const TeamProfilePage = () => {
     queryFn: async () => {
       if (!team?.group_id) return [];
       const { data, error } = await supabase
-        .from("tournament_teams")
+        .from("tournament_teams_public")
         .select("*")
         .eq("group_id", team.group_id)
         .eq("status", "confirmed");
@@ -190,8 +190,8 @@ const TeamProfilePage = () => {
                 {team.status}
               </Badge>
             </div>
-            {team.manager_name && (
-              <p className="text-sm text-muted-foreground mt-2">Manager: {team.manager_name}</p>
+            {team.club_name && (
+              <p className="text-sm text-muted-foreground mt-2">Club: {team.club_name}</p>
             )}
           </div>
 
