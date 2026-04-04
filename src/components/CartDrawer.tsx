@@ -66,6 +66,9 @@ export const CartDrawer = () => {
                       <div className="flex-1 min-w-0">
                         <h4 className="font-display text-sm truncate">{item.product.node.title}</h4>
                         <p className="text-xs text-muted-foreground">{item.selectedOptions.map(o => o.value).join(' • ')}</p>
+                        {item.attributes?.find(a => a.key === 'Initials') && (
+                          <p className="text-xs font-display text-primary">Initials: {item.attributes.find(a => a.key === 'Initials')!.value}</p>
+                        )}
                         <p className="font-bold text-primary">{item.price.currencyCode} {parseFloat(item.price.amount).toFixed(2)}</p>
                       </div>
                       <div className="flex flex-col items-end gap-2 flex-shrink-0">
