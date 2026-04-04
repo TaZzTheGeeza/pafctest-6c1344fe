@@ -58,7 +58,7 @@ const TournamentPage = () => {
     queryFn: async () => {
       if (!ageGroups?.length) return [];
       const ids = ageGroups.map(ag => ag.id);
-      const { data, error } = await supabase.from("tournament_teams").select("*").in("age_group_id", ids).eq("status", "confirmed");
+      const { data, error } = await supabase.from("tournament_teams_public").select("*").in("age_group_id", ids).eq("status", "confirmed");
       if (error) throw error;
       return data;
     },

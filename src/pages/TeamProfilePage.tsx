@@ -31,7 +31,7 @@ const TeamProfilePage = () => {
     queryKey: ["all-teams-for-profile", team?.age_group_id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("tournament_teams")
+        .from("tournament_teams_public")
         .select("id, team_name")
         .eq("age_group_id", team!.age_group_id)
         .eq("status", "confirmed");
