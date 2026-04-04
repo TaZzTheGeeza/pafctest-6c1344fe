@@ -190,8 +190,8 @@ const TeamProfilePage = () => {
                 {team.status}
               </Badge>
             </div>
-            {team.manager_name && (
-              <p className="text-sm text-muted-foreground mt-2">Manager: {team.manager_name}</p>
+            {team.club_name && (
+              <p className="text-sm text-muted-foreground mt-2">Club: {team.club_name}</p>
             )}
           </div>
 
