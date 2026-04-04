@@ -75,7 +75,7 @@ const TeamProfilePage = () => {
     queryFn: async () => {
       if (!team?.group_id) return [];
       const { data, error } = await supabase
-        .from("tournament_teams")
+        .from("tournament_teams_public")
         .select("*")
         .eq("group_id", team.group_id)
         .eq("status", "confirmed");
