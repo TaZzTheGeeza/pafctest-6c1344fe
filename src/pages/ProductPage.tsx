@@ -197,6 +197,7 @@ export default function ProductPage() {
                 </div>
               )}
 
+              {shopOpen ? (
                 <Button
                   onClick={handleAddToCart}
                   disabled={isCartLoading || !selectedVariant?.availableForSale}
