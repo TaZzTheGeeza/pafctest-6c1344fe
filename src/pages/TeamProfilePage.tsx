@@ -17,7 +17,7 @@ const TeamProfilePage = () => {
     queryKey: ["team-profile", teamId],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("tournament_teams")
+        .from("tournament_teams_public")
         .select("*, tournament_age_groups(age_group, tournaments(name))")
         .eq("id", teamId!)
         .single();
