@@ -18,6 +18,7 @@ export default function ProductPage() {
   const [loading, setLoading] = useState(true);
   const [selectedVariantIndex, setSelectedVariantIndex] = useState(0);
   const [selectedImage, setSelectedImage] = useState(0);
+  const [initials, setInitials] = useState("");
   const addItem = useCartStore(state => state.addItem);
   const isCartLoading = useCartStore(state => state.isLoading);
   const [shopOpen, setShopOpen] = useState(true);
