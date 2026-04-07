@@ -2,8 +2,11 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Bell, Check, CheckCheck, Info, AlertTriangle, Calendar, CreditCard } from "lucide-react";
+import { Bell, Check, CheckCheck, Info, AlertTriangle, Calendar, CreditCard, BellRing } from "lucide-react";
 import { format } from "date-fns";
+import { Switch } from "@/components/ui/switch";
+import { isPushSupported, isPushEnabled, registerPushSubscription } from "@/lib/pushNotifications";
+import { toast } from "sonner";
 
 interface Notification {
   id: string;
