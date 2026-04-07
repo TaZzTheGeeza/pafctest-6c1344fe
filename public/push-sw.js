@@ -6,8 +6,8 @@ self.addEventListener('push', (event) => {
     const data = event.data.json();
     const options = {
       body: data.message || data.body || '',
-      icon: '/pwa-192x192.png',
-      badge: '/pwa-192x192.png',
+      icon: '/pwa-icon-192-v3.png',
+      badge: '/pwa-icon-192-v3.png',
       tag: data.tag || 'pafc-notification',
       data: {
         url: data.link || data.url || '/',
