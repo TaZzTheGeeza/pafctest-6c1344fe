@@ -141,7 +141,7 @@ export function NotificationCenter() {
                 else toast.error("Could not enable push notifications. Check your browser settings.");
               } else {
                 try {
-                  const reg = await navigator.serviceWorker.getRegistration("/push-sw.js");
+                  const reg = await navigator.serviceWorker.ready;
                   const sub = await reg?.pushManager.getSubscription();
                   if (sub) {
                     const endpoint = sub.endpoint;
