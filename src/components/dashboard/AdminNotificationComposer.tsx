@@ -75,7 +75,10 @@ export function AdminNotificationComposer() {
   }
 
   async function handleSend() {
-    if (!title.trim() || !message.trim()) {
+    const trimmedTitle = title.trim();
+    const trimmedMessage = message.trim();
+
+    if (!trimmedTitle || !trimmedMessage) {
       toast.error("Title and message are required");
       return;
     }
@@ -94,6 +97,10 @@ export function AdminNotificationComposer() {
 
     setSending(true);
     try {
+      const broadcastId = Date.now().toString();
+      const successfulChannels: string[] = [];
+      const failedChannels: string[] = [];
+
       // Get target users
       let targetUserIds: string[] = [];
 
@@ -130,63 +137,112 @@ export function AdminNotificationComposer() {
       if (sendInApp) {
         const notifications = targetUserIds.map((uid) => ({
           user_id: uid,
-          title: title.trim(),
-          message: message.trim(),
+          title: trimmedTitle,
+          message: trimmedMessage,
           type: "admin_broadcast",
           team_slug: audience === "team" && selectedTeams.length === 1 ? selectedTeams[0] : null,
         }));
         const { error } = await supabase.from("hub_notifications").insert(notifications);
-        if (error) console.error("In-app notification insert error:", error);
+        if (error) {
+          console.error("In-app notification insert error:", error);
+          failedChannels.push("in-app");
+        } else {
+          successfulChannels.push(`in-app (${notifications.length})`);
+        }
       }
 
       // 2. Email notifications
       if (sendEmail) {
-        const { data: profiles } = await supabase
+        const { data: profiles, error: profilesError } = await supabase
           .from("profiles")
           .select("id, email")
           .in("id", targetUserIds);
 
-        if (profiles) {
-          for (const profile of profiles) {
-            if (!profile.email) continue;
-            supabase.functions
-              .invoke("send-transactional-email", {
-                body: {
-                  templateName: "admin-broadcast",
-                  recipientEmail: profile.email,
-                  idempotencyKey: `admin-broadcast-${Date.now()}-${profile.id}`,
-                  templateData: {
-                    title: title.trim(),
-                    message: message.trim(),
+        if (profilesError) {
+          console.error("Failed to load email recipients:", profilesError);
+          failedChannels.push("email");
+        } else {
+          const emailRecipients = (profiles ?? []).filter((profile) => !!profile.email);
+
+          if (emailRecipients.length === 0) {
+            failedChannels.push("email (no addresses)");
+          } else {
+            const emailResults = await Promise.all(
+              emailRecipients.map(async (profile) => {
+                const { error } = await supabase.functions.invoke("send-transactional-email", {
+                  body: {
+                    templateName: "admin-broadcast",
+                    recipientEmail: profile.email,
+                    idempotencyKey: `admin-broadcast-${broadcastId}-${profile.id}`,
+                    templateData: {
+                      title: trimmedTitle,
+                      message: trimmedMessage,
+                    },
                   },
-                },
+                });
+
+                return { profile, error };
               })
-              .catch((err) => console.error("Email send failed:", err));
+            );
+
+            const failedEmailCount = emailResults.filter((result) => result.error).length;
+
+            emailResults.forEach((result) => {
+              if (result.error) {
+                console.error("Email send failed:", {
+                  userId: result.profile.id,
+                  error: result.error,
+                });
+              }
+            });
+
+            const sentEmailCount = emailRecipients.length - failedEmailCount;
+            if (sentEmailCount > 0) {
+              successfulChannels.push(`email (${sentEmailCount})`);
+            }
+            if (failedEmailCount > 0) {
+              failedChannels.push(`email (${failedEmailCount} failed)`);
+            }
           }
         }
       }
 
       // 3. Push notifications
       if (sendPush) {
-        supabase.functions
-          .invoke("send-push-notification", {
-            body: {
-              userIds: targetUserIds,
-              title: title.trim(),
-              message: message.trim(),
-              tag: `admin-broadcast-${Date.now()}`,
-            },
-          })
-          .catch((err) => console.error("Push send failed:", err));
+        const { data: pushResult, error: pushError } = await supabase.functions.invoke("send-push-notification", {
+          body: {
+            userIds: targetUserIds,
+            title: trimmedTitle,
+            message: trimmedMessage,
+            link: "/hub?tab=notifications",
+            tag: `admin-broadcast-${broadcastId}`,
+          },
+        });
+
+        if (pushError) {
+          console.error("Push send failed:", pushError);
+          failedChannels.push("push");
+        } else if (!pushResult?.sent) {
+          failedChannels.push("push (no subscriptions)");
+        } else {
+          successfulChannels.push(`push (${pushResult.sent})`);
+          if (pushResult.failed > 0) {
+            failedChannels.push(`push (${pushResult.failed} failed)`);
+          }
+        }
       }
 
-      const channelList = [
-        sendInApp && "in-app",
-        sendEmail && "email",
-        sendPush && "push",
-      ].filter(Boolean).join(", ");
+      if (successfulChannels.length === 0) {
+        toast.error(`Notification could not be delivered via ${failedChannels.join(", ")}`);
+        return;
+      }
 
-      toast.success(`Notification sent to ${targetUserIds.length} members via ${channelList}`);
+      if (failedChannels.length > 0) {
+        toast.warning(`Sent via ${successfulChannels.join(", ")} • Issues: ${failedChannels.join(", ")}`);
+      } else {
+        toast.success(`Notification sent via ${successfulChannels.join(", ")}`);
+      }
+
       setTitle("");
       setMessage("");
       loadHistory();
