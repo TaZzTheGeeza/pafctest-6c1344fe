@@ -33,13 +33,13 @@ export const SignupEmail = ({
 }: SignupEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>Welcome to Athletic FC — confirm your email</Preview>
+    <Preview>Welcome to Peterborough Athletic FC — confirm your email</Preview>
     <Body style={main}>
       <Container style={container}>
         <div style={logoWrap}>
-          <Img src={LOGO_URL} alt="Athletic FC Crest" width="64" height="64" style={logo} />
+          <Img src={LOGO_URL} alt="Peterborough Athletic FC Crest" width="64" height="64" style={logo} />
         </div>
-        <Heading style={h1}>Welcome to Athletic FC</Heading>
+        <Heading style={h1}>Welcome to Peterborough Athletic FC</Heading>
         <Text style={text}>
           Thanks for joining{' '}
           <Link href={siteUrl} style={link}>

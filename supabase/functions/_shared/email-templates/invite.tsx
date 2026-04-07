@@ -31,11 +31,11 @@ export const InviteEmail = ({
 }: InviteEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>You've been invited to join Athletic FC</Preview>
+    <Preview>You've been invited to join Peterborough Athletic FC</Preview>
     <Body style={main}>
       <Container style={container}>
         <div style={logoWrap}>
-          <Img src={LOGO_URL} alt="Athletic FC Crest" width="64" height="64" style={logo} />
+          <Img src={LOGO_URL} alt="Peterborough Athletic FC Crest" width="64" height="64" style={logo} />
         </div>
         <Heading style={h1}>You're Invited</Heading>
         <Text style={text}>
