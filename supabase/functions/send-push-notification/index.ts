@@ -81,6 +81,10 @@ Deno.serve(async (req) => {
     )
   }
 
+  const uniqueSubscriptions = Array.from(
+    new Map((subscriptions ?? []).map((subscription) => [subscription.endpoint, subscription])).values()
+  )
+
   const payload = JSON.stringify({
     title: body.title,
     message: body.message,
@@ -92,14 +96,20 @@ Deno.serve(async (req) => {
   let failed = 0
   const expiredEndpoints: string[] = []
 
-  for (const sub of subscriptions) {
+  for (const sub of uniqueSubscriptions) {
     try {
       await webpush.sendNotification(
         {
           endpoint: sub.endpoint,
           keys: { p256dh: sub.p256dh, auth: sub.auth },
         },
-        payload
+        payload,
+        {
+          TTL: 60,
+          urgency: 'high',
+          topic: (body.tag || 'pafc-notification').slice(0, 32),
+          contentEncoding: 'aes128gcm',
+        }
       )
       sent++
     } catch (err: any) {
