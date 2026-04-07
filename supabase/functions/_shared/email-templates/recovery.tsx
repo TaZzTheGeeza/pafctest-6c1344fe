@@ -28,7 +28,7 @@ export const RecoveryEmail = ({
 }: RecoveryEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>Reset your password for Athletic FC</Preview>
+    <Preview>Reset your password for Peterborough Athletic FC</Preview>
     <Body style={main}>
       <Container style={container}>
         <div style={logoWrap}>

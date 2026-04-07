@@ -33,7 +33,7 @@ export const EmailChangeEmail = ({
 }: EmailChangeEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>Confirm your email change for Athletic FC</Preview>
+    <Preview>Confirm your email change for Peterborough Athletic FC</Preview>
     <Body style={main}>
       <Container style={container}>
         <div style={logoWrap}>

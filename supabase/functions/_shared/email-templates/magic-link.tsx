@@ -28,7 +28,7 @@ export const MagicLinkEmail = ({
 }: MagicLinkEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>Your login link for Athletic FC</Preview>
+    <Preview>Your login link for Peterborough Athletic FC</Preview>
     <Body style={main}>
       <Container style={container}>
         <div style={logoWrap}>

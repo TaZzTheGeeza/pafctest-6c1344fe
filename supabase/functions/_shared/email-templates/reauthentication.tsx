@@ -23,7 +23,7 @@ interface ReauthenticationEmailProps {
 export const ReauthenticationEmail = ({ token }: ReauthenticationEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>Your verification code for Athletic FC</Preview>
+    <Preview>Your verification code for Peterborough Athletic FC</Preview>
     <Body style={main}>
       <Container style={container}>
         <div style={logoWrap}>
