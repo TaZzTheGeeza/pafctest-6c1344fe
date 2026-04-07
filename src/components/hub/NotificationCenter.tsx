@@ -31,6 +31,15 @@ export function NotificationCenter() {
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [filter, setFilter] = useState<"all" | "unread">("all");
+  const [pushEnabled, setPushEnabled] = useState(false);
+  const [pushSupported] = useState(isPushSupported());
+  const [pushLoading, setPushLoading] = useState(false);
+
+  useEffect(() => {
+    if (pushSupported) {
+      isPushEnabled().then(setPushEnabled);
+    }
+  }, [pushSupported]);
 
   useEffect(() => {
     if (!user) return;
