@@ -1,26 +1,65 @@
 // Push notification service worker
-self.addEventListener('push', (event) => {
-  if (!event.data) return;
+const DEFAULT_PUSH_NOTIFICATION = {
+  title: 'PAFC',
+  body: 'Open the app to view your latest notification.',
+  url: '/hub?tab=notifications',
+  tag: 'pafc-notification',
+};
+
+function readPushPayload(event) {
+  if (!event.data) {
+    return DEFAULT_PUSH_NOTIFICATION;
+  }
 
   try {
     const data = event.data.json();
-    const options = {
-      body: data.message || data.body || '',
-      icon: '/pwa-icon-192-v3.png',
-      badge: '/pwa-icon-192-v3.png',
-      tag: data.tag || 'pafc-notification',
-      data: {
-        url: data.link || data.url || '/',
-      },
-      vibrate: [100, 50, 100],
+    return {
+      title: (data.title || DEFAULT_PUSH_NOTIFICATION.title).trim(),
+      body: (data.message || data.body || DEFAULT_PUSH_NOTIFICATION.body).trim(),
+      url: (data.link || data.url || DEFAULT_PUSH_NOTIFICATION.url).trim(),
+      tag: (data.tag || DEFAULT_PUSH_NOTIFICATION.tag).trim(),
     };
-
-    event.waitUntil(
-      self.registration.showNotification(data.title || 'PAFC', options)
-    );
-  } catch (e) {
-    console.error('Push event error:', e);
+  } catch (error) {
+    try {
+      const text = event.data.text();
+      return {
+        ...DEFAULT_PUSH_NOTIFICATION,
+        body: text?.trim() || DEFAULT_PUSH_NOTIFICATION.body,
+      };
+    } catch {
+      return DEFAULT_PUSH_NOTIFICATION;
+    }
   }
+}
+
+self.addEventListener('push', (event) => {
+  const notification = readPushPayload(event);
+
+  event.waitUntil((async () => {
+    try {
+      await self.registration.showNotification(notification.title, {
+        body: notification.body,
+        icon: '/pwa-icon-192-v3.png',
+        badge: '/pwa-icon-192-v3.png',
+        tag: notification.tag,
+        data: {
+          url: notification.url,
+        },
+        vibrate: [100, 50, 100],
+        renotify: true,
+      });
+    } catch (error) {
+      console.error('Push event error:', error);
+
+      await self.registration.showNotification(notification.title, {
+        body: notification.body,
+        tag: notification.tag,
+        data: {
+          url: notification.url,
+        },
+      });
+    }
+  })());
 });
 
 self.addEventListener('notificationclick', (event) => {

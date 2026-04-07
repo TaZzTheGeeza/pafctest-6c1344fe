@@ -24,11 +24,15 @@ export async function registerPushSubscription(userId: string): Promise<boolean>
     if (permission !== "granted") return false;
 
     // Use the PWA service worker (which imports push-sw.js via importScripts)
+    const existingRegistration = await navigator.serviceWorker.getRegistration();
+    await existingRegistration?.update();
     const registration = await navigator.serviceWorker.ready;
+    await registration.update();
 
     // Unsubscribe from any old subscription (VAPID key may have changed)
     const existingSub = await registration.pushManager.getSubscription();
     if (existingSub) {
+      await supabase.from("push_subscriptions").delete().eq("endpoint", existingSub.endpoint);
       await existingSub.unsubscribe();
     }
 
@@ -44,7 +48,7 @@ export async function registerPushSubscription(userId: string): Promise<boolean>
     }
 
     // Store in database
-    await supabase.from("push_subscriptions").upsert(
+    const { error: upsertError } = await supabase.from("push_subscriptions").upsert(
       {
         user_id: userId,
         endpoint: subJson.endpoint,
@@ -54,6 +58,23 @@ export async function registerPushSubscription(userId: string): Promise<boolean>
       },
       { onConflict: "user_id,endpoint" }
     );
+
+    if (upsertError) {
+      console.error("Failed to save push subscription:", upsertError);
+      return false;
+    }
+
+    // Keep only the latest web subscription for this user to avoid stale endpoints
+    const { error: cleanupError } = await supabase
+      .from("push_subscriptions")
+      .delete()
+      .eq("user_id", userId)
+      .eq("platform", "web")
+      .neq("endpoint", subJson.endpoint);
+
+    if (cleanupError) {
+      console.error("Failed to clean stale push subscriptions:", cleanupError);
+    }
 
     return true;
   } catch (err) {
