@@ -132,17 +132,29 @@ export function NotificationCenter() {
             checked={pushEnabled}
             disabled={pushLoading}
             onCheckedChange={async (checked) => {
-              if (checked && user) {
-                setPushLoading(true);
+              if (!user) return;
+              setPushLoading(true);
+              if (checked) {
                 const success = await registerPushSubscription(user.id);
                 setPushEnabled(success);
-                setPushLoading(false);
                 if (success) toast.success("Push notifications enabled!");
                 else toast.error("Could not enable push notifications. Check your browser settings.");
               } else {
-                // Can't programmatically unsubscribe easily, just inform
-                toast.info("To disable, block notifications in your browser settings.");
+                try {
+                  const reg = await navigator.serviceWorker.getRegistration("/push-sw.js");
+                  const sub = await reg?.pushManager.getSubscription();
+                  if (sub) {
+                    const endpoint = sub.endpoint;
+                    await sub.unsubscribe();
+                    await supabase.from("push_subscriptions").delete().eq("endpoint", endpoint);
+                  }
+                  setPushEnabled(false);
+                  toast.success("Push notifications disabled.");
+                } catch {
+                  toast.error("Could not disable push notifications.");
+                }
               }
+              setPushLoading(false);
             }}
           />
         </div>
