@@ -1,10 +1,11 @@
 import * as React from 'npm:react@18.3.1'
 import {
-  Body, Container, Head, Heading, Html, Preview, Text, Section, Hr,
+  Body, Container, Head, Heading, Html, Img, Preview, Text, Section, Hr,
 } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
 
 const SITE_NAME = "Peterborough Athletic FC"
+const LOGO_URL = 'https://scfiodwfvpjqgfmekqwg.supabase.co/storage/v1/object/public/email-assets/club-logo.jpg'
 
 interface Props {
   title?: string
@@ -18,6 +19,7 @@ const AdminBroadcastEmail = ({ title, message }: Props) => (
     <Body style={main}>
       <Container style={container}>
         <Section style={headerSection}>
+          <Img src={LOGO_URL} width="80" height="80" alt={SITE_NAME} style={logo} />
           <Heading style={h1}>{SITE_NAME}</Heading>
         </Section>
         <Hr style={divider} />
@@ -42,6 +44,7 @@ export const template = {
 const main = { backgroundColor: '#ffffff', fontFamily: "'Inter', Arial, sans-serif" }
 const container = { padding: '20px 25px', maxWidth: '560px', margin: '0 auto' }
 const headerSection = { textAlign: 'center' as const, padding: '20px 0 10px' }
+const logo = { margin: '0 auto 12px', borderRadius: '12px' }
 const h1 = { fontSize: '20px', fontWeight: '700', color: '#b8860b', fontFamily: "'Oswald', Arial, sans-serif", textTransform: 'uppercase' as const, letterSpacing: '0.05em', margin: '0' }
 const h2 = { fontSize: '18px', fontWeight: '600', color: '#1a1a1a', margin: '10px 0 10px' }
 const divider = { borderColor: '#e5e5e5', margin: '10px 0' }
