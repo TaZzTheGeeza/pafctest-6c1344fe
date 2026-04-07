@@ -23,8 +23,8 @@ export async function registerPushSubscription(userId: string): Promise<boolean>
     const permission = await Notification.requestPermission();
     if (permission !== "granted") return false;
 
-    const registration = await navigator.serviceWorker.register("/push-sw.js");
-    await navigator.serviceWorker.ready;
+    // Use the PWA service worker (which imports push-sw.js via importScripts)
+    const registration = await navigator.serviceWorker.ready;
 
     // Unsubscribe from any old subscription (VAPID key may have changed)
     const existingSub = await registration.pushManager.getSubscription();
@@ -71,8 +71,7 @@ export async function isPushEnabled(): Promise<boolean> {
   const permission = Notification.permission;
   if (permission !== "granted") return false;
   try {
-    const registration = await navigator.serviceWorker.getRegistration("/push-sw.js");
-    if (!registration) return false;
+    const registration = await navigator.serviceWorker.ready;
     const subscription = await registration.pushManager.getSubscription();
     return !!subscription;
   } catch {
