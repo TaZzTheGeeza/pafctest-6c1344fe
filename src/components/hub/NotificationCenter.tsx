@@ -2,8 +2,11 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Bell, Check, CheckCheck, Info, AlertTriangle, Calendar, CreditCard } from "lucide-react";
+import { Bell, Check, CheckCheck, Info, AlertTriangle, Calendar, CreditCard, BellRing } from "lucide-react";
 import { format } from "date-fns";
+import { Switch } from "@/components/ui/switch";
+import { isPushSupported, isPushEnabled, registerPushSubscription } from "@/lib/pushNotifications";
+import { toast } from "sonner";
 
 interface Notification {
   id: string;
@@ -28,6 +31,15 @@ export function NotificationCenter() {
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [filter, setFilter] = useState<"all" | "unread">("all");
+  const [pushEnabled, setPushEnabled] = useState(false);
+  const [pushSupported] = useState(isPushSupported());
+  const [pushLoading, setPushLoading] = useState(false);
+
+  useEffect(() => {
+    if (pushSupported) {
+      isPushEnabled().then(setPushEnabled);
+    }
+  }, [pushSupported]);
 
   useEffect(() => {
     if (!user) return;
@@ -107,6 +119,35 @@ export function NotificationCenter() {
 
   return (
     <div className="space-y-4">
+      {pushSupported && (
+        <div className="bg-card border border-border rounded-xl p-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <BellRing className="h-5 w-5 text-primary" />
+            <div>
+              <p className="text-sm font-display text-foreground">Push Notifications</p>
+              <p className="text-xs text-muted-foreground">Receive alerts even when the app is closed</p>
+            </div>
+          </div>
+          <Switch
+            checked={pushEnabled}
+            disabled={pushLoading}
+            onCheckedChange={async (checked) => {
+              if (checked && user) {
+                setPushLoading(true);
+                const success = await registerPushSubscription(user.id);
+                setPushEnabled(success);
+                setPushLoading(false);
+                if (success) toast.success("Push notifications enabled!");
+                else toast.error("Could not enable push notifications. Check your browser settings.");
+              } else {
+                // Can't programmatically unsubscribe easily, just inform
+                toast.info("To disable, block notifications in your browser settings.");
+              }
+            }}
+          />
+        </div>
+      )}
+
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button onClick={() => setFilter("all")} className={`text-xs font-display tracking-wider px-3 py-1.5 rounded-full border transition-colors ${filter === "all" ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground"}`}>All</button>
