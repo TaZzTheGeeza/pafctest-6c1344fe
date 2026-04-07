@@ -19,6 +19,7 @@ const AdminBroadcastEmail = ({ title, message }: Props) => (
     <Body style={main}>
       <Container style={container}>
         <Section style={headerSection}>
+          <Img src={LOGO_URL} width="80" height="80" alt={SITE_NAME} style={logo} />
           <Heading style={h1}>{SITE_NAME}</Heading>
         </Section>
         <Hr style={divider} />
