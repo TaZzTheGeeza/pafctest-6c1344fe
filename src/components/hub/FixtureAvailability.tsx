@@ -304,13 +304,19 @@ export function FixtureAvailability({ teamSlug }: Props) {
 
   function getRespondents(item: AvailabilityItem, status: string) {
     const records = availability.filter((a) => a.fixture_date === item.date && a.opponent === item.opponent && a.status === status);
-    return records.map((r) => {
-      const profile = profiles.find((p) => p.id === r.user_id);
-      const baseName = profile?.full_name || "Unknown";
+    // Deduplicate by responding_for (child name) — only show each child once
+    const seen = new Set<string>();
+    return records.filter((r) => {
+      const key = r.responding_for || r.user_id;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    }).map((r) => {
       if (r.responding_for) {
-        return `${r.responding_for} (via ${baseName})`;
+        return r.responding_for; // Just show the child's name
       }
-      return baseName;
+      const profile = profiles.find((p) => p.id === r.user_id);
+      return profile?.full_name || "Unknown";
     });
   }
 
