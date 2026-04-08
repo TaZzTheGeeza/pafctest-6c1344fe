@@ -370,6 +370,20 @@ export function FixtureAvailability({ teamSlug }: Props) {
               </div>
 
               <div className="flex items-center gap-2">
+                {(isCoach || isAdmin) && (
+                  <button
+                    onClick={() => handleResendNotification(item)}
+                    disabled={resending === item.key}
+                    title="Re-send availability notification"
+                    className="text-muted-foreground hover:text-primary transition-colors disabled:opacity-50"
+                  >
+                    {resending === item.key ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Bell className="h-3.5 w-3.5" />
+                    )}
+                  </button>
+                )}
                 {item.isCustom && (isCoach || isAdmin) && (
                   <button
                     onClick={() => {
