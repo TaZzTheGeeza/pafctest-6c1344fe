@@ -295,10 +295,17 @@ export function FixtureAvailability({ teamSlug }: Props) {
 
   function getTeamSummary(item: AvailabilityItem) {
     const records = availability.filter((a) => a.fixture_date === item.date && a.opponent === item.opponent);
+    // Deduplicate: per child (responding_for) or per user, keep latest
+    const deduped = new Map<string, string>();
+    records.forEach((r) => {
+      const key = r.responding_for || r.user_id;
+      deduped.set(key, r.status);
+    });
+    const statuses = Array.from(deduped.values());
     return {
-      available: records.filter((r) => r.status === "available").length,
-      unavailable: records.filter((r) => r.status === "unavailable").length,
-      maybe: records.filter((r) => r.status === "maybe").length,
+      available: statuses.filter((s) => s === "available").length,
+      unavailable: statuses.filter((s) => s === "unavailable").length,
+      maybe: statuses.filter((s) => s === "maybe").length,
     };
   }
 
