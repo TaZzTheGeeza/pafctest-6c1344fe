@@ -33,6 +33,8 @@ const TournamentAdminPage = () => {
   const [teamForm, setTeamForm] = useState({ team_name: "", club_name: "", manager_name: "", manager_email: "", manager_phone: "", age_group_id: "", player_count: "", whatsapp_name: "", whatsapp_number: "", consent_rules: true, consent_photography: true });
   const [announcementText, setAnnouncementText] = useState("");
   const [editingGroup, setEditingGroup] = useState<{ id: string; name: string } | null>(null);
+  const [editingTeam, setEditingTeam] = useState<any | null>(null);
+  const [editTeamForm, setEditTeamForm] = useState({ team_name: "", club_name: "", manager_name: "", manager_email: "", manager_phone: "", player_count: "", whatsapp_name: "", whatsapp_number: "", consent_rules: true, consent_photography: true });
   const invalidateAll = () => {
     queryClient.invalidateQueries({ queryKey: ["admin-tournaments"] });
     queryClient.invalidateQueries({ queryKey: ["admin-age-groups"] });
@@ -225,6 +227,47 @@ const TournamentAdminPage = () => {
     if (error) { toast.error("Failed to delete team"); return; }
     invalidateAll();
     toast.success(`"${teamName}" deleted`);
+  };
+
+  // OPEN EDIT TEAM
+  const openEditTeam = (team: any) => {
+    const whatsapp = Array.isArray(team.whatsapp_contacts) && team.whatsapp_contacts.length > 0 ? team.whatsapp_contacts[0] : {};
+    setEditTeamForm({
+      team_name: team.team_name || "",
+      club_name: team.club_name || "",
+      manager_name: team.manager_name || "",
+      manager_email: team.manager_email || "",
+      manager_phone: team.manager_phone || "",
+      player_count: team.player_count?.toString() || "",
+      whatsapp_name: whatsapp.name || "",
+      whatsapp_number: whatsapp.number || "",
+      consent_rules: team.consent_rules ?? true,
+      consent_photography: team.consent_photography ?? true,
+    });
+    setEditingTeam(team);
+  };
+
+  // SAVE EDIT TEAM
+  const saveEditTeam = async () => {
+    if (!editingTeam) return;
+    const whatsappContacts = editTeamForm.whatsapp_name || editTeamForm.whatsapp_number
+      ? [{ name: editTeamForm.whatsapp_name, number: editTeamForm.whatsapp_number }]
+      : [];
+    const { error } = await supabase.from("tournament_teams").update({
+      team_name: editTeamForm.team_name,
+      club_name: editTeamForm.club_name || null,
+      manager_name: editTeamForm.manager_name,
+      manager_email: editTeamForm.manager_email,
+      manager_phone: editTeamForm.manager_phone || null,
+      player_count: editTeamForm.player_count ? parseInt(editTeamForm.player_count) : null,
+      whatsapp_contacts: whatsappContacts,
+      consent_rules: editTeamForm.consent_rules,
+      consent_photography: editTeamForm.consent_photography,
+    }).eq("id", editingTeam.id);
+    if (error) { toast.error("Failed to update team"); return; }
+    setEditingTeam(null);
+    invalidateAll();
+    toast.success("Team updated");
   };
 
   // RENAME GROUP
@@ -426,6 +469,7 @@ const TournamentAdminPage = () => {
                                         {team.status !== "rejected" && (
                                           <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setTeamStatus(team.id, "rejected")}><X className="h-4 w-4 text-red-500" /></Button>
                                         )}
+                                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => openEditTeam(team)}><Edit className="h-4 w-4" /></Button>
                                         <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => deleteTeam(team.id, team.team_name)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                                       </div>
                                     </TableCell>
@@ -701,6 +745,63 @@ const TournamentAdminPage = () => {
               </label>
             </div>
             <Button onClick={addTeam} className="w-full">Add Team</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+      {/* EDIT TEAM DIALOG */}
+      <Dialog open={!!editingTeam} onOpenChange={open => { if (!open) setEditingTeam(null); }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader><DialogTitle>Edit Team</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <Label>Team Name *</Label>
+              <Input value={editTeamForm.team_name} onChange={e => setEditTeamForm(f => ({ ...f, team_name: e.target.value }))} />
+            </div>
+            <div>
+              <Label>Club Name</Label>
+              <Input value={editTeamForm.club_name} onChange={e => setEditTeamForm(f => ({ ...f, club_name: e.target.value }))} />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Manager Name *</Label>
+                <Input value={editTeamForm.manager_name} onChange={e => setEditTeamForm(f => ({ ...f, manager_name: e.target.value }))} />
+              </div>
+              <div>
+                <Label>Manager Email *</Label>
+                <Input type="email" value={editTeamForm.manager_email} onChange={e => setEditTeamForm(f => ({ ...f, manager_email: e.target.value }))} />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Manager Phone</Label>
+                <Input value={editTeamForm.manager_phone} onChange={e => setEditTeamForm(f => ({ ...f, manager_phone: e.target.value }))} />
+              </div>
+              <div>
+                <Label>Player Count</Label>
+                <Input type="number" value={editTeamForm.player_count} onChange={e => setEditTeamForm(f => ({ ...f, player_count: e.target.value }))} />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>WhatsApp Name</Label>
+                <Input value={editTeamForm.whatsapp_name} onChange={e => setEditTeamForm(f => ({ ...f, whatsapp_name: e.target.value }))} />
+              </div>
+              <div>
+                <Label>WhatsApp Number</Label>
+                <Input value={editTeamForm.whatsapp_number} onChange={e => setEditTeamForm(f => ({ ...f, whatsapp_number: e.target.value }))} />
+              </div>
+            </div>
+            <div className="flex items-center gap-6 pt-1">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" checked={editTeamForm.consent_rules} onChange={e => setEditTeamForm(f => ({ ...f, consent_rules: e.target.checked }))} className="rounded border-border" />
+                <span className="text-sm">Rules Consent</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" checked={editTeamForm.consent_photography} onChange={e => setEditTeamForm(f => ({ ...f, consent_photography: e.target.checked }))} className="rounded border-border" />
+                <span className="text-sm">Photography Consent</span>
+              </label>
+            </div>
+            <Button onClick={saveEditTeam} className="w-full">Save Changes</Button>
           </div>
         </DialogContent>
       </Dialog>
