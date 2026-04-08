@@ -763,45 +763,90 @@ const TournamentAdminPage = () => {
       </Dialog>
       {/* EDIT TEAM DIALOG */}
       <Dialog open={!!editingTeam} onOpenChange={open => { if (!open) setEditingTeam(null); }}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Edit Team</DialogTitle></DialogHeader>
           <div className="space-y-3">
             <div>
               <Label>Team Name *</Label>
               <Input value={editTeamForm.team_name} onChange={e => setEditTeamForm(f => ({ ...f, team_name: e.target.value }))} />
             </div>
-            <div>
-              <Label>Club Name</Label>
-              <Input value={editTeamForm.club_name} onChange={e => setEditTeamForm(f => ({ ...f, club_name: e.target.value }))} />
-            </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label>Manager Name *</Label>
-                <Input value={editTeamForm.manager_name} onChange={e => setEditTeamForm(f => ({ ...f, manager_name: e.target.value }))} />
+                <Label>Club Name</Label>
+                <Input value={editTeamForm.club_name} onChange={e => setEditTeamForm(f => ({ ...f, club_name: e.target.value }))} />
               </div>
               <div>
-                <Label>Manager Email *</Label>
-                <Input type="email" value={editTeamForm.manager_email} onChange={e => setEditTeamForm(f => ({ ...f, manager_email: e.target.value }))} />
+                <Label>County</Label>
+                <Input value={editTeamForm.county} onChange={e => setEditTeamForm(f => ({ ...f, county: e.target.value }))} />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-3">
               <div>
-                <Label>Manager Phone</Label>
-                <Input value={editTeamForm.manager_phone} onChange={e => setEditTeamForm(f => ({ ...f, manager_phone: e.target.value }))} />
+                <Label>Org ID</Label>
+                <Input value={editTeamForm.club_org_id} onChange={e => setEditTeamForm(f => ({ ...f, club_org_id: e.target.value }))} />
               </div>
+              <div>
+                <Label>League / Division</Label>
+                <Input value={editTeamForm.league_division} onChange={e => setEditTeamForm(f => ({ ...f, league_division: e.target.value }))} />
+              </div>
+              <div>
+                <Label>Category</Label>
+                <Input value={editTeamForm.team_category} onChange={e => setEditTeamForm(f => ({ ...f, team_category: e.target.value }))} placeholder="e.g. boys" />
+              </div>
+            </div>
+            <div className="border-t border-border pt-3">
+              <p className="text-xs font-display font-bold uppercase tracking-wider text-muted-foreground mb-2">Manager</p>
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <Label>Name *</Label>
+                  <Input value={editTeamForm.manager_name} onChange={e => setEditTeamForm(f => ({ ...f, manager_name: e.target.value }))} />
+                </div>
+                <div>
+                  <Label>Email *</Label>
+                  <Input type="email" value={editTeamForm.manager_email} onChange={e => setEditTeamForm(f => ({ ...f, manager_email: e.target.value }))} />
+                </div>
+                <div>
+                  <Label>Phone</Label>
+                  <Input value={editTeamForm.manager_phone} onChange={e => setEditTeamForm(f => ({ ...f, manager_phone: e.target.value }))} />
+                </div>
+              </div>
+            </div>
+            <div className="border-t border-border pt-3">
+              <p className="text-xs font-display font-bold uppercase tracking-wider text-muted-foreground mb-2">Secretary</p>
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <Label>Name</Label>
+                  <Input value={editTeamForm.secretary_name} onChange={e => setEditTeamForm(f => ({ ...f, secretary_name: e.target.value }))} />
+                </div>
+                <div>
+                  <Label>Email</Label>
+                  <Input type="email" value={editTeamForm.secretary_email} onChange={e => setEditTeamForm(f => ({ ...f, secretary_email: e.target.value }))} />
+                </div>
+                <div>
+                  <Label>Phone</Label>
+                  <Input value={editTeamForm.secretary_phone} onChange={e => setEditTeamForm(f => ({ ...f, secretary_phone: e.target.value }))} />
+                </div>
+              </div>
+            </div>
+            <div className="border-t border-border pt-3">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs font-display font-bold uppercase tracking-wider text-muted-foreground">WhatsApp Contacts</p>
+                <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => setEditTeamForm(f => ({ ...f, whatsapp_contacts: [...f.whatsapp_contacts, { name: "", number: "" }] }))}>+ Add</Button>
+              </div>
+              {editTeamForm.whatsapp_contacts.map((c, i) => (
+                <div key={i} className="grid grid-cols-[1fr_1fr_auto] gap-2 mb-2">
+                  <Input placeholder="Name" value={c.name} onChange={e => { const next = [...editTeamForm.whatsapp_contacts]; next[i] = { ...next[i], name: e.target.value }; setEditTeamForm(f => ({ ...f, whatsapp_contacts: next })); }} />
+                  <Input placeholder="Number" value={c.number} onChange={e => { const next = [...editTeamForm.whatsapp_contacts]; next[i] = { ...next[i], number: e.target.value }; setEditTeamForm(f => ({ ...f, whatsapp_contacts: next })); }} />
+                  {editTeamForm.whatsapp_contacts.length > 1 && (
+                    <Button size="icon" variant="ghost" className="h-9 w-9" onClick={() => setEditTeamForm(f => ({ ...f, whatsapp_contacts: f.whatsapp_contacts.filter((_, idx) => idx !== i) }))}><Trash2 className="h-3 w-3 text-destructive" /></Button>
+                  )}
+                </div>
+              ))}
+            </div>
+            <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label>Player Count</Label>
                 <Input type="number" value={editTeamForm.player_count} onChange={e => setEditTeamForm(f => ({ ...f, player_count: e.target.value }))} />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label>WhatsApp Name</Label>
-                <Input value={editTeamForm.whatsapp_name} onChange={e => setEditTeamForm(f => ({ ...f, whatsapp_name: e.target.value }))} />
-              </div>
-              <div>
-                <Label>WhatsApp Number</Label>
-                <Input value={editTeamForm.whatsapp_number} onChange={e => setEditTeamForm(f => ({ ...f, whatsapp_number: e.target.value }))} />
               </div>
             </div>
             <div className="flex items-center gap-6 pt-1">
