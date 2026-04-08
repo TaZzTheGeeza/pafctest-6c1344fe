@@ -242,6 +242,9 @@ const TournamentAdminPage = () => {
       toast.error("Team name, manager name, email & age group are required");
       return;
     }
+    const whatsappContacts = teamForm.whatsapp_name.trim() || teamForm.whatsapp_number.trim()
+      ? [{ name: teamForm.whatsapp_name.trim(), number: teamForm.whatsapp_number.trim() }]
+      : [];
     const { error } = await supabase.from("tournament_teams").insert({
       team_name: teamForm.team_name,
       club_name: teamForm.club_name || null,
@@ -250,11 +253,14 @@ const TournamentAdminPage = () => {
       manager_phone: teamForm.manager_phone || null,
       age_group_id: teamForm.age_group_id,
       player_count: teamForm.player_count ? parseInt(teamForm.player_count) : null,
+      whatsapp_contacts: whatsappContacts,
+      consent_rules: teamForm.consent_rules,
+      consent_photography: teamForm.consent_photography,
       status: "confirmed",
     });
     if (error) { toast.error("Failed to add team"); console.error(error); return; }
     setShowAddTeam(false);
-    setTeamForm({ team_name: "", club_name: "", manager_name: "", manager_email: "", manager_phone: "", age_group_id: "", player_count: "" });
+    setTeamForm({ team_name: "", club_name: "", manager_name: "", manager_email: "", manager_phone: "", age_group_id: "", player_count: "", whatsapp_name: "", whatsapp_number: "", consent_rules: true, consent_photography: true });
     invalidateAll();
     toast.success("Team added");
   };
