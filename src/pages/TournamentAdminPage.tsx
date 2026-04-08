@@ -229,6 +229,47 @@ const TournamentAdminPage = () => {
     toast.success(`"${teamName}" deleted`);
   };
 
+  // OPEN EDIT TEAM
+  const openEditTeam = (team: any) => {
+    const whatsapp = Array.isArray(team.whatsapp_contacts) && team.whatsapp_contacts.length > 0 ? team.whatsapp_contacts[0] : {};
+    setEditTeamForm({
+      team_name: team.team_name || "",
+      club_name: team.club_name || "",
+      manager_name: team.manager_name || "",
+      manager_email: team.manager_email || "",
+      manager_phone: team.manager_phone || "",
+      player_count: team.player_count?.toString() || "",
+      whatsapp_name: whatsapp.name || "",
+      whatsapp_number: whatsapp.number || "",
+      consent_rules: team.consent_rules ?? true,
+      consent_photography: team.consent_photography ?? true,
+    });
+    setEditingTeam(team);
+  };
+
+  // SAVE EDIT TEAM
+  const saveEditTeam = async () => {
+    if (!editingTeam) return;
+    const whatsappContacts = editTeamForm.whatsapp_name || editTeamForm.whatsapp_number
+      ? [{ name: editTeamForm.whatsapp_name, number: editTeamForm.whatsapp_number }]
+      : [];
+    const { error } = await supabase.from("tournament_teams").update({
+      team_name: editTeamForm.team_name,
+      club_name: editTeamForm.club_name || null,
+      manager_name: editTeamForm.manager_name,
+      manager_email: editTeamForm.manager_email,
+      manager_phone: editTeamForm.manager_phone || null,
+      player_count: editTeamForm.player_count ? parseInt(editTeamForm.player_count) : null,
+      whatsapp_contacts: whatsappContacts,
+      consent_rules: editTeamForm.consent_rules,
+      consent_photography: editTeamForm.consent_photography,
+    }).eq("id", editingTeam.id);
+    if (error) { toast.error("Failed to update team"); return; }
+    setEditingTeam(null);
+    invalidateAll();
+    toast.success("Team updated");
+  };
+
   // RENAME GROUP
   const renameGroup = async (groupId: string, newName: string) => {
     if (!newName.trim()) { toast.error("Group name required"); return; }
