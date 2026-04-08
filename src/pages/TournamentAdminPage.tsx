@@ -403,7 +403,6 @@ const TournamentAdminPage = () => {
                 {(!teams || teams.length === 0) && <Card><CardContent className="pt-6 text-center text-muted-foreground">No team registrations yet</CardContent></Card>}
               </TabsContent>
 
-              {/* GROUPS TAB */}
               <TabsContent value="groups" className="space-y-4">
                 {ageGroups?.map(ag => {
                   const agGroups = groups?.filter(g => g.age_group_id === ag.id) || [];
@@ -415,9 +414,42 @@ const TournamentAdminPage = () => {
                       <div className="grid md:grid-cols-2 gap-4">
                         {agGroups.map(g => {
                           const groupTeams = agTeams.filter(t => t.group_id === g.id);
+                          const isEditing = editingGroup?.id === g.id;
                           return (
                             <Card key={g.id}>
-                              <CardHeader className="pb-2"><CardTitle className="text-sm">Group {g.group_name}</CardTitle></CardHeader>
+                              <CardHeader className="pb-2">
+                                <div className="flex items-center justify-between">
+                                  {isEditing ? (
+                                    <div className="flex items-center gap-2 flex-1">
+                                      <Input
+                                        value={editingGroup.name}
+                                        onChange={e => setEditingGroup({ ...editingGroup, name: e.target.value })}
+                                        className="h-8 text-sm w-24"
+                                        autoFocus
+                                        onKeyDown={e => { if (e.key === "Enter") renameGroup(g.id, editingGroup.name); if (e.key === "Escape") setEditingGroup(null); }}
+                                      />
+                                      <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => renameGroup(g.id, editingGroup.name)}>
+                                        <Check className="h-3.5 w-3.5 text-primary" />
+                                      </Button>
+                                      <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => setEditingGroup(null)}>
+                                        <X className="h-3.5 w-3.5 text-muted-foreground" />
+                                      </Button>
+                                    </div>
+                                  ) : (
+                                    <CardTitle className="text-sm">Group {g.group_name}</CardTitle>
+                                  )}
+                                  {!isEditing && (
+                                    <div className="flex items-center gap-1">
+                                      <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => setEditingGroup({ id: g.id, name: g.group_name })}>
+                                        <Edit className="h-3.5 w-3.5 text-muted-foreground" />
+                                      </Button>
+                                      <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => { if (confirm(`Delete Group ${g.group_name}? Teams will be unassigned and group matches deleted.`)) deleteGroup(g.id); }}>
+                                        <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                                      </Button>
+                                    </div>
+                                  )}
+                                </div>
+                              </CardHeader>
                               <CardContent>
                                 {groupTeams.length === 0 ? (
                                   <p className="text-xs text-muted-foreground">No teams assigned yet. Assign in Teams tab.</p>
