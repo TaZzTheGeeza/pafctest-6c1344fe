@@ -25,10 +25,12 @@ const TournamentAdminPage = () => {
   const [showCreateTournament, setShowCreateTournament] = useState(false);
   const [showAddAgeGroup, setShowAddAgeGroup] = useState(false);
   const [showAddMatch, setShowAddMatch] = useState(false);
+  const [showAddTeam, setShowAddTeam] = useState(false);
   const [showAnnouncement, setShowAnnouncement] = useState(false);
   const [tournamentForm, setTournamentForm] = useState({ name: "", description: "", venue: "", tournament_date: "", entry_fee: "", rules: "" });
   const [ageGroupForm, setAgeGroupForm] = useState({ age_group: "", max_teams: "", group_count: "2" });
   const [matchForm, setMatchForm] = useState({ age_group_id: "", group_id: "", home_team_id: "", away_team_id: "", match_time: "", pitch: "", stage: "group" });
+  const [teamForm, setTeamForm] = useState({ team_name: "", club_name: "", manager_name: "", manager_email: "", manager_phone: "", age_group_id: "", player_count: "" });
   const [announcementText, setAnnouncementText] = useState("");
   const [editingGroup, setEditingGroup] = useState<{ id: string; name: string } | null>(null);
   const invalidateAll = () => {
