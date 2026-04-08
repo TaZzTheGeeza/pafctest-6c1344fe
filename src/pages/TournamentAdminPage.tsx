@@ -34,7 +34,7 @@ const TournamentAdminPage = () => {
   const [announcementText, setAnnouncementText] = useState("");
   const [editingGroup, setEditingGroup] = useState<{ id: string; name: string } | null>(null);
   const [editingTeam, setEditingTeam] = useState<any | null>(null);
-  const [editTeamForm, setEditTeamForm] = useState({ team_name: "", club_name: "", manager_name: "", manager_email: "", manager_phone: "", player_count: "", whatsapp_name: "", whatsapp_number: "", consent_rules: true, consent_photography: true });
+  const [editTeamForm, setEditTeamForm] = useState({ team_name: "", club_name: "", county: "", club_org_id: "", league_division: "", team_category: "", manager_name: "", manager_email: "", manager_phone: "", secretary_name: "", secretary_email: "", secretary_phone: "", player_count: "", whatsapp_contacts: [{ name: "", number: "" }] as { name: string; number: string }[], consent_rules: true, consent_photography: true });
   const invalidateAll = () => {
     queryClient.invalidateQueries({ queryKey: ["admin-tournaments"] });
     queryClient.invalidateQueries({ queryKey: ["admin-age-groups"] });
