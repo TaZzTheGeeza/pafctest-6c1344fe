@@ -30,7 +30,7 @@ const TournamentAdminPage = () => {
   const [ageGroupForm, setAgeGroupForm] = useState({ age_group: "", max_teams: "", group_count: "2" });
   const [matchForm, setMatchForm] = useState({ age_group_id: "", group_id: "", home_team_id: "", away_team_id: "", match_time: "", pitch: "", stage: "group" });
   const [announcementText, setAnnouncementText] = useState("");
-
+  const [editingGroup, setEditingGroup] = useState<{ id: string; name: string } | null>(null);
   const invalidateAll = () => {
     queryClient.invalidateQueries({ queryKey: ["admin-tournaments"] });
     queryClient.invalidateQueries({ queryKey: ["admin-age-groups"] });
