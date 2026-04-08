@@ -30,7 +30,7 @@ const TournamentAdminPage = () => {
   const [tournamentForm, setTournamentForm] = useState({ name: "", description: "", venue: "", tournament_date: "", entry_fee: "", rules: "" });
   const [ageGroupForm, setAgeGroupForm] = useState({ age_group: "", max_teams: "", group_count: "2" });
   const [matchForm, setMatchForm] = useState({ age_group_id: "", group_id: "", home_team_id: "", away_team_id: "", match_time: "", pitch: "", stage: "group" });
-  const [teamForm, setTeamForm] = useState({ team_name: "", club_name: "", manager_name: "", manager_email: "", manager_phone: "", age_group_id: "", player_count: "" });
+  const [teamForm, setTeamForm] = useState({ team_name: "", club_name: "", manager_name: "", manager_email: "", manager_phone: "", age_group_id: "", player_count: "", whatsapp_name: "", whatsapp_number: "", consent_rules: true, consent_photography: true });
   const [announcementText, setAnnouncementText] = useState("");
   const [editingGroup, setEditingGroup] = useState<{ id: string; name: string } | null>(null);
   const invalidateAll = () => {
@@ -242,6 +242,9 @@ const TournamentAdminPage = () => {
       toast.error("Team name, manager name, email & age group are required");
       return;
     }
+    const whatsappContacts = teamForm.whatsapp_name.trim() || teamForm.whatsapp_number.trim()
+      ? [{ name: teamForm.whatsapp_name.trim(), number: teamForm.whatsapp_number.trim() }]
+      : [];
     const { error } = await supabase.from("tournament_teams").insert({
       team_name: teamForm.team_name,
       club_name: teamForm.club_name || null,
@@ -250,11 +253,14 @@ const TournamentAdminPage = () => {
       manager_phone: teamForm.manager_phone || null,
       age_group_id: teamForm.age_group_id,
       player_count: teamForm.player_count ? parseInt(teamForm.player_count) : null,
+      whatsapp_contacts: whatsappContacts,
+      consent_rules: teamForm.consent_rules,
+      consent_photography: teamForm.consent_photography,
       status: "confirmed",
     });
     if (error) { toast.error("Failed to add team"); console.error(error); return; }
     setShowAddTeam(false);
-    setTeamForm({ team_name: "", club_name: "", manager_name: "", manager_email: "", manager_phone: "", age_group_id: "", player_count: "" });
+    setTeamForm({ team_name: "", club_name: "", manager_name: "", manager_email: "", manager_phone: "", age_group_id: "", player_count: "", whatsapp_name: "", whatsapp_number: "", consent_rules: true, consent_photography: true });
     invalidateAll();
     toast.success("Team added");
   };
@@ -673,6 +679,26 @@ const TournamentAdminPage = () => {
                 <Label>Player Count</Label>
                 <Input type="number" value={teamForm.player_count} onChange={e => setTeamForm(f => ({ ...f, player_count: e.target.value }))} placeholder="e.g. 10" />
               </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>WhatsApp Name</Label>
+                <Input value={teamForm.whatsapp_name} onChange={e => setTeamForm(f => ({ ...f, whatsapp_name: e.target.value }))} placeholder="Contact name" />
+              </div>
+              <div>
+                <Label>WhatsApp Number</Label>
+                <Input value={teamForm.whatsapp_number} onChange={e => setTeamForm(f => ({ ...f, whatsapp_number: e.target.value }))} placeholder="e.g. 07700123456" />
+              </div>
+            </div>
+            <div className="flex items-center gap-6 pt-1">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" checked={teamForm.consent_rules} onChange={e => setTeamForm(f => ({ ...f, consent_rules: e.target.checked }))} className="rounded border-border" />
+                <span className="text-sm">Rules Consent</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" checked={teamForm.consent_photography} onChange={e => setTeamForm(f => ({ ...f, consent_photography: e.target.checked }))} className="rounded border-border" />
+                <span className="text-sm">Photography Consent</span>
+              </label>
             </div>
             <Button onClick={addTeam} className="w-full">Add Team</Button>
           </div>
