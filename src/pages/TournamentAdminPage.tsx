@@ -748,6 +748,63 @@ const TournamentAdminPage = () => {
           </div>
         </DialogContent>
       </Dialog>
+      {/* EDIT TEAM DIALOG */}
+      <Dialog open={!!editingTeam} onOpenChange={open => { if (!open) setEditingTeam(null); }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader><DialogTitle>Edit Team</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <Label>Team Name *</Label>
+              <Input value={editTeamForm.team_name} onChange={e => setEditTeamForm(f => ({ ...f, team_name: e.target.value }))} />
+            </div>
+            <div>
+              <Label>Club Name</Label>
+              <Input value={editTeamForm.club_name} onChange={e => setEditTeamForm(f => ({ ...f, club_name: e.target.value }))} />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Manager Name *</Label>
+                <Input value={editTeamForm.manager_name} onChange={e => setEditTeamForm(f => ({ ...f, manager_name: e.target.value }))} />
+              </div>
+              <div>
+                <Label>Manager Email *</Label>
+                <Input type="email" value={editTeamForm.manager_email} onChange={e => setEditTeamForm(f => ({ ...f, manager_email: e.target.value }))} />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Manager Phone</Label>
+                <Input value={editTeamForm.manager_phone} onChange={e => setEditTeamForm(f => ({ ...f, manager_phone: e.target.value }))} />
+              </div>
+              <div>
+                <Label>Player Count</Label>
+                <Input type="number" value={editTeamForm.player_count} onChange={e => setEditTeamForm(f => ({ ...f, player_count: e.target.value }))} />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>WhatsApp Name</Label>
+                <Input value={editTeamForm.whatsapp_name} onChange={e => setEditTeamForm(f => ({ ...f, whatsapp_name: e.target.value }))} />
+              </div>
+              <div>
+                <Label>WhatsApp Number</Label>
+                <Input value={editTeamForm.whatsapp_number} onChange={e => setEditTeamForm(f => ({ ...f, whatsapp_number: e.target.value }))} />
+              </div>
+            </div>
+            <div className="flex items-center gap-6 pt-1">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" checked={editTeamForm.consent_rules} onChange={e => setEditTeamForm(f => ({ ...f, consent_rules: e.target.checked }))} className="rounded border-border" />
+                <span className="text-sm">Rules Consent</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" checked={editTeamForm.consent_photography} onChange={e => setEditTeamForm(f => ({ ...f, consent_photography: e.target.checked }))} className="rounded border-border" />
+                <span className="text-sm">Photography Consent</span>
+              </label>
+            </div>
+            <Button onClick={saveEditTeam} className="w-full">Save Changes</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
