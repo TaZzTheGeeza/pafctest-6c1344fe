@@ -336,6 +336,7 @@ const TournamentAdminPage = () => {
 
               {/* TEAMS TAB */}
               <TabsContent value="teams" className="space-y-4">
+                <Button size="sm" onClick={() => setShowAddTeam(true)}><Plus className="h-4 w-4 mr-1" />Add Team</Button>
                 {ageGroups?.map(ag => {
                   const agTeams = teams?.filter(t => t.age_group_id === ag.id) || [];
                   if (agTeams.length === 0) return null;
