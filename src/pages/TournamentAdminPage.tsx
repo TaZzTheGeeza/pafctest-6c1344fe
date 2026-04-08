@@ -231,16 +231,24 @@ const TournamentAdminPage = () => {
 
   // OPEN EDIT TEAM
   const openEditTeam = (team: any) => {
-    const whatsapp = Array.isArray(team.whatsapp_contacts) && team.whatsapp_contacts.length > 0 ? team.whatsapp_contacts[0] : {};
+    const whatsapp = Array.isArray(team.whatsapp_contacts) && team.whatsapp_contacts.length > 0
+      ? team.whatsapp_contacts.map((c: any) => ({ name: c.name || "", number: c.number || "" }))
+      : [{ name: "", number: "" }];
     setEditTeamForm({
       team_name: team.team_name || "",
       club_name: team.club_name || "",
+      county: team.county || "",
+      club_org_id: team.club_org_id || "",
+      league_division: team.league_division || "",
+      team_category: team.team_category || "",
       manager_name: team.manager_name || "",
       manager_email: team.manager_email || "",
       manager_phone: team.manager_phone || "",
+      secretary_name: team.secretary_name || "",
+      secretary_email: team.secretary_email || "",
+      secretary_phone: team.secretary_phone || "",
       player_count: team.player_count?.toString() || "",
-      whatsapp_name: whatsapp.name || "",
-      whatsapp_number: whatsapp.number || "",
+      whatsapp_contacts: whatsapp,
       consent_rules: team.consent_rules ?? true,
       consent_photography: team.consent_photography ?? true,
     });
@@ -250,15 +258,20 @@ const TournamentAdminPage = () => {
   // SAVE EDIT TEAM
   const saveEditTeam = async () => {
     if (!editingTeam) return;
-    const whatsappContacts = editTeamForm.whatsapp_name || editTeamForm.whatsapp_number
-      ? [{ name: editTeamForm.whatsapp_name, number: editTeamForm.whatsapp_number }]
-      : [];
+    const whatsappContacts = editTeamForm.whatsapp_contacts.filter(c => c.name || c.number);
     const { error } = await supabase.from("tournament_teams").update({
       team_name: editTeamForm.team_name,
       club_name: editTeamForm.club_name || null,
+      county: editTeamForm.county || null,
+      club_org_id: editTeamForm.club_org_id || null,
+      league_division: editTeamForm.league_division || null,
+      team_category: editTeamForm.team_category || null,
       manager_name: editTeamForm.manager_name,
       manager_email: editTeamForm.manager_email,
       manager_phone: editTeamForm.manager_phone || null,
+      secretary_name: editTeamForm.secretary_name || null,
+      secretary_email: editTeamForm.secretary_email || null,
+      secretary_phone: editTeamForm.secretary_phone || null,
       player_count: editTeamForm.player_count ? parseInt(editTeamForm.player_count) : null,
       whatsapp_contacts: whatsappContacts,
       consent_rules: editTeamForm.consent_rules,
