@@ -25,10 +25,12 @@ const TournamentAdminPage = () => {
   const [showCreateTournament, setShowCreateTournament] = useState(false);
   const [showAddAgeGroup, setShowAddAgeGroup] = useState(false);
   const [showAddMatch, setShowAddMatch] = useState(false);
+  const [showAddTeam, setShowAddTeam] = useState(false);
   const [showAnnouncement, setShowAnnouncement] = useState(false);
   const [tournamentForm, setTournamentForm] = useState({ name: "", description: "", venue: "", tournament_date: "", entry_fee: "", rules: "" });
   const [ageGroupForm, setAgeGroupForm] = useState({ age_group: "", max_teams: "", group_count: "2" });
   const [matchForm, setMatchForm] = useState({ age_group_id: "", group_id: "", home_team_id: "", away_team_id: "", match_time: "", pitch: "", stage: "group" });
+  const [teamForm, setTeamForm] = useState({ team_name: "", club_name: "", manager_name: "", manager_email: "", manager_phone: "", age_group_id: "", player_count: "" });
   const [announcementText, setAnnouncementText] = useState("");
   const [editingGroup, setEditingGroup] = useState<{ id: string; name: string } | null>(null);
   const invalidateAll = () => {
@@ -220,7 +222,29 @@ const TournamentAdminPage = () => {
     toast.success("Group renamed");
   };
 
-  // DELETE GROUP
+  // ADD TEAM MANUALLY
+  const addTeam = async () => {
+    if (!teamForm.team_name.trim() || !teamForm.manager_name.trim() || !teamForm.manager_email.trim() || !teamForm.age_group_id) {
+      toast.error("Team name, manager name, email & age group are required");
+      return;
+    }
+    const { error } = await supabase.from("tournament_teams").insert({
+      team_name: teamForm.team_name,
+      club_name: teamForm.club_name || null,
+      manager_name: teamForm.manager_name,
+      manager_email: teamForm.manager_email,
+      manager_phone: teamForm.manager_phone || null,
+      age_group_id: teamForm.age_group_id,
+      player_count: teamForm.player_count ? parseInt(teamForm.player_count) : null,
+      status: "confirmed",
+    });
+    if (error) { toast.error("Failed to add team"); console.error(error); return; }
+    setShowAddTeam(false);
+    setTeamForm({ team_name: "", club_name: "", manager_name: "", manager_email: "", manager_phone: "", age_group_id: "", player_count: "" });
+    invalidateAll();
+    toast.success("Team added");
+  };
+
   const deleteGroup = async (groupId: string) => {
     // Unassign teams from this group first
     const teamsInGroup = teams?.filter(t => t.group_id === groupId) || [];
@@ -312,6 +336,7 @@ const TournamentAdminPage = () => {
 
               {/* TEAMS TAB */}
               <TabsContent value="teams" className="space-y-4">
+                <Button size="sm" onClick={() => setShowAddTeam(true)}><Plus className="h-4 w-4 mr-1" />Add Team</Button>
                 {ageGroups?.map(ag => {
                   const agTeams = teams?.filter(t => t.age_group_id === ag.id) || [];
                   if (agTeams.length === 0) return null;
@@ -590,6 +615,52 @@ const TournamentAdminPage = () => {
           <DialogHeader><DialogTitle>Post Announcement</DialogTitle></DialogHeader>
           <Textarea value={announcementText} onChange={e => setAnnouncementText(e.target.value)} placeholder="Type your announcement..." rows={3} />
           <Button onClick={postAnnouncement} className="w-full">Post</Button>
+        </DialogContent>
+      </Dialog>
+      {/* ADD TEAM DIALOG */}
+      <Dialog open={showAddTeam} onOpenChange={setShowAddTeam}>
+        <DialogContent className="max-w-md">
+          <DialogHeader><DialogTitle>Add Team Manually</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <Label>Age Group *</Label>
+              <Select value={teamForm.age_group_id} onValueChange={v => setTeamForm(f => ({ ...f, age_group_id: v }))}>
+                <SelectTrigger><SelectValue placeholder="Select age group" /></SelectTrigger>
+                <SelectContent>
+                  {ageGroups?.map(ag => <SelectItem key={ag.id} value={ag.id}>{ag.age_group}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Team Name *</Label>
+              <Input value={teamForm.team_name} onChange={e => setTeamForm(f => ({ ...f, team_name: e.target.value }))} placeholder="e.g. Oakham Lions" />
+            </div>
+            <div>
+              <Label>Club Name</Label>
+              <Input value={teamForm.club_name} onChange={e => setTeamForm(f => ({ ...f, club_name: e.target.value }))} placeholder="e.g. Oakham FC" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Manager Name *</Label>
+                <Input value={teamForm.manager_name} onChange={e => setTeamForm(f => ({ ...f, manager_name: e.target.value }))} placeholder="Full name" />
+              </div>
+              <div>
+                <Label>Manager Email *</Label>
+                <Input type="email" value={teamForm.manager_email} onChange={e => setTeamForm(f => ({ ...f, manager_email: e.target.value }))} placeholder="email@example.com" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Manager Phone</Label>
+                <Input value={teamForm.manager_phone} onChange={e => setTeamForm(f => ({ ...f, manager_phone: e.target.value }))} placeholder="Optional" />
+              </div>
+              <div>
+                <Label>Player Count</Label>
+                <Input type="number" value={teamForm.player_count} onChange={e => setTeamForm(f => ({ ...f, player_count: e.target.value }))} placeholder="e.g. 10" />
+              </div>
+            </div>
+            <Button onClick={addTeam} className="w-full">Add Team</Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
