@@ -469,6 +469,7 @@ const TournamentAdminPage = () => {
                                         {team.status !== "rejected" && (
                                           <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setTeamStatus(team.id, "rejected")}><X className="h-4 w-4 text-red-500" /></Button>
                                         )}
+                                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => openEditTeam(team)}><Edit className="h-4 w-4" /></Button>
                                         <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => deleteTeam(team.id, team.team_name)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                                       </div>
                                     </TableCell>
