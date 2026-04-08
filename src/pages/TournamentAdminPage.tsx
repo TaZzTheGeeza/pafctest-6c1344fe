@@ -211,8 +211,30 @@ const TournamentAdminPage = () => {
     toast.success("Match deleted");
   };
 
-  const getTeamName = (id: string) => teams?.find(t => t.id === id)?.team_name || "TBC";
-  const getAgeGroupName = (id: string) => ageGroups?.find(ag => ag.id === id)?.age_group || "";
+  // RENAME GROUP
+  const renameGroup = async (groupId: string, newName: string) => {
+    if (!newName.trim()) { toast.error("Group name required"); return; }
+    await supabase.from("tournament_groups").update({ group_name: newName.trim() }).eq("id", groupId);
+    setEditingGroup(null);
+    invalidateAll();
+    toast.success("Group renamed");
+  };
+
+  // DELETE GROUP
+  const deleteGroup = async (groupId: string) => {
+    // Unassign teams from this group first
+    const teamsInGroup = teams?.filter(t => t.group_id === groupId) || [];
+    if (teamsInGroup.length > 0) {
+      for (const t of teamsInGroup) {
+        await supabase.from("tournament_teams").update({ group_id: null }).eq("id", t.id);
+      }
+    }
+    // Delete matches referencing this group
+    await supabase.from("tournament_matches").delete().eq("group_id", groupId);
+    await supabase.from("tournament_groups").delete().eq("id", groupId);
+    invalidateAll();
+    toast.success("Group deleted");
+  };
 
   const filteredTeamsForMatch = teams?.filter(t => t.age_group_id === matchForm.age_group_id && t.status === "confirmed") || [];
 
