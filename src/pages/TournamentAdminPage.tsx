@@ -617,6 +617,52 @@ const TournamentAdminPage = () => {
           <Button onClick={postAnnouncement} className="w-full">Post</Button>
         </DialogContent>
       </Dialog>
+      {/* ADD TEAM DIALOG */}
+      <Dialog open={showAddTeam} onOpenChange={setShowAddTeam}>
+        <DialogContent className="max-w-md">
+          <DialogHeader><DialogTitle>Add Team Manually</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <Label>Age Group *</Label>
+              <Select value={teamForm.age_group_id} onValueChange={v => setTeamForm(f => ({ ...f, age_group_id: v }))}>
+                <SelectTrigger><SelectValue placeholder="Select age group" /></SelectTrigger>
+                <SelectContent>
+                  {ageGroups?.map(ag => <SelectItem key={ag.id} value={ag.id}>{ag.age_group}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Team Name *</Label>
+              <Input value={teamForm.team_name} onChange={e => setTeamForm(f => ({ ...f, team_name: e.target.value }))} placeholder="e.g. Oakham Lions" />
+            </div>
+            <div>
+              <Label>Club Name</Label>
+              <Input value={teamForm.club_name} onChange={e => setTeamForm(f => ({ ...f, club_name: e.target.value }))} placeholder="e.g. Oakham FC" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Manager Name *</Label>
+                <Input value={teamForm.manager_name} onChange={e => setTeamForm(f => ({ ...f, manager_name: e.target.value }))} placeholder="Full name" />
+              </div>
+              <div>
+                <Label>Manager Email *</Label>
+                <Input type="email" value={teamForm.manager_email} onChange={e => setTeamForm(f => ({ ...f, manager_email: e.target.value }))} placeholder="email@example.com" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Manager Phone</Label>
+                <Input value={teamForm.manager_phone} onChange={e => setTeamForm(f => ({ ...f, manager_phone: e.target.value }))} placeholder="Optional" />
+              </div>
+              <div>
+                <Label>Player Count</Label>
+                <Input type="number" value={teamForm.player_count} onChange={e => setTeamForm(f => ({ ...f, player_count: e.target.value }))} placeholder="e.g. 10" />
+              </div>
+            </div>
+            <Button onClick={addTeam} className="w-full">Add Team</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
