@@ -3,7 +3,9 @@ import { useTeamFixtures, type FAFixture } from "@/hooks/useTeamFixtures";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Check, X, HelpCircle, Loader2, MapPin, Clock, Navigation, ChevronDown, ChevronUp, Trash2, CalendarPlus, Users } from "lucide-react";
+import { Check, X, HelpCircle, Loader2, MapPin, Clock, Navigation, ChevronDown, ChevronUp, Trash2, CalendarPlus, Users, Bell } from "lucide-react";
+import { notifyTeamMembers } from "@/lib/notifyTeamMembers";
+import { toast } from "sonner";
 import { AddAvailabilityEventDialog } from "./AddAvailabilityEventDialog";
 
 interface Props {
@@ -86,9 +88,45 @@ export function FixtureAvailability({ teamSlug }: Props) {
   const { user, isCoach, isAdmin } = useAuth();
   const queryClient = useQueryClient();
   const [expandedFixture, setExpandedFixture] = useState<string | null>(null);
-  // Track which "person" is selected per fixture: null = self, string = child name
   const [respondingForMap, setRespondingForMap] = useState<Record<string, string | null>>({});
+  const [resending, setResending] = useState<string | null>(null);
   const { data: teamData, isLoading: fixturesLoading } = useTeamFixtures(teamSlug);
+
+  const handleResendNotification = async (item: AvailabilityItem) => {
+    if (!user) return;
+    setResending(item.key);
+    try {
+      const [dd, mm, yy] = item.date.split("/").map(Number);
+      const friendlyDate = new Date(2000 + yy, mm - 1, dd).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+      await notifyTeamMembers({
+        teamSlug,
+        excludeUserId: undefined,
+        notification: {
+          title: "Availability Reminder",
+          message: `${item.title} — ${friendlyDate}. Please submit your availability.`,
+          type: "event",
+          link: "/hub?tab=availability",
+        },
+        email: {
+          templateName: "availability-event-added",
+          templateData: {
+            eventTitle: item.isCustom ? item.title : item.title,
+            eventDate: friendlyDate,
+            eventTime: item.time,
+            venue: item.venue || undefined,
+            teamName: teamSlug,
+          },
+          idempotencyPrefix: `avail-resend-${teamSlug}-${item.date}-${Date.now()}`,
+        },
+      });
+      toast.success("Notification re-sent to all team members");
+    } catch (err) {
+      console.error("Resend notification failed:", err);
+      toast.error("Failed to re-send notification");
+    } finally {
+      setResending(null);
+    }
+  };
 
   const { data: availability = [], isLoading: availLoading } = useQuery({
     queryKey: ["fixture-availability", teamSlug],
@@ -332,6 +370,20 @@ export function FixtureAvailability({ teamSlug }: Props) {
               </div>
 
               <div className="flex items-center gap-2">
+                {(isCoach || isAdmin) && (
+                  <button
+                    onClick={() => handleResendNotification(item)}
+                    disabled={resending === item.key}
+                    title="Re-send availability notification"
+                    className="text-muted-foreground hover:text-primary transition-colors disabled:opacity-50"
+                  >
+                    {resending === item.key ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Bell className="h-3.5 w-3.5" />
+                    )}
+                  </button>
+                )}
                 {item.isCustom && (isCoach || isAdmin) && (
                   <button
                     onClick={() => {
