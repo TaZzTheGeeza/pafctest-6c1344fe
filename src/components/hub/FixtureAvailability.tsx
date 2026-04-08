@@ -311,12 +311,12 @@ export function FixtureAvailability({ teamSlug }: Props) {
   }
 
   const hasGuardians = guardians.length > 0;
+  const isParentOnly = hasGuardians;
 
-  // Options for the "responding for" selector
-  const respondingOptions: { value: string | null; label: string }[] = [
-    { value: null, label: "Myself" },
-    ...guardians.map((g) => ({ value: g.player_name, label: g.player_name })),
-  ];
+  // Parents can ONLY respond for their linked children, not themselves
+  const respondingOptions: { value: string | null; label: string }[] = isParentOnly
+    ? guardians.map((g) => ({ value: g.player_name, label: g.player_name }))
+    : [{ value: null, label: "Myself" }];
 
   const statusButtons: { status: AvailabilityStatus; icon: typeof Check; label: string; activeClass: string }[] = [
     { status: "available", icon: Check, label: "Available", activeClass: "bg-green-600 text-white border-green-600" },
