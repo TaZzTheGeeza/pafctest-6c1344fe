@@ -222,7 +222,29 @@ const TournamentAdminPage = () => {
     toast.success("Group renamed");
   };
 
-  // DELETE GROUP
+  // ADD TEAM MANUALLY
+  const addTeam = async () => {
+    if (!teamForm.team_name.trim() || !teamForm.manager_name.trim() || !teamForm.manager_email.trim() || !teamForm.age_group_id) {
+      toast.error("Team name, manager name, email & age group are required");
+      return;
+    }
+    const { error } = await supabase.from("tournament_teams").insert({
+      team_name: teamForm.team_name,
+      club_name: teamForm.club_name || null,
+      manager_name: teamForm.manager_name,
+      manager_email: teamForm.manager_email,
+      manager_phone: teamForm.manager_phone || null,
+      age_group_id: teamForm.age_group_id,
+      player_count: teamForm.player_count ? parseInt(teamForm.player_count) : null,
+      status: "confirmed",
+    });
+    if (error) { toast.error("Failed to add team"); console.error(error); return; }
+    setShowAddTeam(false);
+    setTeamForm({ team_name: "", club_name: "", manager_name: "", manager_email: "", manager_phone: "", age_group_id: "", player_count: "" });
+    invalidateAll();
+    toast.success("Team added");
+  };
+
   const deleteGroup = async (groupId: string) => {
     // Unassign teams from this group first
     const teamsInGroup = teams?.filter(t => t.group_id === groupId) || [];
