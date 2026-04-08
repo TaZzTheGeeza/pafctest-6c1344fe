@@ -88,9 +88,45 @@ export function FixtureAvailability({ teamSlug }: Props) {
   const { user, isCoach, isAdmin } = useAuth();
   const queryClient = useQueryClient();
   const [expandedFixture, setExpandedFixture] = useState<string | null>(null);
-  // Track which "person" is selected per fixture: null = self, string = child name
   const [respondingForMap, setRespondingForMap] = useState<Record<string, string | null>>({});
+  const [resending, setResending] = useState<string | null>(null);
   const { data: teamData, isLoading: fixturesLoading } = useTeamFixtures(teamSlug);
+
+  const handleResendNotification = async (item: AvailabilityItem) => {
+    if (!user) return;
+    setResending(item.key);
+    try {
+      const [dd, mm, yy] = item.date.split("/").map(Number);
+      const friendlyDate = new Date(2000 + yy, mm - 1, dd).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+      await notifyTeamMembers({
+        teamSlug,
+        excludeUserId: undefined,
+        notification: {
+          title: "Availability Reminder",
+          message: `${item.title} — ${friendlyDate}. Please submit your availability.`,
+          type: "event",
+          link: "/hub?tab=availability",
+        },
+        email: {
+          templateName: "availability-event-added",
+          templateData: {
+            eventTitle: item.isCustom ? item.title : item.title,
+            eventDate: friendlyDate,
+            eventTime: item.time,
+            venue: item.venue || undefined,
+            teamName: teamSlug,
+          },
+          idempotencyPrefix: `avail-resend-${teamSlug}-${item.date}-${Date.now()}`,
+        },
+      });
+      toast.success("Notification re-sent to all team members");
+    } catch (err) {
+      console.error("Resend notification failed:", err);
+      toast.error("Failed to re-send notification");
+    } finally {
+      setResending(null);
+    }
+  };
 
   const { data: availability = [], isLoading: availLoading } = useQuery({
     queryKey: ["fixture-availability", teamSlug],
