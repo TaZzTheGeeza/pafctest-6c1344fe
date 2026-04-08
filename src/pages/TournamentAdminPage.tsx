@@ -236,6 +236,9 @@ const TournamentAdminPage = () => {
     toast.success("Group deleted");
   };
 
+  const getTeamName = (id: string) => teams?.find(t => t.id === id)?.team_name || "TBC";
+  const getAgeGroupName = (id: string) => ageGroups?.find(ag => ag.id === id)?.age_group || "";
+
   const filteredTeamsForMatch = teams?.filter(t => t.age_group_id === matchForm.age_group_id && t.status === "confirmed") || [];
 
   return (
