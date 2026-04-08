@@ -213,6 +213,20 @@ const TournamentAdminPage = () => {
     toast.success("Match deleted");
   };
 
+  // DELETE TEAM
+  const deleteTeam = async (teamId: string, teamName: string) => {
+    if (!confirm(`Delete "${teamName}"? This will also remove their players and any matches they're in.`)) return;
+    // Delete players first
+    await supabase.from("tournament_team_players").delete().eq("team_id", teamId);
+    // Delete matches involving this team
+    await supabase.from("tournament_matches").delete().or(`home_team_id.eq.${teamId},away_team_id.eq.${teamId}`);
+    // Delete the team
+    const { error } = await supabase.from("tournament_teams").delete().eq("id", teamId);
+    if (error) { toast.error("Failed to delete team"); return; }
+    invalidateAll();
+    toast.success(`"${teamName}" deleted`);
+  };
+
   // RENAME GROUP
   const renameGroup = async (groupId: string, newName: string) => {
     if (!newName.trim()) { toast.error("Group name required"); return; }
