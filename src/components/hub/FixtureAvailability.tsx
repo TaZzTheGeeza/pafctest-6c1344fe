@@ -275,6 +275,10 @@ export function FixtureAvailability({ teamSlug }: Props) {
   }
 
   function getSelectedRespondingFor(itemKey: string): string | null {
+    // For parents, default to first child if not explicitly set
+    if (hasGuardians && !(itemKey in respondingForMap) && guardians.length > 0) {
+      return guardians[0].player_name;
+    }
     return respondingForMap[itemKey] ?? null;
   }
 
@@ -291,32 +295,45 @@ export function FixtureAvailability({ teamSlug }: Props) {
 
   function getTeamSummary(item: AvailabilityItem) {
     const records = availability.filter((a) => a.fixture_date === item.date && a.opponent === item.opponent);
+    // Deduplicate: per child (responding_for) or per user, keep latest
+    const deduped = new Map<string, string>();
+    records.forEach((r) => {
+      const key = r.responding_for || r.user_id;
+      deduped.set(key, r.status);
+    });
+    const statuses = Array.from(deduped.values());
     return {
-      available: records.filter((r) => r.status === "available").length,
-      unavailable: records.filter((r) => r.status === "unavailable").length,
-      maybe: records.filter((r) => r.status === "maybe").length,
+      available: statuses.filter((s) => s === "available").length,
+      unavailable: statuses.filter((s) => s === "unavailable").length,
+      maybe: statuses.filter((s) => s === "maybe").length,
     };
   }
 
   function getRespondents(item: AvailabilityItem, status: string) {
     const records = availability.filter((a) => a.fixture_date === item.date && a.opponent === item.opponent && a.status === status);
-    return records.map((r) => {
-      const profile = profiles.find((p) => p.id === r.user_id);
-      const baseName = profile?.full_name || "Unknown";
+    // Deduplicate by responding_for (child name) — only show each child once
+    const seen = new Set<string>();
+    return records.filter((r) => {
+      const key = r.responding_for || r.user_id;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    }).map((r) => {
       if (r.responding_for) {
-        return `${r.responding_for} (via ${baseName})`;
+        return r.responding_for; // Just show the child's name
       }
-      return baseName;
+      const profile = profiles.find((p) => p.id === r.user_id);
+      return profile?.full_name || "Unknown";
     });
   }
 
   const hasGuardians = guardians.length > 0;
+  const isParentOnly = hasGuardians;
 
-  // Options for the "responding for" selector
-  const respondingOptions: { value: string | null; label: string }[] = [
-    { value: null, label: "Myself" },
-    ...guardians.map((g) => ({ value: g.player_name, label: g.player_name })),
-  ];
+  // Parents can ONLY respond for their linked children, not themselves
+  const respondingOptions: { value: string | null; label: string }[] = isParentOnly
+    ? guardians.map((g) => ({ value: g.player_name, label: g.player_name }))
+    : [{ value: null, label: "Myself" }];
 
   const statusButtons: { status: AvailabilityStatus; icon: typeof Check; label: string; activeClass: string }[] = [
     { status: "available", icon: Check, label: "Available", activeClass: "bg-green-600 text-white border-green-600" },
