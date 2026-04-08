@@ -275,8 +275,15 @@ export function FixtureAvailability({ teamSlug }: Props) {
   }
 
   function getSelectedRespondingFor(itemKey: string): string | null {
+    // For parents, default to first child if not explicitly set
+    if (isParentOnly && !(itemKey in respondingForMap) && guardians.length > 0) {
+      return guardians[0].player_name;
+    }
     return respondingForMap[itemKey] ?? null;
   }
+
+  // Determine if current user is parent-only (has guardians)
+  const isParentOnly = guardians.length > 0;
 
   function getMyStatus(item: AvailabilityItem, respondingFor: string | null): AvailabilityStatus {
     const record = availability.find(
