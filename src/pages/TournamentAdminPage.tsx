@@ -680,6 +680,26 @@ const TournamentAdminPage = () => {
                 <Input type="number" value={teamForm.player_count} onChange={e => setTeamForm(f => ({ ...f, player_count: e.target.value }))} placeholder="e.g. 10" />
               </div>
             </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>WhatsApp Name</Label>
+                <Input value={teamForm.whatsapp_name} onChange={e => setTeamForm(f => ({ ...f, whatsapp_name: e.target.value }))} placeholder="Contact name" />
+              </div>
+              <div>
+                <Label>WhatsApp Number</Label>
+                <Input value={teamForm.whatsapp_number} onChange={e => setTeamForm(f => ({ ...f, whatsapp_number: e.target.value }))} placeholder="e.g. 07700123456" />
+              </div>
+            </div>
+            <div className="flex items-center gap-6 pt-1">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" checked={teamForm.consent_rules} onChange={e => setTeamForm(f => ({ ...f, consent_rules: e.target.checked }))} className="rounded border-border" />
+                <span className="text-sm">Rules Consent</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" checked={teamForm.consent_photography} onChange={e => setTeamForm(f => ({ ...f, consent_photography: e.target.checked }))} className="rounded border-border" />
+                <span className="text-sm">Photography Consent</span>
+              </label>
+            </div>
             <Button onClick={addTeam} className="w-full">Add Team</Button>
           </div>
         </DialogContent>
