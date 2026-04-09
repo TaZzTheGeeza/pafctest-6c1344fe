@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { UserPlus, Trash2, Users, Search, ChevronDown, Shield, User, Heart } from "lucide-react";
+import { UserPlus, Trash2, Users, Search, ChevronDown, Shield, User, Heart, Mail, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { isUserOnline, formatLastSeen } from "@/hooks/usePresence";
 
@@ -36,6 +36,9 @@ export function TeamMemberManager({ teamSlug, teamName }: { teamSlug: string; te
   const [showAdd, setShowAdd] = useState(false);
   const [roleMenuOpen, setRoleMenuOpen] = useState<string | null>(null);
   const [addRole, setAddRole] = useState("player");
+  const [addMode, setAddMode] = useState<"search" | "invite">("search");
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteSending, setInviteSending] = useState(false);
 
   useEffect(() => {
     loadMembers();
@@ -87,6 +90,60 @@ export function TeamMemberManager({ teamSlug, teamName }: { teamSlug: string; te
     loadMembers();
   }
 
+  async function sendEmailInvite() {
+    const email = inviteEmail.trim().toLowerCase();
+    if (!email || !email.includes("@")) {
+      toast.error("Enter a valid email address");
+      return;
+    }
+    setInviteSending(true);
+    try {
+      // Get inviter profile name
+      const { data: inviterProfile } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", user!.id)
+        .single();
+
+      // Insert invite record
+      const { error: insertError } = await supabase.from("team_invites" as any).insert({
+        email,
+        team_slug: teamSlug,
+        role: "parent",
+        invited_by: user!.id,
+      });
+      if (insertError) {
+        if (insertError.code === "23505") {
+          toast.info("This email has already been invited to this team");
+          return;
+        }
+        throw insertError;
+      }
+
+      // Send invite email
+      const signupUrl = `${window.location.origin}/auth`;
+      await supabase.functions.invoke("send-transactional-email", {
+        body: {
+          templateName: "team-invite",
+          recipientEmail: email,
+          idempotencyKey: `team-invite-${teamSlug}-${email}`,
+          templateData: {
+            teamName: teamName,
+            signupUrl,
+            inviterName: inviterProfile?.full_name || "A coach",
+          },
+        },
+      });
+
+      toast.success(`Invite sent to ${email}`);
+      setInviteEmail("");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to send invite");
+    } finally {
+      setInviteSending(false);
+    }
+  }
+
   const filteredProfiles = allProfiles.filter((p) => {
     const memberIds = members.map((m) => m.user_id);
     if (memberIds.includes(p.id)) return false;
@@ -96,7 +153,6 @@ export function TeamMemberManager({ teamSlug, teamName }: { teamSlug: string; te
 
   const getRoleConfig = (role: string) => TEAM_ROLES.find(r => r.value === role) || TEAM_ROLES[3];
 
-  // Group members by role
   const sortedMembers = [...members].sort((a, b) => {
     const order = ["coach", "player", "parent", "member"];
     return order.indexOf(a.role) - order.indexOf(b.role);
@@ -118,59 +174,111 @@ export function TeamMemberManager({ teamSlug, teamName }: { teamSlug: string; te
           </button>
         </div>
 
-        {/* Add Member Search */}
+        {/* Add Member Panel */}
         {showAdd && (
           <div className="mb-4 bg-secondary/50 rounded-lg p-4 space-y-3">
-            {/* Role selector for new member */}
-            <div>
-              <p className="text-[10px] font-display tracking-wider uppercase text-muted-foreground mb-1.5">Add as</p>
-              <div className="flex gap-1.5 flex-wrap">
-                {TEAM_ROLES.map((r) => {
-                  const Icon = r.icon;
-                  return (
-                    <button
-                      key={r.value}
-                      onClick={() => setAddRole(r.value)}
-                      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-display border transition-all ${
-                        addRole === r.value ? r.color : "border-border text-muted-foreground hover:border-primary/30"
-                      }`}
-                    >
-                      <Icon className="h-3 w-3" />
-                      {r.label}
-                    </button>
-                  );
-                })}
-              </div>
+            {/* Mode toggle */}
+            <div className="flex gap-2 mb-2">
+              <button
+                onClick={() => setAddMode("search")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-display tracking-wider transition-all ${
+                  addMode === "search" ? "bg-primary text-primary-foreground" : "bg-secondary border border-border text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Search className="h-3 w-3" /> Existing User
+              </button>
+              <button
+                onClick={() => setAddMode("invite")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-display tracking-wider transition-all ${
+                  addMode === "invite" ? "bg-primary text-primary-foreground" : "bg-secondary border border-border text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Mail className="h-3 w-3" /> Invite by Email
+              </button>
             </div>
 
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search by name or email..."
-                className="w-full bg-background border border-border rounded-lg pl-9 pr-3 py-2 text-sm text-foreground"
-              />
-            </div>
-            <div className="max-h-48 overflow-y-auto space-y-1">
-              {filteredProfiles.length === 0 ? (
-                <p className="text-xs text-muted-foreground text-center py-3">
-                  {search ? "No matching users found" : "Type to search users"}
-                </p>
-              ) : (
-                filteredProfiles.slice(0, 10).map((p) => (
-                  <div key={p.id} className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-secondary transition-colors">
-                    <div>
-                      <p className="text-sm font-display text-foreground">{p.full_name || "Unnamed"}</p>
-                      <p className="text-[10px] text-muted-foreground">{p.email}</p>
-                    </div>
-                    <button onClick={() => addMember(p.id)} className="text-xs text-primary hover:text-primary/80 font-display tracking-wider flex items-center gap-1">
-                      <UserPlus className="h-3.5 w-3.5" /> Add
-                    </button>
+            {addMode === "search" ? (
+              <>
+                {/* Role selector for new member */}
+                <div>
+                  <p className="text-[10px] font-display tracking-wider uppercase text-muted-foreground mb-1.5">Add as</p>
+                  <div className="flex gap-1.5 flex-wrap">
+                    {TEAM_ROLES.map((r) => {
+                      const Icon = r.icon;
+                      return (
+                        <button
+                          key={r.value}
+                          onClick={() => setAddRole(r.value)}
+                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-display border transition-all ${
+                            addRole === r.value ? r.color : "border-border text-muted-foreground hover:border-primary/30"
+                          }`}
+                        >
+                          <Icon className="h-3 w-3" />
+                          {r.label}
+                        </button>
+                      );
+                    })}
                   </div>
-                ))
-              )}
-            </div>
+                </div>
+
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <input
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Search by name or email..."
+                    className="w-full bg-background border border-border rounded-lg pl-9 pr-3 py-2 text-sm text-foreground"
+                  />
+                </div>
+                <div className="max-h-48 overflow-y-auto space-y-1">
+                  {filteredProfiles.length === 0 ? (
+                    <p className="text-xs text-muted-foreground text-center py-3">
+                      {search ? "No matching users found" : "Type to search users"}
+                    </p>
+                  ) : (
+                    filteredProfiles.slice(0, 10).map((p) => (
+                      <div key={p.id} className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-secondary transition-colors">
+                        <div>
+                          <p className="text-sm font-display text-foreground">{p.full_name || "Unnamed"}</p>
+                          <p className="text-[10px] text-muted-foreground">{p.email}</p>
+                        </div>
+                        <button onClick={() => addMember(p.id)} className="text-xs text-primary hover:text-primary/80 font-display tracking-wider flex items-center gap-1">
+                          <UserPlus className="h-3.5 w-3.5" /> Add
+                        </button>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </>
+            ) : (
+              /* Email invite mode */
+              <div className="space-y-3">
+                <p className="text-xs text-muted-foreground">
+                  Send an invite to a parent's email. They'll be automatically added as a <strong>Parent</strong> to {teamName} when they create their account.
+                </p>
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <input
+                      type="email"
+                      value={inviteEmail}
+                      onChange={(e) => setInviteEmail(e.target.value)}
+                      placeholder="parent@example.com"
+                      className="w-full bg-background border border-border rounded-lg pl-9 pr-3 py-2 text-sm text-foreground placeholder:text-muted-foreground"
+                      onKeyDown={(e) => e.key === "Enter" && sendEmailInvite()}
+                    />
+                  </div>
+                  <button
+                    onClick={sendEmailInvite}
+                    disabled={inviteSending || !inviteEmail.trim()}
+                    className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-xs font-display tracking-wider hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center gap-1.5"
+                  >
+                    {inviteSending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Mail className="h-3.5 w-3.5" />}
+                    {inviteSending ? "Sending…" : "Send Invite"}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -200,7 +308,6 @@ export function TeamMemberManager({ teamSlug, teamName }: { teamSlug: string; te
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    {/* Role Badge / Dropdown */}
                     <div className="relative">
                       <button
                         onClick={() => setRoleMenuOpen(roleMenuOpen === m.id ? null : m.id)}
