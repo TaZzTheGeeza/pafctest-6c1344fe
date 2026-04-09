@@ -172,6 +172,41 @@ export function FixtureAvailability({ teamSlug }: Props) {
     enabled: !!user,
   });
 
+  const { data: venueOverrides = [] } = useQuery({
+    queryKey: ["venue-overrides"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("venue_address_overrides")
+        .select("venue_name, full_address");
+      if (error) throw error;
+      return data as { venue_name: string; full_address: string }[];
+    },
+    staleTime: 1000 * 60 * 60,
+  });
+
+  const venueOverrideMap = Object.fromEntries(
+    venueOverrides.map((v) => [v.venue_name.toUpperCase(), v.full_address])
+  );
+
+  const getDirectionsAddress = (venue: string) => {
+    return venueOverrideMap[venue.toUpperCase()] || venue;
+  };
+
+  const venueOverrideMutation = useMutation({
+    mutationFn: async ({ venueName, fullAddress }: { venueName: string; fullAddress: string }) => {
+      const { error } = await supabase
+        .from("venue_address_overrides")
+        .upsert({ venue_name: venueName, full_address: fullAddress, updated_at: new Date().toISOString() }, { onConflict: "venue_name" });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["venue-overrides"] });
+      setEditingVenue(null);
+      toast.success("Venue address updated");
+    },
+    onError: () => toast.error("Failed to update venue address"),
+  });
+
   const respondentIds = [...new Set(availability.map((a) => a.user_id))];
   const { data: profiles = [] } = useQuery({
     queryKey: ["availability-profiles", respondentIds.sort().join(",")],
