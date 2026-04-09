@@ -90,6 +90,8 @@ export function FixtureAvailability({ teamSlug }: Props) {
   const [expandedFixture, setExpandedFixture] = useState<string | null>(null);
   const [respondingForMap, setRespondingForMap] = useState<Record<string, string | null>>({});
   const [resending, setResending] = useState<string | null>(null);
+  const [editingVenue, setEditingVenue] = useState<string | null>(null);
+  const [venueInput, setVenueInput] = useState("");
   const { data: teamData, isLoading: fixturesLoading } = useTeamFixtures(teamSlug);
 
   const handleResendNotification = async (item: AvailabilityItem) => {
