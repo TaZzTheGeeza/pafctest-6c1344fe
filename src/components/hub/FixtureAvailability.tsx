@@ -413,14 +413,55 @@ export function FixtureAvailability({ teamSlug }: Props) {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(item.venue)}`, '_system');
+                        window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(getDirectionsAddress(item.venue))}`, '_system');
                       }}
                       className="text-[10px] text-primary hover:text-primary/80 flex items-center gap-0.5 transition-colors"
                     >
                       <Navigation className="w-2.5 h-2.5" />Directions
                     </button>
                   )}
+                  {item.venue && (isCoach || isAdmin) && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEditingVenue(item.key);
+                        setVenueInput(venueOverrideMap[item.venue.toUpperCase()] || "");
+                      }}
+                      title="Edit venue address for directions"
+                      className="text-[10px] text-muted-foreground hover:text-primary flex items-center gap-0.5 transition-colors"
+                    >
+                      <Pencil className="w-2.5 h-2.5" />
+                    </button>
+                  )}
                 </div>
+                {editingVenue === item.key && item.venue && (
+                  <div className="mt-2 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                    <input
+                      type="text"
+                      value={venueInput}
+                      onChange={(e) => setVenueInput(e.target.value)}
+                      placeholder="Full address, e.g. Main Street, Cottesmore LE15 7DH"
+                      className="flex-1 px-2 py-1 text-xs rounded border border-border bg-background text-foreground placeholder:text-muted-foreground"
+                    />
+                    <button
+                      onClick={() => {
+                        if (venueInput.trim()) {
+                          venueOverrideMutation.mutate({ venueName: item.venue, fullAddress: venueInput.trim() });
+                        }
+                      }}
+                      disabled={venueOverrideMutation.isPending}
+                      className="px-2 py-1 text-xs rounded bg-primary text-primary-foreground hover:bg-primary/90"
+                    >
+                      {venueOverrideMutation.isPending ? "Saving…" : "Save"}
+                    </button>
+                    <button
+                      onClick={() => setEditingVenue(null)}
+                      className="px-2 py-1 text-xs rounded border border-border text-muted-foreground hover:text-foreground"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                )}
               </div>
 
               <div className="flex items-center gap-2">
