@@ -1578,6 +1578,42 @@ export type Database = {
         }
         Relationships: []
       }
+      team_invites: {
+        Row: {
+          accepted_at: string | null
+          created_at: string
+          email: string
+          id: string
+          invite_token: string
+          invited_by: string
+          role: string
+          status: string
+          team_slug: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          invite_token?: string
+          invited_by: string
+          role?: string
+          status?: string
+          team_slug: string
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          invite_token?: string
+          invited_by?: string
+          role?: string
+          status?: string
+          team_slug?: string
+        }
+        Relationships: []
+      }
       team_members: {
         Row: {
           created_at: string
