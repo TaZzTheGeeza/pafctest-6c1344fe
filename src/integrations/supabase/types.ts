@@ -2219,6 +2219,30 @@ export type Database = {
         }
         Relationships: []
       }
+      venue_address_overrides: {
+        Row: {
+          created_at: string
+          full_address: string
+          id: string
+          updated_at: string
+          venue_name: string
+        }
+        Insert: {
+          created_at?: string
+          full_address: string
+          id?: string
+          updated_at?: string
+          venue_name: string
+        }
+        Update: {
+          created_at?: string
+          full_address?: string
+          id?: string
+          updated_at?: string
+          venue_name?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       tournament_teams_public: {
