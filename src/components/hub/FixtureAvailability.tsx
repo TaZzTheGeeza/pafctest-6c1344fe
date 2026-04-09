@@ -3,7 +3,7 @@ import { useTeamFixtures, type FAFixture } from "@/hooks/useTeamFixtures";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Check, X, HelpCircle, Loader2, MapPin, Clock, Navigation, ChevronDown, ChevronUp, Trash2, CalendarPlus, Users, Bell } from "lucide-react";
+import { Check, X, HelpCircle, Loader2, MapPin, Clock, Navigation, ChevronDown, ChevronUp, Trash2, CalendarPlus, Users, Bell, Pencil } from "lucide-react";
 import { notifyTeamMembers } from "@/lib/notifyTeamMembers";
 import { toast } from "sonner";
 import { AddAvailabilityEventDialog } from "./AddAvailabilityEventDialog";
@@ -90,6 +90,8 @@ export function FixtureAvailability({ teamSlug }: Props) {
   const [expandedFixture, setExpandedFixture] = useState<string | null>(null);
   const [respondingForMap, setRespondingForMap] = useState<Record<string, string | null>>({});
   const [resending, setResending] = useState<string | null>(null);
+  const [editingVenue, setEditingVenue] = useState<string | null>(null);
+  const [venueInput, setVenueInput] = useState("");
   const { data: teamData, isLoading: fixturesLoading } = useTeamFixtures(teamSlug);
 
   const handleResendNotification = async (item: AvailabilityItem) => {
@@ -168,6 +170,41 @@ export function FixtureAvailability({ teamSlug }: Props) {
       return (data || []) as CustomEvent[];
     },
     enabled: !!user,
+  });
+
+  const { data: venueOverrides = [] } = useQuery({
+    queryKey: ["venue-overrides"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("venue_address_overrides")
+        .select("venue_name, full_address");
+      if (error) throw error;
+      return data as { venue_name: string; full_address: string }[];
+    },
+    staleTime: 1000 * 60 * 60,
+  });
+
+  const venueOverrideMap = Object.fromEntries(
+    venueOverrides.map((v) => [v.venue_name.toUpperCase(), v.full_address])
+  );
+
+  const getDirectionsAddress = (venue: string) => {
+    return venueOverrideMap[venue.toUpperCase()] || venue;
+  };
+
+  const venueOverrideMutation = useMutation({
+    mutationFn: async ({ venueName, fullAddress }: { venueName: string; fullAddress: string }) => {
+      const { error } = await supabase
+        .from("venue_address_overrides")
+        .upsert({ venue_name: venueName, full_address: fullAddress, updated_at: new Date().toISOString() }, { onConflict: "venue_name" });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["venue-overrides"] });
+      setEditingVenue(null);
+      toast.success("Venue address updated");
+    },
+    onError: () => toast.error("Failed to update venue address"),
   });
 
   const respondentIds = [...new Set(availability.map((a) => a.user_id))];
@@ -376,14 +413,55 @@ export function FixtureAvailability({ teamSlug }: Props) {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(item.venue)}`, '_system');
+                        window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(getDirectionsAddress(item.venue))}`, '_system');
                       }}
                       className="text-[10px] text-primary hover:text-primary/80 flex items-center gap-0.5 transition-colors"
                     >
                       <Navigation className="w-2.5 h-2.5" />Directions
                     </button>
                   )}
+                  {item.venue && (isCoach || isAdmin) && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEditingVenue(item.key);
+                        setVenueInput(venueOverrideMap[item.venue.toUpperCase()] || "");
+                      }}
+                      title="Edit venue address for directions"
+                      className="text-[10px] text-muted-foreground hover:text-primary flex items-center gap-0.5 transition-colors"
+                    >
+                      <Pencil className="w-2.5 h-2.5" />
+                    </button>
+                  )}
                 </div>
+                {editingVenue === item.key && item.venue && (
+                  <div className="mt-2 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                    <input
+                      type="text"
+                      value={venueInput}
+                      onChange={(e) => setVenueInput(e.target.value)}
+                      placeholder="Full address, e.g. Main Street, Cottesmore LE15 7DH"
+                      className="flex-1 px-2 py-1 text-xs rounded border border-border bg-background text-foreground placeholder:text-muted-foreground"
+                    />
+                    <button
+                      onClick={() => {
+                        if (venueInput.trim()) {
+                          venueOverrideMutation.mutate({ venueName: item.venue, fullAddress: venueInput.trim() });
+                        }
+                      }}
+                      disabled={venueOverrideMutation.isPending}
+                      className="px-2 py-1 text-xs rounded bg-primary text-primary-foreground hover:bg-primary/90"
+                    >
+                      {venueOverrideMutation.isPending ? "Saving…" : "Save"}
+                    </button>
+                    <button
+                      onClick={() => setEditingVenue(null)}
+                      className="px-2 py-1 text-xs rounded border border-border text-muted-foreground hover:text-foreground"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                )}
               </div>
 
               <div className="flex items-center gap-2">
