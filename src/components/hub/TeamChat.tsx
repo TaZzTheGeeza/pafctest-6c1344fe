@@ -212,9 +212,12 @@ export function TeamChat({ teamSlug }: { teamSlug: string }) {
     if (text) content += text;
     if (imgUrl) content += (text ? " " : "") + `${IMAGE_PREFIX}${imgUrl}${IMAGE_SUFFIX}`;
 
+    const insertPayload: any = { channel_id: activeChannel.id, user_id: user.id, content };
+    if (replyTo) insertPayload.reply_to = replyTo.id;
+
     const { data: insertedMsg, error } = await supabase
       .from("hub_messages")
-      .insert({ channel_id: activeChannel.id, user_id: user.id, content })
+      .insert(insertPayload)
       .select("id")
       .single();
     if (error) { toast.error("Failed to send message"); return; }
