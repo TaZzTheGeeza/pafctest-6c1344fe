@@ -461,6 +461,7 @@ export function TeamChat({ teamSlug }: { teamSlug: string }) {
                             </>
                           )}
                         </div>
+                        {!isEditing && <MessageReactions messageId={msg.id} isOwn={isOwn} />}
                         {!isEditing && <p className="text-[9px] text-muted-foreground mt-0.5">{format(new Date(msg.created_at), "HH:mm")}</p>}
                       </div>
                     </div>
