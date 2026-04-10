@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { SmilePlus } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 const QUICK_EMOJIS = ["👍", "❤️", "😂", "🔥", "👏", "⚽"];
 
@@ -24,6 +23,7 @@ export function MessageReactions({ messageId, isOwn }: Props) {
   const [showPicker, setShowPicker] = useState(false);
   const pickerRef = useRef<HTMLDivElement>(null);
   const [reactionProfiles, setReactionProfiles] = useState<Record<string, string>>({});
+  const [expandedEmoji, setExpandedEmoji] = useState<string | null>(null);
 
   useEffect(() => {
     loadReactions();
@@ -110,30 +110,38 @@ export function MessageReactions({ messageId, isOwn }: Props) {
   return (
     <div className={`flex items-center gap-1 flex-wrap ${isOwn ? "justify-end" : "justify-start"}`}>
       {reactions.map((r) => (
-        <Tooltip key={r.emoji}>
-          <TooltipTrigger asChild>
-            <button
-              onClick={() => toggleReaction(r.emoji)}
-              className={`inline-flex items-center gap-1 text-xs px-1.5 py-0.5 rounded-full border transition-colors ${
-                r.userReacted
-                  ? "bg-primary/15 border-primary/30 text-primary"
-                  : "bg-secondary/50 border-border text-muted-foreground hover:border-primary/20"
-              }`}
-            >
-              <span>{r.emoji}</span>
-              <span className="font-display text-[10px]">{r.count}</span>
-            </button>
-          </TooltipTrigger>
-          <TooltipContent side="top" className="max-w-[200px]">
-            <p className="text-[11px] text-muted-foreground">
-              {r.userIds
-                .map((id) =>
-                  id === user?.id ? "You" : reactionProfiles[id] || "..."
-                )
-                .join(", ")}
-            </p>
-          </TooltipContent>
-        </Tooltip>
+        <div key={r.emoji} className="flex flex-col items-start gap-0.5">
+          <button
+            onClick={() => toggleReaction(r.emoji)}
+            onContextMenu={(e) => { e.preventDefault(); setExpandedEmoji(expandedEmoji === r.emoji ? null : r.emoji); }}
+            className={`inline-flex items-center gap-1 text-xs px-1.5 py-0.5 rounded-full border transition-colors ${
+              r.userReacted
+                ? "bg-primary/15 border-primary/30 text-primary"
+                : "bg-secondary/50 border-border text-muted-foreground hover:border-primary/20"
+            }`}
+          >
+            <span>{r.emoji}</span>
+            <span className="font-display text-[11px]">{r.count}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setExpandedEmoji(expandedEmoji === r.emoji ? null : r.emoji)}
+            className="text-[10px] text-muted-foreground hover:text-primary font-display cursor-pointer transition-colors px-1"
+          >
+            who?
+          </button>
+          {expandedEmoji === r.emoji && (
+            <div className="bg-popover border rounded-md px-2.5 py-1.5 shadow-md max-w-[200px]">
+              <p className="text-[11px] text-muted-foreground">
+                {r.userIds
+                  .map((id) =>
+                    id === user?.id ? "You" : reactionProfiles[id] || "..."
+                  )
+                  .join(", ")}
+              </p>
+            </div>
+          )}
+        </div>
       ))}
 
       <div className="relative" ref={pickerRef}>
