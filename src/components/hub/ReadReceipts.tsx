@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { CheckCheck } from "lucide-react";
+import { Check, CheckCheck } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { format } from "date-fns";
 
@@ -19,11 +19,12 @@ interface Props {
 export function ReadReceipts({ messageId, messageUserId, profiles }: Props) {
   const { user } = useAuth();
   const [readers, setReaders] = useState<ReadInfo[]>([]);
+  const [loaded, setLoaded] = useState(false);
 
   const isOwn = user?.id === messageUserId;
 
   useEffect(() => {
-    if (!isOwn) return; // Only show read receipts on your own messages
+    if (!isOwn) return;
     loadReaders();
 
     const channel = supabase
@@ -45,24 +46,31 @@ export function ReadReceipts({ messageId, messageUserId, profiles }: Props) {
       .eq("message_id", messageId);
 
     if (data) {
-      // Exclude the message author from the readers list
       setReaders(data.filter((r) => r.user_id !== messageUserId));
     }
+    setLoaded(true);
   }
 
-  if (!isOwn || readers.length === 0) return null;
+  if (!isOwn || !loaded) return null;
 
-  const readerNames = readers.map((r) => profiles[r.user_id] || "Unknown");
-  const displayText = readerNames.length <= 3
-    ? readerNames.join(", ")
-    : `${readerNames.slice(0, 3).join(", ")} +${readerNames.length - 3}`;
+  const hasReaders = readers.length > 0;
+
+  if (!hasReaders) {
+    // Sent but not read — single grey check
+    return (
+      <div className="flex items-center gap-1 justify-end">
+        <Check className="h-3 w-3 text-muted-foreground" />
+        <span className="text-[9px] text-muted-foreground font-display">Sent</span>
+      </div>
+    );
+  }
 
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <div className="flex items-center gap-1 justify-end mt-0.5 cursor-default">
-          <CheckCheck className="h-3 w-3 text-blue-400" />
-          <span className="text-[9px] text-blue-400 font-display">
+        <div className="flex items-center gap-1 justify-end cursor-default">
+          <CheckCheck className="h-3 w-3 text-primary" />
+          <span className="text-[9px] text-primary font-display">
             Read by {readers.length}
           </span>
         </div>
