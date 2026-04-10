@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Send, Hash, Plus, Users, ImagePlus, Loader2, X, Pencil, Trash2, Check } from "lucide-react";
+import { MessageReactions } from "./MessageReactions";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { isUserOnline } from "@/hooks/usePresence";
@@ -460,6 +461,7 @@ export function TeamChat({ teamSlug }: { teamSlug: string }) {
                             </>
                           )}
                         </div>
+                        {!isEditing && <MessageReactions messageId={msg.id} isOwn={isOwn} />}
                         {!isEditing && <p className="text-[9px] text-muted-foreground mt-0.5">{format(new Date(msg.created_at), "HH:mm")}</p>}
                       </div>
                     </div>
