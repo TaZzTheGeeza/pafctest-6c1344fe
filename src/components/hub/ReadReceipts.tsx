@@ -85,36 +85,41 @@ export function ReadReceipts({ messageId, messageUserId, profiles }: Props) {
 
   const hasReaders = readers.length > 0;
 
+  const [showReaders, setShowReaders] = useState(false);
+
   if (!hasReaders) {
-    // Sent but not read — single grey check
     return (
       <div className="flex items-center gap-1 justify-end">
-        <Check className="h-3 w-3 text-muted-foreground" />
-        <span className="text-[9px] text-muted-foreground font-display">Sent</span>
+        <Check className="h-3.5 w-3.5 text-muted-foreground" />
+        <span className="text-[11px] text-muted-foreground font-display">Sent</span>
       </div>
     );
   }
 
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <div className="flex items-center gap-1 justify-end cursor-default">
-          <CheckCheck className="h-3 w-3 text-primary" />
-          <span className="text-[9px] text-primary font-display">
-            Read by {readers.length}
-          </span>
-        </div>
-      </TooltipTrigger>
-      <TooltipContent side="left" className="max-w-[200px]">
-        <p className="text-xs font-display font-bold mb-1">Read by</p>
-        <div className="space-y-0.5">
-          {readers.map((r) => (
-            <p key={r.user_id} className="text-[11px] text-muted-foreground">
+    <div className="flex flex-col items-end gap-0.5">
+      <button
+        type="button"
+        onClick={() => setShowReaders((prev) => !prev)}
+        className="flex items-center gap-1 justify-end cursor-pointer hover:opacity-80 transition-opacity"
+      >
+        <CheckCheck className="h-3.5 w-3.5 text-primary" />
+        <span className="text-[11px] text-primary font-display font-medium">
+          Read by {readers.length}
+        </span>
+      </button>
+      {showReaders && (
+        <div className="bg-popover border rounded-md px-2.5 py-1.5 shadow-md mt-0.5 max-w-[220px]">
+          <p className="text-xs font-display font-bold mb-1">Read by</p>
+          <div className="space-y-0.5">
+            {readers.map((r) => (
+              <p key={r.user_id} className="text-[11px] text-muted-foreground">
                 {profiles[r.user_id] || readerProfiles[r.user_id] || "Unknown"} · {format(new Date(r.read_at), "HH:mm")}
-            </p>
-          ))}
+              </p>
+            ))}
+          </div>
         </div>
-      </TooltipContent>
-    </Tooltip>
+      )}
+    </div>
   );
 }
