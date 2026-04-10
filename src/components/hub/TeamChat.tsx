@@ -74,7 +74,8 @@ export function TeamChat({ teamSlug }: { teamSlug: string }) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
-
+  const [replyTo, setReplyTo] = useState<Message | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     setActiveChannel(null);
     setMessages([]);
