@@ -10,6 +10,12 @@ interface ReadInfo {
   read_at: string;
 }
 
+interface ReaderProfileRow {
+  id: string;
+  full_name: string | null;
+  email: string | null;
+}
+
 interface Props {
   messageId: string;
   messageUserId: string;
@@ -19,6 +25,7 @@ interface Props {
 export function ReadReceipts({ messageId, messageUserId, profiles }: Props) {
   const { user } = useAuth();
   const [readers, setReaders] = useState<ReadInfo[]>([]);
+  const [readerProfiles, setReaderProfiles] = useState<Record<string, string>>({});
   const [loaded, setLoaded] = useState(false);
 
   const isOwn = user?.id === messageUserId;
@@ -46,8 +53,31 @@ export function ReadReceipts({ messageId, messageUserId, profiles }: Props) {
       .eq("message_id", messageId);
 
     if (data) {
-      setReaders(data.filter((r) => r.user_id !== messageUserId));
+      const filteredReaders = data.filter((r) => r.user_id !== messageUserId);
+      setReaders(filteredReaders);
+
+      const missingReaderIds = [...new Set(filteredReaders.map((reader) => reader.user_id))].filter(
+        (readerId) => !profiles[readerId] && !readerProfiles[readerId]
+      );
+
+      if (missingReaderIds.length > 0) {
+        const { data: profileData } = await supabase
+          .from("profiles")
+          .select("id, full_name, email")
+          .in("id", missingReaderIds);
+
+        if (profileData) {
+          const nextProfiles = (profileData as ReaderProfileRow[]).reduce<Record<string, string>>((acc, profile) => {
+            const fallbackName = profile.email?.split("@")[0]?.trim();
+            acc[profile.id] = profile.full_name?.trim() || fallbackName || "Unknown";
+            return acc;
+          }, {});
+
+          setReaderProfiles((prev) => ({ ...prev, ...nextProfiles }));
+        }
+      }
     }
+
     setLoaded(true);
   }
 
@@ -80,7 +110,7 @@ export function ReadReceipts({ messageId, messageUserId, profiles }: Props) {
         <div className="space-y-0.5">
           {readers.map((r) => (
             <p key={r.user_id} className="text-[11px] text-muted-foreground">
-              {profiles[r.user_id] || "Unknown"} · {format(new Date(r.read_at), "HH:mm")}
+                {profiles[r.user_id] || readerProfiles[r.user_id] || "Unknown"} · {format(new Date(r.read_at), "HH:mm")}
             </p>
           ))}
         </div>
