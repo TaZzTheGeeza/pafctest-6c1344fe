@@ -249,6 +249,7 @@ export function TeamChat({ teamSlug }: { teamSlug: string }) {
     setNewMessage("");
     setImagePreview(null);
     setPendingImageUrl(null);
+    setReplyTo(null);
   }
 
   const [editingChannelId, setEditingChannelId] = useState<string | null>(null);
