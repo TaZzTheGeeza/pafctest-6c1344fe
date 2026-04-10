@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Send, Hash, Plus, Users, ImagePlus, Loader2, X, Pencil, Trash2, Check } from "lucide-react";
 import { MessageReactions } from "./MessageReactions";
+import { ReadReceipts } from "./ReadReceipts";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { isUserOnline } from "@/hooks/usePresence";
@@ -112,6 +113,25 @@ export function TeamChat({ teamSlug }: { teamSlug: string }) {
     }
     prevMessageCount.current = messages.length;
   }, [messages.length]);
+
+  // Mark messages from other users as read
+  async function markMessagesAsRead(msgs: Message[]) {
+    if (!user) return;
+    const otherMsgs = msgs.filter((m) => m.user_id !== user.id);
+    if (otherMsgs.length === 0) return;
+    const inserts = otherMsgs.map((m) => ({
+      message_id: m.id,
+      user_id: user.id,
+    }));
+    await supabase
+      .from("hub_message_reads")
+      .upsert(inserts, { onConflict: "message_id,user_id", ignoreDuplicates: true });
+  }
+
+  // Mark messages read when channel loads or new messages arrive
+  useEffect(() => {
+    if (messages.length > 0) markMessagesAsRead(messages);
+  }, [messages.length, activeChannel?.id]);
 
   async function loadChannels() {
     const { data } = await supabase.from("hub_channels").select("*").eq("team_slug", teamSlug).order("created_at");
@@ -462,7 +482,12 @@ export function TeamChat({ teamSlug }: { teamSlug: string }) {
                           )}
                         </div>
                         {!isEditing && <MessageReactions messageId={msg.id} isOwn={isOwn} />}
-                        {!isEditing && <p className="text-[9px] text-muted-foreground mt-0.5">{format(new Date(msg.created_at), "HH:mm")}</p>}
+                        {!isEditing && (
+                          <div className={`flex items-center gap-2 mt-0.5 ${isOwn ? "justify-end" : "justify-start"}`}>
+                            <p className="text-[9px] text-muted-foreground">{format(new Date(msg.created_at), "HH:mm")}</p>
+                            {isOwn && <ReadReceipts messageId={msg.id} messageUserId={msg.user_id} profiles={profiles} />}
+                          </div>
+                        )}
                       </div>
                     </div>
                   );
