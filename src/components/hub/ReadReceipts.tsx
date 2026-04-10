@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Check, CheckCheck } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { format } from "date-fns";
 
 interface ReadInfo {
@@ -27,6 +26,7 @@ export function ReadReceipts({ messageId, messageUserId, profiles }: Props) {
   const [readers, setReaders] = useState<ReadInfo[]>([]);
   const [readerProfiles, setReaderProfiles] = useState<Record<string, string>>({});
   const [loaded, setLoaded] = useState(false);
+  const [showReaders, setShowReaders] = useState(false);
 
   const isOwn = user?.id === messageUserId;
 
@@ -84,8 +84,6 @@ export function ReadReceipts({ messageId, messageUserId, profiles }: Props) {
   if (!isOwn || !loaded) return null;
 
   const hasReaders = readers.length > 0;
-
-  const [showReaders, setShowReaders] = useState(false);
 
   if (!hasReaders) {
     return (
