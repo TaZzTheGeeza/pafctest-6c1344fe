@@ -553,6 +553,24 @@ export function TeamChat({ teamSlug }: { teamSlug: string }) {
                 </div>
               )}
 
+              {/* Reply preview */}
+              {replyTo && (
+                <div className="border-t border-border px-3 pt-2 flex items-center gap-2">
+                  <CornerDownRight className="h-4 w-4 text-primary shrink-0" />
+                  <div className="flex-1 min-w-0 bg-secondary/50 rounded-lg px-3 py-1.5 border border-border/50">
+                    <p className="text-[10px] font-display font-bold text-primary">
+                      {replyTo.user_id === user.id ? "You" : profiles[replyTo.user_id] || "Unknown"}
+                    </p>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {parseMessage(replyTo.content).find((p) => p.type === "text")?.value || "Image"}
+                    </p>
+                  </div>
+                  <button onClick={() => setReplyTo(null)} className="p-1 text-muted-foreground hover:text-foreground">
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              )}
+
               <form onSubmit={sendMessage} className="border-t border-border p-3 flex gap-2 items-center">
                 <input type="file" ref={fileInputRef} accept="image/*" className="hidden" onChange={handleImageSelect} />
                 <button
@@ -565,9 +583,10 @@ export function TeamChat({ teamSlug }: { teamSlug: string }) {
                   <ImagePlus className="h-5 w-5" />
                 </button>
                 <input
+                  ref={inputRef}
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
-                  placeholder="Type a message..."
+                  placeholder={replyTo ? "Type your reply..." : "Type a message..."}
                   className="flex-1 bg-secondary border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                 />
                 <button
