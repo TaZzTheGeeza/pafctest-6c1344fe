@@ -22,6 +22,7 @@ interface Message {
   user_id: string;
   content: string;
   created_at: string;
+  reply_to: string | null;
 }
 
 const IMAGE_PREFIX = "[img:";
