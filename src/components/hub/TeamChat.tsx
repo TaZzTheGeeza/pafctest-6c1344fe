@@ -114,6 +114,25 @@ export function TeamChat({ teamSlug }: { teamSlug: string }) {
     prevMessageCount.current = messages.length;
   }, [messages.length]);
 
+  // Mark messages from other users as read
+  async function markMessagesAsRead(msgs: Message[]) {
+    if (!user) return;
+    const otherMsgs = msgs.filter((m) => m.user_id !== user.id);
+    if (otherMsgs.length === 0) return;
+    const inserts = otherMsgs.map((m) => ({
+      message_id: m.id,
+      user_id: user.id,
+    }));
+    await supabase
+      .from("hub_message_reads")
+      .upsert(inserts, { onConflict: "message_id,user_id", ignoreDuplicates: true });
+  }
+
+  // Mark messages read when channel loads or new messages arrive
+  useEffect(() => {
+    if (messages.length > 0) markMessagesAsRead(messages);
+  }, [messages.length, activeChannel?.id]);
+
   async function loadChannels() {
     const { data } = await supabase.from("hub_channels").select("*").eq("team_slug", teamSlug).order("created_at");
     if (data) {
