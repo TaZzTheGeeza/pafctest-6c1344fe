@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { SmilePlus } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 const QUICK_EMOJIS = ["👍", "❤️", "😂", "🔥", "👏", "⚽"];
 
@@ -9,6 +10,7 @@ interface ReactionGroup {
   emoji: string;
   count: number;
   userReacted: boolean;
+  userIds: string[];
 }
 
 interface Props {
@@ -21,6 +23,7 @@ export function MessageReactions({ messageId, isOwn }: Props) {
   const [reactions, setReactions] = useState<ReactionGroup[]>([]);
   const [showPicker, setShowPicker] = useState(false);
   const pickerRef = useRef<HTMLDivElement>(null);
+  const [reactionProfiles, setReactionProfiles] = useState<Record<string, string>>({});
 
   useEffect(() => {
     loadReactions();
@@ -55,16 +58,34 @@ export function MessageReactions({ messageId, isOwn }: Props) {
 
     if (!data) return;
 
-    const grouped: Record<string, { count: number; userReacted: boolean }> = {};
+    const grouped: Record<string, { count: number; userReacted: boolean; userIds: string[] }> = {};
     for (const r of data) {
-      if (!grouped[r.emoji]) grouped[r.emoji] = { count: 0, userReacted: false };
+      if (!grouped[r.emoji]) grouped[r.emoji] = { count: 0, userReacted: false, userIds: [] };
       grouped[r.emoji].count++;
+      grouped[r.emoji].userIds.push(r.user_id);
       if (r.user_id === user?.id) grouped[r.emoji].userReacted = true;
     }
 
     setReactions(
       Object.entries(grouped).map(([emoji, g]) => ({ emoji, ...g }))
     );
+
+    // Fetch names for all reactors we don't know yet
+    const allUserIds = [...new Set(data.map((r) => r.user_id))];
+    const missing = allUserIds.filter((id) => !reactionProfiles[id]);
+    if (missing.length > 0) {
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("id, full_name, email")
+        .in("id", missing);
+      if (profileData) {
+        const next: Record<string, string> = {};
+        for (const p of profileData as any[]) {
+          next[p.id] = p.full_name?.trim() || p.email?.split("@")[0] || "Unknown";
+        }
+        setReactionProfiles((prev) => ({ ...prev, ...next }));
+      }
+    }
   }
 
   async function toggleReaction(emoji: string) {
@@ -89,18 +110,30 @@ export function MessageReactions({ messageId, isOwn }: Props) {
   return (
     <div className={`flex items-center gap-1 flex-wrap ${isOwn ? "justify-end" : "justify-start"}`}>
       {reactions.map((r) => (
-        <button
-          key={r.emoji}
-          onClick={() => toggleReaction(r.emoji)}
-          className={`inline-flex items-center gap-1 text-xs px-1.5 py-0.5 rounded-full border transition-colors ${
-            r.userReacted
-              ? "bg-primary/15 border-primary/30 text-primary"
-              : "bg-secondary/50 border-border text-muted-foreground hover:border-primary/20"
-          }`}
-        >
-          <span>{r.emoji}</span>
-          <span className="font-display text-[10px]">{r.count}</span>
-        </button>
+        <Tooltip key={r.emoji}>
+          <TooltipTrigger asChild>
+            <button
+              onClick={() => toggleReaction(r.emoji)}
+              className={`inline-flex items-center gap-1 text-xs px-1.5 py-0.5 rounded-full border transition-colors ${
+                r.userReacted
+                  ? "bg-primary/15 border-primary/30 text-primary"
+                  : "bg-secondary/50 border-border text-muted-foreground hover:border-primary/20"
+              }`}
+            >
+              <span>{r.emoji}</span>
+              <span className="font-display text-[10px]">{r.count}</span>
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="top" className="max-w-[200px]">
+            <p className="text-[11px] text-muted-foreground">
+              {r.userIds
+                .map((id) =>
+                  id === user?.id ? "You" : reactionProfiles[id] || "..."
+                )
+                .join(", ")}
+            </p>
+          </TooltipContent>
+        </Tooltip>
       ))}
 
       <div className="relative" ref={pickerRef}>
