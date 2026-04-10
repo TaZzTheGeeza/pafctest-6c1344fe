@@ -482,7 +482,12 @@ export function TeamChat({ teamSlug }: { teamSlug: string }) {
                           )}
                         </div>
                         {!isEditing && <MessageReactions messageId={msg.id} isOwn={isOwn} />}
-                        {!isEditing && <p className="text-[9px] text-muted-foreground mt-0.5">{format(new Date(msg.created_at), "HH:mm")}</p>}
+                        {!isEditing && (
+                          <div className={`flex items-center gap-2 mt-0.5 ${isOwn ? "justify-end" : "justify-start"}`}>
+                            <p className="text-[9px] text-muted-foreground">{format(new Date(msg.created_at), "HH:mm")}</p>
+                            {isOwn && <ReadReceipts messageId={msg.id} messageUserId={msg.user_id} profiles={profiles} />}
+                          </div>
+                        )}
                       </div>
                     </div>
                   );
