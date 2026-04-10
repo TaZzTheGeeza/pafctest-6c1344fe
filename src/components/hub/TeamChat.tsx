@@ -417,6 +417,12 @@ export function TeamChat({ teamSlug }: { teamSlug: string }) {
                   const showAvatar = i === 0 || messages[i - 1].user_id !== msg.user_id;
                   const parts = parseMessage(msg.content);
                   const isEditing = editingId === msg.id;
+                  const parentMsg = msg.reply_to ? messages.find((m) => m.id === msg.reply_to) : null;
+                  const parentText = parentMsg
+                    ? parseMessage(parentMsg.content).find((p) => p.type === "text")?.value || "an image"
+                    : null;
+                  const parentAuthor = parentMsg ? (parentMsg.user_id === user.id ? "You" : profiles[parentMsg.user_id] || "Unknown") : null;
+
                   return (
                     <div key={msg.id} className={`group flex ${isOwn ? "justify-end" : "justify-start"}`}>
                       <div className={`max-w-[75%] ${isOwn ? "items-end" : "items-start"}`}>
@@ -428,7 +434,24 @@ export function TeamChat({ teamSlug }: { teamSlug: string }) {
                             {isOwn ? "You" : profiles[msg.user_id] || "Loading..."}
                           </p>
                         )}
-                        <div className="relative">
+                        {/* Reply context */}
+                        {parentMsg && parentText && (
+                          <button
+                            onClick={() => {
+                              const el = document.getElementById(`msg-${parentMsg.id}`);
+                              if (el) { el.scrollIntoView({ behavior: "smooth", block: "center" }); el.classList.add("ring-2", "ring-primary/50"); setTimeout(() => el.classList.remove("ring-2", "ring-primary/50"), 1500); }
+                            }}
+                            className={`flex items-center gap-1.5 text-[10px] mb-1 px-2 py-1 rounded-lg border border-border/50 bg-secondary/30 hover:bg-secondary/60 transition-colors max-w-full ${isOwn ? "ml-auto" : ""}`}
+                          >
+                            <CornerDownRight className="h-3 w-3 text-muted-foreground shrink-0" />
+                            <span className="text-muted-foreground truncate">
+                              <span className="font-display font-bold">{parentAuthor}</span>
+                              {": "}
+                              {parentText.length > 50 ? parentText.slice(0, 50) + "…" : parentText}
+                            </span>
+                          </button>
+                        )}
+                        <div className="relative" id={`msg-${msg.id}`}>
                           {isEditing ? (
                             <div className="flex gap-1.5 items-center">
                               <input
@@ -447,7 +470,7 @@ export function TeamChat({ teamSlug }: { teamSlug: string }) {
                             </div>
                           ) : (
                             <>
-                              <div className={`rounded-xl px-3 py-2 text-sm ${isOwn ? "bg-primary text-primary-foreground" : "bg-secondary text-foreground"}`}>
+                              <div className={`rounded-xl px-3 py-2 text-sm transition-all ${isOwn ? "bg-primary text-primary-foreground" : "bg-secondary text-foreground"}`}>
                                 {parts.map((part, pi) =>
                                   part.type === "image" ? (
                                     <img
@@ -463,27 +486,36 @@ export function TeamChat({ teamSlug }: { teamSlug: string }) {
                                   )
                                 )}
                               </div>
-                              {/* Edit/Delete controls */}
-                              {canManage && (
-                                <div className={`flex gap-1 mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity ${isOwn ? "justify-end" : "justify-start"}`}>
-                                  {isOwn && (
+                              {/* Reply / Edit / Delete controls */}
+                              <div className={`flex gap-1 mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity ${isOwn ? "justify-end" : "justify-start"}`}>
+                                <button
+                                  onClick={() => { setReplyTo(msg); inputRef.current?.focus(); }}
+                                  className="p-1 rounded text-muted-foreground hover:text-primary transition-colors"
+                                  title="Reply"
+                                >
+                                  <Reply className="h-3 w-3" />
+                                </button>
+                                {canManage && (
+                                  <>
+                                    {isOwn && (
+                                      <button
+                                        onClick={() => startEdit(msg)}
+                                        className="p-1 rounded text-muted-foreground hover:text-primary transition-colors"
+                                        title="Edit message"
+                                      >
+                                        <Pencil className="h-3 w-3" />
+                                      </button>
+                                    )}
                                     <button
-                                      onClick={() => startEdit(msg)}
-                                      className="p-1 rounded text-muted-foreground hover:text-primary transition-colors"
-                                      title="Edit message"
+                                      onClick={() => deleteMessage(msg.id)}
+                                      className="p-1 rounded text-muted-foreground hover:text-destructive transition-colors"
+                                      title="Delete message"
                                     >
-                                      <Pencil className="h-3 w-3" />
+                                      <Trash2 className="h-3 w-3" />
                                     </button>
-                                  )}
-                                  <button
-                                    onClick={() => deleteMessage(msg.id)}
-                                    className="p-1 rounded text-muted-foreground hover:text-destructive transition-colors"
-                                    title="Delete message"
-                                  >
-                                    <Trash2 className="h-3 w-3" />
-                                  </button>
-                                </div>
-                              )}
+                                  </>
+                                )}
+                              </div>
                             </>
                           )}
                         </div>
