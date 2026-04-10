@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Send, Hash, Plus, Users, ImagePlus, Loader2, X, Pencil, Trash2, Check } from "lucide-react";
+import { Send, Hash, Plus, Users, ImagePlus, Loader2, X, Pencil, Trash2, Check, Reply, CornerDownRight } from "lucide-react";
 import { MessageReactions } from "./MessageReactions";
 import { ReadReceipts } from "./ReadReceipts";
 import { format } from "date-fns";
