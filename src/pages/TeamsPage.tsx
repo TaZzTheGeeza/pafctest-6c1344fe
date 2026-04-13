@@ -251,6 +251,17 @@ function TeamDetail({ team }: { team: TeamData }) {
                                   </p>
                                   <p className="text-[10px] text-muted-foreground">{formatFADate(res.date)}</p>
                                 </div>
+                                {canManage && (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setCoachFixture(res);
+                                    }}
+                                    className="text-[10px] font-display text-primary hover:text-primary/80 border border-primary/30 rounded px-2 py-1 transition-colors shrink-0"
+                                  >
+                                    📋 Report
+                                  </button>
+                                )}
                                 <span className="font-mono font-bold text-sm">{res.homeScore} - {res.awayScore}</span>
                                 <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground transition-transform ${isExpanded ? "rotate-180" : ""}`} />
                               </div>
