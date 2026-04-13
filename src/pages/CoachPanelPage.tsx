@@ -33,7 +33,7 @@ function FixtureSelect({ ageGroup, value, onChange, label = "Match (Opponent)" }
   label?: string;
 }) {
   const slug = AGE_GROUP_TO_SLUG[ageGroup];
-  const { data, isLoading } = useTeamFixtures(slug);
+  const { data, isLoading } = useTeamFixtures(slug, { includeHistory: true });
   const [isManual, setIsManual] = useState(false);
   const [manualOpponent, setManualOpponent] = useState("");
   const [manualDate, setManualDate] = useState("");
@@ -43,17 +43,56 @@ function FixtureSelect({ ageGroup, value, onChange, label = "Match (Opponent)" }
     return isHome ? f.awayTeam : f.homeTeam;
   };
 
+  const getFixtureKey = (f: FAFixture) => `${f.date}|${getOpponent(f)}`;
+
+  const hasRecordedScore = (f: FAFixture) =>
+    typeof f.homeScore === "number" && typeof f.awayScore === "number";
+
+  const renderFixtureLabel = (f: FAFixture) => {
+    const opponent = getOpponent(f);
+    return hasRecordedScore(f)
+      ? `${f.date} — vs ${opponent} (${f.homeScore}-${f.awayScore})`
+      : `${f.date} — vs ${opponent}`;
+  };
+
+  const dedupeFixtures = (fixtures: FAFixture[]) => {
+    const seen = new Set<string>();
+    return fixtures.filter((fixture) => {
+      const key = getFixtureKey(fixture);
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  };
+
   // Split fixtures into past and upcoming based on date
   const parseFADate = (dateStr: string) => {
     const [d, m, y] = dateStr.split("/");
-    return new Date(y.length === 4 ? `${y}-${m}-${d}` : `20${y}-${m}-${d}`);
+    const fullYear = y.length === 4 ? Number(y) : Number(`20${y}`);
+    return new Date(fullYear, Number(m) - 1, Number(d));
   };
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const pastFixtures = (data?.fixtures || []).filter(f => parseFADate(f.date) < today);
-  const upcomingFixtures = (data?.fixtures || []).filter(f => parseFADate(f.date) >= today);
-  const allFixtures = [...(data?.results || []), ...(data?.fixtures || [])];
+  const scoredResults = dedupeFixtures((data?.results || []).filter(hasRecordedScore));
+  const scoredResultKeys = new Set(scoredResults.map(getFixtureKey));
+
+  const pastFixtures = dedupeFixtures([
+    ...(data?.results || []).filter((fixture) => !hasRecordedScore(fixture)),
+    ...(data?.fixtures || []).filter((fixture) => parseFADate(fixture.date) < today),
+  ]).filter((fixture) => !scoredResultKeys.has(getFixtureKey(fixture)));
+
+  const pastFixtureKeys = new Set(pastFixtures.map(getFixtureKey));
+
+  const upcomingFixtures = dedupeFixtures(
+    (data?.fixtures || []).filter((fixture) => parseFADate(fixture.date) >= today),
+  ).filter(
+    (fixture) =>
+      !scoredResultKeys.has(getFixtureKey(fixture)) &&
+      !pastFixtureKeys.has(getFixtureKey(fixture)),
+  );
+
+  const allFixtures = [...scoredResults, ...pastFixtures, ...upcomingFixtures];
 
   if (!ageGroup) {
     return (
@@ -118,7 +157,7 @@ function FixtureSelect({ ageGroup, value, onChange, label = "Match (Opponent)" }
         <select
           value={value}
           onChange={(e) => {
-            const selected = allFixtures.find((f) => `${f.date}|${getOpponent(f)}` === e.target.value);
+            const selected = allFixtures.find((f) => getFixtureKey(f) === e.target.value);
             if (selected) {
               onChange(getOpponent(selected), selected.date);
             } else {
@@ -128,14 +167,13 @@ function FixtureSelect({ ageGroup, value, onChange, label = "Match (Opponent)" }
           className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground"
         >
           <option value="">{isLoading ? "Loading fixtures..." : "Select a fixture"}</option>
-          {data?.results && data.results.length > 0 && (
+          {scoredResults.length > 0 && (
             <optgroup label="Results">
-              {data.results.map((f, i) => {
-                const opp = getOpponent(f);
-                const key = `${f.date}|${opp}`;
+              {scoredResults.map((f, i) => {
+                const key = getFixtureKey(f);
                 return (
                   <option key={`r-${i}`} value={key}>
-                    {f.date} — vs {opp} ({f.homeScore}-{f.awayScore})
+                    {renderFixtureLabel(f)}
                   </option>
                 );
               })}
@@ -144,11 +182,10 @@ function FixtureSelect({ ageGroup, value, onChange, label = "Match (Opponent)" }
           {pastFixtures.length > 0 && (
             <optgroup label="Past Fixtures (no result yet)">
               {pastFixtures.map((f, i) => {
-                const opp = getOpponent(f);
-                const key = `${f.date}|${opp}`;
+                const key = getFixtureKey(f);
                 return (
                   <option key={`pf-${i}`} value={key}>
-                    {f.date} — vs {opp}
+                    {renderFixtureLabel(f)}
                   </option>
                 );
               })}
@@ -157,11 +194,10 @@ function FixtureSelect({ ageGroup, value, onChange, label = "Match (Opponent)" }
           {upcomingFixtures.length > 0 && (
             <optgroup label="Upcoming Fixtures">
               {upcomingFixtures.map((f, i) => {
-                const opp = getOpponent(f);
-                const key = `${f.date}|${opp}`;
+                const key = getFixtureKey(f);
                 return (
                   <option key={`f-${i}`} value={key}>
-                    {f.date} — vs {opp}
+                    {renderFixtureLabel(f)}
                   </option>
                 );
               })}
