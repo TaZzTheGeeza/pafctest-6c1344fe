@@ -141,9 +141,22 @@ function FixtureSelect({ ageGroup, value, onChange, label = "Match (Opponent)" }
               })}
             </optgroup>
           )}
-          {data?.fixtures && data.fixtures.length > 0 && (
+          {pastFixtures.length > 0 && (
+            <optgroup label="Past Fixtures (no result yet)">
+              {pastFixtures.map((f, i) => {
+                const opp = getOpponent(f);
+                const key = `${f.date}|${opp}`;
+                return (
+                  <option key={`pf-${i}`} value={key}>
+                    {f.date} — vs {opp}
+                  </option>
+                );
+              })}
+            </optgroup>
+          )}
+          {upcomingFixtures.length > 0 && (
             <optgroup label="Upcoming Fixtures">
-              {data.fixtures.map((f, i) => {
+              {upcomingFixtures.map((f, i) => {
                 const opp = getOpponent(f);
                 const key = `${f.date}|${opp}`;
                 return (
