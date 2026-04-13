@@ -38,12 +38,22 @@ function FixtureSelect({ ageGroup, value, onChange, label = "Match (Opponent)" }
   const [manualOpponent, setManualOpponent] = useState("");
   const [manualDate, setManualDate] = useState("");
 
-  const allFixtures = [...(data?.results || []), ...(data?.fixtures || [])];
-  
   const getOpponent = (f: FAFixture) => {
     const isHome = f.homeTeam.includes("Peterborough Ath");
     return isHome ? f.awayTeam : f.homeTeam;
   };
+
+  // Split fixtures into past and upcoming based on date
+  const parseFADate = (dateStr: string) => {
+    const [d, m, y] = dateStr.split("/");
+    return new Date(y.length === 4 ? `${y}-${m}-${d}` : `20${y}-${m}-${d}`);
+  };
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const pastFixtures = (data?.fixtures || []).filter(f => parseFADate(f.date) < today);
+  const upcomingFixtures = (data?.fixtures || []).filter(f => parseFADate(f.date) >= today);
+  const allFixtures = [...(data?.results || []), ...(data?.fixtures || [])];
 
   if (!ageGroup) {
     return (
