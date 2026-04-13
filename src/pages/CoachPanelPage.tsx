@@ -38,12 +38,22 @@ function FixtureSelect({ ageGroup, value, onChange, label = "Match (Opponent)" }
   const [manualOpponent, setManualOpponent] = useState("");
   const [manualDate, setManualDate] = useState("");
 
-  const allFixtures = [...(data?.results || []), ...(data?.fixtures || [])];
-  
   const getOpponent = (f: FAFixture) => {
     const isHome = f.homeTeam.includes("Peterborough Ath");
     return isHome ? f.awayTeam : f.homeTeam;
   };
+
+  // Split fixtures into past and upcoming based on date
+  const parseFADate = (dateStr: string) => {
+    const [d, m, y] = dateStr.split("/");
+    return new Date(y.length === 4 ? `${y}-${m}-${d}` : `20${y}-${m}-${d}`);
+  };
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const pastFixtures = (data?.fixtures || []).filter(f => parseFADate(f.date) < today);
+  const upcomingFixtures = (data?.fixtures || []).filter(f => parseFADate(f.date) >= today);
+  const allFixtures = [...(data?.results || []), ...(data?.fixtures || [])];
 
   if (!ageGroup) {
     return (
@@ -131,9 +141,22 @@ function FixtureSelect({ ageGroup, value, onChange, label = "Match (Opponent)" }
               })}
             </optgroup>
           )}
-          {data?.fixtures && data.fixtures.length > 0 && (
+          {pastFixtures.length > 0 && (
+            <optgroup label="Past Fixtures (no result yet)">
+              {pastFixtures.map((f, i) => {
+                const opp = getOpponent(f);
+                const key = `${f.date}|${opp}`;
+                return (
+                  <option key={`pf-${i}`} value={key}>
+                    {f.date} — vs {opp}
+                  </option>
+                );
+              })}
+            </optgroup>
+          )}
+          {upcomingFixtures.length > 0 && (
             <optgroup label="Upcoming Fixtures">
-              {data.fixtures.map((f, i) => {
+              {upcomingFixtures.map((f, i) => {
                 const opp = getOpponent(f);
                 const key = `${f.date}|${opp}`;
                 return (
