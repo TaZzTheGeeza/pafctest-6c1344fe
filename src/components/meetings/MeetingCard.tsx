@@ -100,6 +100,9 @@ export function MeetingCard({ meeting, isAdmin, inviteeCount, onJoin, onDelete }
           )}
         </div>
       </div>
+
+      {/* Attendance RSVP */}
+      <MeetingRSVP meetingId={meeting.id} />
     </div>
   );
 }
