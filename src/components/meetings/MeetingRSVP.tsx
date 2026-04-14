@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Check, X, HelpCircle, Users, Loader2 } from "lucide-react";
+import { Check, X, HelpCircle, Users, Loader2, Bell } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -19,11 +19,12 @@ const statusConfig = {
   maybe: { icon: HelpCircle, label: "Maybe", class: "bg-yellow-500/20 text-yellow-400 border-yellow-500/50 hover:bg-yellow-500/30" },
 } as const;
 
-export function MeetingRSVP({ meetingId }: { meetingId: string }) {
+export function MeetingRSVP({ meetingId, meetingTitle }: { meetingId: string; meetingTitle: string }) {
   const { user, isAdmin } = useAuth();
   const [myStatus, setMyStatus] = useState<string | null>(null);
   const [summary, setSummary] = useState<RSVPSummary | null>(null);
   const [loading, setLoading] = useState(false);
+  const [sendingReminder, setSendingReminder] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
 
   useEffect(() => {
@@ -85,6 +86,79 @@ export function MeetingRSVP({ meetingId }: { meetingId: string }) {
       toast.error(err.message || "Failed to update");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSendReminder = async () => {
+    if (!isAdmin) return;
+    setSendingReminder(true);
+    try {
+      // Get all invitees for this meeting
+      const { data: invitees } = await supabase
+        .from("meeting_invitees")
+        .select("user_id")
+        .eq("meeting_id", meetingId);
+
+      // Get who already responded
+      const { data: rsvps } = await supabase
+        .from("meeting_rsvps" as any)
+        .select("user_id")
+        .eq("meeting_id", meetingId);
+
+      const respondedIds = new Set((rsvps as any[] || []).map((r: any) => r.user_id));
+
+      // If invite_type is "everyone", get all users from profiles who haven't responded
+      let nonResponders: string[] = [];
+
+      if (invitees && invitees.length > 0) {
+        nonResponders = invitees
+          .map((i) => i.user_id)
+          .filter((uid) => !respondedIds.has(uid));
+      } else {
+        // "everyone" meeting — get all profiles
+        const { data: allProfiles } = await supabase
+          .from("profiles")
+          .select("id");
+        nonResponders = (allProfiles || [])
+          .map((p) => p.id)
+          .filter((uid) => !respondedIds.has(uid));
+      }
+
+      if (nonResponders.length === 0) {
+        toast.info("Everyone has already responded!");
+        setSendingReminder(false);
+        return;
+      }
+
+      // Send in-app notifications
+      const notifications = nonResponders.map((uid) => ({
+        user_id: uid,
+        title: `Meeting RSVP reminder: ${meetingTitle}`,
+        message: `Please confirm your attendance for "${meetingTitle}".`,
+        type: "reminder",
+        link: "/meetings",
+      }));
+
+      const { error } = await supabase.from("hub_notifications").insert(notifications);
+      if (error) throw error;
+
+      // Send push notifications
+      try {
+        await supabase.functions.invoke("send-push-notification", {
+          body: {
+            userIds: nonResponders,
+            title: `Meeting RSVP Reminder`,
+            body: `Please confirm your attendance for "${meetingTitle}".`,
+            url: "/meetings",
+          },
+        });
+      } catch {}
+
+      toast.success(`Reminder sent to ${nonResponders.length} member${nonResponders.length !== 1 ? "s" : ""}`);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to send reminders");
+    } finally {
+      setSendingReminder(false);
     }
   };
 
@@ -158,6 +232,16 @@ export function MeetingRSVP({ meetingId }: { meetingId: string }) {
               </div>
             );
           })}
+
+          {/* Send reminder button */}
+          <button
+            onClick={handleSendReminder}
+            disabled={sendingReminder}
+            className="w-full flex items-center justify-center gap-1.5 mt-2 py-2 px-3 rounded-lg border border-primary/30 bg-primary/10 text-primary text-xs font-display tracking-wider hover:bg-primary/20 transition-colors"
+          >
+            {sendingReminder ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Bell className="h-3.5 w-3.5" />}
+            <span>Remind Non-Responders</span>
+          </button>
         </div>
       )}
     </div>
