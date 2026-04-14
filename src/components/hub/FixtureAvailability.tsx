@@ -100,28 +100,91 @@ export function FixtureAvailability({ teamSlug }: Props) {
     try {
       const [dd, mm, yy] = item.date.split("/").map(Number);
       const friendlyDate = new Date(2000 + yy, mm - 1, dd).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
-      await notifyTeamMembers({
-        teamSlug,
-        excludeUserId: undefined,
-        notification: {
-          title: "Availability Reminder",
-          message: `${item.title} — ${friendlyDate}. Please submit your availability.`,
-          type: "event",
-          link: "/hub?tab=availability",
-        },
-        email: {
-          templateName: "availability-event-added",
-          templateData: {
-            eventTitle: item.isCustom ? item.title : item.title,
-            eventDate: friendlyDate,
-            eventTime: item.time,
-            venue: item.venue || undefined,
-            teamName: teamSlug,
+      const fixtureDate = `${2000 + yy}-${String(mm).padStart(2, "0")}-${String(dd).padStart(2, "0")}`;
+
+      // Get all team members
+      const { data: members } = await supabase
+        .from("team_members")
+        .select("user_id")
+        .eq("team_slug", teamSlug);
+
+      if (!members?.length) {
+        toast.info("No team members found");
+        setResending(null);
+        return;
+      }
+
+      // Get who already responded for this fixture
+      const { data: responded } = await supabase
+        .from("fixture_availability")
+        .select("user_id")
+        .eq("team_slug", teamSlug)
+        .eq("fixture_date", fixtureDate)
+        .eq("opponent", item.opponent);
+
+      const respondedIds = new Set((responded || []).map((r) => r.user_id));
+      const nonResponders = members.filter((m) => !respondedIds.has(m.user_id));
+
+      if (nonResponders.length === 0) {
+        toast.info("Everyone has already responded!");
+        setResending(null);
+        return;
+      }
+
+      // 1. In-app notifications only to non-responders
+      const notifications = nonResponders.map((m) => ({
+        user_id: m.user_id,
+        title: "Availability Reminder",
+        message: `${item.title} — ${friendlyDate}. Please submit your availability.`,
+        type: "event",
+        team_slug: teamSlug,
+        link: "/hub?tab=availability",
+      }));
+      await supabase.from("hub_notifications").insert(notifications);
+
+      // 2. Email notifications only to non-responders
+      const userIds = nonResponders.map((m) => m.user_id);
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("id, email")
+        .in("id", userIds);
+
+      if (profiles) {
+        for (const profile of profiles) {
+          if (!profile.email) continue;
+          supabase.functions
+            .invoke("send-transactional-email", {
+              body: {
+                templateName: "availability-event-added",
+                recipientEmail: profile.email,
+                idempotencyKey: `avail-resend-${teamSlug}-${item.date}-${Date.now()}-${profile.id}`,
+                templateData: {
+                  eventTitle: item.title,
+                  eventDate: friendlyDate,
+                  eventTime: item.time,
+                  venue: item.venue || undefined,
+                  teamName: teamSlug,
+                },
+              },
+            })
+            .catch((err) => console.error("Email notification failed:", err));
+        }
+      }
+
+      // 3. Push notifications only to non-responders
+      supabase.functions
+        .invoke("send-push-notification", {
+          body: {
+            userIds,
+            title: "Availability Reminder",
+            message: `${item.title} — ${friendlyDate}. Please submit your availability.`,
+            link: "/hub?tab=availability",
+            tag: `event-${teamSlug}`,
           },
-          idempotencyPrefix: `avail-resend-${teamSlug}-${item.date}-${Date.now()}`,
-        },
-      });
-      toast.success("Notification re-sent to all team members");
+        })
+        .catch((err) => console.error("Push notification failed:", err));
+
+      toast.success(`Reminder sent to ${nonResponders.length} non-responder${nonResponders.length !== 1 ? "s" : ""}`);
     } catch (err) {
       console.error("Resend notification failed:", err);
       toast.error("Failed to re-send notification");
