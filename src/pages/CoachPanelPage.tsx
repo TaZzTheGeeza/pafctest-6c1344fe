@@ -19,7 +19,7 @@ import { POTMCardPreview } from "@/components/coach/POTMCardPreview";
 
 
 const ALL_AGE_GROUPS = [
-  "U7", "U8 Black", "U8 Gold", "U9", "U10",
+  "U6", "U7", "U8 Black", "U8 Gold", "U9", "U10",
   "U11 Black", "U11 Gold", "U13 Black", "U13 Gold", "U14",
 ];
 

@@ -10,7 +10,7 @@ export interface RosterPlayer {
 }
 
 const ageGroupMap: Record<string, string> = {
-  "u7s": "U7", "u8s-black": "U8 Black", "u8s-gold": "U8 Gold",
+  "u6s": "U6", "u7s": "U7", "u8s-black": "U8 Black", "u8s-gold": "U8 Gold",
   "u9s": "U9", "u10s": "U10", "u11s-black": "U11 Black",
   "u11s-gold": "U11 Gold", "u13s-black": "U13 Black", "u13s-gold": "U13 Gold",
   "u14s": "U14",

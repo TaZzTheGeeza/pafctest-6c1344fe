@@ -21,6 +21,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { registerPushSubscription, isPushSupported, isPushEnabled } from "@/lib/pushNotifications";
 
 const TEAMS = [
+  { slug: "u6s", name: "U6" },
   { slug: "u7s", name: "U7" },
   { slug: "u8s-black", name: "U8 Black" },
   { slug: "u8s-gold", name: "U8 Gold" },
@@ -126,7 +127,7 @@ export default function HubPage() {
     const rawSlugs = data?.map((d) => d.team_slug) || [];
     // Normalize non-canonical slugs to canonical ones
     const canonicalMap: Record<string, string> = {
-      "u7": "u7s", "u8-black": "u8s-black", "u8-gold": "u8s-gold",
+      "u6": "u6s", "u7": "u7s", "u8-black": "u8s-black", "u8-gold": "u8s-gold",
       "u9": "u9s", "u10": "u10s", "u11-black": "u11s-black",
       "u11-gold": "u11s-gold", "u13-black": "u13s-black", "u13-gold": "u13s-gold",
       "u14": "u14s",

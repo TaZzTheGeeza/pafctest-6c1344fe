@@ -14,7 +14,7 @@ import clubLogo from "@/assets/club-logo.jpg";
 import { DateInput } from "@/components/ui/date-input";
 
 const ageGroups = [
-  "U7", "U8 Black", "U8 Gold", "U9", "U10",
+  "U6", "U7", "U8 Black", "U8 Gold", "U9", "U10",
   "U11 Black", "U11 Gold", "U13 Black", "U13 Gold", "U14",
 ];
 

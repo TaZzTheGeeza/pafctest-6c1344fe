@@ -46,6 +46,7 @@ interface TeamData {
 }
 
 const allTeams: TeamData[] = [
+  { slug: "u6s", name: "U6", ageGroup: "Under 6", training: "TBC", nextFixture: { opponent: "TBC", venue: "Home", date: "TBC", kickoff: "TBC" } },
   { slug: "u7s", name: "U7", ageGroup: "Under 7", training: "Tues & Thurs 5:30pm", nextFixture: { opponent: "Thurlby Tigers U7 Yellow", venue: "Home", date: "Sat 28 March", kickoff: "09:30" } },
   { slug: "u8s-black", name: "U8 Black", ageGroup: "Under 8", training: "Mon & Wed 5:30pm", nextFixture: { opponent: "One Touch Football U8 Red", venue: "Home", date: "Sat 28 March", kickoff: "10:30" } },
   { slug: "u8s-gold", name: "U8 Gold", ageGroup: "Under 8", training: "Tues & Thurs 5:30pm", nextFixture: { opponent: "Whittlesey Jnr U8 Blue", venue: "Home", date: "Sat 28 March", kickoff: "09:30" } },

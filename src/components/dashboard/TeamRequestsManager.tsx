@@ -6,12 +6,12 @@ import { CheckCircle, XCircle, Clock, Loader2, UserPlus, Shield, Users } from "l
 import { toast } from "sonner";
 
 const TEAM_LABELS: Record<string, string> = {
-  "u7s": "U7", "u8s-black": "U8 Black", "u8s-gold": "U8 Gold", "u9s": "U9", "u10s": "U10",
+  "u6s": "U6", "u7s": "U7", "u8s-black": "U8 Black", "u8s-gold": "U8 Gold", "u9s": "U9", "u10s": "U10",
   "u11s-black": "U11 Black", "u11s-gold": "U11 Gold", "u13s-black": "U13 Black", "u13s-gold": "U13 Gold", "u14s": "U14",
 };
 
 const TEAM_SLUG_TO_AGE_GROUP: Record<string, string> = {
-  "u7s": "U7", "u8s-black": "U8 Black", "u8s-gold": "U8 Gold", "u9s": "U9", "u10s": "U10",
+  "u6s": "U6", "u7s": "U7", "u8s-black": "U8 Black", "u8s-gold": "U8 Gold", "u9s": "U9", "u10s": "U10",
   "u11s-black": "U11 Black", "u11s-gold": "U11 Gold", "u13s-black": "U13 Black", "u13s-gold": "U13 Gold", "u14s": "U14",
 };
 

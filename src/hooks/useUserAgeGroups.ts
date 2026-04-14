@@ -8,7 +8,7 @@ const SLUG_TO_AGE_GROUP: Record<string, string> = {};
 faTeamConfigs.forEach((c) => { SLUG_TO_AGE_GROUP[c.slug] = c.team; });
 // Add non-canonical slug variants that exist in team_members
 const SLUG_VARIANTS: Record<string, string> = {
-  "u7": "U7", "u8-black": "U8 Black", "u8-gold": "U8 Gold",
+  "u6": "U6", "u7": "U7", "u8-black": "U8 Black", "u8-gold": "U8 Gold",
   "u9": "U9", "u10": "U10", "u11-black": "U11 Black",
   "u11-gold": "U11 Gold", "u13-black": "U13 Black", "u13-gold": "U13 Gold",
   "u14": "U14",

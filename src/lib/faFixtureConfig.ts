@@ -26,6 +26,11 @@ function buildUrl(page: "fixtures" | "results", params: Record<string, string>):
 
 export const faTeamConfigs: FAFixtureConfig[] = [
   {
+    team: "U6",
+    slug: "u6s",
+    fixtureUrl: "",
+  },
+  {
     team: "U7",
     slug: "u7s",
     fixtureUrl: buildUrl("fixtures", {

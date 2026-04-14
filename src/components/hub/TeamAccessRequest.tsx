@@ -6,6 +6,7 @@ import { UserPlus, Shield, Clock, CheckCircle, XCircle, Loader2 } from "lucide-r
 import { toast } from "sonner";
 
 const TEAMS = [
+  { slug: "u6", label: "U6" },
   { slug: "u7", label: "U7" },
   { slug: "u8-black", label: "U8 Black" },
   { slug: "u8-gold", label: "U8 Gold" },
