@@ -89,6 +89,79 @@ export function MeetingRSVP({ meetingId, meetingTitle }: { meetingId: string; me
     }
   };
 
+  const handleSendReminder = async () => {
+    if (!isAdmin) return;
+    setSendingReminder(true);
+    try {
+      // Get all invitees for this meeting
+      const { data: invitees } = await supabase
+        .from("meeting_invitees")
+        .select("user_id")
+        .eq("meeting_id", meetingId);
+
+      // Get who already responded
+      const { data: rsvps } = await supabase
+        .from("meeting_rsvps" as any)
+        .select("user_id")
+        .eq("meeting_id", meetingId);
+
+      const respondedIds = new Set((rsvps as any[] || []).map((r: any) => r.user_id));
+
+      // If invite_type is "everyone", get all users from profiles who haven't responded
+      let nonResponders: string[] = [];
+
+      if (invitees && invitees.length > 0) {
+        nonResponders = invitees
+          .map((i) => i.user_id)
+          .filter((uid) => !respondedIds.has(uid));
+      } else {
+        // "everyone" meeting — get all profiles
+        const { data: allProfiles } = await supabase
+          .from("profiles")
+          .select("id");
+        nonResponders = (allProfiles || [])
+          .map((p) => p.id)
+          .filter((uid) => !respondedIds.has(uid));
+      }
+
+      if (nonResponders.length === 0) {
+        toast.info("Everyone has already responded!");
+        setSendingReminder(false);
+        return;
+      }
+
+      // Send in-app notifications
+      const notifications = nonResponders.map((uid) => ({
+        user_id: uid,
+        title: `Meeting RSVP reminder: ${meetingTitle}`,
+        message: `Please confirm your attendance for "${meetingTitle}".`,
+        type: "reminder",
+        link: "/meetings",
+      }));
+
+      const { error } = await supabase.from("hub_notifications").insert(notifications);
+      if (error) throw error;
+
+      // Send push notifications
+      try {
+        await supabase.functions.invoke("send-push-notification", {
+          body: {
+            userIds: nonResponders,
+            title: `Meeting RSVP Reminder`,
+            body: `Please confirm your attendance for "${meetingTitle}".`,
+            url: "/meetings",
+          },
+        });
+      } catch {}
+
+      toast.success(`Reminder sent to ${nonResponders.length} member${nonResponders.length !== 1 ? "s" : ""}`);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to send reminders");
+    } finally {
+      setSendingReminder(false);
+    }
+  };
+
   return (
     <div className="mt-3 space-y-2 border-t border-border pt-3">
       {/* RSVP Buttons */}
