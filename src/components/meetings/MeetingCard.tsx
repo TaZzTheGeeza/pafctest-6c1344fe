@@ -1,5 +1,6 @@
 import { Video, Calendar, Clock, Users, X } from "lucide-react";
 import { format } from "date-fns";
+import { MeetingRSVP } from "./MeetingRSVP";
 
 export interface Meeting {
   id: string;
@@ -99,6 +100,9 @@ export function MeetingCard({ meeting, isAdmin, inviteeCount, onJoin, onDelete }
           )}
         </div>
       </div>
+
+      {/* Attendance RSVP */}
+      <MeetingRSVP meetingId={meeting.id} />
     </div>
   );
 }
