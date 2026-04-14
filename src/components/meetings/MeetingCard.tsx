@@ -1,5 +1,6 @@
 import { Video, Calendar, Clock, Users, X } from "lucide-react";
 import { format } from "date-fns";
+import { MeetingRSVP } from "./MeetingRSVP";
 
 export interface Meeting {
   id: string;
