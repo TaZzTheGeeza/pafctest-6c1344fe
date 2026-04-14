@@ -232,6 +232,16 @@ export function MeetingRSVP({ meetingId, meetingTitle }: { meetingId: string; me
               </div>
             );
           })}
+
+          {/* Send reminder button */}
+          <button
+            onClick={handleSendReminder}
+            disabled={sendingReminder}
+            className="w-full flex items-center justify-center gap-1.5 mt-2 py-2 px-3 rounded-lg border border-primary/30 bg-primary/10 text-primary text-xs font-display tracking-wider hover:bg-primary/20 transition-colors"
+          >
+            {sendingReminder ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Bell className="h-3.5 w-3.5" />}
+            <span>Remind Non-Responders</span>
+          </button>
         </div>
       )}
     </div>
