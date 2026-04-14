@@ -19,11 +19,12 @@ const statusConfig = {
   maybe: { icon: HelpCircle, label: "Maybe", class: "bg-yellow-500/20 text-yellow-400 border-yellow-500/50 hover:bg-yellow-500/30" },
 } as const;
 
-export function MeetingRSVP({ meetingId }: { meetingId: string }) {
+export function MeetingRSVP({ meetingId, meetingTitle }: { meetingId: string; meetingTitle: string }) {
   const { user, isAdmin } = useAuth();
   const [myStatus, setMyStatus] = useState<string | null>(null);
   const [summary, setSummary] = useState<RSVPSummary | null>(null);
   const [loading, setLoading] = useState(false);
+  const [sendingReminder, setSendingReminder] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
 
   useEffect(() => {
