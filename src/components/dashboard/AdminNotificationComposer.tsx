@@ -17,7 +17,7 @@ import {
 import { Bell, Mail, Smartphone, Send, Loader2, Users, Megaphone, User } from "lucide-react";
 
 const TEAM_SLUGS = [
-  "u7s", "u8s-black", "u8s-gold", "u9s", "u10s",
+  "u6s", "u7s", "u8s-black", "u8s-gold", "u9s", "u10s",
   "u11s-black", "u11s-gold", "u13s-black", "u13s-gold", "u14s",
 ];
 

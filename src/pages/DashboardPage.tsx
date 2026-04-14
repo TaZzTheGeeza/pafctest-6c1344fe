@@ -31,7 +31,7 @@ import { RolePermissionManager } from "@/components/dashboard/RolePermissionMana
 type AppRole = string;
 
 const ALL_AGE_GROUPS = [
-  "U7", "U8 Black", "U8 Gold", "U9", "U10",
+  "U6", "U7", "U8 Black", "U8 Gold", "U9", "U10",
   "U11 Black", "U11 Gold", "U13 Black", "U13 Gold", "U14",
 ];
 
@@ -201,7 +201,7 @@ export default function DashboardPage() {
   }
 
   const AGE_GROUP_TO_TEAM_SLUG: Record<string, string> = {
-    "U7": "u7s", "U8 Black": "u8s-black", "U8 Gold": "u8s-gold", "U9": "u9s", "U10": "u10s",
+    "U6": "u6s", "U7": "u7s", "U8 Black": "u8s-black", "U8 Gold": "u8s-gold", "U9": "u9s", "U10": "u10s",
     "U11 Black": "u11s-black", "U11 Gold": "u11s-gold", "U13 Black": "u13s-black", "U13 Gold": "u13s-gold", "U14": "u14s",
   };
 
@@ -687,12 +687,12 @@ export default function DashboardPage() {
 }
 
 const TEAM_SLUGS = [
-  "u7", "u8-black", "u8-gold", "u9", "u10",
+  "u6", "u7", "u8-black", "u8-gold", "u9", "u10",
   "u11-black", "u11-gold", "u13-black", "u13-gold", "u14",
 ];
 
 const TEAM_LABELS: Record<string, string> = {
-  "u7": "U7", "u8-black": "U8 Black", "u8-gold": "U8 Gold", "u9": "U9", "u10": "U10",
+  "u6": "U6", "u7": "U7", "u8-black": "U8 Black", "u8-gold": "U8 Gold", "u9": "U9", "u10": "U10",
   "u11-black": "U11 Black", "u11-gold": "U11 Gold", "u13-black": "U13 Black", "u13-gold": "U13 Gold", "u14": "U14",
 };
 
