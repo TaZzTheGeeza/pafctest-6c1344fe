@@ -62,7 +62,7 @@ export function Footer() {
 
           <div>
             <h4 className="font-display text-xs font-bold text-foreground mb-4 tracking-wider">Contact</h4>
-            <p className="text-xs text-muted-foreground mb-2">info@pa-fc.uk</p>
+            <p className="text-xs text-muted-foreground mb-4">All enquiries via our <a href="/contact" className="text-primary hover:underline">Contact Page</a></p>
             <p className="text-xs text-muted-foreground mb-4">Peterborough, Cambridgeshire</p>
             <div className="flex items-center gap-2">
               <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors">
