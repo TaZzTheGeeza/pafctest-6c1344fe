@@ -109,12 +109,12 @@ export function TeamMemberManager({ teamSlug, teamName }: { teamSlug: string; te
         .single();
 
       // Insert invite record
-      const { error: insertError } = await supabase.from("team_invites" as any).insert({
+      const { data: inviteData, error: insertError } = await supabase.from("team_invites" as any).insert({
         email,
         team_slug: teamSlug,
         role: "parent",
         invited_by: user!.id,
-      });
+      }).select("invite_token").single();
       if (insertError) {
         if (insertError.code === "23505") {
           toast.info("This email has already been invited to this team");
