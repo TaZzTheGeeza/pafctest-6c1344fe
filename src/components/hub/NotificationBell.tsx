@@ -22,7 +22,10 @@ export function NotificationBell() {
       })
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
+    const onRead = () => loadCount();
+    window.addEventListener("notifications-read", onRead);
+
+    return () => { supabase.removeChannel(channel); window.removeEventListener("notifications-read", onRead); };
   }, [user]);
 
   async function loadCount() {
