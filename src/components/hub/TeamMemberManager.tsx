@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { UserPlus, Trash2, Users, Search, ChevronDown, Shield, User, Heart, Mail, Loader2 } from "lucide-react";
+import { UserPlus, Trash2, Users, Search, ChevronDown, Shield, User, Heart, Mail, Loader2, Link2, Check, Copy } from "lucide-react";
 import { toast } from "sonner";
 import { isUserOnline, formatLastSeen } from "@/hooks/usePresence";
 
@@ -36,9 +36,12 @@ export function TeamMemberManager({ teamSlug, teamName }: { teamSlug: string; te
   const [showAdd, setShowAdd] = useState(false);
   const [roleMenuOpen, setRoleMenuOpen] = useState<string | null>(null);
   const [addRole, setAddRole] = useState("player");
-  const [addMode, setAddMode] = useState<"search" | "invite">("search");
+  const [addMode, setAddMode] = useState<"search" | "invite" | "link">("search");
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteSending, setInviteSending] = useState(false);
+  const [inviteLink, setInviteLink] = useState<string | null>(null);
+  const [linkCopied, setLinkCopied] = useState(false);
+  const [generatingLink, setGeneratingLink] = useState(false);
 
   useEffect(() => {
     loadMembers();
