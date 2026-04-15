@@ -139,12 +139,15 @@ export default function AuthPage() {
           className="w-full max-w-md mx-auto px-4"
         >
           {inviteToken && (
-            <div className="mb-4 bg-primary/10 border border-primary/30 rounded-xl p-4 text-center">
-              <p className="text-sm text-primary font-display tracking-wider">
-                🎉 You've been invited to join a team!
+            <div className="mb-4 bg-primary/10 border border-primary/30 rounded-xl p-5 text-center">
+              <p className="text-lg font-bold text-primary font-display tracking-wider">
+                🎉 You've been invited to join{inviteTeamName ? ` ${inviteTeamName}` : " a team"}!
+              </p>
+              <p className="text-sm text-foreground mt-2 font-display">
+                Peterborough Athletic FC
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                {mode === "signup" ? "Create an account" : "Sign in"} to accept your invite and access your team.
+                {mode === "signup" ? "Create an account" : "Sign in"} below to accept your invite and access your team hub.
               </p>
             </div>
           )}
