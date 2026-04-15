@@ -66,6 +66,20 @@ export function TeamMemberManager({ teamSlug, teamName }: { teamSlug: string; te
     if (data) setAllProfiles(data as any);
   }
 
+  function buildInviteUrl(inviteToken: string) {
+    const params = new URLSearchParams({
+      invite: inviteToken,
+      team: teamSlug,
+      redirect: `/hub?tab=chat&team=${teamSlug}`,
+    });
+
+    if (teamName) {
+      params.set("teamName", teamName);
+    }
+
+    return `https://www.pa-fc.uk/auth?${params.toString()}`;
+  }
+
   async function addMember(userId: string) {
     const { error } = await supabase.from("team_members").insert({ user_id: userId, team_slug: teamSlug, role: addRole });
     if (error) {
@@ -125,7 +139,7 @@ export function TeamMemberManager({ teamSlug, teamName }: { teamSlug: string; te
 
       // Send invite email
       const inviteToken = (inviteData as any).invite_token;
-      const signupUrl = `https://www.pa-fc.uk/auth?invite=${inviteToken}&redirect=${encodeURIComponent(`/hub?tab=chat&team=${teamSlug}`)}`;
+      const signupUrl = buildInviteUrl(inviteToken);
       await supabase.functions.invoke("send-transactional-email", {
         body: {
           templateName: "team-invite",
@@ -159,7 +173,7 @@ export function TeamMemberManager({ teamSlug, teamName }: { teamSlug: string; te
       }).select("invite_token").single();
       if (error) throw error;
       const token = (data as any).invite_token;
-      const link = `https://www.pa-fc.uk/auth?invite=${token}&redirect=${encodeURIComponent(`/hub?tab=chat&team=${teamSlug}`)}`;
+      const link = buildInviteUrl(token);
       setInviteLink(link);
     } catch (err: any) {
       toast.error(err.message || "Failed to generate link");

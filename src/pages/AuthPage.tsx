@@ -15,19 +15,29 @@ const TEAM_NAMES: Record<string, string> = {
   "u13s-black": "U13 Black", "u13s-gold": "U13 Gold", u14s: "U14",
 };
 
+const getInviteTeamFromRedirect = (redirectTo: string) => {
+  const query = redirectTo.split("?")[1];
+  if (!query) return null;
+  return new URLSearchParams(query).get("team");
+};
+
 export default function AuthPage() {
   const { user, loading } = useAuth();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const redirectTo = searchParams.get("redirect") || "/";
-  const [inviteTeamSlug, setInviteTeamSlug] = useState<string | null>(null);
   const inviteToken = searchParams.get("invite");
-  const [mode, setMode] = useState<"login" | "signup">(inviteToken ? "signup" : "login");
+  const inviteTeamSlugParam = searchParams.get("team") || getInviteTeamFromRedirect(redirectTo);
+  const inviteTeamNameParam = searchParams.get("teamName");
+  const fallbackInviteTeamName = inviteTeamNameParam || (inviteTeamSlugParam ? TEAM_NAMES[inviteTeamSlugParam] || inviteTeamSlugParam : null);
+  const hasInviteContext = Boolean(inviteToken || inviteTeamSlugParam || fallbackInviteTeamName);
+  const [inviteTeamSlug, setInviteTeamSlug] = useState<string | null>(inviteTeamSlugParam);
+  const [mode, setMode] = useState<"login" | "signup">(hasInviteContext ? "signup" : "login");
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({ email: "", password: "", fullName: "" });
   const [processingInvite, setProcessingInvite] = useState(false);
   const inviteProcessed = useRef(false);
-  const [inviteTeamName, setInviteTeamName] = useState<string | null>(null);
+  const [inviteTeamName, setInviteTeamName] = useState<string | null>(fallbackInviteTeamName);
 
   // Look up invite details to show team name
   useEffect(() => {
@@ -40,8 +50,9 @@ export default function AuthPage() {
       .then(({ data }) => {
         if (data) {
           const slug = (data as any).team_slug;
-          setInviteTeamSlug(slug);
-          setInviteTeamName(TEAM_NAMES[slug] || slug);
+          const friendlyName = TEAM_NAMES[slug] || slug;
+          setInviteTeamSlug((current) => current ?? slug);
+          setInviteTeamName((current) => current ?? friendlyName);
         }
       });
   }, [inviteToken]);
@@ -141,7 +152,7 @@ export default function AuthPage() {
           animate={{ opacity: 1, y: 0 }}
           className="w-full max-w-md mx-auto px-4"
         >
-          {inviteToken && (
+          {hasInviteContext && (
             <div className="mb-4 bg-primary/10 border border-primary/30 rounded-xl p-5 text-center">
               <p className="text-lg font-bold text-primary font-display tracking-wider">
                 🎉 You've been invited to join{inviteTeamName ? ` ${inviteTeamName}` : " a team"}!
