@@ -91,15 +91,6 @@ export default function ContactPage() {
               )}
             </div>
 
-            <div className="space-y-6">
-              <div className="bg-card border border-border rounded-lg p-8">
-                <div className="flex items-center gap-3 mb-3">
-                  <MapPin className="h-5 w-5 text-primary" />
-                  <h3 className="font-display font-bold">Location</h3>
-                </div>
-                <p className="text-muted-foreground text-sm">Peterborough, Cambridgeshire</p>
-              </div>
-            </div>
           </div>
         </div>
       </main>
