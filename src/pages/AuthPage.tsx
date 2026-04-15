@@ -36,7 +36,6 @@ export default function AuthPage() {
       .from("team_invites" as any)
       .select("team_slug")
       .eq("invite_token", inviteToken)
-      .eq("status", "pending")
       .single()
       .then(({ data }) => {
         if (data) {
@@ -59,7 +58,7 @@ export default function AuthPage() {
         const teamSlug = data?.team_slug || inviteTeamSlug;
         if (error || !data?.success) {
           const msg = data?.error || error?.message || "Could not process invite";
-          if (msg !== "Invalid or expired invite link") {
+          if (msg !== "Invalid or expired invite link" && msg !== "You are already a member of this team") {
             toast.error(msg);
           }
         } else {
