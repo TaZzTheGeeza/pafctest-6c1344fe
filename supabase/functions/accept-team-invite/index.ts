@@ -62,21 +62,43 @@ Deno.serve(async (req) => {
       );
     }
 
+    const role = invite.role || "parent";
+
     // Add user to team_members (ignore if already member)
     const { error: memberError } = await admin.from("team_members").upsert(
-      {
-        user_id: user.id,
-        team_slug: invite.team_slug,
-        role: invite.role || "parent",
-      },
+      { user_id: user.id, team_slug: invite.team_slug, role },
       { onConflict: "user_id,team_slug" }
     );
+    if (memberError && memberError.code !== "23505") {
+      console.error("Member insert error:", memberError);
+    }
 
-    if (memberError) {
-      // If unique constraint doesn't exist on (user_id, team_slug), try insert
-      if (memberError.code !== "23505") {
-        console.error("Member insert error:", memberError);
-      }
+    // Grant the role in user_roles (e.g. 'parent')
+    await admin.from("user_roles").upsert(
+      { user_id: user.id, role },
+      { onConflict: "user_id,role" }
+    ).then(({ error }) => {
+      if (error && error.code !== "23505") console.error("Role insert error:", error);
+    });
+
+    // Add to user_age_groups
+    await admin.from("user_age_groups").upsert(
+      { user_id: user.id, age_group: invite.team_slug },
+      { onConflict: "user_id,age_group" }
+    ).then(({ error }) => {
+      if (error && error.code !== "23505") console.error("Age group insert error:", error);
+    });
+
+    // If parent role, create guardian link
+    if (role === "parent") {
+      await admin.from("guardians").insert({
+        parent_user_id: user.id,
+        player_name: "",
+        team_slug: invite.team_slug,
+        status: "active",
+      }).then(({ error }) => {
+        if (error && error.code !== "23505") console.error("Guardian insert error:", error);
+      });
     }
 
     // Mark invite as accepted
