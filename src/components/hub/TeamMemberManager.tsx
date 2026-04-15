@@ -226,6 +226,14 @@ export function TeamMemberManager({ teamSlug, teamName }: { teamSlug: string; te
               >
                 <Mail className="h-3 w-3" /> Invite by Email
               </button>
+              <button
+                onClick={() => { setAddMode("link"); setInviteLink(null); setLinkCopied(false); }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-display tracking-wider transition-all ${
+                  addMode === "link" ? "bg-primary text-primary-foreground" : "bg-secondary border border-border text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Link2 className="h-3 w-3" /> Invite Link
+              </button>
             </div>
 
             {addMode === "search" ? (
