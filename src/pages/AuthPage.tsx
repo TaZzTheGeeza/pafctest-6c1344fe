@@ -9,6 +9,12 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Loader2, LogIn, UserPlus, Mail, Lock, User } from "lucide-react";
 import { toast } from "sonner";
 
+const TEAM_NAMES: Record<string, string> = {
+  u6s: "U6", u7s: "U7", "u8s-black": "U8 Black", "u8s-gold": "U8 Gold",
+  u9s: "U9", u10s: "U10", "u11s-black": "U11 Black", "u11s-gold": "U11 Gold",
+  "u13s-black": "U13 Black", "u13s-gold": "U13 Gold", u14s: "U14",
+};
+
 export default function AuthPage() {
   const { user, loading } = useAuth();
   const [searchParams] = useSearchParams();
@@ -20,6 +26,24 @@ export default function AuthPage() {
   const [form, setForm] = useState({ email: "", password: "", fullName: "" });
   const [processingInvite, setProcessingInvite] = useState(false);
   const inviteProcessed = useRef(false);
+  const [inviteTeamName, setInviteTeamName] = useState<string | null>(null);
+
+  // Look up invite details to show team name
+  useEffect(() => {
+    if (!inviteToken) return;
+    supabase
+      .from("team_invites" as any)
+      .select("team_slug")
+      .eq("invite_token", inviteToken)
+      .eq("status", "pending")
+      .single()
+      .then(({ data }) => {
+        if (data) {
+          const slug = (data as any).team_slug;
+          setInviteTeamName(TEAM_NAMES[slug] || slug);
+        }
+      });
+  }, [inviteToken]);
 
   // Process invite token when user is authenticated
   useEffect(() => {
@@ -36,7 +60,8 @@ export default function AuthPage() {
             toast.error(msg);
           }
         } else {
-          toast.success(`Welcome! You've been added to the team as a ${data.role || "parent"}.`);
+          const teamLabel = TEAM_NAMES[data.team_slug] || data.team_slug;
+          toast.success(`Welcome! You've been added to ${teamLabel} as a ${data.role || "parent"}.`);
         }
         setProcessingInvite(false);
         const dest = data?.team_slug ? `/hub?tab=chat&team=${data.team_slug}` : redirectTo;
@@ -114,12 +139,15 @@ export default function AuthPage() {
           className="w-full max-w-md mx-auto px-4"
         >
           {inviteToken && (
-            <div className="mb-4 bg-primary/10 border border-primary/30 rounded-xl p-4 text-center">
-              <p className="text-sm text-primary font-display tracking-wider">
-                🎉 You've been invited to join a team!
+            <div className="mb-4 bg-primary/10 border border-primary/30 rounded-xl p-5 text-center">
+              <p className="text-lg font-bold text-primary font-display tracking-wider">
+                🎉 You've been invited to join{inviteTeamName ? ` ${inviteTeamName}` : " a team"}!
+              </p>
+              <p className="text-sm text-foreground mt-2 font-display">
+                Peterborough Athletic FC
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                {mode === "signup" ? "Create an account" : "Sign in"} to accept your invite and access your team.
+                {mode === "signup" ? "Create an account" : "Sign in"} below to accept your invite and access your team hub.
               </p>
             </div>
           )}
