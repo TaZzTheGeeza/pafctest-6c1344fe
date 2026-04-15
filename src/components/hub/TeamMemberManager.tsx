@@ -158,7 +158,7 @@ export function TeamMemberManager({ teamSlug, teamName }: { teamSlug: string; te
       }).select("invite_token").single();
       if (error) throw error;
       const token = (data as any).invite_token;
-      const link = `${window.location.origin}/auth?invite=${token}&redirect=${encodeURIComponent(`/hub?tab=chat&team=${teamSlug}`)}`;
+      const link = `https://www.pa-fc.uk/auth?invite=${token}`;
       setInviteLink(link);
     } catch (err: any) {
       toast.error(err.message || "Failed to generate link");
