@@ -96,6 +96,7 @@ export function NotificationCenter() {
   async function markAsRead(id: string) {
     await supabase.from("hub_notifications").update({ is_read: true }).eq("id", id);
     setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, is_read: true } : n)));
+    window.dispatchEvent(new Event("notifications-read"));
   }
 
   async function markAllAsRead() {
@@ -103,6 +104,7 @@ export function NotificationCenter() {
     if (unreadIds.length === 0) return;
     await supabase.from("hub_notifications").update({ is_read: true }).in("id", unreadIds);
     setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
+    window.dispatchEvent(new Event("notifications-read"));
   }
 
   if (!user) {
