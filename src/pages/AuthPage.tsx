@@ -20,6 +20,7 @@ export default function AuthPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const redirectTo = searchParams.get("redirect") || "/";
+  const [inviteTeamSlug, setInviteTeamSlug] = useState<string | null>(null);
   const inviteToken = searchParams.get("invite");
   const [mode, setMode] = useState<"login" | "signup">(inviteToken ? "signup" : "login");
   const [submitting, setSubmitting] = useState(false);
