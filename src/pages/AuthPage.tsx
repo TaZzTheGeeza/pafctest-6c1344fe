@@ -20,6 +20,7 @@ export default function AuthPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const redirectTo = searchParams.get("redirect") || "/";
+  const [inviteTeamSlug, setInviteTeamSlug] = useState<string | null>(null);
   const inviteToken = searchParams.get("invite");
   const [mode, setMode] = useState<"login" | "signup">(inviteToken ? "signup" : "login");
   const [submitting, setSubmitting] = useState(false);
@@ -40,6 +41,7 @@ export default function AuthPage() {
       .then(({ data }) => {
         if (data) {
           const slug = (data as any).team_slug;
+          setInviteTeamSlug(slug);
           setInviteTeamName(TEAM_NAMES[slug] || slug);
         }
       });
@@ -54,6 +56,7 @@ export default function AuthPage() {
     supabase.functions
       .invoke("accept-team-invite", { body: { invite_token: inviteToken } })
       .then(({ data, error }) => {
+        const teamSlug = data?.team_slug || inviteTeamSlug;
         if (error || !data?.success) {
           const msg = data?.error || error?.message || "Could not process invite";
           if (msg !== "Invalid or expired invite link") {
@@ -64,12 +67,13 @@ export default function AuthPage() {
           toast.success(`Welcome! You've been added to ${teamLabel} as a ${data.role || "parent"}.`);
         }
         setProcessingInvite(false);
-        const dest = data?.team_slug ? `/hub?tab=chat&team=${data.team_slug}` : redirectTo;
+        const dest = teamSlug ? `/hub?tab=chat&team=${teamSlug}` : redirectTo;
         navigate(dest, { replace: true });
       })
       .catch(() => {
         setProcessingInvite(false);
-        navigate(redirectTo, { replace: true });
+        const dest = inviteTeamSlug ? `/hub?tab=chat&team=${inviteTeamSlug}` : redirectTo;
+        navigate(dest, { replace: true });
       });
   }, [user, inviteToken]);
 
