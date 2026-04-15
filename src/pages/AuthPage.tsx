@@ -112,6 +112,16 @@ export default function AuthPage() {
           animate={{ opacity: 1, y: 0 }}
           className="w-full max-w-md mx-auto px-4"
         >
+          {inviteToken && (
+            <div className="mb-4 bg-primary/10 border border-primary/30 rounded-xl p-4 text-center">
+              <p className="text-sm text-primary font-display tracking-wider">
+                🎉 You've been invited to join a team!
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {mode === "signup" ? "Create an account" : "Sign in"} to accept your invite and access your team.
+              </p>
+            </div>
+          )}
           <div className="bg-card border border-border rounded-xl p-8">
             <div className="flex items-center justify-center gap-3 mb-6">
               {mode === "login" ? <LogIn className="h-6 w-6 text-primary" /> : <UserPlus className="h-6 w-6 text-primary" />}
