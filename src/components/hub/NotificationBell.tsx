@@ -17,6 +17,9 @@ export function NotificationBell() {
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "hub_notifications", filter: `user_id=eq.${user.id}` }, () => {
         setUnreadCount((prev) => prev + 1);
       })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "hub_notifications", filter: `user_id=eq.${user.id}` }, () => {
+        loadCount();
+      })
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
