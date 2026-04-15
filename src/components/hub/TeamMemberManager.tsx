@@ -289,7 +289,7 @@ export function TeamMemberManager({ teamSlug, teamName }: { teamSlug: string; te
                   )}
                 </div>
               </>
-            ) : (
+            ) : addMode === "invite" ? (
               /* Email invite mode */
               <div className="space-y-3">
                 <p className="text-xs text-muted-foreground">
@@ -316,6 +316,49 @@ export function TeamMemberManager({ teamSlug, teamName }: { teamSlug: string; te
                     {inviteSending ? "Sending…" : "Send Invite"}
                   </button>
                 </div>
+              </div>
+            ) : (
+              /* Invite link mode */
+              <div className="space-y-3">
+                <p className="text-xs text-muted-foreground">
+                  Generate a shareable link to send to parents. When they sign up via this link, they'll be automatically added as a <strong>Parent</strong> to <strong>{teamName}</strong>.
+                </p>
+                {!inviteLink ? (
+                  <button
+                    onClick={generateInviteLink}
+                    disabled={generatingLink}
+                    className="w-full py-2.5 bg-primary text-primary-foreground rounded-lg text-xs font-display tracking-wider hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5"
+                  >
+                    {generatingLink ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Link2 className="h-3.5 w-3.5" />}
+                    {generatingLink ? "Generating…" : "Generate Invite Link"}
+                  </button>
+                ) : (
+                  <div className="space-y-2">
+                    <div className="flex gap-2">
+                      <input
+                        readOnly
+                        value={inviteLink}
+                        className="flex-1 bg-background border border-border rounded-lg px-3 py-2 text-xs text-foreground font-mono truncate"
+                      />
+                      <button
+                        onClick={copyInviteLink}
+                        className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-xs font-display tracking-wider hover:bg-primary/90 transition-colors flex items-center gap-1.5"
+                      >
+                        {linkCopied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                        {linkCopied ? "Copied!" : "Copy"}
+                      </button>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">
+                      Share this link via WhatsApp, text, or any messaging app. Each link can be used by one person.
+                    </p>
+                    <button
+                      onClick={() => { setInviteLink(null); setLinkCopied(false); }}
+                      className="text-xs text-primary hover:text-primary/80 font-display tracking-wider"
+                    >
+                      Generate another link
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>
