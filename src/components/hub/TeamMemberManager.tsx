@@ -124,7 +124,8 @@ export function TeamMemberManager({ teamSlug, teamName }: { teamSlug: string; te
       }
 
       // Send invite email
-      const signupUrl = `${window.location.origin}/auth`;
+      const inviteToken = (inviteData as any).invite_token;
+      const signupUrl = `https://www.pa-fc.uk/auth?invite=${inviteToken}&redirect=${encodeURIComponent(`/hub?tab=chat&team=${teamSlug}`)}`;
       await supabase.functions.invoke("send-transactional-email", {
         body: {
           templateName: "team-invite",
@@ -158,7 +159,7 @@ export function TeamMemberManager({ teamSlug, teamName }: { teamSlug: string; te
       }).select("invite_token").single();
       if (error) throw error;
       const token = (data as any).invite_token;
-      const link = `https://www.pa-fc.uk/auth?invite=${token}`;
+      const link = `https://www.pa-fc.uk/auth?invite=${token}&redirect=${encodeURIComponent(`/hub?tab=chat&team=${teamSlug}`)}`;
       setInviteLink(link);
     } catch (err: any) {
       toast.error(err.message || "Failed to generate link");
