@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Navigate, useSearchParams } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { Navigate, useSearchParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -12,20 +12,53 @@ import { toast } from "sonner";
 export default function AuthPage() {
   const { user, loading } = useAuth();
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const redirectTo = searchParams.get("redirect") || "/";
-  const [mode, setMode] = useState<"login" | "signup">("login");
+  const inviteToken = searchParams.get("invite");
+  const [mode, setMode] = useState<"login" | "signup">(inviteToken ? "signup" : "login");
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({ email: "", password: "", fullName: "" });
+  const [processingInvite, setProcessingInvite] = useState(false);
+  const inviteProcessed = useRef(false);
 
-  if (loading) {
+  // Process invite token when user is authenticated
+  useEffect(() => {
+    if (!user || !inviteToken || inviteProcessed.current) return;
+    inviteProcessed.current = true;
+    setProcessingInvite(true);
+
+    supabase.functions
+      .invoke("accept-team-invite", { body: { invite_token: inviteToken } })
+      .then(({ data, error }) => {
+        if (error || !data?.success) {
+          const msg = data?.error || error?.message || "Could not process invite";
+          if (msg !== "Invalid or expired invite link") {
+            toast.error(msg);
+          }
+        } else {
+          toast.success(`Welcome! You've been added to the team as a ${data.role || "parent"}.`);
+        }
+        setProcessingInvite(false);
+        navigate(redirectTo, { replace: true });
+      })
+      .catch(() => {
+        setProcessingInvite(false);
+        navigate(redirectTo, { replace: true });
+      });
+  }, [user, inviteToken]);
+
+  if (loading || processingInvite) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="text-center space-y-3">
+          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
+          {processingInvite && <p className="text-sm text-muted-foreground font-display">Setting up your team access…</p>}
+        </div>
       </div>
     );
   }
 
-  if (user) {
+  if (user && !inviteToken) {
     return <Navigate to={redirectTo} replace />;
   }
 
