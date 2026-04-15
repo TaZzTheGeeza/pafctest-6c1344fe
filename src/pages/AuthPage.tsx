@@ -41,6 +41,7 @@ export default function AuthPage() {
       .then(({ data }) => {
         if (data) {
           const slug = (data as any).team_slug;
+          setInviteTeamSlug(slug);
           setInviteTeamName(TEAM_NAMES[slug] || slug);
         }
       });
