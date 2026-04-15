@@ -92,7 +92,7 @@ export default function HubPage() {
   const [myTeams, setMyTeams] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [showTeamPicker, setShowTeamPicker] = useState(false);
-  const { user, isAdmin, isCoach } = useAuth();
+  const { user, isAdmin, isCoach, rolesLoading } = useAuth();
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -103,9 +103,19 @@ export default function HubPage() {
   }, [searchParams]);
 
   useEffect(() => {
-    if (!user) { setLoading(false); return; }
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
+    if (rolesLoading) return;
+
     loadMyTeams();
-    // Auto-register push subscription
+  }, [user, isAdmin, rolesLoading]);
+
+  useEffect(() => {
+    if (!user) return;
+
     if (isPushSupported()) {
       isPushEnabled().then((enabled) => {
         if (!enabled) {
