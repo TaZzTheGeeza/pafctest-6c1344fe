@@ -39,7 +39,8 @@ export default function AuthPage() {
           toast.success(`Welcome! You've been added to the team as a ${data.role || "parent"}.`);
         }
         setProcessingInvite(false);
-        navigate(redirectTo, { replace: true });
+        const dest = data?.team_slug ? `/hub?tab=chat&team=${data.team_slug}` : redirectTo;
+        navigate(dest, { replace: true });
       })
       .catch(() => {
         setProcessingInvite(false);
