@@ -51,7 +51,7 @@ export default function ContactPage() {
             <p className="text-muted-foreground text-center mb-12">Get in touch with Peterborough Athletic FC</p>
           </motion.div>
 
-          <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="max-w-lg mx-auto">
             <div className="bg-card border border-border rounded-lg p-8">
               <h2 className="font-display text-xl font-bold mb-6">Send a Message</h2>
 
