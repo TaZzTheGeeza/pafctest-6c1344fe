@@ -147,6 +147,34 @@ export function TeamMemberManager({ teamSlug, teamName }: { teamSlug: string; te
     }
   }
 
+  async function generateInviteLink() {
+    setGeneratingLink(true);
+    try {
+      const { data, error } = await supabase.from("team_invites" as any).insert({
+        email: `link-invite-${Date.now()}@invite.local`,
+        team_slug: teamSlug,
+        role: "parent",
+        invited_by: user!.id,
+      }).select("invite_token").single();
+      if (error) throw error;
+      const token = (data as any).invite_token;
+      const link = `${window.location.origin}/auth?invite=${token}&redirect=${encodeURIComponent(`/hub?tab=chat&team=${teamSlug}`)}`;
+      setInviteLink(link);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to generate link");
+    } finally {
+      setGeneratingLink(false);
+    }
+  }
+
+  function copyInviteLink() {
+    if (!inviteLink) return;
+    navigator.clipboard.writeText(inviteLink);
+    setLinkCopied(true);
+    toast.success("Invite link copied!");
+    setTimeout(() => setLinkCopied(false), 2000);
+  }
+
   const filteredProfiles = allProfiles.filter((p) => {
     const memberIds = members.map((m) => m.user_id);
     if (memberIds.includes(p.id)) return false;
