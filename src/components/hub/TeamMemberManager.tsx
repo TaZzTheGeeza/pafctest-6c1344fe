@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { UserPlus, Trash2, Users, Search, ChevronDown, Shield, User, Heart, Mail, Loader2 } from "lucide-react";
+import { UserPlus, Trash2, Users, Search, ChevronDown, Shield, User, Heart, Mail, Loader2, Link2, Check, Copy } from "lucide-react";
 import { toast } from "sonner";
 import { isUserOnline, formatLastSeen } from "@/hooks/usePresence";
 
@@ -36,9 +36,12 @@ export function TeamMemberManager({ teamSlug, teamName }: { teamSlug: string; te
   const [showAdd, setShowAdd] = useState(false);
   const [roleMenuOpen, setRoleMenuOpen] = useState<string | null>(null);
   const [addRole, setAddRole] = useState("player");
-  const [addMode, setAddMode] = useState<"search" | "invite">("search");
+  const [addMode, setAddMode] = useState<"search" | "invite" | "link">("search");
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteSending, setInviteSending] = useState(false);
+  const [inviteLink, setInviteLink] = useState<string | null>(null);
+  const [linkCopied, setLinkCopied] = useState(false);
+  const [generatingLink, setGeneratingLink] = useState(false);
 
   useEffect(() => {
     loadMembers();
@@ -144,6 +147,34 @@ export function TeamMemberManager({ teamSlug, teamName }: { teamSlug: string; te
     }
   }
 
+  async function generateInviteLink() {
+    setGeneratingLink(true);
+    try {
+      const { data, error } = await supabase.from("team_invites" as any).insert({
+        email: `link-invite-${Date.now()}@invite.local`,
+        team_slug: teamSlug,
+        role: "parent",
+        invited_by: user!.id,
+      }).select("invite_token").single();
+      if (error) throw error;
+      const token = (data as any).invite_token;
+      const link = `${window.location.origin}/auth?invite=${token}&redirect=${encodeURIComponent(`/hub?tab=chat&team=${teamSlug}`)}`;
+      setInviteLink(link);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to generate link");
+    } finally {
+      setGeneratingLink(false);
+    }
+  }
+
+  function copyInviteLink() {
+    if (!inviteLink) return;
+    navigator.clipboard.writeText(inviteLink);
+    setLinkCopied(true);
+    toast.success("Invite link copied!");
+    setTimeout(() => setLinkCopied(false), 2000);
+  }
+
   const filteredProfiles = allProfiles.filter((p) => {
     const memberIds = members.map((m) => m.user_id);
     if (memberIds.includes(p.id)) return false;
@@ -194,6 +225,14 @@ export function TeamMemberManager({ teamSlug, teamName }: { teamSlug: string; te
                 }`}
               >
                 <Mail className="h-3 w-3" /> Invite by Email
+              </button>
+              <button
+                onClick={() => { setAddMode("link"); setInviteLink(null); setLinkCopied(false); }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-display tracking-wider transition-all ${
+                  addMode === "link" ? "bg-primary text-primary-foreground" : "bg-secondary border border-border text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Link2 className="h-3 w-3" /> Invite Link
               </button>
             </div>
 
@@ -250,7 +289,7 @@ export function TeamMemberManager({ teamSlug, teamName }: { teamSlug: string; te
                   )}
                 </div>
               </>
-            ) : (
+            ) : addMode === "invite" ? (
               /* Email invite mode */
               <div className="space-y-3">
                 <p className="text-xs text-muted-foreground">
@@ -277,6 +316,49 @@ export function TeamMemberManager({ teamSlug, teamName }: { teamSlug: string; te
                     {inviteSending ? "Sending…" : "Send Invite"}
                   </button>
                 </div>
+              </div>
+            ) : (
+              /* Invite link mode */
+              <div className="space-y-3">
+                <p className="text-xs text-muted-foreground">
+                  Generate a shareable link to send to parents. When they sign up via this link, they'll be automatically added as a <strong>Parent</strong> to <strong>{teamName}</strong>.
+                </p>
+                {!inviteLink ? (
+                  <button
+                    onClick={generateInviteLink}
+                    disabled={generatingLink}
+                    className="w-full py-2.5 bg-primary text-primary-foreground rounded-lg text-xs font-display tracking-wider hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5"
+                  >
+                    {generatingLink ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Link2 className="h-3.5 w-3.5" />}
+                    {generatingLink ? "Generating…" : "Generate Invite Link"}
+                  </button>
+                ) : (
+                  <div className="space-y-2">
+                    <div className="flex gap-2">
+                      <input
+                        readOnly
+                        value={inviteLink}
+                        className="flex-1 bg-background border border-border rounded-lg px-3 py-2 text-xs text-foreground font-mono truncate"
+                      />
+                      <button
+                        onClick={copyInviteLink}
+                        className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-xs font-display tracking-wider hover:bg-primary/90 transition-colors flex items-center gap-1.5"
+                      >
+                        {linkCopied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                        {linkCopied ? "Copied!" : "Copy"}
+                      </button>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">
+                      Share this link via WhatsApp, text, or any messaging app. Each link can be used by one person.
+                    </p>
+                    <button
+                      onClick={() => { setInviteLink(null); setLinkCopied(false); }}
+                      className="text-xs text-primary hover:text-primary/80 font-display tracking-wider"
+                    >
+                      Generate another link
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>
