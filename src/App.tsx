@@ -101,7 +101,7 @@ function AppContent() {
         <Route path="/tournament-admin" element={<TournamentAdminPage />} />
         <Route path="/tournament/team/:teamId" element={<TeamProfilePage />} />
         
-        <Route path="/player-of-the-match" element={<RoleGate requiredRole="player"><POTMPage /></RoleGate>} />
+        <Route path="/player-of-the-match" element={<POTMPage />} />
         <Route path="/calendar" element={<Navigate to="/events" replace />} />
         <Route path="/coach-panel" element={<Navigate to="/dashboard" replace />} />
         <Route path="/results" element={<ResultsPage />} />
