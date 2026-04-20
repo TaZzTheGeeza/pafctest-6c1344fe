@@ -100,7 +100,8 @@ export function FixtureAvailability({ teamSlug }: Props) {
     try {
       const [dd, mm, yy] = item.date.split("/").map(Number);
       const friendlyDate = new Date(2000 + yy, mm - 1, dd).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
-      const fixtureDate = `${2000 + yy}-${String(mm).padStart(2, "0")}-${String(dd).padStart(2, "0")}`;
+      // fixture_date is stored in DD/MM/YY format — match the item's date exactly
+      const fixtureDate = item.date;
 
       // Get all team members
       const { data: members } = await supabase
