@@ -37,6 +37,7 @@ export function ReminderPreviewDialog({
   const [sending, setSending] = useState(false);
   const [recipients, setRecipients] = useState<Recipient[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -66,35 +67,27 @@ export function ReminderPreviewDialog({
           .eq("opponent", opponent);
 
         const respondedIds = new Set((responded || []).map((r) => r.user_id));
-        const nonResponderIds = members
-          .map((m) => m.user_id)
-          .filter((id) => !respondedIds.has(id));
-
-        if (nonResponderIds.length === 0) {
-          if (!cancelled) {
-            setRecipients([]);
-            setLoading(false);
-          }
-          return;
-        }
+        const allMemberIds = members.map((m) => m.user_id);
 
         const { data: profiles } = await supabase
           .from("profiles")
           .select("id, full_name, email")
-          .in("id", nonResponderIds);
+          .in("id", allMemberIds);
 
-        const list: Recipient[] = nonResponderIds.map((id) => {
+        const list: Recipient[] = allMemberIds.map((id) => {
           const p = profiles?.find((pr) => pr.id === id);
           return {
             user_id: id,
             full_name: p?.full_name || "Unknown member",
             email: p?.email || null,
+            hasResponded: respondedIds.has(id),
           };
         }).sort((a, b) => a.full_name.localeCompare(b.full_name));
 
         if (!cancelled) {
           setRecipients(list);
-          setSelected(new Set(list.map((r) => r.user_id)));
+          // Default selection: only non-responders
+          setSelected(new Set(list.filter((r) => !r.hasResponded).map((r) => r.user_id)));
           setLoading(false);
         }
       } catch (err) {
