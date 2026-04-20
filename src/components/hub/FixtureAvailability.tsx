@@ -329,9 +329,9 @@ export function FixtureAvailability({ teamSlug }: Props) {
     return (record?.status as AvailabilityStatus) || "pending";
   }
 
-  // For U8 Gold (test team), only show responses made on behalf of a child (player names),
+  // Only show responses made on behalf of a child (player names),
   // never the parent/coach's own name. This avoids confusion about who is actually playing.
-  const playersOnly = teamSlug === "u8s-gold";
+  const playersOnly = true;
 
   function normalizeName(name: string | null | undefined) {
     return (name || "").trim().toLowerCase().replace(/\s+/g, " ");
