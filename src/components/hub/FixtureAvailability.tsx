@@ -297,8 +297,19 @@ export function FixtureAvailability({ teamSlug }: Props) {
       status: AvailabilityStatus;
       respondingFor: string | null;
     }) => {
-      const { error } = await supabase.from("fixture_availability").upsert(
-        {
+      // When responding for a child, only one vote is allowed per child (regardless of which parent).
+      // Remove any prior vote for that child first so the latest parent's response wins.
+      if (respondingFor) {
+        const { error: delError } = await supabase
+          .from("fixture_availability")
+          .delete()
+          .eq("team_slug", teamSlug)
+          .eq("fixture_date", fixtureDate)
+          .eq("opponent", opponent)
+          .eq("responding_for", respondingFor);
+        if (delError) throw delError;
+
+        const { error } = await supabase.from("fixture_availability").insert({
           team_slug: teamSlug,
           fixture_date: fixtureDate,
           opponent,
@@ -306,10 +317,24 @@ export function FixtureAvailability({ teamSlug }: Props) {
           status,
           responding_for: respondingFor,
           updated_at: new Date().toISOString(),
-        },
-        { onConflict: "team_slug,fixture_date,opponent,user_id,responding_for" }
-      );
-      if (error) throw error;
+        });
+        if (error) throw error;
+      } else {
+        // Self-vote: one per user per fixture
+        const { error } = await supabase.from("fixture_availability").upsert(
+          {
+            team_slug: teamSlug,
+            fixture_date: fixtureDate,
+            opponent,
+            user_id: user!.id,
+            status,
+            responding_for: null,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "team_slug,fixture_date,opponent,user_id" }
+        );
+        if (error) throw error;
+      }
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["fixture-availability", teamSlug] }),
   });
