@@ -468,9 +468,10 @@ export function FixtureAvailability({ teamSlug }: Props) {
                   <button
                     onClick={(e) => { e.stopPropagation(); setReminderItem(item); }}
                     title="Preview & remind non-responders"
-                    className="p-1.5 rounded-md border border-primary/30 bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors text-xs font-semibold shadow-md"
                   >
-                    <Bell className="h-4 w-4" />
+                    <Send className="h-3.5 w-3.5" />
+                    <span className="hidden sm:inline">Remind</span>
                   </button>
                 )}
                 {item.isCustom && (isCoach || isAdmin) && (
