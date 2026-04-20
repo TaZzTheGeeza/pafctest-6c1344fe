@@ -333,15 +333,19 @@ export function FixtureAvailability({ teamSlug }: Props) {
   // never the parent/coach's own name. This avoids confusion about who is actually playing.
   const playersOnly = teamSlug === "u8s-gold";
 
+  function normalizeName(name: string | null | undefined) {
+    return (name || "").trim().toLowerCase().replace(/\s+/g, " ");
+  }
+
   function getTeamSummary(item: AvailabilityItem) {
     let records = availability.filter((a) => a.fixture_date === item.date && a.opponent === item.opponent);
     if (playersOnly) {
       records = records.filter((r) => !!r.responding_for);
     }
-    // Deduplicate: per child (responding_for) or per user, keep latest
+    // Deduplicate: per child (normalized) or per user — case-insensitive child match
     const deduped = new Map<string, string>();
     records.forEach((r) => {
-      const key = r.responding_for || r.user_id;
+      const key = r.responding_for ? `child:${normalizeName(r.responding_for)}` : `user:${r.user_id}`;
       deduped.set(key, r.status);
     });
     const statuses = Array.from(deduped.values());
@@ -357,16 +361,16 @@ export function FixtureAvailability({ teamSlug }: Props) {
     if (playersOnly) {
       records = records.filter((r) => !!r.responding_for);
     }
-    // Deduplicate by responding_for (child name) — only show each child once
+    // Deduplicate by normalized child name — only show each child once (case-insensitive)
     const seen = new Set<string>();
     return records.filter((r) => {
-      const key = r.responding_for || r.user_id;
+      const key = r.responding_for ? `child:${normalizeName(r.responding_for)}` : `user:${r.user_id}`;
       if (seen.has(key)) return false;
       seen.add(key);
       return true;
     }).map((r) => {
       if (r.responding_for) {
-        return r.responding_for; // Just show the child's name
+        return r.responding_for.trim();
       }
       const profile = profiles.find((p) => p.id === r.user_id);
       return profile?.full_name || "Unknown";
