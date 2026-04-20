@@ -466,16 +466,11 @@ export function FixtureAvailability({ teamSlug }: Props) {
               <div className="flex items-center gap-2">
                 {(isCoach || isAdmin) && (
                   <button
-                    onClick={(e) => { e.stopPropagation(); handleResendNotification(item); }}
-                    disabled={resending === item.key}
-                    title="Remind non-responders"
-                    className="p-1.5 rounded-md border border-primary/30 bg-primary/10 text-primary hover:bg-primary/20 transition-colors disabled:opacity-50"
+                    onClick={(e) => { e.stopPropagation(); setReminderItem(item); }}
+                    title="Preview & remind non-responders"
+                    className="p-1.5 rounded-md border border-primary/30 bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
                   >
-                    {resending === item.key ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Bell className="h-4 w-4" />
-                    )}
+                    <Bell className="h-4 w-4" />
                   </button>
                 )}
                 {item.isCustom && (isCoach || isAdmin) && (
