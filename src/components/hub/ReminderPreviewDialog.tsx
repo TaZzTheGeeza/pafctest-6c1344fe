@@ -104,6 +104,9 @@ export function ReminderPreviewDialog({
     };
   }, [open, teamSlug, fixtureDate, opponent]);
 
+  const visibleRecipients = showAll ? recipients : recipients.filter((r) => !r.hasResponded);
+  const nonResponderCount = recipients.filter((r) => !r.hasResponded).length;
+
   const toggle = (userId: string) => {
     setSelected((prev) => {
       const next = new Set(prev);
@@ -114,11 +117,17 @@ export function ReminderPreviewDialog({
   };
 
   const toggleAll = () => {
-    if (selected.size === recipients.length) {
-      setSelected(new Set());
-    } else {
-      setSelected(new Set(recipients.map((r) => r.user_id)));
-    }
+    const visibleIds = visibleRecipients.map((r) => r.user_id);
+    const allVisibleSelected = visibleIds.every((id) => selected.has(id));
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (allVisibleSelected) {
+        visibleIds.forEach((id) => next.delete(id));
+      } else {
+        visibleIds.forEach((id) => next.add(id));
+      }
+      return next;
+    });
   };
 
   const handleSend = async () => {
