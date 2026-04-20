@@ -7,6 +7,7 @@ interface Recipient {
   user_id: string;
   full_name: string;
   email: string | null;
+  hasResponded: boolean;
 }
 
 interface Props {
@@ -36,6 +37,7 @@ export function ReminderPreviewDialog({
   const [sending, setSending] = useState(false);
   const [recipients, setRecipients] = useState<Recipient[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -65,35 +67,27 @@ export function ReminderPreviewDialog({
           .eq("opponent", opponent);
 
         const respondedIds = new Set((responded || []).map((r) => r.user_id));
-        const nonResponderIds = members
-          .map((m) => m.user_id)
-          .filter((id) => !respondedIds.has(id));
-
-        if (nonResponderIds.length === 0) {
-          if (!cancelled) {
-            setRecipients([]);
-            setLoading(false);
-          }
-          return;
-        }
+        const allMemberIds = members.map((m) => m.user_id);
 
         const { data: profiles } = await supabase
           .from("profiles")
           .select("id, full_name, email")
-          .in("id", nonResponderIds);
+          .in("id", allMemberIds);
 
-        const list: Recipient[] = nonResponderIds.map((id) => {
+        const list: Recipient[] = allMemberIds.map((id) => {
           const p = profiles?.find((pr) => pr.id === id);
           return {
             user_id: id,
             full_name: p?.full_name || "Unknown member",
             email: p?.email || null,
+            hasResponded: respondedIds.has(id),
           };
         }).sort((a, b) => a.full_name.localeCompare(b.full_name));
 
         if (!cancelled) {
           setRecipients(list);
-          setSelected(new Set(list.map((r) => r.user_id)));
+          // Default selection: only non-responders
+          setSelected(new Set(list.filter((r) => !r.hasResponded).map((r) => r.user_id)));
           setLoading(false);
         }
       } catch (err) {
@@ -110,6 +104,9 @@ export function ReminderPreviewDialog({
     };
   }, [open, teamSlug, fixtureDate, opponent]);
 
+  const visibleRecipients = showAll ? recipients : recipients.filter((r) => !r.hasResponded);
+  const nonResponderCount = recipients.filter((r) => !r.hasResponded).length;
+
   const toggle = (userId: string) => {
     setSelected((prev) => {
       const next = new Set(prev);
@@ -120,11 +117,17 @@ export function ReminderPreviewDialog({
   };
 
   const toggleAll = () => {
-    if (selected.size === recipients.length) {
-      setSelected(new Set());
-    } else {
-      setSelected(new Set(recipients.map((r) => r.user_id)));
-    }
+    const visibleIds = visibleRecipients.map((r) => r.user_id);
+    const allVisibleSelected = visibleIds.every((id) => selected.has(id));
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (allVisibleSelected) {
+        visibleIds.forEach((id) => next.delete(id));
+      } else {
+        visibleIds.forEach((id) => next.add(id));
+      }
+      return next;
+    });
   };
 
   const handleSend = async () => {
@@ -217,27 +220,44 @@ export function ReminderPreviewDialog({
             <div className="flex items-center justify-center py-8 text-muted-foreground">
               <Loader2 className="h-5 w-5 animate-spin mr-2" /> Loading recipients…
             </div>
-          ) : recipients.length === 0 ? (
+          ) : nonResponderCount === 0 && !showAll ? (
             <div className="text-center py-6">
               <p className="text-sm text-foreground font-display">Everyone has already responded! 🎉</p>
               <p className="text-xs text-muted-foreground mt-2">No reminders needed.</p>
+              <button
+                onClick={() => setShowAll(true)}
+                className="mt-4 text-xs text-primary hover:text-primary/80 font-display tracking-wider uppercase underline underline-offset-4"
+              >
+                Show all team members anyway
+              </button>
             </div>
           ) : (
             <>
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
                 <p className="text-xs text-muted-foreground">
-                  {selected.size} of {recipients.length} selected
+                  {selected.size} of {visibleRecipients.length} selected
                 </p>
-                <button
-                  onClick={toggleAll}
-                  className="text-xs text-primary hover:text-primary/80 font-display tracking-wider uppercase"
-                >
-                  {selected.size === recipients.length ? "Deselect all" : "Select all"}
-                </button>
+                <div className="flex items-center gap-3">
+                  <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={showAll}
+                      onChange={(e) => setShowAll(e.target.checked)}
+                      className="h-3.5 w-3.5 rounded border-border text-primary focus:ring-primary/30"
+                    />
+                    Show all members
+                  </label>
+                  <button
+                    onClick={toggleAll}
+                    className="text-xs text-primary hover:text-primary/80 font-display tracking-wider uppercase"
+                  >
+                    {visibleRecipients.every((r) => selected.has(r.user_id)) ? "Deselect all" : "Select all"}
+                  </button>
+                </div>
               </div>
 
               <ul className="space-y-1.5">
-                {recipients.map((r) => {
+                {visibleRecipients.map((r) => {
                   const isChecked = selected.has(r.user_id);
                   return (
                     <li key={r.user_id}>
@@ -255,7 +275,14 @@ export function ReminderPreviewDialog({
                           className="mt-0.5 h-4 w-4 rounded border-border text-primary focus:ring-primary/30"
                         />
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm text-foreground font-display truncate">{r.full_name}</p>
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm text-foreground font-display truncate">{r.full_name}</p>
+                            {r.hasResponded && (
+                              <span className="text-[9px] font-display tracking-wider uppercase px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 shrink-0">
+                                Responded
+                              </span>
+                            )}
+                          </div>
                           <p className="text-xs text-muted-foreground truncate">
                             {r.email || <span className="italic">No email on file</span>}
                           </p>
