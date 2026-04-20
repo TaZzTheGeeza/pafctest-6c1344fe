@@ -610,6 +610,20 @@ export function FixtureAvailability({ teamSlug }: Props) {
           </div>
         );
       })}
+
+      {reminderItem && (
+        <ReminderPreviewDialog
+          open={!!reminderItem}
+          onClose={() => setReminderItem(null)}
+          teamSlug={teamSlug}
+          fixtureDate={reminderItem.date}
+          opponent={reminderItem.opponent}
+          itemTitle={reminderItem.title}
+          itemTime={reminderItem.time}
+          itemVenue={reminderItem.venue}
+          friendlyDate={getFriendlyDate(reminderItem.date)}
+        />
+      )}
     </div>
   );
 }
