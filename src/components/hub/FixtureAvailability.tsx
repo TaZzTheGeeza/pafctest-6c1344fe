@@ -329,8 +329,15 @@ export function FixtureAvailability({ teamSlug }: Props) {
     return (record?.status as AvailabilityStatus) || "pending";
   }
 
+  // For U8 Gold (test team), only show responses made on behalf of a child (player names),
+  // never the parent/coach's own name. This avoids confusion about who is actually playing.
+  const playersOnly = teamSlug === "u8s-gold";
+
   function getTeamSummary(item: AvailabilityItem) {
-    const records = availability.filter((a) => a.fixture_date === item.date && a.opponent === item.opponent);
+    let records = availability.filter((a) => a.fixture_date === item.date && a.opponent === item.opponent);
+    if (playersOnly) {
+      records = records.filter((r) => !!r.responding_for);
+    }
     // Deduplicate: per child (responding_for) or per user, keep latest
     const deduped = new Map<string, string>();
     records.forEach((r) => {
@@ -346,7 +353,10 @@ export function FixtureAvailability({ teamSlug }: Props) {
   }
 
   function getRespondents(item: AvailabilityItem, status: string) {
-    const records = availability.filter((a) => a.fixture_date === item.date && a.opponent === item.opponent && a.status === status);
+    let records = availability.filter((a) => a.fixture_date === item.date && a.opponent === item.opponent && a.status === status);
+    if (playersOnly) {
+      records = records.filter((r) => !!r.responding_for);
+    }
     // Deduplicate by responding_for (child name) — only show each child once
     const seen = new Set<string>();
     return records.filter((r) => {
