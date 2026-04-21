@@ -329,19 +329,16 @@ export function FixtureAvailability({ teamSlug }: Props) {
     return (record?.status as AvailabilityStatus) || "pending";
   }
 
-  // Only show responses made on behalf of a child (player names),
-  // never the parent/coach's own name. This avoids confusion about who is actually playing.
-  const playersOnly = true;
+  // Show child/player names where a parent voted on behalf of a child,
+  // fall back to profile name for self-votes (coaches, unlinked parents).
+  // This keeps all votes visible while prioritising player names.
 
   function normalizeName(name: string | null | undefined) {
     return (name || "").trim().toLowerCase().replace(/\s+/g, " ");
   }
 
   function getTeamSummary(item: AvailabilityItem) {
-    let records = availability.filter((a) => a.fixture_date === item.date && a.opponent === item.opponent);
-    if (playersOnly) {
-      records = records.filter((r) => !!r.responding_for);
-    }
+    const records = availability.filter((a) => a.fixture_date === item.date && a.opponent === item.opponent);
     // Deduplicate: per child (normalized) or per user — case-insensitive child match
     const deduped = new Map<string, string>();
     records.forEach((r) => {
@@ -357,11 +354,8 @@ export function FixtureAvailability({ teamSlug }: Props) {
   }
 
   function getRespondents(item: AvailabilityItem, status: string) {
-    let records = availability.filter((a) => a.fixture_date === item.date && a.opponent === item.opponent && a.status === status);
-    if (playersOnly) {
-      records = records.filter((r) => !!r.responding_for);
-    }
-    // Deduplicate by normalized child name — only show each child once (case-insensitive)
+    const records = availability.filter((a) => a.fixture_date === item.date && a.opponent === item.opponent && a.status === status);
+    // Deduplicate by normalized child name or user id
     const seen = new Set<string>();
     return records.filter((r) => {
       const key = r.responding_for ? `child:${normalizeName(r.responding_for)}` : `user:${r.user_id}`;
