@@ -208,27 +208,31 @@ export function FixtureAvailability({ teamSlug }: Props) {
       status: AvailabilityStatus;
       respondingFor: string | null;
     }) => {
-      // When responding for a child, only one vote is allowed per child (regardless of which parent).
-      // Remove any prior vote for that child first so the latest parent's response wins.
       if (respondingFor) {
-        const { error: delError } = await supabase
+        // First try to delete any existing record the current user owns for this child
+        await supabase
           .from("fixture_availability")
           .delete()
           .eq("team_slug", teamSlug)
           .eq("fixture_date", fixtureDate)
           .eq("opponent", opponent)
           .eq("responding_for", respondingFor);
-        if (delError) throw delError;
 
-        const { error } = await supabase.from("fixture_availability").insert({
-          team_slug: teamSlug,
-          fixture_date: fixtureDate,
-          opponent,
-          user_id: user!.id,
-          status,
-          responding_for: respondingFor,
-          updated_at: new Date().toISOString(),
-        });
+        // Also delete any record from another parent for the same child
+        // (RLS will only allow deleting own records, so use upsert on the
+        // child-unique constraint to overwrite regardless of who voted before)
+        const { error } = await supabase.from("fixture_availability").upsert(
+          {
+            team_slug: teamSlug,
+            fixture_date: fixtureDate,
+            opponent,
+            user_id: user!.id,
+            status,
+            responding_for: respondingFor,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "team_slug,fixture_date,opponent,responding_for", ignoreDuplicates: false }
+        );
         if (error) throw error;
       } else {
         // Self-vote: one per user per fixture
@@ -248,6 +252,10 @@ export function FixtureAvailability({ teamSlug }: Props) {
       }
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["fixture-availability", teamSlug] }),
+    onError: (err: any) => {
+      console.error("Availability vote failed:", err);
+      toast.error("Failed to save availability – please try again");
+    },
   });
 
   const deleteMutation = useMutation({
