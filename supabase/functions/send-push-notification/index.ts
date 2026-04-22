@@ -115,7 +115,7 @@ Deno.serve(async (req) => {
     } catch (err: any) {
       failed++
       // Remove expired/invalid subscriptions
-      if (err.statusCode === 410 || err.statusCode === 404) {
+      if (err.statusCode === 410 || err.statusCode === 404 || err.statusCode === 403) {
         expiredEndpoints.push(sub.endpoint)
       }
       console.error('Push send failed:', { endpoint: sub.endpoint.slice(0, 50), statusCode: err.statusCode })
