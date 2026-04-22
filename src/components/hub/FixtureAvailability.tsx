@@ -208,48 +208,51 @@ export function FixtureAvailability({ teamSlug }: Props) {
       status: AvailabilityStatus;
       respondingFor: string | null;
     }) => {
-      if (respondingFor) {
-        // First try to delete any existing record the current user owns for this child
-        await supabase
-          .from("fixture_availability")
-          .delete()
-          .eq("team_slug", teamSlug)
-          .eq("fixture_date", fixtureDate)
-          .eq("opponent", opponent)
-          .eq("responding_for", respondingFor);
+      const timestamp = new Date().toISOString();
 
-        // Also delete any record from another parent for the same child
-        // (RLS will only allow deleting own records, so use upsert on the
-        // child-unique constraint to overwrite regardless of who voted before)
-        const { error } = await supabase.from("fixture_availability").upsert(
-          {
-            team_slug: teamSlug,
-            fixture_date: fixtureDate,
-            opponent,
+      const existingRecord = respondingFor
+        ? availability
+            .filter(
+              (record) =>
+                record.fixture_date === fixtureDate &&
+                record.opponent === opponent &&
+                normalizeName(record.responding_for) === normalizeName(respondingFor)
+            )
+            .sort((a, b) => Number(b.user_id === user!.id) - Number(a.user_id === user!.id))[0]
+        : availability.find(
+            (record) =>
+              record.fixture_date === fixtureDate &&
+              record.opponent === opponent &&
+              record.user_id === user!.id &&
+              !record.responding_for
+          );
+
+      if (existingRecord) {
+        const { error } = await supabase
+          .from("fixture_availability")
+          .update({
             user_id: user!.id,
             status,
             responding_for: respondingFor,
-            updated_at: new Date().toISOString(),
-          },
-          { onConflict: "team_slug,fixture_date,opponent,responding_for", ignoreDuplicates: false }
-        );
+            updated_at: timestamp,
+          })
+          .eq("id", existingRecord.id);
+
         if (error) throw error;
-      } else {
-        // Self-vote: one per user per fixture
-        const { error } = await supabase.from("fixture_availability").upsert(
-          {
-            team_slug: teamSlug,
-            fixture_date: fixtureDate,
-            opponent,
-            user_id: user!.id,
-            status,
-            responding_for: null,
-            updated_at: new Date().toISOString(),
-          },
-          { onConflict: "team_slug,fixture_date,opponent,user_id" }
-        );
-        if (error) throw error;
+        return;
       }
+
+      const { error } = await supabase.from("fixture_availability").insert({
+        team_slug: teamSlug,
+        fixture_date: fixtureDate,
+        opponent,
+        user_id: user!.id,
+        status,
+        responding_for: respondingFor,
+        updated_at: timestamp,
+      });
+
+      if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["fixture-availability", teamSlug] }),
     onError: (err: any) => {
