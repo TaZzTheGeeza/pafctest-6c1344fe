@@ -6,6 +6,7 @@ import { CartDrawer } from "@/components/CartDrawer";
 import { NotificationBell } from "@/components/hub/NotificationBell";
 import { useAuth } from "@/contexts/AuthContext";
 import clubLogo from "@/assets/club-logo.jpg";
+import wildcatsLogo from "@/assets/wildcats-logo.png";
 
 const communityItems = [
   { label: "News", path: "/news", icon: Newspaper, desc: "Latest club updates" },
@@ -48,6 +49,7 @@ const leftNav: NavItem[] = [
 const rightNav: NavItem[] = [
   { label: "About", path: "/club-info", dropdown: aboutItems },
   { label: "PAFC TV", path: "/pafc-tv" },
+  { label: "Wildcats", path: "/wildcats" },
   { label: "Raffle", path: "/raffle" },
   { label: "Contact", path: "/contact" },
 ];
@@ -118,6 +120,19 @@ function NavItemRenderer({ item, location }: { item: NavItem; location: ReturnTy
 
   const isPafcTv = item.label === "PAFC TV";
   const isPafcHub = item.label === "PAFC Hub";
+  const isWildcats = item.label === "Wildcats";
+
+  if (isWildcats) {
+    return (
+      <Link
+        to={item.path}
+        className="flex items-center px-2 py-1 transition-transform hover:scale-105"
+        title="Wildcats Girls' Football"
+      >
+        <img src={wildcatsLogo} alt="Wildcats Girls' Football" className="h-9 w-auto drop-shadow-[0_2px_8px_rgba(168,85,247,0.5)]" />
+      </Link>
+    );
+  }
 
   return (
     <Link
@@ -278,6 +293,11 @@ export function Navbar() {
                 <a key={item.label} href={item.path} target="_blank" rel="noopener noreferrer" onClick={() => setIsOpen(false)} className="font-display text-sm tracking-wider text-muted-foreground hover:text-primary transition-colors py-2">
                   {item.label}
                 </a>
+              ) : item.label === "Wildcats" ? (
+                <Link key={item.label} to={item.path} onClick={() => setIsOpen(false)} className="flex items-center gap-2 py-2">
+                  <img src={wildcatsLogo} alt="Wildcats Girls' Football" className="h-8 w-auto" />
+                  <span className="font-display text-sm tracking-wider text-foreground">Wildcats</span>
+                </Link>
               ) : (
                 <Link key={item.label} to={item.path} onClick={() => setIsOpen(false)} className={`font-display text-sm tracking-wider transition-colors py-2 flex items-center gap-2 ${
                   item.label === "PAFC Hub" ? "text-primary font-bold bg-primary/10 rounded-md px-3 border border-primary/30" :
