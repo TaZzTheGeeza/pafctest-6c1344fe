@@ -126,10 +126,25 @@ function NavItemRenderer({ item, location }: { item: NavItem; location: ReturnTy
     return (
       <Link
         to={item.path}
-        className="flex items-center px-2 py-1 transition-transform hover:scale-105"
+        className="group relative flex items-center gap-2 px-3 py-1.5 rounded-full transition-all hover:scale-105 active:scale-95"
+        style={{
+          background: "linear-gradient(135deg, #3DD9C8 0%, #5B8DEF 50%, #FF4D7E 100%)",
+          border: "2px solid white",
+          boxShadow: "0 0 0 2px #2D1B5E, 0 4px 14px rgba(255,77,126,0.5), 0 0 20px rgba(61,217,200,0.4)",
+        }}
         title="Wildcats Girls' Football"
       >
-        <img src={wildcatsLogo} alt="Wildcats Girls' Football" className="h-9 w-auto drop-shadow-[0_2px_8px_rgba(168,85,247,0.5)]" />
+        <img
+          src={wildcatsLogo}
+          alt="Wildcats Girls' Football"
+          className="h-7 w-auto drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)]"
+        />
+        <span
+          className="text-[11px] font-black tracking-wider text-white uppercase pr-1"
+          style={{ textShadow: "1px 1px 0 #2D1B5E, 0 2px 4px rgba(0,0,0,0.3)" }}
+        >
+          Wildcats
+        </span>
       </Link>
     );
   }
