@@ -1,7 +1,7 @@
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, Users, ExternalLink, MapPin, Zap } from "lucide-react";
+import { Calendar, Clock, Users, ExternalLink, MapPin, Zap, Navigation } from "lucide-react";
 import wildcatsLogo from "@/assets/wildcats-logo.png";
 
 const FA_BOOKING_URL = "https://www.englandfootball.com/play/youth-football/wildcats";
