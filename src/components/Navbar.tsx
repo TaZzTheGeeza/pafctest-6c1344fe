@@ -293,6 +293,11 @@ export function Navbar() {
                 <a key={item.label} href={item.path} target="_blank" rel="noopener noreferrer" onClick={() => setIsOpen(false)} className="font-display text-sm tracking-wider text-muted-foreground hover:text-primary transition-colors py-2">
                   {item.label}
                 </a>
+              ) : item.label === "Wildcats" ? (
+                <Link key={item.label} to={item.path} onClick={() => setIsOpen(false)} className="flex items-center gap-2 py-2">
+                  <img src={wildcatsLogo} alt="Wildcats Girls' Football" className="h-8 w-auto" />
+                  <span className="font-display text-sm tracking-wider text-foreground">Wildcats</span>
+                </Link>
               ) : (
                 <Link key={item.label} to={item.path} onClick={() => setIsOpen(false)} className={`font-display text-sm tracking-wider transition-colors py-2 flex items-center gap-2 ${
                   item.label === "PAFC Hub" ? "text-primary font-bold bg-primary/10 rounded-md px-3 border border-primary/30" :
