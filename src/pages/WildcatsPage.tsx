@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar, Clock, Users, ExternalLink, MapPin, Zap, Navigation } from "lucide-react";
 import wildcatsLogo from "@/assets/wildcats-logo.png";
 
-const FA_BOOKING_URL = "https://www.englandfootball.com/play/youth-football/wildcats";
+const FA_BOOKING_URL = "https://book.englandfootball.com/Book/e38c054b-8343-4c32-ba55-b743e9c117a9?venue=peterboroughathleticyouth0";
 
 // Wildcats palette (from sticker artwork)
 const TEAL = "#3DD9C8";
