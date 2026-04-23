@@ -1,7 +1,7 @@
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, Users, ExternalLink, MapPin, Zap } from "lucide-react";
+import { Calendar, Clock, Users, ExternalLink, MapPin, Zap, Navigation } from "lucide-react";
 import wildcatsLogo from "@/assets/wildcats-logo.png";
 
 const FA_BOOKING_URL = "https://www.englandfootball.com/play/youth-football/wildcats";
@@ -165,46 +165,70 @@ export default function WildcatsPage() {
               Session Details
             </Sticker>
           </div>
-          <div className="max-w-5xl mx-auto grid md:grid-cols-3 gap-8">
+          <div className="max-w-6xl mx-auto grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { icon: Calendar, label: "When", value: "Every Thursday", color: PINK },
-              { icon: Clock, label: "Time", value: "6:30 – 7:30 PM", color: TEAL },
-              { icon: Users, label: "Ages", value: "Girls 5 – 11", color: PURPLE },
-            ].map(({ icon: Icon, label, value, color }, i) => (
-              <div
-                key={label}
-                className="rounded-3xl p-8 text-center transition-transform hover:-translate-y-2"
-                style={{
-                  background: "white",
-                  border: `5px solid ${DEEP_PURPLE}`,
-                  boxShadow: `0 10px 0 ${DEEP_PURPLE}, 0 18px 40px rgba(45,27,94,0.25)`,
-                  transform: `rotate(${i === 1 ? 0 : i === 0 ? -2 : 2}deg)`,
-                }}
-              >
+              { icon: Calendar, label: "When", value: "Every Thursday", color: PINK, href: null },
+              { icon: Clock, label: "Time", value: "6:30 – 7:30 PM", color: TEAL, href: null },
+              { icon: Users, label: "Ages", value: "Girls 5 – 11", color: PURPLE, href: null },
+              {
+                icon: Navigation,
+                label: "Where",
+                value: "Itter Park",
+                color: YELLOW,
+                href: "https://share.google/TY1FK0vA79qvStxjJ",
+              },
+            ].map(({ icon: Icon, label, value, color, href }, i) => {
+              const rotations = [-2, 1, -1, 2];
+              const card = (
                 <div
-                  className="w-20 h-20 mx-auto mb-5 rounded-full flex items-center justify-center"
+                  className="rounded-3xl p-6 text-center transition-transform hover:-translate-y-2 h-full"
                   style={{
-                    background: color,
-                    border: `4px solid ${DEEP_PURPLE}`,
-                    boxShadow: `0 4px 0 ${DEEP_PURPLE}`,
+                    background: "white",
+                    border: `5px solid ${DEEP_PURPLE}`,
+                    boxShadow: `0 10px 0 ${DEEP_PURPLE}, 0 18px 40px rgba(45,27,94,0.25)`,
+                    transform: `rotate(${rotations[i]}deg)`,
                   }}
                 >
-                  <Icon className="h-10 w-10 text-white" strokeWidth={2.5} />
+                  <div
+                    className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center"
+                    style={{
+                      background: color,
+                      border: `4px solid ${DEEP_PURPLE}`,
+                      boxShadow: `0 4px 0 ${DEEP_PURPLE}`,
+                    }}
+                  >
+                    <Icon className="h-8 w-8 text-white" strokeWidth={2.5} />
+                  </div>
+                  <p
+                    className="text-xs font-black tracking-widest uppercase mb-2"
+                    style={{ color: DEEP_PURPLE, fontFamily: "'Fredoka', system-ui, sans-serif" }}
+                  >
+                    {label}
+                  </p>
+                  <p
+                    className="text-xl font-black"
+                    style={{ color: DEEP_PURPLE, fontFamily: "'Baloo 2', system-ui, sans-serif" }}
+                  >
+                    {value}
+                  </p>
+                  {href && (
+                    <p
+                      className="text-xs font-bold mt-2 inline-flex items-center gap-1"
+                      style={{ color: DEEP_PURPLE, fontFamily: "'Fredoka', system-ui, sans-serif" }}
+                    >
+                      Get directions <ExternalLink className="h-3 w-3" />
+                    </p>
+                  )}
                 </div>
-                <p
-                  className="text-sm font-black tracking-widest uppercase mb-2"
-                  style={{ color: DEEP_PURPLE, fontFamily: "'Fredoka', system-ui, sans-serif" }}
-                >
-                  {label}
-                </p>
-                <p
-                  className="text-2xl font-black"
-                  style={{ color: DEEP_PURPLE, fontFamily: "'Baloo 2', system-ui, sans-serif" }}
-                >
-                  {value}
-                </p>
-              </div>
-            ))}
+              );
+              return href ? (
+                <a key={label} href={href} target="_blank" rel="noopener noreferrer" className="block">
+                  {card}
+                </a>
+              ) : (
+                <div key={label}>{card}</div>
+              );
+            })}
           </div>
         </div>
       </section>
