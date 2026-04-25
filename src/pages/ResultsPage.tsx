@@ -305,6 +305,22 @@ const ResultsPage = () => {
                                     </div>
                                   </div>
                                 )}
+                                {canEdit && (
+                                  <div className="pt-2 flex justify-end">
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        openEdit(report);
+                                      }}
+                                      className="gap-1.5"
+                                    >
+                                      <Pencil className="h-3.5 w-3.5" />
+                                      Edit Report
+                                    </Button>
+                                  </div>
+                                )}
                               </div>
                             </motion.div>
                           )}
