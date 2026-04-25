@@ -220,6 +220,19 @@ const ResultsPage = () => {
                                   )}
                                 </div>
                               </div>
+                              {canEdit && (
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    openEdit(report);
+                                  }}
+                                  title="Edit match report"
+                                  className="shrink-0 p-1.5 rounded-md hover:bg-primary/10 text-primary border border-primary/30"
+                                >
+                                  <Pencil className="h-3.5 w-3.5" />
+                                </button>
+                              )}
                               {isExpanded ? (
                                 <ChevronUp className="h-4 w-4 text-muted-foreground shrink-0" />
                               ) : (
