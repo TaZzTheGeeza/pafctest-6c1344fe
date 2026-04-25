@@ -51,6 +51,51 @@ interface POTMAward {
 const ResultsPage = () => {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [filterTeam, setFilterTeam] = useState<string>("all");
+  const { isCoach, isAdmin } = useAuth();
+  const canEdit = isCoach || isAdmin;
+  const queryClient = useQueryClient();
+
+  const [editing, setEditing] = useState<MatchReport | null>(null);
+  const [editHome, setEditHome] = useState("0");
+  const [editAway, setEditAway] = useState("0");
+  const [editScorers, setEditScorers] = useState("");
+  const [editAssists, setEditAssists] = useState("");
+  const [editNotes, setEditNotes] = useState("");
+  const [savingEdit, setSavingEdit] = useState(false);
+
+  const openEdit = (report: MatchReport) => {
+    setEditing(report);
+    setEditHome(String(report.home_score ?? 0));
+    setEditAway(String(report.away_score ?? 0));
+    setEditScorers(report.goal_scorers ?? "");
+    setEditAssists(report.assists ?? "");
+    setEditNotes(report.notes ?? "");
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editing) return;
+    setSavingEdit(true);
+    try {
+      const { error } = await supabase
+        .from("match_reports")
+        .update({
+          home_score: parseInt(editHome) || 0,
+          away_score: parseInt(editAway) || 0,
+          goal_scorers: editScorers.trim() || null,
+          assists: editAssists.trim() || null,
+          notes: editNotes.trim() || null,
+        })
+        .eq("id", editing.id);
+      if (error) throw error;
+      toast.success("Match report updated");
+      queryClient.invalidateQueries({ queryKey: ["match-reports-public"] });
+      setEditing(null);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update report");
+    } finally {
+      setSavingEdit(false);
+    }
+  };
 
   const { data: reports, isLoading } = useQuery({
     queryKey: ["match-reports-public"],
