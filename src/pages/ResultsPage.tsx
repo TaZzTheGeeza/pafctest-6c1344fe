@@ -334,6 +334,96 @@ const ResultsPage = () => {
           )}
         </div>
       </main>
+
+      <Dialog open={!!editing} onOpenChange={(open) => !open && setEditing(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Edit Match Report</DialogTitle>
+            <DialogDescription>
+              {editing && (
+                <>
+                  {editing.team_name} vs {editing.opponent} —{" "}
+                  {new Date(editing.match_date).toLocaleDateString("en-GB", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  })}
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs">{editing?.team_name} Score</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  value={editHome}
+                  onChange={(e) => setEditHome(e.target.value)}
+                />
+              </div>
+              <div>
+                <Label className="text-xs">{editing?.opponent} Score</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  value={editAway}
+                  onChange={(e) => setEditAway(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label className="text-xs">Goal Scorers</Label>
+              <Input
+                value={editScorers}
+                onChange={(e) => setEditScorers(e.target.value)}
+                placeholder="e.g. Sophie x2, Mia"
+              />
+            </div>
+
+            <div>
+              <Label className="text-xs">Assists</Label>
+              <Input
+                value={editAssists}
+                onChange={(e) => setEditAssists(e.target.value)}
+                placeholder="e.g. Lily, Ava"
+              />
+            </div>
+
+            <div>
+              <Label className="text-xs">Match Notes</Label>
+              <Textarea
+                value={editNotes}
+                onChange={(e) => setEditNotes(e.target.value)}
+                rows={4}
+                placeholder="Match summary, key moments..."
+              />
+            </div>
+
+            <p className="text-[11px] text-muted-foreground">
+              Note: This edits the public report only. To change individual player stats (goals/assists per player), use the Coach Panel.
+            </p>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditing(null)} disabled={savingEdit}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveEdit} disabled={savingEdit}>
+              {savingEdit ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : (
+                <Save className="h-4 w-4 mr-2" />
+              )}
+              Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <Footer />
     </div>
   );
