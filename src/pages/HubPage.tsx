@@ -7,7 +7,7 @@ import { TeamChat } from "@/components/hub/TeamChat";
 import { PaymentCenter } from "@/components/hub/PaymentCenter";
 import { NotificationCenter } from "@/components/hub/NotificationCenter";
 import { TeamMemberManager } from "@/components/hub/TeamMemberManager";
-import { MessageSquare, CreditCard, Bell, CalendarCheck, Users, Shield, ChevronDown, Car, TrendingUp, UserPlus, User, FileText, ChevronRight, Video } from "lucide-react";
+import { MessageSquare, CreditCard, Bell, CalendarCheck, Users, Shield, ChevronDown, Car, TrendingUp, UserPlus, User, FileText, ChevronRight, Video, Sparkles } from "lucide-react";
 import { FixtureAvailability } from "@/components/hub/FixtureAvailability";
 import { CarpoolBoard } from "@/components/hub/CarpoolBoard";
 import { AttendanceStats } from "@/components/hub/AttendanceStats";
@@ -47,6 +47,16 @@ const tabs = [
 ];
 
 const playerHubItems = [
+  {
+    title: "Presentation Evening",
+    description: "Claim your family tickets and pick your seats for 05/06/26.",
+    icon: Sparkles,
+    path: "/presentation",
+    color: "text-primary",
+    bgColor: "bg-gradient-to-br from-primary/20 to-primary/5",
+    borderColor: "border-primary/40",
+    featured: true,
+  },
   {
     title: "My Profile",
     description: "View your stats, documents, availability history, and POTM awards.",
@@ -185,8 +195,13 @@ export default function HubPage() {
             <Link
               key={item.title}
               to={item.path}
-              className={`group relative flex flex-col bg-card border ${item.borderColor} rounded-xl p-6 hover:border-primary/40 transition-all hover:shadow-lg hover:shadow-primary/5`}
+              className={`group relative flex flex-col bg-card border ${item.borderColor} rounded-xl p-6 hover:border-primary/40 transition-all hover:shadow-lg hover:shadow-primary/5 ${item.featured ? "sm:col-span-2 ring-1 ring-primary/30" : ""}`}
             >
+              {item.featured && (
+                <span className="absolute top-3 right-3 text-[10px] tracking-[0.15em] uppercase font-display font-semibold text-primary bg-primary/10 border border-primary/30 px-2 py-0.5 rounded-full">
+                  Featured
+                </span>
+              )}
               <div className={`${item.bgColor} w-12 h-12 rounded-lg flex items-center justify-center mb-4`}>
                 <item.icon className={`h-6 w-6 ${item.color}`} />
               </div>
