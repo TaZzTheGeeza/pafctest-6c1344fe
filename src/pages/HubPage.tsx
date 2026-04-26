@@ -7,7 +7,7 @@ import { TeamChat } from "@/components/hub/TeamChat";
 import { PaymentCenter } from "@/components/hub/PaymentCenter";
 import { NotificationCenter } from "@/components/hub/NotificationCenter";
 import { TeamMemberManager } from "@/components/hub/TeamMemberManager";
-import { MessageSquare, CreditCard, Bell, CalendarCheck, Users, Shield, ChevronDown, Car, TrendingUp, UserPlus, User, FileText, ChevronRight, Video } from "lucide-react";
+import { MessageSquare, CreditCard, Bell, CalendarCheck, Users, Shield, ChevronDown, Car, TrendingUp, UserPlus, User, FileText, ChevronRight, Video, Sparkles } from "lucide-react";
 import { FixtureAvailability } from "@/components/hub/FixtureAvailability";
 import { CarpoolBoard } from "@/components/hub/CarpoolBoard";
 import { AttendanceStats } from "@/components/hub/AttendanceStats";
@@ -47,6 +47,16 @@ const tabs = [
 ];
 
 const playerHubItems = [
+  {
+    title: "Presentation Evening",
+    description: "Claim your family tickets and pick your seats for 05/06/26.",
+    icon: Sparkles,
+    path: "/presentation",
+    color: "text-primary",
+    bgColor: "bg-gradient-to-br from-primary/20 to-primary/5",
+    borderColor: "border-primary/40",
+    featured: true,
+  },
   {
     title: "My Profile",
     description: "View your stats, documents, availability history, and POTM awards.",
