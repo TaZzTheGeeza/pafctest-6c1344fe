@@ -219,9 +219,8 @@ export default function PlayerRegistrationAdminPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-8">
-          <StatCard label="Paid & Complete" value={paidRegistrations.length} icon={CheckCircle2} color="text-green-500" />
-          <StatCard label="Awaiting Payment" value={unpaidRegistrations.length} icon={AlertCircle} color="text-red-500" />
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+          <StatCard label="Registered & Paid" value={paidRegistrations.length} icon={CheckCircle2} color="text-green-500" />
           <StatCard label="Outstanding" value={outstanding.length} icon={AlertCircle} color="text-amber-500" />
           <StatCard label="Total Roster" value={roster.length} icon={UserIcon} color="text-primary" />
         </div>
@@ -229,8 +228,7 @@ export default function PlayerRegistrationAdminPage() {
         {/* Tabs */}
         <div className="flex gap-2 mb-4 border-b border-border overflow-x-auto">
           {([
-            { key: "paid", label: `Paid & Complete (${paidRegistrations.length})` },
-            { key: "unpaid", label: `Awaiting Payment (${unpaidRegistrations.length})` },
+            { key: "paid", label: `Registered (${paidRegistrations.length})` },
             { key: "outstanding", label: `Outstanding (${outstanding.length})` },
           ] as const).map((t) => (
             <button
