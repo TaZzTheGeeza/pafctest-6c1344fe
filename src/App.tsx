@@ -126,6 +126,7 @@ function AppContent() {
         <Route path="/wildcats" element={<WildcatsPage />} />
         <Route path="/presentation" element={<PresentationPage />} />
         <Route path="/presentation-admin" element={<PresentationAdminPage />} />
+        <Route path="/admin/player-registrations" element={<RoleGate requiredRole="admin"><PlayerRegistrationAdminPage /></RoleGate>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
