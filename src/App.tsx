@@ -52,6 +52,7 @@ import UnsubscribePage from "./pages/UnsubscribePage.tsx";
 import MeetingsPage from "./pages/MeetingsPage.tsx";
 import PlayerShowcaseDemo from "./pages/PlayerShowcaseDemo.tsx";
 import WildcatsPage from "./pages/WildcatsPage.tsx";
+import PresentationPage from "./pages/PresentationPage.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -121,6 +122,7 @@ function AppContent() {
         <Route path="/meetings" element={<RoleGate requiredRole="player"><MeetingsPage /></RoleGate>} />
         <Route path="/player-showcase-demo" element={<PlayerShowcaseDemo />} />
         <Route path="/wildcats" element={<WildcatsPage />} />
+        <Route path="/presentation" element={<PresentationPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
