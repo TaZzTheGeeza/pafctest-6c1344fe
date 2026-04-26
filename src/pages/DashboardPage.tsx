@@ -64,6 +64,8 @@ const ADMIN_LINKS = [
   { label: "Club Documents", path: "/club-documents", icon: FileText, desc: "Manage club docs" },
   { label: "Bulk Doc Upload", path: "/admin/bulk-documents", icon: FileText, desc: "Upload docs for multiple players" },
   { label: "Safeguarding Reports", path: "/admin/safeguarding-reports", icon: Shield, desc: "View & manage safeguarding concerns" },
+  { label: "Player Registrations", path: "/admin/player-registrations", icon: Users, desc: "View who's registered for 2026/27 & their details" },
+  { label: "Presentation Admin", path: "/presentation-admin", icon: Trophy, desc: "Manage presentation evening seating" },
 ];
 
 type DashboardSection = "overview" | "users" | "requests" | "enquiries" | "messages" | "notifications" | "orders" | "potm" | "report" | "stats" | "manage" | "finances" | "permissions";
