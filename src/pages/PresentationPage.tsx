@@ -69,6 +69,19 @@ export default function PresentationPage() {
   const navigate = useNavigate();
   const qc = useQueryClient();
 
+  // Admin check (for shortcut button)
+  const { data: isAdmin } = useQuery({
+    queryKey: ["is-admin-presentation", user?.id],
+    enabled: !!user?.id,
+    queryFn: async () => {
+      const { data } = await supabase.rpc("has_role", {
+        _user_id: user!.id,
+        _role: "admin",
+      });
+      return !!data;
+    },
+  });
+
   // ── Event ────────────────────────────────────────────
   const { data: event, isLoading: eventLoading } = useQuery({
     queryKey: ["presentation-event"],
@@ -198,6 +211,14 @@ export default function PresentationPage() {
               <InfoTile icon={MapPin} label="Venue" value={event.venue} sub={event.venue_address ?? undefined} />
               <InfoTile icon={Shirt} label="Dress Code" value={event.dress_code ?? "Smart"} />
             </div>
+            {isAdmin && (
+              <Button asChild variant="outline" size="sm">
+                <Link to="/presentation-admin">
+                  <ShieldAlert className="h-4 w-4 mr-2" />
+                  Admin: manage seating
+                </Link>
+              </Button>
+            )}
           </motion.div>
         </section>
 
