@@ -302,16 +302,23 @@ function StatCard({ label, value, icon: Icon, color }: { label: string; value: n
   );
 }
 
-function RegisteredList({ items, onSelect }: { items: Registration[]; onSelect: (r: Registration) => void }) {
+function RegisteredList({ items, onSelect, showUnpaid = false }: { items: Registration[]; onSelect: (r: Registration) => void; showUnpaid?: boolean }) {
   if (!items.length) {
     return (
       <div className="text-center py-16 text-muted-foreground bg-card border border-border rounded-xl">
-        No registrations match your filters.
+        {showUnpaid
+          ? "Everyone who has submitted a form has paid. 🎉"
+          : "No paid registrations match your filters."}
       </div>
     );
   }
   return (
     <div className="bg-card border border-border rounded-xl overflow-hidden">
+      {showUnpaid && (
+        <div className="px-4 py-3 bg-red-500/10 border-b border-red-500/20 text-xs text-red-400 font-display tracking-wider">
+          These parents submitted the form but did not complete payment. Their registration is NOT complete.
+        </div>
+      )}
       <div className="divide-y divide-border">
         {items.map((r) => (
           <button
@@ -341,6 +348,15 @@ function RegisteredList({ items, onSelect }: { items: Registration[]; onSelect: 
                 {format(new Date(r.created_at), "dd MMM yyyy")}
               </span>
             </div>
+            {showUnpaid ? (
+              <span className="text-[10px] px-2 py-1 rounded-full bg-red-500/20 text-red-400 font-display tracking-wider shrink-0">
+                UNPAID
+              </span>
+            ) : (
+              <span className="text-[10px] px-2 py-1 rounded-full bg-green-500/20 text-green-500 font-display tracking-wider shrink-0">
+                PAID
+              </span>
+            )}
             {(!r.consent_photography || !r.consent_medical || !r.declaration_confirmed) && (
               <ShieldAlert className="h-4 w-4 text-amber-500 shrink-0" />
             )}
