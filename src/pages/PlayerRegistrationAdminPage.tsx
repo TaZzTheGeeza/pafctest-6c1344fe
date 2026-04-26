@@ -390,7 +390,16 @@ function RegistrationDetail({ registration: r, onClose }: { registration: Regist
 
           <div className="p-6 space-y-6">
             {r.photo_url && (
-              <img src={r.photo_url} alt={r.child_name} className="h-32 w-32 rounded-xl object-cover border-2 border-border" />
+              <RegPhoto
+                path={r.photo_url}
+                alt={r.child_name}
+                className="h-32 w-32 rounded-xl object-cover border-2 border-border"
+                fallback={
+                  <div className="h-32 w-32 rounded-xl bg-secondary/40 border-2 border-border flex items-center justify-center">
+                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                  </div>
+                }
+              />
             )}
 
             <Section title="Child">
