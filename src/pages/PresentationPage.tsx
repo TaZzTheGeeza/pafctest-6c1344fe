@@ -360,7 +360,7 @@ function ClaimAllocationForm({
   const [playerName, setPlayerName] = useState("");
   const [teamSlug, setTeamSlug] = useState("");
   const [adults, setAdults] = useState(2);
-  const [children, setChildren] = useState(2);
+  const [children, setChildren] = useState(3);
   const [submitting, setSubmitting] = useState(false);
 
   // Load guardians to suggest player names
@@ -381,8 +381,8 @@ function ClaimAllocationForm({
       toast.error("Please enter your child's name");
       return;
     }
-    if (adults < 0 || adults > 2 || children < 0 || children > 2) {
-      toast.error("Maximum 2 adults and 2 children per family allocation");
+    if (adults < 0 || adults > 2 || children < 0 || children > 3) {
+      toast.error("Maximum 2 adults and 3 children per family allocation");
       return;
     }
     if (adults + children === 0) {
@@ -416,7 +416,7 @@ function ClaimAllocationForm({
         <h2 className="text-2xl font-display font-bold mb-2">Claim your family tickets</h2>
         <p className="text-sm text-muted-foreground">
           Each player is allocated <strong>1 family ticket</strong> covering up to{" "}
-          <strong>2 adults & 2 children</strong> (the player counts as a child).
+          <strong>2 adults & 3 children</strong> (the player counts as one of the children).
         </p>
       </div>
 
@@ -462,7 +462,7 @@ function ClaimAllocationForm({
 
         <div className="grid grid-cols-2 gap-4">
           <Counter label="Adults" value={adults} setValue={setAdults} max={2} />
-          <Counter label="Children" value={children} setValue={setChildren} max={2} />
+          <Counter label="Children" value={children} setValue={setChildren} max={3} />
         </div>
 
         <p className="text-xs text-muted-foreground">
