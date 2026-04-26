@@ -76,7 +76,7 @@ interface RosterPlayer {
 const normaliseName = (s: string) => s.trim().toLowerCase().replace(/\s+/g, " ");
 
 export default function PlayerRegistrationAdminPage() {
-  const [tab, setTab] = useState<"paid" | "unpaid" | "outstanding" | "all">("paid");
+  const [tab, setTab] = useState<"paid" | "outstanding">("paid");
   const [search, setSearch] = useState("");
   const [ageGroupFilter, setAgeGroupFilter] = useState<string>("all");
   const [selected, setSelected] = useState<Registration | null>(null);
