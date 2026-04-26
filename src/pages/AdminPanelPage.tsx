@@ -36,6 +36,7 @@ const ADMIN_LINKS = [
   { label: "Coach Panel", path: "/coach-panel", icon: Swords, desc: "Match reports, POTM, team selection" },
   { label: "Tournament Admin", path: "/tournament-admin", icon: Trophy, desc: "Manage tournaments & brackets" },
   { label: "Raffle Admin", path: "/raffle-admin", icon: Ticket, desc: "Create & manage raffles" },
+  { label: "Presentation Admin", path: "/presentation-admin", icon: Ticket, desc: "Manage seating & attendees for presentation evening" },
   { label: "PAFC Hub", path: "/hub", icon: MessageSquare, desc: "Team chat, payments, availability" },
   { label: "Results", path: "/results", icon: BarChart3, desc: "Match results & stats" },
   { label: "Club Documents", path: "/club-documents", icon: FileText, desc: "Manage club docs" },
