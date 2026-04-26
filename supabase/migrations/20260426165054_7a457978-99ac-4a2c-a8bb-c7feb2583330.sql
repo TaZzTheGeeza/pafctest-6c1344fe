@@ -1,0 +1,1 @@
+ALTER TABLE public.presentation_allocations ALTER COLUMN max_children SET DEFAULT 3;
