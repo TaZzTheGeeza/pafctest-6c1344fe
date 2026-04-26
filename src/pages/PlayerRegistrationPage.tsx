@@ -21,8 +21,10 @@ const ageGroups = [
 export default function PlayerRegistrationPage() {
   const [searchParams] = useSearchParams();
   const paymentStatus = searchParams.get("status");
-  const [submitted, setSubmitted] = useState(paymentStatus === "success");
-  const [paymentCancelled, setPaymentCancelled] = useState(paymentStatus === "cancelled");
+  const returnedRegistrationId = searchParams.get("rid");
+  const [verifyingPayment, setVerifyingPayment] = useState(paymentStatus === "success");
+  const [submitted, setSubmitted] = useState(false);
+  const [paymentCancelled] = useState(paymentStatus === "cancelled");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [registrationOpen, setRegistrationOpen] = useState<boolean | null>(null);
 
@@ -40,9 +42,53 @@ export default function PlayerRegistrationPage() {
 
   useEffect(() => {
     if (paymentStatus === "cancelled") {
-      toast.error("Payment was cancelled. Your registration has been saved — please complete payment to finish registration.");
+      toast.error("Payment was cancelled. Your registration is incomplete — please complete payment to finish registration.");
     }
   }, [paymentStatus]);
+
+  // After GoCardless redirects back, verify the payment was actually completed before
+  // marking the registration as complete. Polls a few times because GoCardless takes
+  // a moment to update the billing request status.
+  useEffect(() => {
+    if (paymentStatus !== "success" || !returnedRegistrationId) {
+      if (paymentStatus === "success" && !returnedRegistrationId) {
+        // Legacy success redirect with no id — best effort show success.
+        setVerifyingPayment(false);
+        setSubmitted(true);
+      }
+      return;
+    }
+
+    let cancelled = false;
+    let attempts = 0;
+    const maxAttempts = 6;
+
+    const poll = async () => {
+      attempts += 1;
+      try {
+        const { data, error } = await supabase.functions.invoke("verify-registration-payment", {
+          body: { registrationId: returnedRegistrationId },
+        });
+        if (cancelled) return;
+        if (!error && data?.status === "paid") {
+          setSubmitted(true);
+          setVerifyingPayment(false);
+          return;
+        }
+      } catch (e) {
+        console.error("Payment verification error", e);
+      }
+      if (attempts < maxAttempts && !cancelled) {
+        setTimeout(poll, 2000);
+      } else if (!cancelled) {
+        setVerifyingPayment(false);
+        toast.error("We couldn't confirm your payment yet. If you completed payment, it may take a few minutes to update.");
+      }
+    };
+
+    poll();
+    return () => { cancelled = true; };
+  }, [paymentStatus, returnedRegistrationId]);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
