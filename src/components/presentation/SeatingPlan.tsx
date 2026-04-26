@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { cn } from "@/lib/utils";
-import { Lock } from "lucide-react";
+import { Lock, Camera } from "lucide-react";
 
 export interface PresentationTable {
   id: string;
@@ -26,12 +26,16 @@ interface Props {
   onSelectTable?: (tableId: string) => void;
   highlightUserId?: string | null;
   seatsPerTable?: number;
+  /** Admin override: ignore is_locked & full restrictions */
+  adminMode?: boolean;
 }
 
 /**
- * Renders 22 round tables in the layout from the venue plan:
- * - 4 rows of tables (4-5-5-4 then a final row of 4)
- * Each table shows seat occupancy.
+ * Elegant venue-style seating plan.
+ * - Stage at the top with a dance floor below it
+ * - 360° video booth indicator top-right
+ * - 22 round tables laid out in 5 rows (4-5-4-5-4)
+ * - Tables show seat count and lock status
  */
 export function SeatingPlan({
   tables,
@@ -40,6 +44,7 @@ export function SeatingPlan({
   onSelectTable,
   highlightUserId,
   seatsPerTable = 10,
+  adminMode = false,
 }: Props) {
   const ticketsByTable = useMemo(() => {
     const map = new Map<string, PresentationTicketSeat[]>();
@@ -52,7 +57,6 @@ export function SeatingPlan({
     return map;
   }, [tickets]);
 
-  // Layout rows from the seating plan photo: 4, 5, 4, 5, 4
   const layout = [
     [1, 2, 3, 4],
     [5, 6, 7, 8, 9],
@@ -68,18 +72,81 @@ export function SeatingPlan({
   }, [tables]);
 
   return (
-    <div className="w-full bg-card/50 border border-border rounded-xl p-4 md:p-6">
-      {/* Stage header */}
-      <div className="flex items-center justify-between gap-4 mb-6 pb-4 border-b border-border/60">
-        <div className="px-6 py-2 border-2 border-foreground/40 rounded text-xs font-display tracking-[0.3em] uppercase text-muted-foreground">
-          Stage
+    <div
+      className="w-full rounded-2xl p-4 md:p-8 relative overflow-hidden"
+      style={{
+        background:
+          "radial-gradient(ellipse at top, hsl(45 60% 8%) 0%, hsl(0 0% 4%) 70%)",
+        border: "1px solid hsl(var(--primary) / 0.3)",
+        boxShadow:
+          "inset 0 0 60px hsl(var(--primary) / 0.05), 0 10px 40px -10px hsl(var(--primary) / 0.2)",
+      }}
+    >
+      {/* Decorative gold corner ornaments */}
+      <div className="pointer-events-none absolute inset-0 rounded-2xl border border-primary/20 m-2" />
+
+      {/* TOP: Stage + 360 booth */}
+      <div className="relative flex items-start justify-between gap-4 mb-6">
+        <div className="w-16 md:w-20 shrink-0" />
+        {/* Stage */}
+        <div className="flex-1 flex flex-col items-center">
+          <div className="w-full max-w-md relative">
+            <div
+              className="rounded-t-2xl py-3 md:py-5 text-center font-display tracking-[0.4em] uppercase text-primary border-2 border-primary/60"
+              style={{
+                background:
+                  "linear-gradient(180deg, hsl(45 50% 15%) 0%, hsl(45 30% 10%) 100%)",
+                boxShadow: "0 0 25px hsl(var(--primary) / 0.25)",
+              }}
+            >
+              <p className="text-base md:text-xl font-bold">★ Stage ★</p>
+            </div>
+            {/* truss / lights row */}
+            <div className="flex justify-center gap-2 md:gap-3 mt-1.5">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <span
+                  key={i}
+                  className="block h-1.5 w-1.5 rounded-full bg-primary/70 shadow-[0_0_6px_hsl(var(--primary))]"
+                />
+              ))}
+            </div>
+          </div>
         </div>
-        <div className="text-[10px] font-display tracking-wider text-muted-foreground uppercase">
-          Dance floor &middot; 360 booth
+        {/* 360 booth */}
+        <div className="shrink-0">
+          <div
+            className="h-16 w-16 md:h-20 md:w-20 rounded-full border-2 border-primary/60 flex flex-col items-center justify-center text-primary"
+            style={{
+              background:
+                "radial-gradient(circle, hsl(45 30% 12%) 0%, hsl(0 0% 4%) 100%)",
+              boxShadow: "0 0 20px hsl(var(--primary) / 0.3)",
+            }}
+            title="360° Video Booth"
+          >
+            <Camera className="h-4 w-4 md:h-5 md:w-5" />
+            <span className="text-[8px] md:text-[9px] font-display tracking-wider mt-0.5">
+              360°
+            </span>
+          </div>
         </div>
       </div>
 
-      <div className="flex flex-col gap-6 md:gap-8">
+      {/* Dance floor */}
+      <div className="flex justify-center mb-8">
+        <div
+          className="w-32 md:w-44 h-16 md:h-24 rounded-md flex items-center justify-center text-[10px] md:text-xs font-display tracking-[0.3em] uppercase text-primary/90 border border-primary/40"
+          style={{
+            background:
+              "repeating-linear-gradient(45deg, hsl(45 30% 10%) 0 10px, hsl(45 20% 7%) 10px 20px)",
+            boxShadow: "inset 0 0 20px hsl(var(--primary) / 0.15)",
+          }}
+        >
+          Dance Floor
+        </div>
+      </div>
+
+      {/* Tables grid */}
+      <div className="flex flex-col gap-5 md:gap-7">
         {layout.map((row, rowIdx) => (
           <div
             key={rowIdx}
@@ -91,48 +158,25 @@ export function SeatingPlan({
               const seated = ticketsByTable.get(table.id) ?? [];
               const taken = seated.length;
               const isSelected = selectedTableId === table.id;
-              const isLocked = table.is_locked || table.is_staff_only;
-              const isFull = taken >= seatsPerTable;
+              const isLocked = !adminMode && (table.is_locked || table.is_staff_only);
+              const isFull = !adminMode && taken >= seatsPerTable;
               const hasMine =
                 !!highlightUserId && seated.some((s) => s.user_id === highlightUserId);
 
               return (
-                <button
+                <TableMarker
                   key={table.id}
-                  type="button"
-                  onClick={() => !isLocked && !isFull && onSelectTable?.(table.id)}
-                  disabled={isLocked || (isFull && !isSelected)}
-                  className={cn(
-                    "relative flex flex-col items-center justify-center rounded-full",
-                    "h-16 w-16 md:h-20 md:w-20 border-2 transition-all",
-                    "font-display text-sm font-bold",
-                    isLocked
-                      ? "bg-muted/30 border-muted-foreground/30 text-muted-foreground/60 cursor-not-allowed"
-                      : isFull
-                      ? "bg-destructive/10 border-destructive/40 text-destructive cursor-not-allowed"
-                      : isSelected
-                      ? "bg-primary/30 border-primary text-primary scale-110 shadow-[0_0_20px_hsl(var(--primary)/0.4)]"
-                      : hasMine
-                      ? "bg-primary/15 border-primary/70 text-foreground hover:scale-105"
-                      : "bg-card border-primary/40 text-foreground hover:border-primary hover:scale-105",
-                  )}
-                  title={
-                    isLocked
-                      ? `Table ${num} - Reserved for staff`
-                      : `Table ${num} - ${taken}/${seatsPerTable} seats taken`
+                  num={num}
+                  taken={taken}
+                  total={seatsPerTable}
+                  isLocked={isLocked}
+                  isFull={isFull}
+                  isSelected={isSelected}
+                  hasMine={hasMine}
+                  onClick={() =>
+                    !isLocked && (!isFull || isSelected || adminMode) && onSelectTable?.(table.id)
                   }
-                >
-                  {isLocked ? (
-                    <Lock className="h-4 w-4" />
-                  ) : (
-                    <>
-                      <span className="leading-none">{num}</span>
-                      <span className="text-[9px] font-normal text-muted-foreground mt-0.5">
-                        {taken}/{seatsPerTable}
-                      </span>
-                    </>
-                  )}
-                </button>
+                />
               );
             })}
           </div>
@@ -140,7 +184,7 @@ export function SeatingPlan({
       </div>
 
       {/* Legend */}
-      <div className="mt-6 pt-4 border-t border-border/60 flex flex-wrap items-center justify-center gap-4 text-[10px] font-display tracking-wider uppercase text-muted-foreground">
+      <div className="mt-8 pt-5 border-t border-primary/20 flex flex-wrap items-center justify-center gap-4 text-[10px] font-display tracking-wider uppercase text-muted-foreground">
         <span className="flex items-center gap-1.5">
           <span className="h-3 w-3 rounded-full border-2 border-primary/40 bg-card" /> Available
         </span>
@@ -151,9 +195,115 @@ export function SeatingPlan({
           <span className="h-3 w-3 rounded-full border-2 border-destructive/40 bg-destructive/10" /> Full
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="h-3 w-3 rounded-full border-2 border-muted-foreground/30 bg-muted/30" /> Staff only
+          <span className="h-3 w-3 rounded-full border-2 border-muted-foreground/30 bg-muted/30" /> Reserved
         </span>
       </div>
     </div>
+  );
+}
+
+function TableMarker({
+  num,
+  taken,
+  total,
+  isLocked,
+  isFull,
+  isSelected,
+  hasMine,
+  onClick,
+}: {
+  num: number;
+  taken: number;
+  total: number;
+  isLocked: boolean;
+  isFull: boolean;
+  isSelected: boolean;
+  hasMine: boolean;
+  onClick: () => void;
+}) {
+  // Render seats around a circular table
+  const size = 88; // px
+  const seatSize = 10;
+  const radius = size / 2 + 8;
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={isLocked || (isFull && !isSelected)}
+      title={
+        isLocked
+          ? `Table ${num} - Reserved`
+          : `Table ${num} - ${taken}/${total} seats taken`
+      }
+      className={cn(
+        "relative group transition-all",
+        !isLocked && !isFull && "hover:scale-110 cursor-pointer",
+        isSelected && "scale-110",
+        (isLocked || isFull) && "cursor-not-allowed",
+      )}
+      style={{ width: size + 24, height: size + 24 }}
+    >
+      {/* Seats around table */}
+      {Array.from({ length: total }).map((_, i) => {
+        const angle = (i / total) * 2 * Math.PI - Math.PI / 2;
+        const x = size / 2 + 12 + radius * Math.cos(angle) - seatSize / 2;
+        const y = size / 2 + 12 + radius * Math.sin(angle) - seatSize / 2;
+        const occupied = i < taken;
+        return (
+          <span
+            key={i}
+            className={cn(
+              "absolute rounded-sm border",
+              isLocked
+                ? "bg-muted/40 border-muted-foreground/30"
+                : occupied
+                ? "bg-destructive/60 border-destructive/80"
+                : "bg-card border-primary/40",
+            )}
+            style={{ left: x, top: y, width: seatSize, height: seatSize }}
+          />
+        );
+      })}
+
+      {/* Round table top */}
+      <div
+        className={cn(
+          "absolute rounded-full flex items-center justify-center font-display font-bold border-2 transition-all",
+          isLocked
+            ? "border-muted-foreground/40 text-muted-foreground/70"
+            : isFull
+            ? "border-destructive/60 text-destructive"
+            : isSelected
+            ? "border-primary text-primary shadow-[0_0_25px_hsl(var(--primary)/0.6)]"
+            : hasMine
+            ? "border-primary/80 text-primary"
+            : "border-primary/50 text-primary group-hover:border-primary",
+        )}
+        style={{
+          left: 12,
+          top: 12,
+          width: size,
+          height: size,
+          background: isLocked
+            ? "radial-gradient(circle, hsl(0 0% 15%) 0%, hsl(0 0% 8%) 100%)"
+            : "radial-gradient(circle, hsl(45 25% 14%) 0%, hsl(45 15% 7%) 100%)",
+          boxShadow: isSelected
+            ? "0 0 20px hsl(var(--primary) / 0.5)"
+            : "inset 0 0 15px hsl(var(--primary) / 0.15)",
+        }}
+      >
+        {isLocked ? (
+          <Lock className="h-5 w-5" />
+        ) : (
+          <div className="flex flex-col items-center leading-none">
+            <span className="text-lg md:text-xl">{num}</span>
+            <span className="text-[8px] font-normal text-muted-foreground mt-0.5">
+              {taken}/{total}
+            </span>
+          </div>
+        )}
+      </div>
+    </button>
   );
 }
