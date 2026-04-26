@@ -358,14 +358,13 @@ function ClaimAllocationForm({
   userId: string;
   onCreated: () => void;
 }) {
-  const [playerName, setPlayerName] = useState("");
-  const [teamSlug, setTeamSlug] = useState("");
+  const [selectedPlayer, setSelectedPlayer] = useState<string>("");
   const [adults, setAdults] = useState(2);
   const [children, setChildren] = useState(3);
   const [submitting, setSubmitting] = useState(false);
 
-  // Load guardians to suggest player names
-  const { data: guardians = [] } = useQuery({
+  // Children linked to this parent via the guardians table
+  const { data: guardians = [], isLoading: guardiansLoading } = useQuery({
     queryKey: ["my-guardians", userId],
     queryFn: async () => {
       const { data } = await supabase
@@ -373,13 +372,38 @@ function ClaimAllocationForm({
         .select("player_name, team_slug, status")
         .eq("parent_user_id", userId)
         .eq("status", "active");
+      return (data ?? []).filter((g) => g.player_name && g.player_name.trim().length > 0);
+    },
+  });
+
+  // Allocations already claimed by this parent (one per child)
+  const { data: existingAllocations = [] } = useQuery({
+    queryKey: ["my-allocations", event.id, userId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("presentation_allocations")
+        .select("player_name")
+        .eq("event_id", event.id)
+        .eq("user_id", userId);
       return data ?? [];
     },
   });
 
+  const claimedNames = new Set(existingAllocations.map((a) => a.player_name));
+  const availableChildren = guardians.filter((g) => !claimedNames.has(g.player_name));
+
+  // Auto-select if exactly one available child
+  useEffect(() => {
+    if (availableChildren.length === 1 && !selectedPlayer) {
+      setSelectedPlayer(availableChildren[0].player_name);
+    }
+  }, [availableChildren, selectedPlayer]);
+
+  const selectedGuardian = availableChildren.find((g) => g.player_name === selectedPlayer);
+
   const handleSubmit = async () => {
-    if (!playerName.trim()) {
-      toast.error("Please enter your child's name");
+    if (!selectedPlayer) {
+      toast.error("Please select which child this ticket is for");
       return;
     }
     if (adults < 0 || adults > 2 || children < 0 || children > 3) {
@@ -395,8 +419,8 @@ function ClaimAllocationForm({
       const { error } = await supabase.from("presentation_allocations").insert({
         event_id: event.id,
         user_id: userId,
-        player_name: playerName.trim(),
-        team_slug: teamSlug.trim() || null,
+        player_name: selectedPlayer,
+        team_slug: selectedGuardian?.team_slug ?? null,
         max_adults: adults,
         max_children: children,
       });
@@ -409,6 +433,46 @@ function ClaimAllocationForm({
       setSubmitting(false);
     }
   };
+
+  if (guardiansLoading) {
+    return (
+      <Card className="max-w-2xl mx-auto p-12 flex justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </Card>
+    );
+  }
+
+  // No linked children — block claim and direct them to link via the Hub
+  if (guardians.length === 0) {
+    return (
+      <Card className="max-w-2xl mx-auto p-8 text-center">
+        <ShieldAlert className="h-12 w-12 text-primary mx-auto mb-4" />
+        <h2 className="text-xl font-display font-bold mb-2">No registered player linked to your account</h2>
+        <p className="text-sm text-muted-foreground mb-6">
+          Family tickets are allocated per registered player. Please link your child to your
+          account from the PAFC Hub before claiming. If you believe this is a mistake, contact
+          a club admin.
+        </p>
+        <Button asChild className="w-full">
+          <Link to="/hub">Go to PAFC Hub</Link>
+        </Button>
+      </Card>
+    );
+  }
+
+  // All linked children already have tickets claimed
+  if (availableChildren.length === 0) {
+    return (
+      <Card className="max-w-2xl mx-auto p-8 text-center">
+        <CheckCircle2 className="h-12 w-12 text-primary mx-auto mb-4" />
+        <h2 className="text-xl font-display font-bold mb-2">All your players have tickets</h2>
+        <p className="text-sm text-muted-foreground">
+          You&apos;ve already claimed a family ticket for every child linked to your account.
+          Switch to the seating plan to pick or update seats.
+        </p>
+      </Card>
+    );
+  }
 
   return (
     <Card className="max-w-2xl mx-auto p-6 md:p-8">
@@ -423,42 +487,47 @@ function ClaimAllocationForm({
 
       <div className="space-y-5">
         <div>
-          <Label htmlFor="player">Player&apos;s name</Label>
-          {guardians.length > 0 ? (
-            <div className="flex flex-wrap gap-2 mt-2 mb-2">
-              {guardians.map((g) => (
-                <button
-                  key={g.player_name}
-                  type="button"
-                  onClick={() => {
-                    setPlayerName(g.player_name);
-                    setTeamSlug(g.team_slug);
-                  }}
-                  className="text-xs px-3 py-1.5 rounded-full border border-primary/40 hover:bg-primary/10 transition-colors"
-                >
-                  {g.player_name} <span className="text-muted-foreground">({g.team_slug})</span>
-                </button>
-              ))}
+          <Label>Claiming for</Label>
+          {availableChildren.length === 1 ? (
+            <div className="mt-2 flex items-center justify-between rounded-lg border border-primary/40 bg-primary/5 px-4 py-3">
+              <div>
+                <p className="font-display font-bold">{availableChildren[0].player_name}</p>
+                {availableChildren[0].team_slug && (
+                  <p className="text-xs text-muted-foreground">{availableChildren[0].team_slug}</p>
+                )}
+              </div>
+              <span className="text-[10px] font-display tracking-[0.2em] uppercase text-primary">
+                Linked player
+              </span>
             </div>
-          ) : null}
-          <Input
-            id="player"
-            value={playerName}
-            onChange={(e) => setPlayerName(e.target.value)}
-            placeholder="Full name"
-            maxLength={100}
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="team">Team (optional)</Label>
-          <Input
-            id="team"
-            value={teamSlug}
-            onChange={(e) => setTeamSlug(e.target.value)}
-            placeholder="e.g. u11s-gold"
-            maxLength={50}
-          />
+          ) : (
+            <RadioGroup
+              value={selectedPlayer}
+              onValueChange={setSelectedPlayer}
+              className="mt-2 space-y-2"
+            >
+              {availableChildren.map((g) => (
+                <label
+                  key={g.player_name}
+                  htmlFor={`player-${g.player_name}`}
+                  className="flex items-center gap-3 rounded-lg border border-border hover:border-primary/40 px-4 py-3 cursor-pointer transition-colors"
+                >
+                  <RadioGroupItem value={g.player_name} id={`player-${g.player_name}`} />
+                  <div className="flex-1">
+                    <p className="font-display font-bold">{g.player_name}</p>
+                    {g.team_slug && (
+                      <p className="text-xs text-muted-foreground">{g.team_slug}</p>
+                    )}
+                  </div>
+                </label>
+              ))}
+            </RadioGroup>
+          )}
+          {claimedNames.size > 0 && (
+            <p className="text-xs text-muted-foreground mt-2">
+              {claimedNames.size} of your linked player(s) already have a family ticket claimed.
+            </p>
+          )}
         </div>
 
         <div className="grid grid-cols-2 gap-4">
@@ -470,7 +539,12 @@ function ClaimAllocationForm({
           Need fewer tickets? Just lower the count above. Need more? Contact a club admin.
         </p>
 
-        <Button onClick={handleSubmit} disabled={submitting} className="w-full" size="lg">
+        <Button
+          onClick={handleSubmit}
+          disabled={submitting || !selectedPlayer}
+          className="w-full"
+          size="lg"
+        >
           {submitting ? (
             <Loader2 className="h-4 w-4 animate-spin mr-2" />
           ) : (
