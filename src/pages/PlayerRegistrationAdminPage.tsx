@@ -163,7 +163,7 @@ export default function PlayerRegistrationAdminPage() {
     });
   }, [outstanding, search, ageGroupFilter]);
 
-  const visibleRegistrations = tab === "paid" ? filteredPaid : tab === "unpaid" ? filteredUnpaid : [];
+  const visibleRegistrations = tab === "paid" ? filteredPaid : [];
 
   const exportCsv = () => {
     const rows = [
