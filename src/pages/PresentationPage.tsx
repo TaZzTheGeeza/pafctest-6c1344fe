@@ -881,16 +881,16 @@ function SeatPickerDialog({
           ticket.seat_number === seat
         ) continue;
         updates.push(
-          supabase
-            .from("presentation_tickets")
-            .update({
-              table_id: seat != null ? selectedTableId : null,
-              seat_number: seat,
-            })
-            .eq("id", ticket.id)
-            .then((res) => {
-              if (res.error) throw res.error;
-            }),
+          (async () => {
+            const { error } = await supabase
+              .from("presentation_tickets")
+              .update({
+                table_id: seat != null ? selectedTableId : null,
+                seat_number: seat,
+              })
+              .eq("id", ticket.id);
+            if (error) throw error;
+          })(),
         );
       }
 
