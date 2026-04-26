@@ -1328,6 +1328,203 @@ export type Database = {
         }
         Relationships: []
       }
+      presentation_allocations: {
+        Row: {
+          created_at: string
+          event_id: string
+          granted_by_admin: boolean
+          id: string
+          max_adults: number
+          max_children: number
+          notes: string | null
+          player_name: string
+          team_slug: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          granted_by_admin?: boolean
+          id?: string
+          max_adults?: number
+          max_children?: number
+          notes?: string | null
+          player_name: string
+          team_slug?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          granted_by_admin?: boolean
+          id?: string
+          max_adults?: number
+          max_children?: number
+          notes?: string | null
+          player_name?: string
+          team_slug?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "presentation_allocations_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "presentation_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      presentation_events: {
+        Row: {
+          created_at: string
+          description: string | null
+          doors_open_time: string
+          dress_code: string | null
+          event_date: string
+          id: string
+          is_active: boolean
+          seats_per_table: number
+          start_time: string
+          title: string
+          updated_at: string
+          venue: string
+          venue_address: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          doors_open_time: string
+          dress_code?: string | null
+          event_date: string
+          id?: string
+          is_active?: boolean
+          seats_per_table?: number
+          start_time: string
+          title: string
+          updated_at?: string
+          venue: string
+          venue_address?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          doors_open_time?: string
+          dress_code?: string | null
+          event_date?: string
+          id?: string
+          is_active?: boolean
+          seats_per_table?: number
+          start_time?: string
+          title?: string
+          updated_at?: string
+          venue?: string
+          venue_address?: string | null
+        }
+        Relationships: []
+      }
+      presentation_tables: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          is_locked: boolean
+          is_staff_only: boolean
+          label: string | null
+          table_number: number
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          is_locked?: boolean
+          is_staff_only?: boolean
+          label?: string | null
+          table_number: number
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          is_locked?: boolean
+          is_staff_only?: boolean
+          label?: string | null
+          table_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "presentation_tables_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "presentation_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      presentation_tickets: {
+        Row: {
+          allocation_id: string
+          attendee_name: string
+          created_at: string
+          event_id: string
+          id: string
+          seat_number: number | null
+          table_id: string | null
+          ticket_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          allocation_id: string
+          attendee_name: string
+          created_at?: string
+          event_id: string
+          id?: string
+          seat_number?: number | null
+          table_id?: string | null
+          ticket_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          allocation_id?: string
+          attendee_name?: string
+          created_at?: string
+          event_id?: string
+          id?: string
+          seat_number?: number | null
+          table_id?: string | null
+          ticket_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "presentation_tickets_allocation_id_fkey"
+            columns: ["allocation_id"]
+            isOneToOne: false
+            referencedRelation: "presentation_allocations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "presentation_tickets_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "presentation_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "presentation_tickets_table_id_fkey"
+            columns: ["table_id"]
+            isOneToOne: false
+            referencedRelation: "presentation_tables"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -2410,6 +2607,10 @@ export type Database = {
       }
     }
     Functions: {
+      can_claim_presentation_tickets: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
