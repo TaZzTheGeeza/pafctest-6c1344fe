@@ -275,7 +275,7 @@ export default function PlayerRegistrationAdminPage() {
         ) : tab === "outstanding" ? (
           <OutstandingList items={filteredOutstanding} />
         ) : (
-          <RegisteredList items={visibleRegistrations} onSelect={setSelected} showUnpaid={tab === "unpaid"} />
+          <RegisteredList items={visibleRegistrations} onSelect={setSelected} showUnpaid={false} />
         )}
       </main>
 
