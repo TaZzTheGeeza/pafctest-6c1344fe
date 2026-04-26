@@ -34,6 +34,7 @@ const ROLE_CONFIG: Record<AppRole, { label: string; color: string; icon: any }> 
 
 const ADMIN_LINKS = [
   { label: "Coach Panel", path: "/coach-panel", icon: Swords, desc: "Match reports, POTM, team selection" },
+  { label: "Player Registrations", path: "/admin/player-registrations", icon: Users, desc: "View who's registered for 2026/27 & their details" },
   { label: "Tournament Admin", path: "/tournament-admin", icon: Trophy, desc: "Manage tournaments & brackets" },
   { label: "Raffle Admin", path: "/raffle-admin", icon: Ticket, desc: "Create & manage raffles" },
   { label: "Presentation Admin", path: "/presentation-admin", icon: Ticket, desc: "Manage seating & attendees for presentation evening" },

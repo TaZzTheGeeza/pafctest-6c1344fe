@@ -54,6 +54,7 @@ import PlayerShowcaseDemo from "./pages/PlayerShowcaseDemo.tsx";
 import WildcatsPage from "./pages/WildcatsPage.tsx";
 import PresentationPage from "./pages/PresentationPage.tsx";
 import PresentationAdminPage from "./pages/PresentationAdminPage.tsx";
+import PlayerRegistrationAdminPage from "./pages/PlayerRegistrationAdminPage.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -125,6 +126,7 @@ function AppContent() {
         <Route path="/wildcats" element={<WildcatsPage />} />
         <Route path="/presentation" element={<PresentationPage />} />
         <Route path="/presentation-admin" element={<PresentationAdminPage />} />
+        <Route path="/admin/player-registrations" element={<RoleGate requiredRole="admin"><PlayerRegistrationAdminPage /></RoleGate>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
