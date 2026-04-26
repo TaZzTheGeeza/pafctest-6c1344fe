@@ -273,7 +273,17 @@ export default function PlayerRegistrationPage() {
             </motion.div>
           ) : (
           <div className="max-w-2xl mx-auto">
-            {submitted ? (
+            {verifyingPayment ? (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="bg-card border border-border rounded-lg p-12 text-center"
+              >
+                <div className="animate-spin h-10 w-10 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4" />
+                <h2 className="font-display text-2xl font-bold mb-2">Confirming your payment…</h2>
+                <p className="text-muted-foreground">Please wait while we verify your payment with GoCardless.</p>
+              </motion.div>
+            ) : submitted ? (
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
