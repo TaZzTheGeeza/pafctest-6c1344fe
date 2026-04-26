@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -32,7 +33,7 @@ serve(async (req) => {
     const gcToken = Deno.env.get("GOCARDLESS_ACCESS_TOKEN");
     if (!gcToken) throw new Error("GOCARDLESS_ACCESS_TOKEN not set");
 
-    const { email, childName } = await req.json();
+    const { email, childName, registrationId } = await req.json();
     if (!email || !childName) {
       return new Response(JSON.stringify({ error: "Email and child name are required" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -52,6 +53,7 @@ serve(async (req) => {
           metadata: {
             child_name: childName,
             type: "player_registration",
+            registration_id: registrationId || "",
           },
         },
       },
@@ -59,11 +61,30 @@ serve(async (req) => {
 
     const billingRequestId = brResponse.billing_requests.id;
 
-    // Create Billing Request Flow
+    // Persist the billing request id on the registration so we can verify it later.
+    if (registrationId) {
+      const supabase = createClient(
+        Deno.env.get("SUPABASE_URL")!,
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+      );
+      await supabase
+        .from("player_registrations")
+        .update({ gocardless_billing_request_id: billingRequestId })
+        .eq("id", registrationId);
+    }
+
+    // Create Billing Request Flow — include registration id in the redirect so we can verify on return.
+    const successUrl = registrationId
+      ? `${origin}/register?status=success&rid=${registrationId}`
+      : `${origin}/register?status=success`;
+    const cancelUrl = registrationId
+      ? `${origin}/register?status=cancelled&rid=${registrationId}`
+      : `${origin}/register?status=cancelled`;
+
     const brfResponse = await gcPost("/billing_request_flows", {
       billing_request_flows: {
-        redirect_uri: `${origin}/register?status=success`,
-        exit_uri: `${origin}/register?status=cancelled`,
+        redirect_uri: successUrl,
+        exit_uri: cancelUrl,
         prefilled_customer: {
           email,
         },
