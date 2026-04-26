@@ -313,9 +313,6 @@ export function Navbar() {
                 </Link>
               )
             )}
-            <Link to="/presentation" onClick={() => setIsOpen(false)} className="flex items-center justify-center gap-2 w-full font-display text-sm tracking-wider py-2.5 rounded-md bg-gradient-to-r from-primary to-primary/70 text-primary-foreground hover:opacity-90 transition-opacity mt-3">
-              <Sparkles className="h-4 w-4" /> Presentation Evening
-            </Link>
             <div className="flex gap-2 mt-2 pt-3 border-t border-border">
               <Link to="/tournament" onClick={() => setIsOpen(false)} className="flex-1 flex items-center justify-center gap-2 font-display text-sm tracking-wider py-2.5 rounded-md border border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground transition-all">
                 <Trophy className="h-4 w-4" /> Tournament
