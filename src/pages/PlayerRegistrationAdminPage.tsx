@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { Navbar } from "@/components/Navbar";
@@ -9,6 +9,32 @@ import {
   User as UserIcon, Mail, Phone, MapPin, Calendar, Heart, ShieldAlert, X,
 } from "lucide-react";
 import { format } from "date-fns";
+
+// Resolves a signed URL for a photo stored in the private `registration-photos` bucket.
+// Accepts either a raw storage path (e.g. "userId/123.jpg") or a full https URL (legacy).
+function RegPhoto({ path, alt, className, fallback }: { path: string | null; alt: string; className: string; fallback: React.ReactNode }) {
+  const [url, setUrl] = useState<string | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    setUrl(null);
+    if (!path) return;
+    if (/^https?:\/\//i.test(path)) {
+      setUrl(path);
+      return;
+    }
+    (async () => {
+      const { data, error } = await supabase.storage
+        .from("registration-photos")
+        .createSignedUrl(path, 60 * 60); // 1 hour
+      if (!cancelled && !error && data?.signedUrl) setUrl(data.signedUrl);
+    })();
+    return () => { cancelled = true; };
+  }, [path]);
+
+  if (!path || !url) return <>{fallback}</>;
+  return <img src={url} alt={alt} className={className} />;
+}
+
 
 interface Registration {
   id: string;
