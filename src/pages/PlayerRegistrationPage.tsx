@@ -203,17 +203,20 @@ export default function PlayerRegistrationPage() {
       // Store the file path (bucket is private; admins use signed URLs to view)
       insertData.photo_url = filePath;
 
-      const { error } = await supabase
+      const { data: insertedRows, error } = await supabase
         .from("player_registrations" as any)
-        .insert(insertData);
+        .insert(insertData)
+        .select("id")
+        .single();
 
       if (error) throw error;
+      const newRegistrationId = (insertedRows as any)?.id as string | undefined;
 
-      // Redirect to Stripe for £40 payment
+      // Redirect to GoCardless for £40 payment — registration is NOT complete until payment is confirmed.
       toast.info("Redirecting to payment...");
       const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke(
         "create-registration-checkout",
-        { body: { email: form.email, childName: form.childName } }
+        { body: { email: form.email, childName: form.childName, registrationId: newRegistrationId } }
       );
 
       if (checkoutError || !checkoutData?.url) {
