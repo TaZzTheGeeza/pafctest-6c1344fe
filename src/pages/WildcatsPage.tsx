@@ -168,7 +168,7 @@ export default function WildcatsPage() {
           <div className="max-w-6xl mx-auto grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
               { icon: Calendar, label: "When", value: "Every Thursday", color: PINK, href: null },
-              { icon: Clock, label: "Time", value: "6:30 – 7:30 PM", color: TEAL, href: null },
+              { icon: Clock, label: "Time", value: "1730 – 1830", color: TEAL, href: null },
               { icon: Users, label: "Ages", value: "Girls 5 – 11", color: PURPLE, href: null },
               {
                 icon: Navigation,
