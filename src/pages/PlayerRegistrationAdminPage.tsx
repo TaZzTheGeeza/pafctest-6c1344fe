@@ -172,7 +172,7 @@ export default function PlayerRegistrationAdminPage() {
         "Address", "FA Fan #", "Previous Club", "Medical", "Emergency Contact",
         "Emergency Phone", "Photo Consent", "Medical Consent", "Declaration", "Submitted",
       ],
-      ...filteredRegistrations.map((r) => [
+      ...(tab === "unpaid" ? filteredUnpaid : filteredPaid).map((r) => [
         r.child_name, r.child_dob, r.preferred_age_group, r.parent_name,
         r.relationship_to_child || "", r.email, r.phone, (r.address || "").replace(/\n/g, " "),
         r.fa_fan_number || "", r.previous_club || "", (r.medical_conditions || "").replace(/\n/g, " "),
@@ -219,22 +219,24 @@ export default function PlayerRegistrationAdminPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-          <StatCard label="Registered" value={registrations.length} icon={CheckCircle2} color="text-green-500" />
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-8">
+          <StatCard label="Paid & Complete" value={paidRegistrations.length} icon={CheckCircle2} color="text-green-500" />
+          <StatCard label="Awaiting Payment" value={unpaidRegistrations.length} icon={AlertCircle} color="text-red-500" />
           <StatCard label="Outstanding" value={outstanding.length} icon={AlertCircle} color="text-amber-500" />
           <StatCard label="Total Roster" value={roster.length} icon={UserIcon} color="text-primary" />
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-4 border-b border-border">
+        <div className="flex gap-2 mb-4 border-b border-border overflow-x-auto">
           {([
-            { key: "registered", label: `Registered (${registrations.length})` },
+            { key: "paid", label: `Paid & Complete (${paidRegistrations.length})` },
+            { key: "unpaid", label: `Awaiting Payment (${unpaidRegistrations.length})` },
             { key: "outstanding", label: `Outstanding (${outstanding.length})` },
           ] as const).map((t) => (
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
-              className={`px-4 py-2 text-sm font-display font-bold tracking-wider border-b-2 transition-colors ${
+              className={`px-4 py-2 text-sm font-display font-bold tracking-wider border-b-2 transition-colors whitespace-nowrap ${
                 tab === t.key
                   ? "border-primary text-primary"
                   : "border-transparent text-muted-foreground hover:text-foreground"
@@ -272,10 +274,10 @@ export default function PlayerRegistrationAdminPage() {
           <div className="flex items-center justify-center py-20 text-muted-foreground">
             <Loader2 className="h-5 w-5 animate-spin mr-2" /> Loading…
           </div>
-        ) : tab === "registered" ? (
-          <RegisteredList items={filteredRegistrations} onSelect={setSelected} />
-        ) : (
+        ) : tab === "outstanding" ? (
           <OutstandingList items={filteredOutstanding} />
+        ) : (
+          <RegisteredList items={visibleRegistrations} onSelect={setSelected} showUnpaid={tab === "unpaid"} />
         )}
       </main>
 
