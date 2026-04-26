@@ -10,9 +10,20 @@ import {
   Shield,
   ChevronRight,
   Lock,
+  Sparkles,
 } from "lucide-react";
 
 const hubItems = [
+  {
+    title: "Presentation Evening",
+    description: "Claim your family tickets and pick your seats for 05/06/26.",
+    icon: Sparkles,
+    path: "/presentation",
+    color: "text-primary",
+    bgColor: "bg-gradient-to-br from-primary/20 to-primary/5",
+    borderColor: "border-primary/40",
+    restricted: false,
+  },
   {
     title: "My Profile",
     description: "View your stats, documents, availability history, and POTM awards — all in one place.",
