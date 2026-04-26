@@ -181,9 +181,6 @@ export function Navbar() {
       <div className="bg-secondary border-b border-border/50">
         <div className="container mx-auto px-4 flex items-center justify-between h-10 py-1">
           <div className="flex items-center gap-2">
-            <Link to="/presentation" className="font-display text-[10px] tracking-[0.15em] uppercase bg-gradient-to-r from-primary to-primary/70 text-primary-foreground hover:opacity-90 transition-opacity flex items-center gap-1.5 px-2.5 py-1 rounded-md font-semibold shadow-sm">
-              <Sparkles className="h-3 w-3" /> Presentation Evening
-            </Link>
             <Link to="/tournament" className="font-display text-[10px] tracking-[0.15em] uppercase bg-primary/15 text-primary hover:bg-primary/25 transition-colors flex items-center gap-1.5 px-2.5 py-1 rounded-md font-semibold">
               <Trophy className="h-3 w-3" /> Tournament
             </Link>
