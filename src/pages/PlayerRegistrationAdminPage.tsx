@@ -303,13 +303,16 @@ function RegisteredList({ items, onSelect }: { items: Registration[]; onSelect: 
             onClick={() => onSelect(r)}
             className="w-full text-left px-4 py-3 hover:bg-secondary/40 transition-colors flex items-center gap-3"
           >
-            {r.photo_url ? (
-              <img src={r.photo_url} alt="" className="h-10 w-10 rounded-full object-cover" />
-            ) : (
-              <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-display font-bold">
-                {r.child_name[0]?.toUpperCase()}
-              </div>
-            )}
+            <RegPhoto
+              path={r.photo_url}
+              alt={r.child_name}
+              className="h-10 w-10 rounded-full object-cover shrink-0"
+              fallback={
+                <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-display font-bold shrink-0">
+                  {r.child_name[0]?.toUpperCase()}
+                </div>
+              }
+            />
             <div className="flex-1 min-w-0">
               <p className="font-display font-bold text-foreground text-sm truncate">{r.child_name}</p>
               <p className="text-xs text-muted-foreground truncate">
