@@ -172,7 +172,7 @@ export default function PlayerRegistrationAdminPage() {
         "Address", "FA Fan #", "Previous Club", "Medical", "Emergency Contact",
         "Emergency Phone", "Photo Consent", "Medical Consent", "Declaration", "Submitted",
       ],
-      ...(tab === "unpaid" ? filteredUnpaid : filteredPaid).map((r) => [
+      ...filteredPaid.map((r) => [
         r.child_name, r.child_dob, r.preferred_age_group, r.parent_name,
         r.relationship_to_child || "", r.email, r.phone, (r.address || "").replace(/\n/g, " "),
         r.fa_fan_number || "", r.previous_club || "", (r.medical_conditions || "").replace(/\n/g, " "),
