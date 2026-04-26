@@ -195,8 +195,13 @@ export default function HubPage() {
             <Link
               key={item.title}
               to={item.path}
-              className={`group relative flex flex-col bg-card border ${item.borderColor} rounded-xl p-6 hover:border-primary/40 transition-all hover:shadow-lg hover:shadow-primary/5`}
+              className={`group relative flex flex-col bg-card border ${item.borderColor} rounded-xl p-6 hover:border-primary/40 transition-all hover:shadow-lg hover:shadow-primary/5 ${item.featured ? "sm:col-span-2 ring-1 ring-primary/30" : ""}`}
             >
+              {item.featured && (
+                <span className="absolute top-3 right-3 text-[10px] tracking-[0.15em] uppercase font-display font-semibold text-primary bg-primary/10 border border-primary/30 px-2 py-0.5 rounded-full">
+                  Featured
+                </span>
+              )}
               <div className={`${item.bgColor} w-12 h-12 rounded-lg flex items-center justify-center mb-4`}>
                 <item.icon className={`h-6 w-6 ${item.color}`} />
               </div>
