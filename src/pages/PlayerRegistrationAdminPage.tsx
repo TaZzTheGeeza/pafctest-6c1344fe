@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { Navbar } from "@/components/Navbar";
@@ -9,6 +9,32 @@ import {
   User as UserIcon, Mail, Phone, MapPin, Calendar, Heart, ShieldAlert, X,
 } from "lucide-react";
 import { format } from "date-fns";
+
+// Resolves a signed URL for a photo stored in the private `registration-photos` bucket.
+// Accepts either a raw storage path (e.g. "userId/123.jpg") or a full https URL (legacy).
+function RegPhoto({ path, alt, className, fallback }: { path: string | null; alt: string; className: string; fallback: React.ReactNode }) {
+  const [url, setUrl] = useState<string | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    setUrl(null);
+    if (!path) return;
+    if (/^https?:\/\//i.test(path)) {
+      setUrl(path);
+      return;
+    }
+    (async () => {
+      const { data, error } = await supabase.storage
+        .from("registration-photos")
+        .createSignedUrl(path, 60 * 60); // 1 hour
+      if (!cancelled && !error && data?.signedUrl) setUrl(data.signedUrl);
+    })();
+    return () => { cancelled = true; };
+  }, [path]);
+
+  if (!path || !url) return <>{fallback}</>;
+  return <img src={url} alt={alt} className={className} />;
+}
+
 
 interface Registration {
   id: string;
@@ -277,13 +303,16 @@ function RegisteredList({ items, onSelect }: { items: Registration[]; onSelect: 
             onClick={() => onSelect(r)}
             className="w-full text-left px-4 py-3 hover:bg-secondary/40 transition-colors flex items-center gap-3"
           >
-            {r.photo_url ? (
-              <img src={r.photo_url} alt="" className="h-10 w-10 rounded-full object-cover" />
-            ) : (
-              <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-display font-bold">
-                {r.child_name[0]?.toUpperCase()}
-              </div>
-            )}
+            <RegPhoto
+              path={r.photo_url}
+              alt={r.child_name}
+              className="h-10 w-10 rounded-full object-cover shrink-0"
+              fallback={
+                <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-display font-bold shrink-0">
+                  {r.child_name[0]?.toUpperCase()}
+                </div>
+              }
+            />
             <div className="flex-1 min-w-0">
               <p className="font-display font-bold text-foreground text-sm truncate">{r.child_name}</p>
               <p className="text-xs text-muted-foreground truncate">
@@ -361,7 +390,16 @@ function RegistrationDetail({ registration: r, onClose }: { registration: Regist
 
           <div className="p-6 space-y-6">
             {r.photo_url && (
-              <img src={r.photo_url} alt={r.child_name} className="h-32 w-32 rounded-xl object-cover border-2 border-border" />
+              <RegPhoto
+                path={r.photo_url}
+                alt={r.child_name}
+                className="h-32 w-32 rounded-xl object-cover border-2 border-border"
+                fallback={
+                  <div className="h-32 w-32 rounded-xl bg-secondary/40 border-2 border-border flex items-center justify-center">
+                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                  </div>
+                }
+              />
             )}
 
             <Section title="Child">
