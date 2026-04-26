@@ -61,6 +61,8 @@ interface Registration {
   declaration_confirmed: boolean | null;
   photo_url: string | null;
   created_at: string;
+  payment_status: string | null;
+  paid_at: string | null;
 }
 
 interface RosterPlayer {
@@ -74,7 +76,7 @@ interface RosterPlayer {
 const normaliseName = (s: string) => s.trim().toLowerCase().replace(/\s+/g, " ");
 
 export default function PlayerRegistrationAdminPage() {
-  const [tab, setTab] = useState<"registered" | "outstanding" | "all">("registered");
+  const [tab, setTab] = useState<"paid" | "unpaid" | "outstanding" | "all">("paid");
   const [search, setSearch] = useState("");
   const [ageGroupFilter, setAgeGroupFilter] = useState<string>("all");
   const [selected, setSelected] = useState<Registration | null>(null);
@@ -102,6 +104,16 @@ export default function PlayerRegistrationAdminPage() {
     },
   });
 
+  // A registration only counts as "complete" once payment_status === 'paid'.
+  const paidRegistrations = useMemo(
+    () => registrations.filter((r) => r.payment_status === "paid"),
+    [registrations],
+  );
+  const unpaidRegistrations = useMemo(
+    () => registrations.filter((r) => r.payment_status !== "paid"),
+    [registrations],
+  );
+
   const ageGroups = useMemo(() => {
     const set = new Set<string>();
     registrations.forEach((r) => r.preferred_age_group && set.add(r.preferred_age_group));
@@ -109,17 +121,16 @@ export default function PlayerRegistrationAdminPage() {
     return Array.from(set).sort();
   }, [registrations, roster]);
 
-  // Index registered names per age group
+  // Index PAID registered names per age group — only paid registrations count as complete.
   const registeredKeys = useMemo(() => {
     const set = new Set<string>();
-    registrations.forEach((r) => {
+    paidRegistrations.forEach((r) => {
       const first = r.child_name.split(" ")[0] || r.child_name;
       set.add(`${normaliseName(first)}::${r.preferred_age_group}`);
-      // also full-name match
       set.add(`${normaliseName(r.child_name)}::${r.preferred_age_group}`);
     });
     return set;
-  }, [registrations]);
+  }, [paidRegistrations]);
 
   const outstanding = useMemo(() => {
     return roster.filter((p) => {
@@ -128,19 +139,20 @@ export default function PlayerRegistrationAdminPage() {
     });
   }, [roster, registeredKeys]);
 
-  const filteredRegistrations = useMemo(() => {
-    return registrations.filter((r) => {
-      if (ageGroupFilter !== "all" && r.preferred_age_group !== ageGroupFilter) return false;
-      if (!search.trim()) return true;
-      const q = search.toLowerCase();
-      return (
-        r.child_name.toLowerCase().includes(q) ||
-        r.parent_name.toLowerCase().includes(q) ||
-        r.email.toLowerCase().includes(q) ||
-        (r.phone || "").toLowerCase().includes(q)
-      );
-    });
-  }, [registrations, search, ageGroupFilter]);
+  const applySearch = (r: Registration) => {
+    if (ageGroupFilter !== "all" && r.preferred_age_group !== ageGroupFilter) return false;
+    if (!search.trim()) return true;
+    const q = search.toLowerCase();
+    return (
+      r.child_name.toLowerCase().includes(q) ||
+      r.parent_name.toLowerCase().includes(q) ||
+      r.email.toLowerCase().includes(q) ||
+      (r.phone || "").toLowerCase().includes(q)
+    );
+  };
+
+  const filteredPaid = useMemo(() => paidRegistrations.filter(applySearch), [paidRegistrations, search, ageGroupFilter]);
+  const filteredUnpaid = useMemo(() => unpaidRegistrations.filter(applySearch), [unpaidRegistrations, search, ageGroupFilter]);
 
   const filteredOutstanding = useMemo(() => {
     return outstanding.filter((p) => {
@@ -151,6 +163,8 @@ export default function PlayerRegistrationAdminPage() {
     });
   }, [outstanding, search, ageGroupFilter]);
 
+  const visibleRegistrations = tab === "paid" ? filteredPaid : tab === "unpaid" ? filteredUnpaid : [];
+
   const exportCsv = () => {
     const rows = [
       [
@@ -158,7 +172,7 @@ export default function PlayerRegistrationAdminPage() {
         "Address", "FA Fan #", "Previous Club", "Medical", "Emergency Contact",
         "Emergency Phone", "Photo Consent", "Medical Consent", "Declaration", "Submitted",
       ],
-      ...filteredRegistrations.map((r) => [
+      ...(tab === "unpaid" ? filteredUnpaid : filteredPaid).map((r) => [
         r.child_name, r.child_dob, r.preferred_age_group, r.parent_name,
         r.relationship_to_child || "", r.email, r.phone, (r.address || "").replace(/\n/g, " "),
         r.fa_fan_number || "", r.previous_club || "", (r.medical_conditions || "").replace(/\n/g, " "),
@@ -205,22 +219,24 @@ export default function PlayerRegistrationAdminPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-          <StatCard label="Registered" value={registrations.length} icon={CheckCircle2} color="text-green-500" />
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-8">
+          <StatCard label="Paid & Complete" value={paidRegistrations.length} icon={CheckCircle2} color="text-green-500" />
+          <StatCard label="Awaiting Payment" value={unpaidRegistrations.length} icon={AlertCircle} color="text-red-500" />
           <StatCard label="Outstanding" value={outstanding.length} icon={AlertCircle} color="text-amber-500" />
           <StatCard label="Total Roster" value={roster.length} icon={UserIcon} color="text-primary" />
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-4 border-b border-border">
+        <div className="flex gap-2 mb-4 border-b border-border overflow-x-auto">
           {([
-            { key: "registered", label: `Registered (${registrations.length})` },
+            { key: "paid", label: `Paid & Complete (${paidRegistrations.length})` },
+            { key: "unpaid", label: `Awaiting Payment (${unpaidRegistrations.length})` },
             { key: "outstanding", label: `Outstanding (${outstanding.length})` },
           ] as const).map((t) => (
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
-              className={`px-4 py-2 text-sm font-display font-bold tracking-wider border-b-2 transition-colors ${
+              className={`px-4 py-2 text-sm font-display font-bold tracking-wider border-b-2 transition-colors whitespace-nowrap ${
                 tab === t.key
                   ? "border-primary text-primary"
                   : "border-transparent text-muted-foreground hover:text-foreground"
@@ -258,10 +274,10 @@ export default function PlayerRegistrationAdminPage() {
           <div className="flex items-center justify-center py-20 text-muted-foreground">
             <Loader2 className="h-5 w-5 animate-spin mr-2" /> Loading…
           </div>
-        ) : tab === "registered" ? (
-          <RegisteredList items={filteredRegistrations} onSelect={setSelected} />
-        ) : (
+        ) : tab === "outstanding" ? (
           <OutstandingList items={filteredOutstanding} />
+        ) : (
+          <RegisteredList items={visibleRegistrations} onSelect={setSelected} showUnpaid={tab === "unpaid"} />
         )}
       </main>
 
@@ -286,16 +302,23 @@ function StatCard({ label, value, icon: Icon, color }: { label: string; value: n
   );
 }
 
-function RegisteredList({ items, onSelect }: { items: Registration[]; onSelect: (r: Registration) => void }) {
+function RegisteredList({ items, onSelect, showUnpaid = false }: { items: Registration[]; onSelect: (r: Registration) => void; showUnpaid?: boolean }) {
   if (!items.length) {
     return (
       <div className="text-center py-16 text-muted-foreground bg-card border border-border rounded-xl">
-        No registrations match your filters.
+        {showUnpaid
+          ? "Everyone who has submitted a form has paid. 🎉"
+          : "No paid registrations match your filters."}
       </div>
     );
   }
   return (
     <div className="bg-card border border-border rounded-xl overflow-hidden">
+      {showUnpaid && (
+        <div className="px-4 py-3 bg-red-500/10 border-b border-red-500/20 text-xs text-red-400 font-display tracking-wider">
+          These parents submitted the form but did not complete payment. Their registration is NOT complete.
+        </div>
+      )}
       <div className="divide-y divide-border">
         {items.map((r) => (
           <button
@@ -325,6 +348,15 @@ function RegisteredList({ items, onSelect }: { items: Registration[]; onSelect: 
                 {format(new Date(r.created_at), "dd MMM yyyy")}
               </span>
             </div>
+            {showUnpaid ? (
+              <span className="text-[10px] px-2 py-1 rounded-full bg-red-500/20 text-red-400 font-display tracking-wider shrink-0">
+                UNPAID
+              </span>
+            ) : (
+              <span className="text-[10px] px-2 py-1 rounded-full bg-green-500/20 text-green-500 font-display tracking-wider shrink-0">
+                PAID
+              </span>
+            )}
             {(!r.consent_photography || !r.consent_medical || !r.declaration_confirmed) && (
               <ShieldAlert className="h-4 w-4 text-amber-500 shrink-0" />
             )}

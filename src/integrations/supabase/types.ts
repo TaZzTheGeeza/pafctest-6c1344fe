@@ -1215,10 +1215,13 @@ export type Database = {
           emergency_contact_relationship: string | null
           fa_fan_number: string | null
           foster_care_details: string | null
+          gocardless_billing_request_id: string | null
           id: string
           known_to_social_services: boolean | null
           medical_conditions: string | null
+          paid_at: string | null
           parent_name: string
+          payment_status: string
           phone: string
           photo_url: string | null
           preferred_age_group: string
@@ -1241,10 +1244,13 @@ export type Database = {
           emergency_contact_relationship?: string | null
           fa_fan_number?: string | null
           foster_care_details?: string | null
+          gocardless_billing_request_id?: string | null
           id?: string
           known_to_social_services?: boolean | null
           medical_conditions?: string | null
+          paid_at?: string | null
           parent_name: string
+          payment_status?: string
           phone: string
           photo_url?: string | null
           preferred_age_group: string
@@ -1267,10 +1273,13 @@ export type Database = {
           emergency_contact_relationship?: string | null
           fa_fan_number?: string | null
           foster_care_details?: string | null
+          gocardless_billing_request_id?: string | null
           id?: string
           known_to_social_services?: boolean | null
           medical_conditions?: string | null
+          paid_at?: string | null
           parent_name?: string
+          payment_status?: string
           phone?: string
           photo_url?: string | null
           preferred_age_group?: string
