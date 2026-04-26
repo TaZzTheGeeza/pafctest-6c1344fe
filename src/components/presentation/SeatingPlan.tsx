@@ -43,7 +43,7 @@ export function SeatingPlan({
   selectedTableId,
   onSelectTable,
   highlightUserId,
-  seatsPerTable = 10,
+  seatsPerTable = 12,
   adminMode = false,
 }: Props) {
   const ticketsByTable = useMemo(() => {

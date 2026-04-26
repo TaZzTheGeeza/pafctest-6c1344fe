@@ -1,0 +1,1 @@
+UPDATE public.presentation_events SET seats_per_table = 12;

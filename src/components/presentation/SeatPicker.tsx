@@ -18,7 +18,7 @@ interface Props {
  */
 export function SeatPicker({
   tableNumber,
-  seatsPerTable = 10,
+  seatsPerTable = 12,
   takenSeats,
   selectedSeats,
   ownTickets,
