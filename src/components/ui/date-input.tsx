@@ -20,6 +20,12 @@ interface DateInputProps {
   id?: string;
   required?: boolean;
   disabled?: boolean;
+  /** Show month/year dropdowns in the calendar (great for DOB selection) */
+  dropdownNav?: boolean;
+  /** Earliest selectable year. Defaults to 1920 when dropdownNav is enabled. */
+  fromYear?: number;
+  /** Latest selectable year. Defaults to current year when dropdownNav is enabled. */
+  toYear?: number;
 }
 
 export function DateInput({
@@ -30,6 +36,9 @@ export function DateInput({
   id,
   required,
   disabled,
+  dropdownNav,
+  fromYear,
+  toYear,
 }: DateInputProps) {
   const [open, setOpen] = React.useState(false);
 
@@ -38,6 +47,10 @@ export function DateInput({
     : undefined;
 
   const isValidDate = selectedDate && !isNaN(selectedDate.getTime());
+
+  const currentYear = new Date().getFullYear();
+  const resolvedFromYear = fromYear ?? 1920;
+  const resolvedToYear = toYear ?? currentYear;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -61,6 +74,7 @@ export function DateInput({
         <Calendar
           mode="single"
           selected={isValidDate ? selectedDate : undefined}
+          defaultMonth={isValidDate ? selectedDate : dropdownNav ? new Date(resolvedToYear - 8, 0) : undefined}
           onSelect={(date) => {
             if (date) {
               onChange(format(date, "yyyy-MM-dd"));
@@ -70,6 +84,9 @@ export function DateInput({
             setOpen(false);
           }}
           initialFocus
+          captionLayout={dropdownNav ? "dropdown-buttons" : undefined}
+          fromYear={dropdownNav ? resolvedFromYear : undefined}
+          toYear={dropdownNav ? resolvedToYear : undefined}
           className={cn("p-3 pointer-events-auto")}
         />
       </PopoverContent>
