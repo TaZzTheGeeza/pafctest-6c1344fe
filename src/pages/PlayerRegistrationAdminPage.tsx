@@ -76,7 +76,7 @@ interface RosterPlayer {
 const normaliseName = (s: string) => s.trim().toLowerCase().replace(/\s+/g, " ");
 
 export default function PlayerRegistrationAdminPage() {
-  const [tab, setTab] = useState<"registered" | "outstanding" | "all">("registered");
+  const [tab, setTab] = useState<"paid" | "unpaid" | "outstanding" | "all">("paid");
   const [search, setSearch] = useState("");
   const [ageGroupFilter, setAgeGroupFilter] = useState<string>("all");
   const [selected, setSelected] = useState<Registration | null>(null);
@@ -104,6 +104,16 @@ export default function PlayerRegistrationAdminPage() {
     },
   });
 
+  // A registration only counts as "complete" once payment_status === 'paid'.
+  const paidRegistrations = useMemo(
+    () => registrations.filter((r) => r.payment_status === "paid"),
+    [registrations],
+  );
+  const unpaidRegistrations = useMemo(
+    () => registrations.filter((r) => r.payment_status !== "paid"),
+    [registrations],
+  );
+
   const ageGroups = useMemo(() => {
     const set = new Set<string>();
     registrations.forEach((r) => r.preferred_age_group && set.add(r.preferred_age_group));
@@ -111,17 +121,16 @@ export default function PlayerRegistrationAdminPage() {
     return Array.from(set).sort();
   }, [registrations, roster]);
 
-  // Index registered names per age group
+  // Index PAID registered names per age group — only paid registrations count as complete.
   const registeredKeys = useMemo(() => {
     const set = new Set<string>();
-    registrations.forEach((r) => {
+    paidRegistrations.forEach((r) => {
       const first = r.child_name.split(" ")[0] || r.child_name;
       set.add(`${normaliseName(first)}::${r.preferred_age_group}`);
-      // also full-name match
       set.add(`${normaliseName(r.child_name)}::${r.preferred_age_group}`);
     });
     return set;
-  }, [registrations]);
+  }, [paidRegistrations]);
 
   const outstanding = useMemo(() => {
     return roster.filter((p) => {
@@ -130,19 +139,20 @@ export default function PlayerRegistrationAdminPage() {
     });
   }, [roster, registeredKeys]);
 
-  const filteredRegistrations = useMemo(() => {
-    return registrations.filter((r) => {
-      if (ageGroupFilter !== "all" && r.preferred_age_group !== ageGroupFilter) return false;
-      if (!search.trim()) return true;
-      const q = search.toLowerCase();
-      return (
-        r.child_name.toLowerCase().includes(q) ||
-        r.parent_name.toLowerCase().includes(q) ||
-        r.email.toLowerCase().includes(q) ||
-        (r.phone || "").toLowerCase().includes(q)
-      );
-    });
-  }, [registrations, search, ageGroupFilter]);
+  const applySearch = (r: Registration) => {
+    if (ageGroupFilter !== "all" && r.preferred_age_group !== ageGroupFilter) return false;
+    if (!search.trim()) return true;
+    const q = search.toLowerCase();
+    return (
+      r.child_name.toLowerCase().includes(q) ||
+      r.parent_name.toLowerCase().includes(q) ||
+      r.email.toLowerCase().includes(q) ||
+      (r.phone || "").toLowerCase().includes(q)
+    );
+  };
+
+  const filteredPaid = useMemo(() => paidRegistrations.filter(applySearch), [paidRegistrations, search, ageGroupFilter]);
+  const filteredUnpaid = useMemo(() => unpaidRegistrations.filter(applySearch), [unpaidRegistrations, search, ageGroupFilter]);
 
   const filteredOutstanding = useMemo(() => {
     return outstanding.filter((p) => {
@@ -152,6 +162,8 @@ export default function PlayerRegistrationAdminPage() {
       return p.first_name.toLowerCase().includes(q) || p.team_name.toLowerCase().includes(q);
     });
   }, [outstanding, search, ageGroupFilter]);
+
+  const visibleRegistrations = tab === "paid" ? filteredPaid : tab === "unpaid" ? filteredUnpaid : [];
 
   const exportCsv = () => {
     const rows = [
