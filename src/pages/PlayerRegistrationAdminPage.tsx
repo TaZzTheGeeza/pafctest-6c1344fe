@@ -61,6 +61,8 @@ interface Registration {
   declaration_confirmed: boolean | null;
   photo_url: string | null;
   created_at: string;
+  payment_status: string | null;
+  paid_at: string | null;
 }
 
 interface RosterPlayer {
