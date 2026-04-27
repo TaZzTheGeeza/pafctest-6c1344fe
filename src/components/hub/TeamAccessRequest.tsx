@@ -6,17 +6,17 @@ import { UserPlus, Shield, Clock, CheckCircle, XCircle, Loader2 } from "lucide-r
 import { toast } from "sonner";
 
 const TEAMS = [
-  { slug: "u6", label: "U6" },
-  { slug: "u7", label: "U7" },
-  { slug: "u8-black", label: "U8 Black" },
-  { slug: "u8-gold", label: "U8 Gold" },
-  { slug: "u9", label: "U9" },
-  { slug: "u10", label: "U10" },
-  { slug: "u11-black", label: "U11 Black" },
-  { slug: "u11-gold", label: "U11 Gold" },
-  { slug: "u13-black", label: "U13 Black" },
-  { slug: "u13-gold", label: "U13 Gold" },
-  { slug: "u14", label: "U14" },
+  { slug: "u6s", label: "U6" },
+  { slug: "u7s", label: "U7" },
+  { slug: "u8s-black", label: "U8 Black" },
+  { slug: "u8s-gold", label: "U8 Gold" },
+  { slug: "u9s", label: "U9" },
+  { slug: "u10s", label: "U10" },
+  { slug: "u11s-black", label: "U11 Black" },
+  { slug: "u11s-gold", label: "U11 Gold" },
+  { slug: "u13s-black", label: "U13 Black" },
+  { slug: "u13s-gold", label: "U13 Gold" },
+  { slug: "u14s", label: "U14" },
 ];
 
 const ROLES = [
