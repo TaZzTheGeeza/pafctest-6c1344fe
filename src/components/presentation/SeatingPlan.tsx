@@ -461,17 +461,22 @@ function RectTable({
 // ────────────────────────────────────────────────────────
 
 function TheatreSeatBlock({
-  players,
+  seatGrid,
   highlightedNames,
   side,
-  rows = 7,
-  chairsPerRow = 12,
+  adminMode = false,
+  onSeatClick,
 }: {
-  players: TheatreSeatPlayer[];
+  seatGrid: (TheatreSeatPlayer | null)[][];
   highlightedNames: string[];
   side: "left" | "right";
-  rows?: number;
-  chairsPerRow?: number;
+  adminMode?: boolean;
+  onSeatClick?: (info: {
+    side: "left" | "right";
+    row_index: number;
+    col_index: number;
+    player: TheatreSeatPlayer | null;
+  }) => void;
 }) {
   const highlightSet = useMemo(
     () =>
@@ -491,15 +496,25 @@ function TheatreSeatBlock({
     return hash % 360;
   };
 
-  const totalSeats = rows * chairsPerRow;
-  // Build a fixed-size seat array and pad with nulls for empty chairs
-  const seats: (TheatreSeatPlayer | null)[] = useMemo(() => {
-    const arr: (TheatreSeatPlayer | null)[] = [];
-    for (let i = 0; i < totalSeats; i++) {
-      arr.push(players[i] ?? null);
-    }
-    return arr;
-  }, [players, totalSeats]);
+  const totalRows = seatGrid.length;
+  const chairsPerRow = seatGrid[0]?.length ?? 0;
+  const totalSeats = totalRows * chairsPerRow;
+  const occupied = seatGrid.flat().filter(Boolean).length;
+  const clickable = adminMode && !!onSeatClick;
+
+  const handleClick = (
+    rIdx: number,
+    cIdx: number,
+    p: TheatreSeatPlayer | null,
+  ) => {
+    if (!clickable) return;
+    onSeatClick!({
+      side,
+      row_index: rIdx + 1,
+      col_index: cIdx + 1,
+      player: p,
+    });
+  };
 
   return (
     <div
@@ -511,70 +526,93 @@ function TheatreSeatBlock({
       }}
     >
       <p className="text-center text-[9px] md:text-[10px] font-display tracking-[0.3em] uppercase text-primary/80 mb-2">
-        {side === "left" ? "◀ Stage Left" : "Stage Right ▶"} · {players.length}/{totalSeats} seats
+        {side === "left" ? "◀ Stage Left" : "Stage Right ▶"} · {occupied}/{totalSeats} seats
+        {clickable && <span className="ml-2 text-primary/60 normal-case tracking-normal">· click to edit</span>}
       </p>
       <div className="flex flex-col gap-[3px] md:gap-1">
-        {Array.from({ length: rows }).map((_, rIdx) => {
-          const rowSeats = seats.slice(rIdx * chairsPerRow, (rIdx + 1) * chairsPerRow);
-          return (
-            <div key={rIdx} className="flex gap-[2px] md:gap-[3px] justify-center items-center">
-              <span className="w-3 text-[7px] font-display text-muted-foreground/50 text-right pr-0.5">
-                {rIdx + 1}
-              </span>
-              {rowSeats.map((p, cIdx) => {
-                if (!p) {
-                  return (
-                    <span
-                      key={`empty-${rIdx}-${cIdx}`}
-                      className="h-[30px] md:h-[36px] w-[42px] md:w-[52px] rounded-[3px] border border-dashed border-primary/15 bg-card/20"
-                      title="Empty seat"
-                    />
-                  );
-                }
-                const hue = hueOf(p.age_group);
-                const isMine =
-                  !!p.first_name &&
-                  highlightSet.has(p.first_name.trim().toLowerCase());
+        {seatGrid.map((rowSeats, rIdx) => (
+          <div key={rIdx} className="flex gap-[2px] md:gap-[3px] justify-center items-center">
+            <span className="w-3 text-[7px] font-display text-muted-foreground/50 text-right pr-0.5">
+              {rIdx + 1}
+            </span>
+            {rowSeats.map((p, cIdx) => {
+              const baseClass =
+                "h-[30px] md:h-[36px] w-[42px] md:w-[52px] rounded-[3px] border flex flex-col items-center justify-center leading-none px-0.5 overflow-hidden transition-transform relative";
+              if (!p) {
                 return (
-                  <div
-                    key={p.id}
+                  <button
+                    type="button"
+                    key={`empty-${rIdx}-${cIdx}`}
+                    onClick={() => handleClick(rIdx, cIdx, null)}
+                    disabled={!clickable}
                     className={cn(
-                      "h-[30px] md:h-[36px] w-[42px] md:w-[52px] rounded-[3px] border flex flex-col items-center justify-center leading-none px-0.5 overflow-hidden transition-transform hover:scale-110 hover:z-10 relative",
-                      isMine && "ring-1 ring-primary ring-offset-[1px] ring-offset-background",
+                      baseClass,
+                      "border-dashed border-primary/15 bg-card/20",
+                      clickable && "hover:border-primary/60 hover:bg-card/40 cursor-pointer",
                     )}
-                    style={{
-                      background: isMine
-                        ? "linear-gradient(180deg, hsl(45 60% 28%) 0%, hsl(45 50% 14%) 100%)"
-                        : `linear-gradient(180deg, hsl(${hue} 55% 24%) 0%, hsl(${hue} 45% 12%) 100%)`,
-                      borderColor: isMine
-                        ? "hsl(var(--primary))"
-                        : `hsl(${hue} 70% 50%)`,
-                      color: isMine ? "hsl(var(--primary))" : `hsl(${hue} 90% 88%)`,
-                    }}
                     title={
-                      [
-                        p.shirt_number != null ? `#${p.shirt_number}` : null,
-                        p.first_name ?? "?",
-                        p.age_group ? `(${p.age_group})` : null,
-                      ]
-                        .filter(Boolean)
-                        .join(" ")
+                      clickable
+                        ? `Empty seat — row ${rIdx + 1}, col ${cIdx + 1} (click to assign)`
+                        : "Empty seat"
                     }
                   >
-                    {p.shirt_number != null && (
-                      <span className="text-[7px] md:text-[8px] font-display font-bold opacity-70">
-                        #{p.shirt_number}
+                    {clickable && (
+                      <span className="text-[8px] md:text-[9px] font-display text-muted-foreground/40">
+                        +
                       </span>
                     )}
-                    <span className="text-[8px] md:text-[9px] font-display font-bold truncate w-full text-center">
-                      {p.first_name ?? "?"}
-                    </span>
-                  </div>
+                  </button>
                 );
-              })}
-            </div>
-          );
-        })}
+              }
+              const hue = hueOf(p.age_group);
+              const isMine =
+                !!p.first_name &&
+                highlightSet.has(p.first_name.trim().toLowerCase());
+              return (
+                <button
+                  type="button"
+                  key={`${rIdx}-${cIdx}-${p.id}`}
+                  onClick={() => handleClick(rIdx, cIdx, p)}
+                  disabled={!clickable}
+                  className={cn(
+                    baseClass,
+                    "hover:scale-110 hover:z-10",
+                    isMine && "ring-1 ring-primary ring-offset-[1px] ring-offset-background",
+                    clickable && "cursor-pointer",
+                  )}
+                  style={{
+                    background: isMine
+                      ? "linear-gradient(180deg, hsl(45 60% 28%) 0%, hsl(45 50% 14%) 100%)"
+                      : `linear-gradient(180deg, hsl(${hue} 55% 24%) 0%, hsl(${hue} 45% 12%) 100%)`,
+                    borderColor: isMine
+                      ? "hsl(var(--primary))"
+                      : `hsl(${hue} 70% 50%)`,
+                    color: isMine ? "hsl(var(--primary))" : `hsl(${hue} 90% 88%)`,
+                  }}
+                  title={
+                    [
+                      p.shirt_number != null ? `#${p.shirt_number}` : null,
+                      p.first_name ?? "?",
+                      p.age_group ? `(${p.age_group})` : null,
+                      `· row ${rIdx + 1}, col ${cIdx + 1}`,
+                    ]
+                      .filter(Boolean)
+                      .join(" ")
+                  }
+                >
+                  {p.shirt_number != null && (
+                    <span className="text-[7px] md:text-[8px] font-display font-bold opacity-70">
+                      #{p.shirt_number}
+                    </span>
+                  )}
+                  <span className="text-[8px] md:text-[9px] font-display font-bold truncate w-full text-center">
+                    {p.first_name ?? "?"}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        ))}
       </div>
     </div>
   );
