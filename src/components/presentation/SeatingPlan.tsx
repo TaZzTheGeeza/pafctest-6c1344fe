@@ -604,7 +604,11 @@ function TheatreSeatBlock({
                   </button>
                 );
               }
-              const hue = hueOf(p.age_group);
+              const c = colorOf(p.age_group);
+              const bgL = Math.max(10, c.l - 30);
+              const bgL2 = Math.max(6, c.l - 42);
+              const borderL = Math.min(70, c.l + 5);
+              const textL = Math.min(92, c.l + 35);
               const isMine =
                 !!p.first_name &&
                 highlightSet.has(p.first_name.trim().toLowerCase());
@@ -623,11 +627,11 @@ function TheatreSeatBlock({
                   style={{
                     background: isMine
                       ? "linear-gradient(180deg, hsl(45 60% 28%) 0%, hsl(45 50% 14%) 100%)"
-                      : `linear-gradient(180deg, hsl(${hue} 55% 24%) 0%, hsl(${hue} 45% 12%) 100%)`,
+                      : `linear-gradient(180deg, hsl(${c.h} ${c.s}% ${bgL}%) 0%, hsl(${c.h} ${c.s}% ${bgL2}%) 100%)`,
                     borderColor: isMine
                       ? "hsl(var(--primary))"
-                      : `hsl(${hue} 70% 50%)`,
-                    color: isMine ? "hsl(var(--primary))" : `hsl(${hue} 90% 88%)`,
+                      : `hsl(${c.h} ${c.s}% ${borderL}%)`,
+                    color: isMine ? "hsl(var(--primary))" : `hsl(${c.h} ${Math.min(95, c.s + 10)}% ${textL}%)`,
                   }}
                   title={
                     [
