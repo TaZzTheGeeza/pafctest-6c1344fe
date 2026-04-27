@@ -45,6 +45,7 @@ import {
   type PresentationTable,
   type PresentationTicketSeat,
 } from "@/components/presentation/SeatingPlan";
+import { TheatreBlock, type TheatrePlayer } from "@/components/presentation/TheatreBlock";
 
 interface PresentationEvent {
   id: string;
@@ -137,6 +138,16 @@ export default function PresentationAdminPage() {
         .eq("event_id", event!.id)
         .order("player_name");
       return (data ?? []) as AdminAllocation[];
+    },
+  });
+
+  const { data: theatrePlayers = [] } = useQuery({
+    queryKey: ["presentation-theatre-players-admin"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("player_stats")
+        .select("id, first_name, shirt_number, age_group");
+      return (data ?? []) as TheatrePlayer[];
     },
   });
 
@@ -242,6 +253,7 @@ export default function PresentationAdminPage() {
               tables={tables}
               tickets={tickets}
               allocations={allocations}
+              theatrePlayers={theatrePlayers}
               seatsPerTable={event.seats_per_table}
               onRefresh={refresh}
             />
@@ -302,12 +314,14 @@ function SeatingPlanAdmin({
   tables,
   tickets,
   allocations,
+  theatrePlayers,
   seatsPerTable,
   onRefresh,
 }: {
   tables: PresentationTable[];
   tickets: AdminTicket[];
   allocations: AdminAllocation[];
+  theatrePlayers: TheatrePlayer[];
   seatsPerTable: number;
   onRefresh: () => void;
 }) {
@@ -315,6 +329,7 @@ function SeatingPlanAdmin({
 
   return (
     <>
+      <TheatreBlock players={theatrePlayers} />
       <SeatingPlan
         tables={tables}
         tickets={tickets}
@@ -323,7 +338,8 @@ function SeatingPlanAdmin({
         onSelectTable={(id) => setOpenTableId(id)}
       />
       <p className="text-center text-xs text-muted-foreground mt-3">
-        Click any table (including reserved) to view occupants and move people.
+        Players are auto-seated in the front theatre block by age group. Click any guest table
+        (including reserved) to view occupants and move people.
       </p>
       {openTableId && (
         <TableInspectorDialog

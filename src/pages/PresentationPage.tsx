@@ -38,6 +38,7 @@ import {
   type PresentationTable,
   type PresentationTicketSeat,
 } from "@/components/presentation/SeatingPlan";
+import { TheatreBlock, type TheatrePlayer } from "@/components/presentation/TheatreBlock";
 
 interface PresentationEvent {
   id: string;
@@ -123,6 +124,36 @@ export default function PresentationPage() {
         .eq("event_id", event!.id);
       if (error) throw error;
       return (data ?? []) as (PresentationTicketSeat & { allocation_id: string })[];
+    },
+  });
+
+  // ── Players (for theatre block) ──────────────────────
+  const { data: theatrePlayers = [] } = useQuery({
+    queryKey: ["presentation-theatre-players"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("player_stats")
+        .select("id, first_name, shirt_number, age_group");
+      if (error) throw error;
+      return (data ?? []) as TheatrePlayer[];
+    },
+  });
+
+  // Names of children linked to the current user (highlighted in the theatre block)
+  const { data: myChildrenNames = [] } = useQuery({
+    queryKey: ["my-children-names", user?.id],
+    enabled: !!user?.id,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("guardians")
+        .select("player_name")
+        .eq("parent_user_id", user!.id)
+        .eq("status", "active");
+      return (data ?? [])
+        .map((g) => (g.player_name ?? "").trim())
+        .filter(Boolean)
+        // Use first-name only to match player_stats.first_name
+        .map((n) => n.split(/\s+/)[0]);
     },
   });
 
@@ -251,6 +282,10 @@ export default function PresentationPage() {
 
             <TabsContent value="seating">
               <div className="max-w-5xl mx-auto">
+                <TheatreBlock
+                  players={theatrePlayers}
+                  highlightedNames={myChildrenNames}
+                />
                 <SeatingPlan
                   tables={tables}
                   tickets={allTickets}
@@ -258,8 +293,8 @@ export default function PresentationPage() {
                   seatsPerTable={event.seats_per_table}
                 />
                 <p className="text-center text-xs text-muted-foreground mt-4">
-                  This is a live view of which tables are filling up. Pick your seats from the
-                  &quot;My Tickets&quot; tab.
+                  Players sit in the front theatre block (auto-allocated by age group).
+                  Guest tables are behind. Your child&apos;s chair is highlighted in gold.
                 </p>
               </div>
             </TabsContent>
@@ -379,8 +414,8 @@ function ClaimAllocationForm({
   onCreated: () => void;
 }) {
   const [selectedPlayer, setSelectedPlayer] = useState<string>("");
+  // Guest tickets only — the player gets their own seat in the theatre block at the front.
   const [adults, setAdults] = useState(2);
-  // Children count INCLUDES the player themselves. Min 1 (just the player), max 2.
   const [children, setChildren] = useState(1);
   const [submitting, setSubmitting] = useState(false);
 
@@ -427,8 +462,8 @@ function ClaimAllocationForm({
       toast.error("Please select which child this ticket is for");
       return;
     }
-    if (adults < 0 || adults > 2 || children < 1 || children > 2) {
-      toast.error("Maximum 2 adults and 2 children (including your player) per family");
+    if (adults < 0 || adults > 2 || children < 0 || children > 1) {
+      toast.error("Maximum 2 adults and 1 child guest per player");
       return;
     }
     setSubmitting(true);
@@ -497,9 +532,9 @@ function ClaimAllocationForm({
         <Ticket className="h-10 w-10 text-primary mx-auto mb-3" />
         <h2 className="text-2xl font-display font-bold mb-2">Claim your family tickets</h2>
         <p className="text-sm text-muted-foreground">
-          Each player gets <strong>1 family ticket</strong> covering up to{" "}
-          <strong>2 adults & 2 children</strong>. One of the child tickets is for the player
-          themselves.
+          Your player has a reserved seat in the <strong>front theatre block</strong>. You can
+          also bring up to <strong>2 adults &amp; 1 child guest</strong>, who will be seated
+          together at a guest table.
         </p>
       </div>
 
@@ -551,18 +586,18 @@ function ClaimAllocationForm({
         <div className="grid grid-cols-2 gap-4">
           <Counter label="Adults" value={adults} setValue={setAdults} min={0} max={2} />
           <Counter
-            label="Children"
+            label="Child guests"
             value={children}
             setValue={setChildren}
-            min={1}
-            max={2}
-            helper="Includes your player"
+            min={0}
+            max={1}
+            helper="Excludes your player (they sit in the theatre block)"
           />
         </div>
 
         <p className="text-xs text-muted-foreground">
-          One child seat is reserved for your player. You can add 1 extra child and up to 2 adults.
-          Need a different arrangement? Contact a club admin.
+          Your player&apos;s seat in the theatre block is automatic — you don&apos;t need to add
+          a ticket for them. Need a different arrangement? Contact a club admin.
         </p>
 
         <Button
