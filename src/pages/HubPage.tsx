@@ -261,8 +261,12 @@ export default function HubPage() {
             </div>
           ) : loading ? (
             <div className="text-center py-16 text-muted-foreground">Loading your teams...</div>
-          ) : myTeams.length === 0 ? (
+          ) : myTeams.length === 0 && activeTab !== "player" ? (
             <TeamAccessRequest />
+          ) : myTeams.length === 0 ? (
+            <div className="max-w-4xl mx-auto">
+              {renderContent()}
+            </div>
           ) : (
             <div className="flex gap-0 md:gap-6">
               {/* Sidebar */}
