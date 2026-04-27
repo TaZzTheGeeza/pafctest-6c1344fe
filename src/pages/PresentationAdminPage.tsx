@@ -48,6 +48,7 @@ import {
   type TheatreSeatPlayer,
 } from "@/components/presentation/SeatingPlan";
 import type { TheatrePlayer } from "@/components/presentation/TheatreBlock";
+import { SeatingDnD } from "@/components/presentation/SeatingDnD";
 
 interface PresentationEvent {
   id: string;
@@ -265,6 +266,7 @@ export default function PresentationAdminPage() {
         <Tabs defaultValue="plan" className="w-full">
           <TabsList>
             <TabsTrigger value="plan">Seating Plan</TabsTrigger>
+            <TabsTrigger value="dnd">Drag & Drop</TabsTrigger>
             <TabsTrigger value="people">People</TabsTrigger>
             <TabsTrigger value="tables">Manage Tables</TabsTrigger>
           </TabsList>
@@ -279,6 +281,16 @@ export default function PresentationAdminPage() {
               eventId={event.id}
               seatsPerTable={event.seats_per_table}
               onRefresh={refresh}
+            />
+          </TabsContent>
+
+          <TabsContent value="dnd" className="mt-6">
+            <SeatingDnD
+              tables={tables}
+              tickets={tickets}
+              allocations={allocations}
+              seatsPerTable={event.seats_per_table}
+              onChanged={refresh}
             />
           </TabsContent>
 
