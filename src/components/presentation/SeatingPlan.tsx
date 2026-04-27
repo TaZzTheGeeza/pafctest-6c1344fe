@@ -131,34 +131,34 @@ export function SeatingPlan({
     return ordered;
   }, [rows]);
 
-  // Distinct colour per age group (explicit palette so no two teams share a hue).
-  // Falls back to a well-spaced golden-angle hue for unknown groups.
-  const AGE_GROUP_HUES: Record<string, number> = {
-    "u6s": 0,           // red
-    "u7s": 25,          // orange
-    "u8s-black": 50,    // amber
-    "u8s-gold": 75,     // yellow-green
-    "u9s": 110,         // green
-    "u10s": 150,        // teal-green
-    "u11s-gold": 180,   // cyan
-    "u11s-black": 205,  // sky blue
-    "u13s-gold": 230,   // blue
-    "u13s-black": 260,  // indigo/violet
-    "u14s": 290,        // magenta
-    "u15s": 315,        // pink
-    "u16s": 340,        // rose
-    "u17s": 15,         // deep orange
-    "u18s": 95,         // lime
+  // Distinct, high-contrast colour per age group.
+  // Each entry varies hue, saturation AND lightness so adjacent groups never
+  // look similar at a glance. Used by the legend and by the theatre seats below.
+  const AGE_GROUP_PALETTE: Record<string, { h: number; s: number; l: number }> = {
+    "u6s":         { h: 0,   s: 80, l: 52 }, // bright red
+    "u7s":         { h: 28,  s: 95, l: 55 }, // vivid orange
+    "u8s-black":   { h: 50,  s: 90, l: 58 }, // gold/yellow
+    "u8s-gold":    { h: 75,  s: 70, l: 50 }, // chartreuse
+    "u9s":         { h: 130, s: 65, l: 42 }, // forest green
+    "u10s":        { h: 160, s: 80, l: 60 }, // mint
+    "u11s-gold":   { h: 188, s: 85, l: 50 }, // cyan
+    "u11s-black":  { h: 215, s: 75, l: 55 }, // sky blue
+    "u13s-gold":   { h: 245, s: 70, l: 62 }, // periwinkle
+    "u13s-black":  { h: 270, s: 65, l: 45 }, // deep purple
+    "u14s":        { h: 300, s: 75, l: 60 }, // magenta
+    "u15s":        { h: 330, s: 85, l: 55 }, // hot pink
+    "u16s":        { h: 350, s: 60, l: 35 }, // wine/maroon
+    "u17s":        { h: 15,  s: 50, l: 30 }, // dark brown
+    "u18s":        { h: 95,  s: 40, l: 70 }, // pale olive
   };
   const ageGroupColor = (ag: string | null | undefined) => {
     if (!ag) return null;
     const key = ag.toLowerCase();
-    if (key in AGE_GROUP_HUES) return { hue: AGE_GROUP_HUES[key] };
-    // Stable fallback using golden-angle for any unmapped group
+    if (key in AGE_GROUP_PALETTE) return AGE_GROUP_PALETTE[key];
     let hash = 0;
     for (let i = 0; i < ag.length; i++) hash = (hash * 31 + ag.charCodeAt(i)) >>> 0;
-    const hue = Math.round((hash * 137.508) % 360);
-    return { hue };
+    const h = Math.round((hash * 137.508) % 360);
+    return { h, s: 70, l: 50 };
   };
 
   // Build seat grids per side. If theatreAssignments is provided, place
