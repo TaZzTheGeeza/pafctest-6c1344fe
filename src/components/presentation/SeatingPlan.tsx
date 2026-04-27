@@ -483,7 +483,7 @@ function TheatreSeatBlock({
                   <div
                     key={p.id}
                     className={cn(
-                      "h-[26px] md:h-[30px] w-[34px] md:w-[42px] rounded-[3px] border flex flex-col items-center justify-center leading-none px-0.5 overflow-hidden transition-transform hover:scale-110 hover:z-10 relative",
+                      "h-[30px] md:h-[36px] w-[42px] md:w-[52px] rounded-[3px] border flex flex-col items-center justify-center leading-none px-0.5 overflow-hidden transition-transform hover:scale-110 hover:z-10 relative",
                       isMine && "ring-1 ring-primary ring-offset-[1px] ring-offset-background",
                     )}
                     style={{
@@ -494,7 +494,6 @@ function TheatreSeatBlock({
                         ? "hsl(var(--primary))"
                         : `hsl(${hue} 70% 50%)`,
                       color: isMine ? "hsl(var(--primary))" : `hsl(${hue} 90% 88%)`,
-                      transform: `rotate(${-tilt}deg)`,
                     }}
                     title={
                       [
