@@ -403,12 +403,16 @@ function TheatreSeatBlock({
   highlightedNames,
   tilt,
   side,
+  rows = 7,
+  chairsPerRow = 12,
 }: {
   players: TheatreSeatPlayer[];
   highlightedNames: string[];
   /** Rotation in degrees (negative = anti-clockwise / left side) */
   tilt: number;
   side: "left" | "right";
+  rows?: number;
+  chairsPerRow?: number;
 }) {
   const highlightSet = useMemo(
     () =>
@@ -420,25 +424,6 @@ function TheatreSeatBlock({
     [highlightedNames],
   );
 
-  if (players.length === 0) {
-    return (
-      <div
-        className="w-[180px] md:w-[260px] h-[140px] md:h-[180px] rounded-md border border-dashed border-primary/20 flex items-center justify-center text-[9px] font-display tracking-widest uppercase text-muted-foreground/60"
-        style={{ transform: `rotate(${tilt}deg)` }}
-      >
-        Theatre — {side}
-      </div>
-    );
-  }
-
-  // Lay players out in a fixed grid (rows of ~10 chairs) so the block
-  // visually mirrors the diagram.
-  const chairsPerRow = 10;
-  const rows: TheatreSeatPlayer[][] = [];
-  for (let i = 0; i < players.length; i += chairsPerRow) {
-    rows.push(players.slice(i, i + chairsPerRow));
-  }
-
   // Stable colour per age group (matches main legend)
   const hueOf = (ag: string | null | undefined) => {
     if (!ag) return 45;
@@ -447,9 +432,19 @@ function TheatreSeatBlock({
     return hash % 360;
   };
 
+  const totalSeats = rows * chairsPerRow;
+  // Build a fixed-size seat array and pad with nulls for empty chairs
+  const seats: (TheatreSeatPlayer | null)[] = useMemo(() => {
+    const arr: (TheatreSeatPlayer | null)[] = [];
+    for (let i = 0; i < totalSeats; i++) {
+      arr.push(players[i] ?? null);
+    }
+    return arr;
+  }, [players, totalSeats]);
+
   return (
     <div
-      className="rounded-md border border-primary/30 p-1.5 md:p-2"
+      className="rounded-md border border-primary/30 p-2 md:p-3 inline-block"
       style={{
         transform: `rotate(${tilt}deg)`,
         transformOrigin: side === "left" ? "right center" : "left center",
@@ -457,49 +452,74 @@ function TheatreSeatBlock({
           "linear-gradient(180deg, hsl(45 25% 10% / 0.7) 0%, hsl(0 0% 4% / 0.7) 100%)",
         boxShadow: "inset 0 0 20px hsl(var(--primary) / 0.05)",
       }}
-      title={`${players.length} player seat${players.length === 1 ? "" : "s"}`}
     >
-      <div className="flex flex-col gap-[3px] md:gap-1">
-        {rows.map((row, rIdx) => (
-          <div key={rIdx} className="flex gap-[2px] md:gap-[3px] justify-center">
-            {row.map((p) => {
-              const hue = hueOf(p.age_group);
-              const isMine =
-                !!p.first_name &&
-                highlightSet.has(p.first_name.trim().toLowerCase());
-              return (
-                <span
-                  key={p.id}
-                  className={cn(
-                    "h-2 w-2 md:h-2.5 md:w-2.5 rounded-full border",
-                    isMine && "ring-1 ring-primary ring-offset-[1px] ring-offset-background",
-                  )}
-                  style={{
-                    background: isMine
-                      ? "hsl(var(--primary))"
-                      : `hsl(${hue} 65% 55%)`,
-                    borderColor: isMine
-                      ? "hsl(var(--primary))"
-                      : `hsl(${hue} 70% 40%)`,
-                  }}
-                  title={
-                    [
-                      p.shirt_number != null ? `#${p.shirt_number}` : null,
-                      p.first_name ?? "?",
-                      p.age_group ? `(${p.age_group})` : null,
-                    ]
-                      .filter(Boolean)
-                      .join(" ")
-                  }
-                />
-              );
-            })}
-          </div>
-        ))}
-      </div>
-      <p className="mt-1 text-center text-[8px] font-display tracking-widest uppercase text-muted-foreground">
-        {players.length} player seats
+      <p className="text-center text-[8px] md:text-[9px] font-display tracking-[0.25em] uppercase text-primary/80 mb-1.5">
+        {side === "left" ? "◀ Stage Left" : "Stage Right ▶"} · {players.length}/{totalSeats}
       </p>
+      <div className="flex flex-col gap-[3px] md:gap-1">
+        {Array.from({ length: rows }).map((_, rIdx) => {
+          const rowSeats = seats.slice(rIdx * chairsPerRow, (rIdx + 1) * chairsPerRow);
+          return (
+            <div key={rIdx} className="flex gap-[2px] md:gap-[3px] justify-center items-center">
+              <span className="w-3 text-[7px] font-display text-muted-foreground/50 text-right pr-0.5">
+                {rIdx + 1}
+              </span>
+              {rowSeats.map((p, cIdx) => {
+                if (!p) {
+                  return (
+                    <span
+                      key={`empty-${rIdx}-${cIdx}`}
+                      className="h-[26px] md:h-[30px] w-[34px] md:w-[42px] rounded-[3px] border border-dashed border-primary/15 bg-card/20"
+                      title="Empty seat"
+                    />
+                  );
+                }
+                const hue = hueOf(p.age_group);
+                const isMine =
+                  !!p.first_name &&
+                  highlightSet.has(p.first_name.trim().toLowerCase());
+                return (
+                  <div
+                    key={p.id}
+                    className={cn(
+                      "h-[26px] md:h-[30px] w-[34px] md:w-[42px] rounded-[3px] border flex flex-col items-center justify-center leading-none px-0.5 overflow-hidden transition-transform hover:scale-110 hover:z-10 relative",
+                      isMine && "ring-1 ring-primary ring-offset-[1px] ring-offset-background",
+                    )}
+                    style={{
+                      background: isMine
+                        ? "linear-gradient(180deg, hsl(45 60% 28%) 0%, hsl(45 50% 14%) 100%)"
+                        : `linear-gradient(180deg, hsl(${hue} 55% 24%) 0%, hsl(${hue} 45% 12%) 100%)`,
+                      borderColor: isMine
+                        ? "hsl(var(--primary))"
+                        : `hsl(${hue} 70% 50%)`,
+                      color: isMine ? "hsl(var(--primary))" : `hsl(${hue} 90% 88%)`,
+                      transform: `rotate(${-tilt}deg)`,
+                    }}
+                    title={
+                      [
+                        p.shirt_number != null ? `#${p.shirt_number}` : null,
+                        p.first_name ?? "?",
+                        p.age_group ? `(${p.age_group})` : null,
+                      ]
+                        .filter(Boolean)
+                        .join(" ")
+                    }
+                  >
+                    {p.shirt_number != null && (
+                      <span className="text-[6px] md:text-[7px] font-display font-bold opacity-70">
+                        #{p.shirt_number}
+                      </span>
+                    )}
+                    <span className="text-[7px] md:text-[8px] font-display font-bold truncate w-full text-center">
+                      {p.first_name ?? "?"}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
