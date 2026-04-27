@@ -167,6 +167,7 @@ export default function CalendarPage() {
       const results: ClubEvent[] = [];
       // Fetch all teams in parallel
       const promises = faTeamConfigs.map(async (config) => {
+        if (!config.fixtureUrl) return [];
         try {
           const { data, error } = await supabase.functions.invoke("scrape-fixtures", {
             body: { team: config.team, fixtureUrl: config.fixtureUrl, resultUrl: config.resultUrl },
