@@ -141,6 +141,16 @@ export default function PresentationAdminPage() {
     },
   });
 
+  const { data: theatrePlayers = [] } = useQuery({
+    queryKey: ["presentation-theatre-players-admin"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("player_stats")
+        .select("id, first_name, shirt_number, age_group");
+      return (data ?? []) as TheatrePlayer[];
+    },
+  });
+
   const refresh = () => {
     refetchTables();
     refetchTickets();
