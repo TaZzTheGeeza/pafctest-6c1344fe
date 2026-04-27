@@ -509,7 +509,7 @@ function SeatSlot({
     <div
       ref={setNodeRef}
       className={cn(
-        "min-h-[36px] rounded border px-1.5 py-1 text-[10px] flex items-center gap-1 transition-colors",
+        "min-h-[36px] min-w-0 overflow-hidden rounded border px-1.5 py-1 text-[10px] flex items-center gap-1 transition-colors",
         hot
           ? occupant
             ? "border-amber-400 bg-amber-400/15"
@@ -522,7 +522,9 @@ function SeatSlot({
     >
       <span className="text-muted-foreground shrink-0">{seatNumber}</span>
       {occupant ? (
-        <DraggableTicket ticket={occupant} compact />
+        <div className="min-w-0 flex-1">
+          <DraggableTicket ticket={occupant} compact />
+        </div>
       ) : (
         <span className="text-muted-foreground/50 italic ml-auto mr-auto">
           {hot ? "drop" : "empty"}
