@@ -713,12 +713,18 @@ function ManageTickets({
 
       {/* Tickets list */}
       <Card className="p-6">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
           <h3 className="font-display font-bold">Your tickets</h3>
           {myTickets.length > 0 && (
-            <Button onClick={() => setSeatPickerOpen(true)} size="sm">
-              <Users className="h-4 w-4 mr-2" /> Pick seats
-            </Button>
+            <span
+              className={`text-[10px] font-display tracking-[0.2em] uppercase px-2.5 py-1 rounded-full border ${
+                allSeated
+                  ? "bg-primary/10 text-primary border-primary/40"
+                  : "bg-muted/40 text-muted-foreground border-border"
+              }`}
+            >
+              {allSeated ? "Seats allocated" : "Awaiting seat allocation"}
+            </span>
           )}
         </div>
 
@@ -727,14 +733,43 @@ function ManageTickets({
             No tickets added yet. Use the buttons above to add adults & children.
           </p>
         ) : (
-          <div className="space-y-2">
-            {myTickets.map((t) => {
-              const table = tables.find((tb) => tb.id === t.table_id);
-              return (
-                <TicketRow key={t.id} ticket={t} tableNumber={table?.table_number ?? null} onRefresh={onRefresh} />
-              );
-            })}
-          </div>
+          <>
+            <div className="space-y-2">
+              {myTickets.map((t) => {
+                const table = tables.find((tb) => tb.id === t.table_id);
+                return (
+                  <TicketRow
+                    key={t.id}
+                    ticket={t}
+                    tableNumber={table?.table_number ?? null}
+                    tableLabel={table?.label ?? null}
+                    onRefresh={onRefresh}
+                  />
+                );
+              })}
+            </div>
+            <div
+              className={`mt-4 rounded-lg border p-3 text-xs ${
+                allSeated
+                  ? "border-primary/30 bg-primary/5 text-foreground"
+                  : "border-border bg-card/40 text-muted-foreground"
+              }`}
+            >
+              {allSeated ? (
+                <>
+                  <CheckCircle2 className="h-3.5 w-3.5 inline mr-1.5 text-primary" />
+                  Your seats have been allocated by the club. See your table & seat number on
+                  each ticket above. Please arrive 15 minutes before the start time.
+                </>
+              ) : (
+                <>
+                  <Sparkles className="h-3.5 w-3.5 inline mr-1.5 text-primary" />
+                  Once everyone has claimed their tickets a club admin will allocate your table
+                  & seats. You&apos;ll get a notification here as soon as your seats are confirmed.
+                </>
+              )}
+            </div>
+          </>
         )}
       </Card>
 
@@ -746,20 +781,6 @@ function ManageTickets({
           onClose={() => setAddingType(null)}
           onAdded={() => {
             setAddingType(null);
-            onRefresh();
-          }}
-        />
-      )}
-
-      {seatPickerOpen && (
-        <SeatPickerDialog
-          event={event}
-          tables={tables}
-          allTickets={allTickets}
-          myTickets={myTickets}
-          onClose={() => setSeatPickerOpen(false)}
-          onSaved={() => {
-            setSeatPickerOpen(false);
             onRefresh();
           }}
         />
