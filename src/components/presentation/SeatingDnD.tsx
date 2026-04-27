@@ -391,14 +391,15 @@ function DraggableTicket({
       ref={setNodeRef}
       {...attributes}
       {...listeners}
+      title={ticket.attendee_name}
       className={cn(
-        "flex items-center gap-1.5 rounded-md border border-border bg-card/80 px-2 py-1 cursor-grab active:cursor-grabbing select-none transition-opacity touch-none w-full min-w-0 overflow-hidden",
+        "flex items-center gap-1.5 rounded-md border border-border bg-card/80 px-2 py-1 cursor-grab active:cursor-grabbing select-none transition-all touch-none w-full min-w-0 overflow-hidden hover:relative hover:z-50 hover:overflow-visible hover:bg-card hover:border-primary/60 hover:shadow-lg hover:shadow-primary/20",
         compact ? "text-[11px]" : "text-xs",
         isDragging && "opacity-30",
       )}
     >
       <GripVertical className="h-3 w-3 text-muted-foreground shrink-0" />
-      <span className="truncate flex-1">{ticket.attendee_name}</span>
+      <span className="truncate flex-1 group-hover:overflow-visible">{ticket.attendee_name}</span>
       <Badge
         variant="outline"
         className={cn(
