@@ -131,12 +131,33 @@ export function SeatingPlan({
     return ordered;
   }, [rows]);
 
-  // Stable colour per age group (hashed into HSL hue)
+  // Distinct colour per age group (explicit palette so no two teams share a hue).
+  // Falls back to a well-spaced golden-angle hue for unknown groups.
+  const AGE_GROUP_HUES: Record<string, number> = {
+    "u6s": 0,           // red
+    "u7s": 25,          // orange
+    "u8s-black": 50,    // amber
+    "u8s-gold": 75,     // yellow-green
+    "u9s": 110,         // green
+    "u10s": 150,        // teal-green
+    "u11s-gold": 180,   // cyan
+    "u11s-black": 205,  // sky blue
+    "u13s-gold": 230,   // blue
+    "u13s-black": 260,  // indigo/violet
+    "u14s": 290,        // magenta
+    "u15s": 315,        // pink
+    "u16s": 340,        // rose
+    "u17s": 15,         // deep orange
+    "u18s": 95,         // lime
+  };
   const ageGroupColor = (ag: string | null | undefined) => {
     if (!ag) return null;
+    const key = ag.toLowerCase();
+    if (key in AGE_GROUP_HUES) return { hue: AGE_GROUP_HUES[key] };
+    // Stable fallback using golden-angle for any unmapped group
     let hash = 0;
     for (let i = 0; i < ag.length; i++) hash = (hash * 31 + ag.charCodeAt(i)) >>> 0;
-    const hue = hash % 360;
+    const hue = Math.round((hash * 137.508) % 360);
     return { hue };
   };
 
@@ -488,12 +509,19 @@ function TheatreSeatBlock({
     [highlightedNames],
   );
 
-  // Stable colour per age group (matches main legend)
+  // Distinct colour per age group (matches main legend palette).
+  const THEATRE_AGE_GROUP_HUES: Record<string, number> = {
+    "u6s": 0, "u7s": 25, "u8s-black": 50, "u8s-gold": 75, "u9s": 110,
+    "u10s": 150, "u11s-gold": 180, "u11s-black": 205, "u13s-gold": 230,
+    "u13s-black": 260, "u14s": 290, "u15s": 315, "u16s": 340, "u17s": 15, "u18s": 95,
+  };
   const hueOf = (ag: string | null | undefined) => {
     if (!ag) return 45;
+    const key = ag.toLowerCase();
+    if (key in THEATRE_AGE_GROUP_HUES) return THEATRE_AGE_GROUP_HUES[key];
     let hash = 0;
     for (let i = 0; i < ag.length; i++) hash = (hash * 31 + ag.charCodeAt(i)) >>> 0;
-    return hash % 360;
+    return Math.round((hash * 137.508) % 360);
   };
 
   const totalRows = seatGrid.length;
