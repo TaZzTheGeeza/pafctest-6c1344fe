@@ -130,54 +130,63 @@ export function SeatingPlan({
       </div>
 
       {/* Rows of tables */}
-      <div className="flex flex-col gap-4 md:gap-5 min-w-[760px]">
-        {rows.map(([rowIdx, rowTables]) => {
-          const ageGroup = rowTables[0]?.age_group ?? null;
-          return (
-            <div key={rowIdx} className="flex items-center gap-3">
-              {/* Age group label on the left */}
-              <div className="w-20 md:w-24 shrink-0 text-right">
-                {ageGroup && (
-                  <span className="font-display text-[11px] md:text-xs tracking-[0.18em] uppercase text-primary">
-                    {ageGroup}
-                  </span>
-                )}
-              </div>
-              <div className="flex-1 grid grid-cols-8 gap-2 md:gap-3">
-                {rowTables.map((table) => {
-                  const seated = ticketsByTable.get(table.id) ?? [];
-                  const taken = seated.length;
-                  const isSelected = selectedTableId === table.id;
-                  const isLocked =
-                    !adminMode && (table.is_locked || table.is_staff_only);
-                  const isFull = !adminMode && taken >= seatsPerTable;
-                  const hasMine =
-                    !!highlightUserId &&
-                    seated.some((s) => s.user_id === highlightUserId);
+      <div className="flex flex-col gap-4 md:gap-5 min-w-[900px]">
+        {rows.map(([rowIdx, rowTables]) => (
+          <div key={rowIdx} className="grid grid-cols-10 gap-2 md:gap-3">
+            {rowTables.map((table) => {
+              const seated = ticketsByTable.get(table.id) ?? [];
+              const taken = seated.length;
+              const isSelected = selectedTableId === table.id;
+              const isLocked =
+                !adminMode && (table.is_locked || table.is_staff_only);
+              const isFull = !adminMode && taken >= seatsPerTable;
+              const hasMine =
+                !!highlightUserId &&
+                seated.some((s) => s.user_id === highlightUserId);
 
-                  return (
-                    <RectTable
-                      key={table.id}
-                      table={table}
-                      taken={taken}
-                      total={seatsPerTable}
-                      isLocked={isLocked}
-                      isFull={isFull}
-                      isSelected={isSelected}
-                      hasMine={hasMine}
-                      onClick={() =>
-                        !isLocked &&
-                        (!isFull || isSelected || adminMode) &&
-                        onSelectTable?.(table.id)
-                      }
-                    />
-                  );
-                })}
-              </div>
-            </div>
-          );
-        })}
+              return (
+                <RectTable
+                  key={table.id}
+                  table={table}
+                  taken={taken}
+                  total={seatsPerTable}
+                  isLocked={isLocked}
+                  isFull={isFull}
+                  isSelected={isSelected}
+                  hasMine={hasMine}
+                  ageHue={ageGroupColor(table.age_group)?.hue ?? null}
+                  onClick={() =>
+                    !isLocked &&
+                    (!isFull || isSelected || adminMode) &&
+                    onSelectTable?.(table.id)
+                  }
+                />
+              );
+            })}
+          </div>
+        ))}
       </div>
+
+      {/* Age group legend */}
+      {ageGroupOrder.length > 0 && (
+        <div className="mt-6 md:mt-7 pt-4 border-t border-primary/20 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[10px] font-display tracking-wider uppercase text-muted-foreground">
+          {ageGroupOrder.map((ag) => {
+            const c = ageGroupColor(ag);
+            return (
+              <span key={ag} className="flex items-center gap-1.5">
+                <span
+                  className="h-3 w-5 rounded-sm border"
+                  style={{
+                    background: `hsl(${c?.hue} 60% 30% / 0.45)`,
+                    borderColor: `hsl(${c?.hue} 70% 55% / 0.7)`,
+                  }}
+                />
+                {ag}
+              </span>
+            );
+          })}
+        </div>
+      )}
 
       {/* Legend */}
       <div className="mt-6 md:mt-8 pt-4 md:pt-5 border-t border-primary/20 flex flex-wrap items-center justify-center gap-4 text-[10px] font-display tracking-wider uppercase text-muted-foreground">
