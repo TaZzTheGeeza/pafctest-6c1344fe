@@ -38,12 +38,17 @@ interface Props {
   seatsPerTable?: number;
   /** Admin override: ignore is_locked & full restrictions */
   adminMode?: boolean;
+  /** Players to render in the two theatre blocks flanking the stage */
+  theatrePlayers?: TheatreSeatPlayer[];
+  /** Player first names belonging to current user — gold ring */
+  highlightedNames?: string[];
 }
 
 /**
- * Hall-style rectangular seating plan.
- * Stage at top, then a grid of rectangular tables grouped per row by age group.
- * Each rectangular table has 6 seats (3 each side).
+ * Hall-style seating plan matching the venue layout:
+ *   - STAGE centered at the top
+ *   - Two angled theatre-seat blocks flanking the stage (player seating)
+ *   - Grid of rectangular guest tables below (6 seats per table)
  */
 export function SeatingPlan({
   tables,
