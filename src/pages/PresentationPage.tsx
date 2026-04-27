@@ -589,22 +589,28 @@ function Counter({
   value,
   setValue,
   max,
+  min = 0,
+  helper,
 }: {
   label: string;
   value: number;
   setValue: (n: number) => void;
   max: number;
+  min?: number;
+  helper?: string;
 }) {
   return (
     <div>
-      <Label>{label} (max {max})</Label>
+      <Label>
+        {label} (max {max})
+      </Label>
       <div className="flex items-center gap-2 mt-2">
         <Button
           type="button"
           size="icon"
           variant="outline"
-          onClick={() => setValue(Math.max(0, value - 1))}
-          disabled={value <= 0}
+          onClick={() => setValue(Math.max(min, value - 1))}
+          disabled={value <= min}
         >
           <Minus className="h-4 w-4" />
         </Button>
@@ -619,6 +625,9 @@ function Counter({
           <Plus className="h-4 w-4" />
         </Button>
       </div>
+      {helper && (
+        <p className="text-[11px] text-muted-foreground mt-1">{helper}</p>
+      )}
     </div>
   );
 }
