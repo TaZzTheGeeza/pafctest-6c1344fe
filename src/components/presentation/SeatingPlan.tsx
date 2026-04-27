@@ -194,6 +194,8 @@ function RectTable({
   onClick: () => void;
 }) {
   const seatsPerSide = Math.ceil(total / 2);
+  const leftFilled = Math.ceil(taken / 2);
+  const rightFilled = Math.floor(taken / 2);
 
   return (
     <button
@@ -206,21 +208,21 @@ function RectTable({
           : `${table.label ?? `Table ${table.table_number}`} – ${taken}/${total} seats`
       }
       className={cn(
-        "relative group transition-all flex flex-col items-center",
+        "relative group transition-all flex items-center justify-center gap-0.5",
         !isLocked && !isFull && "hover:scale-[1.06] cursor-pointer",
         isSelected && "scale-[1.06]",
         (isLocked || isFull) && "cursor-not-allowed opacity-90",
       )}
     >
-      {/* Seats top */}
-      <div className="flex justify-around w-full px-1 mb-0.5">
+      {/* Left column of seats */}
+      <div className="flex flex-col justify-around h-16 md:h-20 py-1">
         {Array.from({ length: seatsPerSide }).map((_, i) => {
-          const occupied = i < Math.ceil(taken / 2);
+          const occupied = i < leftFilled;
           return (
             <span
-              key={`top-${i}`}
+              key={`l-${i}`}
               className={cn(
-                "h-1.5 w-2.5 rounded-sm border",
+                "h-2 w-1.5 rounded-sm border",
                 isLocked
                   ? "bg-muted/40 border-muted-foreground/30"
                   : occupied
@@ -232,10 +234,10 @@ function RectTable({
         })}
       </div>
 
-      {/* Table body */}
+      {/* Vertical (portrait) table body */}
       <div
         className={cn(
-          "w-full h-10 md:h-12 rounded-md flex items-center justify-center font-display font-bold border-2 transition-all text-xs",
+          "w-7 md:w-9 h-16 md:h-20 rounded-md flex items-center justify-center font-display font-bold border-2 transition-all",
           isLocked
             ? "border-muted-foreground/40 text-muted-foreground/70"
             : isFull
@@ -255,26 +257,28 @@ function RectTable({
         }}
       >
         {isLocked ? (
-          <Lock className="h-4 w-4" />
+          <Lock className="h-3.5 w-3.5" />
         ) : (
           <div className="flex flex-col items-center leading-none">
-            <span className="text-[11px] md:text-xs">{table.col_index ?? table.table_number}</span>
-            <span className="text-[8px] font-normal text-muted-foreground mt-0.5">
+            <span className="text-[10px] md:text-[11px]">
+              {table.col_index ?? table.table_number}
+            </span>
+            <span className="text-[7px] md:text-[8px] font-normal text-muted-foreground mt-0.5">
               {taken}/{total}
             </span>
           </div>
         )}
       </div>
 
-      {/* Seats bottom */}
-      <div className="flex justify-around w-full px-1 mt-0.5">
+      {/* Right column of seats */}
+      <div className="flex flex-col justify-around h-16 md:h-20 py-1">
         {Array.from({ length: seatsPerSide }).map((_, i) => {
-          const occupied = i + seatsPerSide < taken;
+          const occupied = i < rightFilled;
           return (
             <span
-              key={`bot-${i}`}
+              key={`r-${i}`}
               className={cn(
-                "h-1.5 w-2.5 rounded-sm border",
+                "h-2 w-1.5 rounded-sm border",
                 isLocked
                   ? "bg-muted/40 border-muted-foreground/30"
                   : occupied

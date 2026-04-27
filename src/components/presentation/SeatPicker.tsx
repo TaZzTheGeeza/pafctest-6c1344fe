@@ -83,25 +83,29 @@ export function SeatPicker({
         {tableLabel ?? `Table ${tableNumber}`}
       </p>
 
-      {/* Top row of seats */}
-      <div className="flex gap-3 mb-2">{topSeats.map(renderSeat)}</div>
+      <div className="flex items-center gap-3">
+        {/* Left column of seats */}
+        <div className="flex flex-col gap-3">{topSeats.map(renderSeat)}</div>
 
-      {/* Rectangular table */}
-      <div
-        className="rounded-md border-2 border-primary/40 flex items-center justify-center font-display font-bold text-primary"
-        style={{
-          width: half * 60,
-          height: 56,
-          background:
-            "linear-gradient(180deg, hsl(45 25% 14%) 0%, hsl(45 15% 7%) 100%)",
-          boxShadow: "inset 0 0 18px hsl(var(--primary) / 0.15)",
-        }}
-      >
-        {tableLabel ?? `Table ${tableNumber}`}
+        {/* Vertical (portrait) table */}
+        <div
+          className="rounded-md border-2 border-primary/40 flex items-center justify-center font-display font-bold text-primary text-center px-1"
+          style={{
+            width: 72,
+            height: half * 60,
+            background:
+              "linear-gradient(180deg, hsl(45 25% 14%) 0%, hsl(45 15% 7%) 100%)",
+            boxShadow: "inset 0 0 18px hsl(var(--primary) / 0.15)",
+            writingMode: "vertical-rl",
+            textOrientation: "mixed",
+          }}
+        >
+          {tableLabel ?? `Table ${tableNumber}`}
+        </div>
+
+        {/* Right column of seats */}
+        <div className="flex flex-col gap-3">{bottomSeats.map(renderSeat)}</div>
       </div>
-
-      {/* Bottom row of seats */}
-      <div className="flex gap-3 mt-2">{bottomSeats.map(renderSeat)}</div>
 
       <p className="text-[10px] text-muted-foreground mt-3 text-center max-w-xs">
         {takenMap.size}/{seatsPerTable} seats taken · pick{" "}
