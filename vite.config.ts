@@ -20,6 +20,9 @@ export default defineConfig(({ mode }) => ({
       registerType: "autoUpdate",
       includeAssets: ["favicon-v3.ico", "apple-touch-icon-v4.png", "pwa-icon-192-v4.png", "pwa-icon-512-v4.png", "pwa-maskable-v4.png"],
       workbox: {
+        skipWaiting: true,
+        clientsClaim: true,
+        cleanupOutdatedCaches: true,
         navigateFallbackDenylist: [/^\/~oauth/, /^\/auth(?:\/|$)/],
         globPatterns: ["**/*.{js,css,html,ico,png,svg,jpg,webp,woff,woff2}"],
         importScripts: ["/push-sw.js"],
