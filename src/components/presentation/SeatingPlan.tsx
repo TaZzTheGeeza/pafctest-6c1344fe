@@ -58,6 +58,8 @@ export function SeatingPlan({
   highlightUserId,
   seatsPerTable = 6,
   adminMode = false,
+  theatrePlayers = [],
+  highlightedNames = [],
 }: Props) {
   const ticketsByTable = useMemo(() => {
     const map = new Map<string, PresentationTicketSeat[]>();
