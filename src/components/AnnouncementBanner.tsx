@@ -80,9 +80,6 @@ export function AnnouncementBanner() {
         {visible.map((a) => {
           const config = typeConfig[a.type] || typeConfig.info;
           const Icon = config.icon;
-          // Detect first internal path to make the entire banner clickable
-          const pathMatch = a.message.match(/\/[a-zA-Z0-9\-_/]+/);
-          const targetPath = pathMatch ? pathMatch[0] : null;
           const Inner = (
             <div className="container mx-auto px-4 py-2 flex items-center gap-3">
               <Icon className="h-4 w-4 shrink-0 text-foreground" />
