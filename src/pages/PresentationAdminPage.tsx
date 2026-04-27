@@ -946,7 +946,7 @@ function exportCsv(
   const allocMap = new Map(allocations.map((a) => [a.id, a]));
   const tableMap = new Map(tables.map((t) => [t.id, t]));
   const rows = [
-    ["Player (family)", "Team", "Attendee", "Type", "Table", "Seat"],
+    ["Player (family)", "Team", "Attendee", "Type", "Table", "Age group", "Seat"],
     ...tickets.map((t) => {
       const a = allocMap.get(t.allocation_id);
       const tb = t.table_id ? tableMap.get(t.table_id) : null;
@@ -955,7 +955,8 @@ function exportCsv(
         a?.team_slug ?? "",
         t.attendee_name,
         t.ticket_type,
-        tb ? String(tb.table_number) : "",
+        tb ? (tb.label ?? `Table ${tb.table_number}`) : "",
+        tb?.age_group ?? "",
         t.seat_number != null ? String(t.seat_number) : "",
       ];
     }),
