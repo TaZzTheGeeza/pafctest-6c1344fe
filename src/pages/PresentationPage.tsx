@@ -282,6 +282,10 @@ export default function PresentationPage() {
 
             <TabsContent value="seating">
               <div className="max-w-5xl mx-auto">
+                <TheatreBlock
+                  players={theatrePlayers}
+                  highlightedNames={myChildrenNames}
+                />
                 <SeatingPlan
                   tables={tables}
                   tickets={allTickets}
@@ -289,8 +293,8 @@ export default function PresentationPage() {
                   seatsPerTable={event.seats_per_table}
                 />
                 <p className="text-center text-xs text-muted-foreground mt-4">
-                  This is a live view of which tables are filling up. Pick your seats from the
-                  &quot;My Tickets&quot; tab.
+                  Players sit in the front theatre block (auto-allocated by age group).
+                  Guest tables are behind. Your child&apos;s chair is highlighted in gold.
                 </p>
               </div>
             </TabsContent>
