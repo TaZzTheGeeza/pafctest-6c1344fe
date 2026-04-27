@@ -77,7 +77,7 @@ function AppContent() {
   return (
     <BrowserRouter>
       <ScrollToTop />
-      <AnnouncementBanner />
+      
       <Routes>
         <Route path="/" element={<Index />} />
         <Route path="/shop" element={<ShopPage />} />
