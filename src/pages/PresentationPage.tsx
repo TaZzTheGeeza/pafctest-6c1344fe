@@ -550,12 +550,20 @@ function ClaimAllocationForm({
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <Counter label="Adults" value={adults} setValue={setAdults} max={2} />
-          <Counter label="Children" value={children} setValue={setChildren} max={3} />
+          <Counter label="Adults" value={adults} setValue={setAdults} min={0} max={2} />
+          <Counter
+            label="Children"
+            value={children}
+            setValue={setChildren}
+            min={1}
+            max={2}
+            helper="Includes your player"
+          />
         </div>
 
         <p className="text-xs text-muted-foreground">
-          Need fewer tickets? Just lower the count above. Need more? Contact a club admin.
+          One child seat is reserved for your player. You can add 1 extra child and up to 2 adults.
+          Need a different arrangement? Contact a club admin.
         </p>
 
         <Button
