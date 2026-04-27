@@ -2,6 +2,13 @@ import { useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { Lock } from "lucide-react";
 
+export interface TheatreSeatPlayer {
+  id: string;
+  first_name: string | null;
+  shirt_number?: number | null;
+  age_group?: string | null;
+}
+
 export interface PresentationTable {
   id: string;
   table_number: number;
