@@ -275,6 +275,8 @@ export default function PresentationAdminPage() {
               tickets={tickets}
               allocations={allocations}
               theatrePlayers={theatrePlayers}
+              theatreAssignments={theatreAssignments}
+              eventId={event.id}
               seatsPerTable={event.seats_per_table}
               onRefresh={refresh}
             />
