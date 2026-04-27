@@ -506,11 +506,11 @@ function TheatreSeatBlock({
                     }
                   >
                     {p.shirt_number != null && (
-                      <span className="text-[6px] md:text-[7px] font-display font-bold opacity-70">
+                      <span className="text-[7px] md:text-[8px] font-display font-bold opacity-70">
                         #{p.shirt_number}
                       </span>
                     )}
-                    <span className="text-[7px] md:text-[8px] font-display font-bold truncate w-full text-center">
+                    <span className="text-[8px] md:text-[9px] font-display font-bold truncate w-full text-center">
                       {p.first_name ?? "?"}
                     </span>
                   </div>
