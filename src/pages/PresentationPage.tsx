@@ -38,7 +38,7 @@ import {
   type PresentationTable,
   type PresentationTicketSeat,
 } from "@/components/presentation/SeatingPlan";
-import { TheatreBlock, type TheatrePlayer } from "@/components/presentation/TheatreBlock";
+import type { TheatrePlayer } from "@/components/presentation/TheatreBlock";
 
 interface PresentationEvent {
   id: string;
