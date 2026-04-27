@@ -80,21 +80,31 @@ export function AnnouncementBanner() {
         {visible.map((a) => {
           const config = typeConfig[a.type] || typeConfig.info;
           const Icon = config.icon;
+          // Detect first internal path to make the entire banner clickable
+          const pathMatch = a.message.match(/\/[a-zA-Z0-9\-_/]+/);
+          const targetPath = pathMatch ? pathMatch[0] : null;
+          const Inner = (
+            <div className="container mx-auto px-4 py-2 flex items-center gap-3">
+              <Icon className="h-4 w-4 shrink-0 text-foreground" />
+              <p className="text-sm text-foreground flex-1">{renderMessageWithLinks(a.message)}</p>
+              <button
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); setDismissed((s) => new Set(s).add(a.id)); }}
+                className="shrink-0 text-muted-foreground hover:text-foreground"
+                aria-label="Dismiss announcement"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          );
           return (
             <motion.div
               key={a.id}
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className={`${config.bg} ${config.border} border-b backdrop-blur-md`}
+              className={`${config.bg} ${config.border} border-b backdrop-blur-md ${targetPath ? "cursor-pointer hover:bg-primary/20 transition-colors" : ""}`}
             >
-              <div className="container mx-auto px-4 py-2 flex items-center gap-3">
-                <Icon className="h-4 w-4 shrink-0 text-foreground" />
-                <p className="text-sm text-foreground flex-1">{renderMessageWithLinks(a.message)}</p>
-                <button onClick={() => setDismissed((s) => new Set(s).add(a.id))} className="shrink-0 text-muted-foreground hover:text-foreground">
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
+              {targetPath ? <Link to={targetPath} className="block">{Inner}</Link> : Inner}
             </motion.div>
           );
         })}
