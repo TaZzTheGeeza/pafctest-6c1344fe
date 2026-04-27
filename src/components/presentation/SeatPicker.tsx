@@ -4,6 +4,7 @@ import type { PresentationTicketSeat } from "./SeatingPlan";
 
 interface Props {
   tableNumber: number;
+  tableLabel?: string | null;
   seatsPerTable?: number;
   takenSeats: PresentationTicketSeat[];
   selectedSeats: number[];
@@ -13,93 +14,98 @@ interface Props {
 }
 
 /**
- * Visual seat picker for one round table.
- * Shows seats 1..N arranged in a circle.
+ * Visual seat picker for one rectangular table.
+ * Seats are arranged 3 above + 3 below (or split evenly for any even count).
+ * Seat numbering: top row left→right = 1..N, bottom row left→right = N+1..2N.
  */
 export function SeatPicker({
   tableNumber,
-  seatsPerTable = 12,
+  tableLabel,
+  seatsPerTable = 6,
   takenSeats,
   selectedSeats,
   ownTickets,
   onToggleSeat,
   maxSelectable,
 }: Props) {
-  const radius = 110;
-  const center = 140;
+  const half = Math.ceil(seatsPerTable / 2);
+  const topSeats = Array.from({ length: half }, (_, i) => i + 1);
+  const bottomSeats = Array.from({ length: seatsPerTable - half }, (_, i) => half + i + 1);
 
   const takenMap = new Map<number, PresentationTicketSeat>();
   for (const t of takenSeats) {
     if (t.seat_number != null) takenMap.set(t.seat_number, t);
   }
-  const ownSet = new Set(ownTickets.map((t) => t.seat_number).filter(Boolean) as number[]);
+  const ownSet = new Set(
+    ownTickets.map((t) => t.seat_number).filter(Boolean) as number[],
+  );
+
+  const renderSeat = (seatNum: number) => {
+    const taken = takenMap.get(seatNum);
+    const isOwn = ownSet.has(seatNum);
+    const isSelected = selectedSeats.includes(seatNum);
+    const isTakenByOther = !!taken && !isOwn;
+    const canSelect =
+      !isTakenByOther && (isSelected || selectedSeats.length < maxSelectable);
+    return (
+      <button
+        key={seatNum}
+        type="button"
+        disabled={isTakenByOther || (!canSelect && !isSelected)}
+        onClick={() => onToggleSeat(seatNum)}
+        className={cn(
+          "h-12 w-12 rounded-lg border-2 flex items-center justify-center",
+          "text-xs font-display font-bold transition-all",
+          isTakenByOther
+            ? "bg-destructive/20 border-destructive/50 text-destructive cursor-not-allowed"
+            : isOwn
+            ? "bg-primary border-primary text-primary-foreground"
+            : isSelected
+            ? "bg-primary/40 border-primary text-foreground scale-105"
+            : "bg-card border-primary/40 text-foreground hover:border-primary hover:scale-105",
+        )}
+        title={
+          isTakenByOther
+            ? `Seat ${seatNum} – taken by ${taken?.attendee_name ?? "another guest"}`
+            : isOwn
+            ? `Seat ${seatNum} – your seat`
+            : `Seat ${seatNum}`
+        }
+      >
+        {taken || isSelected ? <User className="h-4 w-4" /> : seatNum}
+      </button>
+    );
+  };
 
   return (
     <div className="flex flex-col items-center">
-      <p className="text-xs font-display tracking-[0.2em] uppercase text-muted-foreground mb-2">
-        Table {tableNumber}
+      <p className="text-xs font-display tracking-[0.2em] uppercase text-muted-foreground mb-3">
+        {tableLabel ?? `Table ${tableNumber}`}
       </p>
-      <div className="relative" style={{ width: center * 2, height: center * 2 }}>
-        {/* Round table */}
-        <div
-          className="absolute rounded-full bg-primary/10 border-2 border-primary/30 flex items-center justify-center"
-          style={{
-            top: center - 60,
-            left: center - 60,
-            width: 120,
-            height: 120,
-          }}
-        >
-          <span className="font-display text-2xl font-bold text-primary">{tableNumber}</span>
-        </div>
 
-        {/* Seats */}
-        {Array.from({ length: seatsPerTable }).map((_, i) => {
-          const seatNum = i + 1;
-          const angle = (i / seatsPerTable) * 2 * Math.PI - Math.PI / 2;
-          const x = center + radius * Math.cos(angle) - 18;
-          const y = center + radius * Math.sin(angle) - 18;
-          const taken = takenMap.get(seatNum);
-          const isOwn = ownSet.has(seatNum);
-          const isSelected = selectedSeats.includes(seatNum);
-          const isTakenByOther = !!taken && !isOwn;
-          const canSelect =
-            !isTakenByOther && (isSelected || selectedSeats.length < maxSelectable);
+      {/* Top row of seats */}
+      <div className="flex gap-3 mb-2">{topSeats.map(renderSeat)}</div>
 
-          return (
-            <button
-              key={seatNum}
-              type="button"
-              disabled={isTakenByOther || (!canSelect && !isSelected)}
-              onClick={() => onToggleSeat(seatNum)}
-              className={cn(
-                "absolute h-9 w-9 rounded-full border-2 flex items-center justify-center",
-                "text-[10px] font-display font-bold transition-all",
-                isTakenByOther
-                  ? "bg-destructive/20 border-destructive/50 text-destructive cursor-not-allowed"
-                  : isOwn
-                  ? "bg-primary border-primary text-primary-foreground"
-                  : isSelected
-                  ? "bg-primary/40 border-primary text-foreground scale-110"
-                  : "bg-card border-primary/40 text-foreground hover:border-primary hover:scale-110",
-              )}
-              style={{ top: y, left: x }}
-              title={
-                isTakenByOther
-                  ? `Seat ${seatNum} - taken by ${taken?.attendee_name ?? "another guest"}`
-                  : isOwn
-                  ? `Seat ${seatNum} - your seat`
-                  : `Seat ${seatNum}`
-              }
-            >
-              {taken || isSelected ? <User className="h-3.5 w-3.5" /> : seatNum}
-            </button>
-          );
-        })}
+      {/* Rectangular table */}
+      <div
+        className="rounded-md border-2 border-primary/40 flex items-center justify-center font-display font-bold text-primary"
+        style={{
+          width: half * 60,
+          height: 56,
+          background:
+            "linear-gradient(180deg, hsl(45 25% 14%) 0%, hsl(45 15% 7%) 100%)",
+          boxShadow: "inset 0 0 18px hsl(var(--primary) / 0.15)",
+        }}
+      >
+        {tableLabel ?? `Table ${tableNumber}`}
       </div>
 
+      {/* Bottom row of seats */}
+      <div className="flex gap-3 mt-2">{bottomSeats.map(renderSeat)}</div>
+
       <p className="text-[10px] text-muted-foreground mt-3 text-center max-w-xs">
-        {takenMap.size}/{seatsPerTable} seats taken &middot; pick {maxSelectable - selectedSeats.length} more
+        {takenMap.size}/{seatsPerTable} seats taken · pick{" "}
+        {Math.max(0, maxSelectable - selectedSeats.length)} more
       </p>
     </div>
   );
