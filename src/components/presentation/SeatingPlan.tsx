@@ -129,10 +129,21 @@ export function SeatingPlan({
     >
       <div className="pointer-events-none absolute inset-0 rounded-2xl border border-primary/20 m-2" />
 
-      {/* STAGE */}
-      <div className="flex justify-center mb-6 md:mb-8">
+      {/* STAGE + flanking theatre blocks */}
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 md:gap-6 mb-6 md:mb-8 min-w-[900px]">
+        {/* Left theatre block — angled toward stage */}
+        <div className="flex justify-end">
+          <TheatreSeatBlock
+            players={leftTheatrePlayers}
+            highlightedNames={highlightedNames}
+            tilt={-14}
+            side="left"
+          />
+        </div>
+
+        {/* STAGE */}
         <div
-          className="w-1/3 min-w-[180px] py-3 md:py-4 text-center font-display tracking-[0.4em] uppercase text-primary border-2 border-primary/60 rounded-md"
+          className="min-w-[180px] md:min-w-[260px] py-3 md:py-4 px-6 text-center font-display tracking-[0.4em] uppercase text-primary border-2 border-primary/60 rounded-md self-start"
           style={{
             background:
               "linear-gradient(180deg, hsl(45 50% 15%) 0%, hsl(45 30% 10%) 100%)",
@@ -140,6 +151,16 @@ export function SeatingPlan({
           }}
         >
           <p className="text-base md:text-xl font-bold">★ Stage ★</p>
+        </div>
+
+        {/* Right theatre block — angled toward stage */}
+        <div className="flex justify-start">
+          <TheatreSeatBlock
+            players={rightTheatrePlayers}
+            highlightedNames={highlightedNames}
+            tilt={14}
+            side="right"
+          />
         </div>
       </div>
 
