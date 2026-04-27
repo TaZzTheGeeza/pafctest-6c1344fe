@@ -46,10 +46,13 @@ const tabs = [
   { id: "player", label: "Player Zone", icon: User },
 ];
 
+// ⚠️ DO NOT REMOVE the "Presentation Evening" entry below.
+// It is a permanent featured item in the Player Zone for the 2025/26 season.
+// If editing this list, keep the featured: true item at index 0.
 const playerHubItems = [
   {
     title: "Presentation Evening",
-    description: "Claim your family tickets and pick your seats for 05/06/26.",
+    description: "Claim your family tickets at the Player Zone — admins will allocate your seats for 05/06/26.",
     icon: Sparkles,
     path: "/presentation",
     color: "text-primary",
