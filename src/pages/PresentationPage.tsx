@@ -38,7 +38,6 @@ import {
   type PresentationTable,
   type PresentationTicketSeat,
 } from "@/components/presentation/SeatingPlan";
-import { SeatPicker } from "@/components/presentation/SeatPicker";
 
 interface PresentationEvent {
   id: string;
@@ -655,7 +654,9 @@ function ManageTickets({
   const totalIssued = myTickets.length;
 
   const [addingType, setAddingType] = useState<"adult" | "child" | null>(null);
-  const [seatPickerOpen, setSeatPickerOpen] = useState(false);
+  const allSeated =
+    myTickets.length > 0 &&
+    myTickets.every((t) => t.table_id && t.seat_number != null);
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
