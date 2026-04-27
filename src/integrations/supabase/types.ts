@@ -2670,6 +2670,8 @@ export type Database = {
         Args: { _user_id: string }
         Returns: boolean
       }
+      canonical_age_group: { Args: { _value: string }; Returns: string }
+      canonical_team_slug: { Args: { _slug: string }; Returns: string }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
