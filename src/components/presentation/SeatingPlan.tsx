@@ -509,12 +509,19 @@ function TheatreSeatBlock({
     [highlightedNames],
   );
 
-  // Stable colour per age group (matches main legend)
+  // Distinct colour per age group (matches main legend palette).
+  const THEATRE_AGE_GROUP_HUES: Record<string, number> = {
+    "u6s": 0, "u7s": 25, "u8s-black": 50, "u8s-gold": 75, "u9s": 110,
+    "u10s": 150, "u11s-gold": 180, "u11s-black": 205, "u13s-gold": 230,
+    "u13s-black": 260, "u14s": 290, "u15s": 315, "u16s": 340, "u17s": 15, "u18s": 95,
+  };
   const hueOf = (ag: string | null | undefined) => {
     if (!ag) return 45;
+    const key = ag.toLowerCase();
+    if (key in THEATRE_AGE_GROUP_HUES) return THEATRE_AGE_GROUP_HUES[key];
     let hash = 0;
     for (let i = 0; i < ag.length; i++) hash = (hash * 31 + ag.charCodeAt(i)) >>> 0;
-    return hash % 360;
+    return Math.round((hash * 137.508) % 360);
   };
 
   const totalRows = seatGrid.length;
