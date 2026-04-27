@@ -17,8 +17,8 @@ export function CheckForUpdatesButton() {
 
       // Clear the build-version marker so main.tsx treats next load as fresh
       try {
-        localStorage.removeItem("pafc_app_build_version");
-        sessionStorage.removeItem("pafc_build_refresh_done");
+        localStorage.removeItem("pafc-app-build-version");
+        sessionStorage.removeItem("pafc-app-build-refreshing");
       } catch {}
 
       // Unregister all service workers
