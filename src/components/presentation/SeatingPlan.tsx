@@ -407,15 +407,12 @@ function RectTable({
 function TheatreSeatBlock({
   players,
   highlightedNames,
-  tilt,
   side,
   rows = 7,
   chairsPerRow = 12,
 }: {
   players: TheatreSeatPlayer[];
   highlightedNames: string[];
-  /** Rotation in degrees (negative = anti-clockwise / left side) */
-  tilt: number;
   side: "left" | "right";
   rows?: number;
   chairsPerRow?: number;
@@ -450,17 +447,15 @@ function TheatreSeatBlock({
 
   return (
     <div
-      className="rounded-md border border-primary/30 p-2 md:p-3 inline-block"
+      className="rounded-md border border-primary/30 p-3 md:p-4 inline-block"
       style={{
-        transform: `rotate(${tilt}deg)`,
-        transformOrigin: side === "left" ? "right center" : "left center",
         background:
           "linear-gradient(180deg, hsl(45 25% 10% / 0.7) 0%, hsl(0 0% 4% / 0.7) 100%)",
         boxShadow: "inset 0 0 20px hsl(var(--primary) / 0.05)",
       }}
     >
-      <p className="text-center text-[8px] md:text-[9px] font-display tracking-[0.25em] uppercase text-primary/80 mb-1.5">
-        {side === "left" ? "◀ Stage Left" : "Stage Right ▶"} · {players.length}/{totalSeats}
+      <p className="text-center text-[9px] md:text-[10px] font-display tracking-[0.3em] uppercase text-primary/80 mb-2">
+        {side === "left" ? "◀ Stage Left" : "Stage Right ▶"} · {players.length}/{totalSeats} seats
       </p>
       <div className="flex flex-col gap-[3px] md:gap-1">
         {Array.from({ length: rows }).map((_, rIdx) => {
