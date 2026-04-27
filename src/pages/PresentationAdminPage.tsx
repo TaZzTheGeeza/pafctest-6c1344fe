@@ -589,91 +589,166 @@ function MoveSeatDialog({
   );
 }
 
-// ── People panel: searchable list of all attendees ───────
+// ── People panel: families grouped by allocation ─────────
 function PeoplePanel({
   tickets,
   tables,
   allocations,
   seatsPerTable,
+  eventTitle,
   onRefresh,
 }: {
   tickets: AdminTicket[];
   tables: PresentationTable[];
   allocations: AdminAllocation[];
   seatsPerTable: number;
+  eventTitle: string;
   onRefresh: () => void;
 }) {
   const [q, setQ] = useState("");
   const [moving, setMoving] = useState<AdminTicket | null>(null);
-  const tableByid = new Map(tables.map((t) => [t.id, t]));
-  const allocMap = new Map(allocations.map((a) => [a.id, a]));
+  const tableByid = useMemo(() => new Map(tables.map((t) => [t.id, t])), [tables]);
 
-  const filtered = tickets.filter((t) => {
-    if (!q.trim()) return true;
-    const alloc = allocMap.get(t.allocation_id);
-    const hay = `${t.attendee_name} ${alloc?.player_name ?? ""} ${alloc?.team_slug ?? ""}`.toLowerCase();
-    return hay.includes(q.toLowerCase());
-  });
+  const ticketsByAllocation = useMemo(() => {
+    const map = new Map<string, AdminTicket[]>();
+    for (const t of tickets) {
+      const arr = map.get(t.allocation_id) ?? [];
+      arr.push(t);
+      map.set(t.allocation_id, arr);
+    }
+    return map;
+  }, [tickets]);
 
-  const sorted = filtered.sort((a, b) => {
-    // Group by allocation
-    const aAlloc = allocMap.get(a.allocation_id)?.player_name ?? "";
-    const bAlloc = allocMap.get(b.allocation_id)?.player_name ?? "";
-    return aAlloc.localeCompare(bAlloc);
-  });
+  const filteredAllocations = useMemo(() => {
+    const term = q.trim().toLowerCase();
+    return allocations
+      .filter((a) => {
+        if (!term) return true;
+        const familyTickets = ticketsByAllocation.get(a.id) ?? [];
+        const hay = `${a.player_name} ${a.team_slug ?? ""} ${familyTickets
+          .map((t) => t.attendee_name)
+          .join(" ")}`.toLowerCase();
+        return hay.includes(term);
+      })
+      .sort((a, b) => a.player_name.localeCompare(b.player_name));
+  }, [allocations, q, ticketsByAllocation]);
 
   return (
     <Card className="p-4 md:p-6">
       <div className="relative mb-4">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Search by attendee, player or team…"
+          placeholder="Search by player, attendee or team…"
           value={q}
           onChange={(e) => setQ(e.target.value)}
           className="pl-9"
         />
       </div>
 
-      <div className="space-y-1.5 max-h-[60vh] overflow-y-auto">
-        {sorted.length === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-8">No attendees found.</p>
+      <div className="space-y-3 max-h-[65vh] overflow-y-auto pr-1">
+        {filteredAllocations.length === 0 ? (
+          <p className="text-sm text-muted-foreground text-center py-8">
+            No claimed tickets found.
+          </p>
         ) : (
-          sorted.map((t) => {
-            const alloc = allocMap.get(t.allocation_id);
-            const table = t.table_id ? tableByid.get(t.table_id) : null;
+          filteredAllocations.map((alloc) => {
+            const familyTickets = ticketsByAllocation.get(alloc.id) ?? [];
+            const seatedCount = familyTickets.filter(
+              (t) => t.table_id && t.seat_number != null,
+            ).length;
+            const allSeated =
+              familyTickets.length > 0 && seatedCount === familyTickets.length;
             return (
               <div
-                key={t.id}
-                className="flex items-center justify-between gap-3 p-3 bg-card/60 border border-border rounded-lg"
+                key={alloc.id}
+                className="border border-border rounded-lg bg-card/40 overflow-hidden"
               >
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                    <p className="font-medium truncate">{t.attendee_name}</p>
+                <div className="flex items-center justify-between gap-3 p-3 bg-muted/20 border-b border-border flex-wrap">
+                  <div className="min-w-0">
+                    <p className="font-display font-bold truncate">
+                      {alloc.player_name}
+                      {alloc.team_slug && (
+                        <span className="text-xs font-normal text-muted-foreground">
+                          {" "}· {alloc.team_slug}
+                        </span>
+                      )}
+                    </p>
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                      {familyTickets.length} ticket(s) · {seatedCount}/{familyTickets.length} seated
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
                     <Badge
                       variant="outline"
-                      className={`text-[9px] ${t.ticket_type === "adult" ? "text-primary border-primary/40" : ""}`}
+                      className={
+                        allSeated
+                          ? "text-primary border-primary/40"
+                          : "text-muted-foreground"
+                      }
                     >
-                      {t.ticket_type}
+                      {allSeated ? "Seats allocated" : "Awaiting allocation"}
                     </Badge>
+                    <NotifyFamilyButton
+                      allocation={alloc}
+                      familyTickets={familyTickets}
+                      tables={tables}
+                      eventTitle={eventTitle}
+                      disabled={familyTickets.length === 0}
+                    />
                   </div>
-                  <p className="text-xs text-muted-foreground truncate">
-                    Family of {alloc?.player_name ?? "—"}
-                    {alloc?.team_slug ? ` · ${alloc.team_slug}` : ""}
-                  </p>
                 </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  {table && t.seat_number != null ? (
-                    <Badge variant="outline" className="text-primary border-primary/40">
-                      {table.label ?? `T${table.table_number}`} · S{t.seat_number}
-                    </Badge>
+                <div className="p-2 space-y-1.5">
+                  {familyTickets.length === 0 ? (
+                    <p className="text-xs text-muted-foreground text-center py-3">
+                      No attendees added yet.
+                    </p>
                   ) : (
-                    <Badge variant="outline" className="text-destructive border-destructive/40">
-                      Unseated
-                    </Badge>
+                    familyTickets.map((t) => {
+                      const table = t.table_id ? tableByid.get(t.table_id) : null;
+                      return (
+                        <div
+                          key={t.id}
+                          className="flex items-center justify-between gap-3 p-2.5 bg-card/60 border border-border rounded-md"
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            <Badge
+                              variant="outline"
+                              className={`text-[9px] ${t.ticket_type === "adult" ? "text-primary border-primary/40" : ""}`}
+                            >
+                              {t.ticket_type}
+                            </Badge>
+                            <p className="font-medium truncate text-sm">
+                              {t.attendee_name}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            {table && t.seat_number != null ? (
+                              <Badge
+                                variant="outline"
+                                className="text-primary border-primary/40 text-[10px]"
+                              >
+                                {table.label ?? `T${table.table_number}`} · S{t.seat_number}
+                              </Badge>
+                            ) : (
+                              <Badge
+                                variant="outline"
+                                className="text-destructive border-destructive/40 text-[10px]"
+                              >
+                                Unseated
+                              </Badge>
+                            )}
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setMoving(t)}
+                            >
+                              <Move className="h-3.5 w-3.5 mr-1" /> Move
+                            </Button>
+                          </div>
+                        </div>
+                      );
+                    })
                   )}
-                  <Button size="sm" variant="outline" onClick={() => setMoving(t)}>
-                    <Move className="h-3.5 w-3.5 mr-1" /> Move
-                  </Button>
                 </div>
               </div>
             );
