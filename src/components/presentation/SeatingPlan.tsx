@@ -2,6 +2,13 @@ import { useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { Lock } from "lucide-react";
 
+export interface TheatreSeatPlayer {
+  id: string;
+  first_name: string | null;
+  shirt_number?: number | null;
+  age_group?: string | null;
+}
+
 export interface PresentationTable {
   id: string;
   table_number: number;
@@ -31,12 +38,17 @@ interface Props {
   seatsPerTable?: number;
   /** Admin override: ignore is_locked & full restrictions */
   adminMode?: boolean;
+  /** Players to render in the two theatre blocks flanking the stage */
+  theatrePlayers?: TheatreSeatPlayer[];
+  /** Player first names belonging to current user — gold ring */
+  highlightedNames?: string[];
 }
 
 /**
- * Hall-style rectangular seating plan.
- * Stage at top, then a grid of rectangular tables grouped per row by age group.
- * Each rectangular table has 6 seats (3 each side).
+ * Hall-style seating plan matching the venue layout:
+ *   - STAGE centered at the top
+ *   - Two angled theatre-seat blocks flanking the stage (player seating)
+ *   - Grid of rectangular guest tables below (6 seats per table)
  */
 export function SeatingPlan({
   tables,
@@ -46,6 +58,8 @@ export function SeatingPlan({
   highlightUserId,
   seatsPerTable = 6,
   adminMode = false,
+  theatrePlayers = [],
+  highlightedNames = [],
 }: Props) {
   const ticketsByTable = useMemo(() => {
     const map = new Map<string, PresentationTicketSeat[]>();
@@ -102,6 +116,24 @@ export function SeatingPlan({
     return { hue };
   };
 
+  // Split players evenly between left & right theatre blocks
+  const { leftTheatrePlayers, rightTheatrePlayers } = useMemo(() => {
+    const sorted = [...theatrePlayers].sort((a, b) => {
+      const ag = (a.age_group ?? "").localeCompare(b.age_group ?? "");
+      if (ag !== 0) return ag;
+      const an = a.shirt_number ?? 999;
+      const bn = b.shirt_number ?? 999;
+      if (an !== bn) return an - bn;
+      return (a.first_name ?? "").localeCompare(b.first_name ?? "");
+    });
+    const half = Math.ceil(sorted.length / 2);
+    return {
+      leftTheatrePlayers: sorted.slice(0, half),
+      rightTheatrePlayers: sorted.slice(half),
+    };
+  }, [theatrePlayers]);
+
+
   return (
     <div
       className="w-full rounded-2xl p-4 md:p-6 relative overflow-x-auto"
@@ -115,10 +147,21 @@ export function SeatingPlan({
     >
       <div className="pointer-events-none absolute inset-0 rounded-2xl border border-primary/20 m-2" />
 
-      {/* STAGE */}
-      <div className="flex justify-center mb-6 md:mb-8">
+      {/* STAGE + flanking theatre blocks */}
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 md:gap-6 mb-6 md:mb-8 min-w-[900px]">
+        {/* Left theatre block — angled toward stage */}
+        <div className="flex justify-end">
+          <TheatreSeatBlock
+            players={leftTheatrePlayers}
+            highlightedNames={highlightedNames}
+            tilt={-14}
+            side="left"
+          />
+        </div>
+
+        {/* STAGE */}
         <div
-          className="w-1/3 min-w-[180px] py-3 md:py-4 text-center font-display tracking-[0.4em] uppercase text-primary border-2 border-primary/60 rounded-md"
+          className="min-w-[180px] md:min-w-[260px] py-3 md:py-4 px-6 text-center font-display tracking-[0.4em] uppercase text-primary border-2 border-primary/60 rounded-md self-start"
           style={{
             background:
               "linear-gradient(180deg, hsl(45 50% 15%) 0%, hsl(45 30% 10%) 100%)",
@@ -126,6 +169,16 @@ export function SeatingPlan({
           }}
         >
           <p className="text-base md:text-xl font-bold">★ Stage ★</p>
+        </div>
+
+        {/* Right theatre block — angled toward stage */}
+        <div className="flex justify-start">
+          <TheatreSeatBlock
+            players={rightTheatrePlayers}
+            highlightedNames={highlightedNames}
+            tilt={14}
+            side="right"
+          />
         </div>
       </div>
 
@@ -333,3 +386,114 @@ function RectTable({
     </button>
   );
 }
+
+// ────────────────────────────────────────────────────────
+// Angled theatre-seat block (flanks the stage)
+// ────────────────────────────────────────────────────────
+
+function TheatreSeatBlock({
+  players,
+  highlightedNames,
+  tilt,
+  side,
+}: {
+  players: TheatreSeatPlayer[];
+  highlightedNames: string[];
+  /** Rotation in degrees (negative = anti-clockwise / left side) */
+  tilt: number;
+  side: "left" | "right";
+}) {
+  const highlightSet = useMemo(
+    () =>
+      new Set(
+        highlightedNames
+          .filter(Boolean)
+          .map((n) => n.trim().toLowerCase()),
+      ),
+    [highlightedNames],
+  );
+
+  if (players.length === 0) {
+    return (
+      <div
+        className="w-[180px] md:w-[260px] h-[140px] md:h-[180px] rounded-md border border-dashed border-primary/20 flex items-center justify-center text-[9px] font-display tracking-widest uppercase text-muted-foreground/60"
+        style={{ transform: `rotate(${tilt}deg)` }}
+      >
+        Theatre — {side}
+      </div>
+    );
+  }
+
+  // Lay players out in a fixed grid (rows of ~10 chairs) so the block
+  // visually mirrors the diagram.
+  const chairsPerRow = 10;
+  const rows: TheatreSeatPlayer[][] = [];
+  for (let i = 0; i < players.length; i += chairsPerRow) {
+    rows.push(players.slice(i, i + chairsPerRow));
+  }
+
+  // Stable colour per age group (matches main legend)
+  const hueOf = (ag: string | null | undefined) => {
+    if (!ag) return 45;
+    let hash = 0;
+    for (let i = 0; i < ag.length; i++) hash = (hash * 31 + ag.charCodeAt(i)) >>> 0;
+    return hash % 360;
+  };
+
+  return (
+    <div
+      className="rounded-md border border-primary/30 p-1.5 md:p-2"
+      style={{
+        transform: `rotate(${tilt}deg)`,
+        transformOrigin: side === "left" ? "right center" : "left center",
+        background:
+          "linear-gradient(180deg, hsl(45 25% 10% / 0.7) 0%, hsl(0 0% 4% / 0.7) 100%)",
+        boxShadow: "inset 0 0 20px hsl(var(--primary) / 0.05)",
+      }}
+      title={`${players.length} player seat${players.length === 1 ? "" : "s"}`}
+    >
+      <div className="flex flex-col gap-[3px] md:gap-1">
+        {rows.map((row, rIdx) => (
+          <div key={rIdx} className="flex gap-[2px] md:gap-[3px] justify-center">
+            {row.map((p) => {
+              const hue = hueOf(p.age_group);
+              const isMine =
+                !!p.first_name &&
+                highlightSet.has(p.first_name.trim().toLowerCase());
+              return (
+                <span
+                  key={p.id}
+                  className={cn(
+                    "h-2 w-2 md:h-2.5 md:w-2.5 rounded-full border",
+                    isMine && "ring-1 ring-primary ring-offset-[1px] ring-offset-background",
+                  )}
+                  style={{
+                    background: isMine
+                      ? "hsl(var(--primary))"
+                      : `hsl(${hue} 65% 55%)`,
+                    borderColor: isMine
+                      ? "hsl(var(--primary))"
+                      : `hsl(${hue} 70% 40%)`,
+                  }}
+                  title={
+                    [
+                      p.shirt_number != null ? `#${p.shirt_number}` : null,
+                      p.first_name ?? "?",
+                      p.age_group ? `(${p.age_group})` : null,
+                    ]
+                      .filter(Boolean)
+                      .join(" ")
+                  }
+                />
+              );
+            })}
+          </div>
+        ))}
+      </div>
+      <p className="mt-1 text-center text-[8px] font-display tracking-widest uppercase text-muted-foreground">
+        {players.length} player seats
+      </p>
+    </div>
+  );
+}
+
