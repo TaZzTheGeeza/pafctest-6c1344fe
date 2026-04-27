@@ -253,6 +253,7 @@ export default function PresentationAdminPage() {
               tables={tables}
               tickets={tickets}
               allocations={allocations}
+              theatrePlayers={theatrePlayers}
               seatsPerTable={event.seats_per_table}
               onRefresh={refresh}
             />
