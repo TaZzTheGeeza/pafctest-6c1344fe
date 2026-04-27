@@ -58,25 +58,49 @@ export function SeatingPlan({
     return map;
   }, [tickets]);
 
-  // Group tables by row_index. Fallback: chunk by 8 in table_number order.
+  // Group tables by row_index. Fallback: chunk by 10 in table_number order.
   const rows = useMemo(() => {
     const sorted = [...tables].sort((a, b) => {
-      const ar = a.row_index ?? Math.ceil(a.table_number / 8);
-      const br = b.row_index ?? Math.ceil(b.table_number / 8);
+      const ar = a.row_index ?? Math.ceil(a.table_number / 10);
+      const br = b.row_index ?? Math.ceil(b.table_number / 10);
       if (ar !== br) return ar - br;
-      const ac = a.col_index ?? ((a.table_number - 1) % 8) + 1;
-      const bc = b.col_index ?? ((b.table_number - 1) % 8) + 1;
+      const ac = a.col_index ?? ((a.table_number - 1) % 10) + 1;
+      const bc = b.col_index ?? ((b.table_number - 1) % 10) + 1;
       return ac - bc;
     });
     const map = new Map<number, PresentationTable[]>();
     for (const t of sorted) {
-      const r = t.row_index ?? Math.ceil(t.table_number / 8);
+      const r = t.row_index ?? Math.ceil(t.table_number / 10);
       const arr = map.get(r) ?? [];
       arr.push(t);
       map.set(r, arr);
     }
     return Array.from(map.entries()).sort(([a], [b]) => a - b);
   }, [tables]);
+
+  // Distinct age groups in their seating order, for legend
+  const ageGroupOrder = useMemo(() => {
+    const seen = new Set<string>();
+    const ordered: string[] = [];
+    for (const [, rowTables] of rows) {
+      for (const t of rowTables) {
+        if (t.age_group && !seen.has(t.age_group)) {
+          seen.add(t.age_group);
+          ordered.push(t.age_group);
+        }
+      }
+    }
+    return ordered;
+  }, [rows]);
+
+  // Stable colour per age group (hashed into HSL hue)
+  const ageGroupColor = (ag: string | null | undefined) => {
+    if (!ag) return null;
+    let hash = 0;
+    for (let i = 0; i < ag.length; i++) hash = (hash * 31 + ag.charCodeAt(i)) >>> 0;
+    const hue = hash % 360;
+    return { hue };
+  };
 
   return (
     <div
