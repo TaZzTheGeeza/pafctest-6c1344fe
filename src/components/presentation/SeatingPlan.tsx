@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { cn } from "@/lib/utils";
-import { Lock, Camera } from "lucide-react";
+import { Lock } from "lucide-react";
 
 export interface PresentationTable {
   id: string;
@@ -8,6 +8,9 @@ export interface PresentationTable {
   label: string | null;
   is_staff_only: boolean;
   is_locked: boolean;
+  age_group?: string | null;
+  row_index?: number | null;
+  col_index?: number | null;
 }
 
 export interface PresentationTicketSeat {
@@ -31,11 +34,9 @@ interface Props {
 }
 
 /**
- * Elegant venue-style seating plan.
- * - Stage at the top with a dance floor below it
- * - 360° video booth indicator top-right
- * - 22 round tables laid out in 5 rows (4-5-4-5-4)
- * - Tables show seat count and lock status
+ * Hall-style rectangular seating plan.
+ * Stage at top, then a grid of rectangular tables grouped per row by age group.
+ * Each rectangular table has 6 seats (3 each side).
  */
 export function SeatingPlan({
   tables,
@@ -43,7 +44,7 @@ export function SeatingPlan({
   selectedTableId,
   onSelectTable,
   highlightUserId,
-  seatsPerTable = 12,
+  seatsPerTable = 6,
   adminMode = false,
 }: Props) {
   const ticketsByTable = useMemo(() => {
@@ -57,23 +58,29 @@ export function SeatingPlan({
     return map;
   }, [tickets]);
 
-  const layout = [
-    [1, 2, 3, 4],
-    [5, 6, 7, 8, 9],
-    [10, 11, 12, 13],
-    [14, 15, 16, 17, 18],
-    [19, 20, 21, 22],
-  ];
-
-  const tableByNumber = useMemo(() => {
-    const map = new Map<number, PresentationTable>();
-    for (const t of tables) map.set(t.table_number, t);
-    return map;
+  // Group tables by row_index. Fallback: chunk by 8 in table_number order.
+  const rows = useMemo(() => {
+    const sorted = [...tables].sort((a, b) => {
+      const ar = a.row_index ?? Math.ceil(a.table_number / 8);
+      const br = b.row_index ?? Math.ceil(b.table_number / 8);
+      if (ar !== br) return ar - br;
+      const ac = a.col_index ?? ((a.table_number - 1) % 8) + 1;
+      const bc = b.col_index ?? ((b.table_number - 1) % 8) + 1;
+      return ac - bc;
+    });
+    const map = new Map<number, PresentationTable[]>();
+    for (const t of sorted) {
+      const r = t.row_index ?? Math.ceil(t.table_number / 8);
+      const arr = map.get(r) ?? [];
+      arr.push(t);
+      map.set(r, arr);
+    }
+    return Array.from(map.entries()).sort(([a], [b]) => a - b);
   }, [tables]);
 
   return (
     <div
-      className="w-full rounded-2xl p-4 md:p-8 relative overflow-hidden"
+      className="w-full rounded-2xl p-4 md:p-6 relative overflow-x-auto"
       style={{
         background:
           "radial-gradient(ellipse at top, hsl(45 60% 8%) 0%, hsl(0 0% 4%) 70%)",
@@ -82,128 +89,93 @@ export function SeatingPlan({
           "inset 0 0 60px hsl(var(--primary) / 0.05), 0 10px 40px -10px hsl(var(--primary) / 0.2)",
       }}
     >
-      {/* Decorative gold corner ornaments */}
       <div className="pointer-events-none absolute inset-0 rounded-2xl border border-primary/20 m-2" />
 
-      {/* TOP: Stage + 360 booth */}
-      <div className="relative flex items-start justify-between gap-4 mb-6">
-        <div className="w-16 md:w-20 shrink-0" />
-        {/* Stage */}
-        <div className="flex-1 flex flex-col items-center">
-          <div className="w-full max-w-md relative">
-            <div
-              className="rounded-t-2xl py-3 md:py-5 text-center font-display tracking-[0.4em] uppercase text-primary border-2 border-primary/60"
-              style={{
-                background:
-                  "linear-gradient(180deg, hsl(45 50% 15%) 0%, hsl(45 30% 10%) 100%)",
-                boxShadow: "0 0 25px hsl(var(--primary) / 0.25)",
-              }}
-            >
-              <p className="text-base md:text-xl font-bold">★ Stage ★</p>
-            </div>
-            {/* truss / lights row */}
-            <div className="flex justify-center gap-2 md:gap-3 mt-1.5">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <span
-                  key={i}
-                  className="block h-1.5 w-1.5 rounded-full bg-primary/70 shadow-[0_0_6px_hsl(var(--primary))]"
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-        {/* 360 booth */}
-        <div className="shrink-0">
-          <div
-            className="h-16 w-16 md:h-20 md:w-20 rounded-full border-2 border-primary/60 flex flex-col items-center justify-center text-primary"
-            style={{
-              background:
-                "radial-gradient(circle, hsl(45 30% 12%) 0%, hsl(0 0% 4%) 100%)",
-              boxShadow: "0 0 20px hsl(var(--primary) / 0.3)",
-            }}
-            title="360° Video Booth"
-          >
-            <Camera className="h-4 w-4 md:h-5 md:w-5" />
-            <span className="text-[8px] md:text-[9px] font-display tracking-wider mt-0.5">
-              360°
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Dance floor */}
-      <div className="flex justify-center mb-8">
+      {/* STAGE */}
+      <div className="flex justify-center mb-6 md:mb-8">
         <div
-          className="w-32 md:w-44 h-16 md:h-24 rounded-md flex items-center justify-center text-[10px] md:text-xs font-display tracking-[0.3em] uppercase text-primary/90 border border-primary/40"
+          className="w-1/3 min-w-[180px] py-3 md:py-4 text-center font-display tracking-[0.4em] uppercase text-primary border-2 border-primary/60 rounded-md"
           style={{
             background:
-              "repeating-linear-gradient(45deg, hsl(45 30% 10%) 0 10px, hsl(45 20% 7%) 10px 20px)",
-            boxShadow: "inset 0 0 20px hsl(var(--primary) / 0.15)",
+              "linear-gradient(180deg, hsl(45 50% 15%) 0%, hsl(45 30% 10%) 100%)",
+            boxShadow: "0 0 25px hsl(var(--primary) / 0.25)",
           }}
         >
-          Dance Floor
+          <p className="text-base md:text-xl font-bold">★ Stage ★</p>
         </div>
       </div>
 
-      {/* Tables grid */}
-      <div className="flex flex-col gap-5 md:gap-7">
-        {layout.map((row, rowIdx) => (
-          <div
-            key={rowIdx}
-            className="flex justify-center items-center gap-3 md:gap-6 flex-wrap"
-          >
-            {row.map((num) => {
-              const table = tableByNumber.get(num);
-              if (!table) return null;
-              const seated = ticketsByTable.get(table.id) ?? [];
-              const taken = seated.length;
-              const isSelected = selectedTableId === table.id;
-              const isLocked = !adminMode && (table.is_locked || table.is_staff_only);
-              const isFull = !adminMode && taken >= seatsPerTable;
-              const hasMine =
-                !!highlightUserId && seated.some((s) => s.user_id === highlightUserId);
+      {/* Rows of tables */}
+      <div className="flex flex-col gap-4 md:gap-5 min-w-[760px]">
+        {rows.map(([rowIdx, rowTables]) => {
+          const ageGroup = rowTables[0]?.age_group ?? null;
+          return (
+            <div key={rowIdx} className="flex items-center gap-3">
+              {/* Age group label on the left */}
+              <div className="w-20 md:w-24 shrink-0 text-right">
+                {ageGroup && (
+                  <span className="font-display text-[11px] md:text-xs tracking-[0.18em] uppercase text-primary">
+                    {ageGroup}
+                  </span>
+                )}
+              </div>
+              <div className="flex-1 grid grid-cols-8 gap-2 md:gap-3">
+                {rowTables.map((table) => {
+                  const seated = ticketsByTable.get(table.id) ?? [];
+                  const taken = seated.length;
+                  const isSelected = selectedTableId === table.id;
+                  const isLocked =
+                    !adminMode && (table.is_locked || table.is_staff_only);
+                  const isFull = !adminMode && taken >= seatsPerTable;
+                  const hasMine =
+                    !!highlightUserId &&
+                    seated.some((s) => s.user_id === highlightUserId);
 
-              return (
-                <TableMarker
-                  key={table.id}
-                  num={num}
-                  taken={taken}
-                  total={seatsPerTable}
-                  isLocked={isLocked}
-                  isFull={isFull}
-                  isSelected={isSelected}
-                  hasMine={hasMine}
-                  onClick={() =>
-                    !isLocked && (!isFull || isSelected || adminMode) && onSelectTable?.(table.id)
-                  }
-                />
-              );
-            })}
-          </div>
-        ))}
+                  return (
+                    <RectTable
+                      key={table.id}
+                      table={table}
+                      taken={taken}
+                      total={seatsPerTable}
+                      isLocked={isLocked}
+                      isFull={isFull}
+                      isSelected={isSelected}
+                      hasMine={hasMine}
+                      onClick={() =>
+                        !isLocked &&
+                        (!isFull || isSelected || adminMode) &&
+                        onSelectTable?.(table.id)
+                      }
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       {/* Legend */}
-      <div className="mt-8 pt-5 border-t border-primary/20 flex flex-wrap items-center justify-center gap-4 text-[10px] font-display tracking-wider uppercase text-muted-foreground">
+      <div className="mt-6 md:mt-8 pt-4 md:pt-5 border-t border-primary/20 flex flex-wrap items-center justify-center gap-4 text-[10px] font-display tracking-wider uppercase text-muted-foreground">
         <span className="flex items-center gap-1.5">
-          <span className="h-3 w-3 rounded-full border-2 border-primary/40 bg-card" /> Available
+          <span className="h-3 w-5 rounded-sm border border-primary/40 bg-card" /> Available
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="h-3 w-3 rounded-full border-2 border-primary bg-primary/15" /> Your table
+          <span className="h-3 w-5 rounded-sm border border-primary bg-primary/30" /> Your table
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="h-3 w-3 rounded-full border-2 border-destructive/40 bg-destructive/10" /> Full
+          <span className="h-3 w-5 rounded-sm border border-destructive/40 bg-destructive/20" /> Full
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="h-3 w-3 rounded-full border-2 border-muted-foreground/30 bg-muted/30" /> Reserved
+          <span className="h-3 w-5 rounded-sm border border-muted-foreground/30 bg-muted/30" /> Reserved
         </span>
       </div>
     </div>
   );
 }
 
-function TableMarker({
-  num,
+function RectTable({
+  table,
   taken,
   total,
   isLocked,
@@ -212,7 +184,7 @@ function TableMarker({
   hasMine,
   onClick,
 }: {
-  num: number;
+  table: PresentationTable;
   taken: number;
   total: number;
   isLocked: boolean;
@@ -221,10 +193,7 @@ function TableMarker({
   hasMine: boolean;
   onClick: () => void;
 }) {
-  // Render seats around a circular table
-  const size = 88; // px
-  const seatSize = 10;
-  const radius = size / 2 + 8;
+  const seatsPerSide = Math.ceil(total / 2);
 
   return (
     <button
@@ -233,76 +202,88 @@ function TableMarker({
       disabled={isLocked || (isFull && !isSelected)}
       title={
         isLocked
-          ? `Table ${num} - Reserved`
-          : `Table ${num} - ${taken}/${total} seats taken`
+          ? `${table.label ?? `Table ${table.table_number}`} – Reserved`
+          : `${table.label ?? `Table ${table.table_number}`} – ${taken}/${total} seats`
       }
       className={cn(
-        "relative group transition-all",
-        !isLocked && !isFull && "hover:scale-110 cursor-pointer",
-        isSelected && "scale-110",
-        (isLocked || isFull) && "cursor-not-allowed",
+        "relative group transition-all flex flex-col items-center",
+        !isLocked && !isFull && "hover:scale-[1.06] cursor-pointer",
+        isSelected && "scale-[1.06]",
+        (isLocked || isFull) && "cursor-not-allowed opacity-90",
       )}
-      style={{ width: size + 24, height: size + 24 }}
     >
-      {/* Seats around table */}
-      {Array.from({ length: total }).map((_, i) => {
-        const angle = (i / total) * 2 * Math.PI - Math.PI / 2;
-        const x = size / 2 + 12 + radius * Math.cos(angle) - seatSize / 2;
-        const y = size / 2 + 12 + radius * Math.sin(angle) - seatSize / 2;
-        const occupied = i < taken;
-        return (
-          <span
-            key={i}
-            className={cn(
-              "absolute rounded-sm border",
-              isLocked
-                ? "bg-muted/40 border-muted-foreground/30"
-                : occupied
-                ? "bg-destructive/60 border-destructive/80"
-                : "bg-card border-primary/40",
-            )}
-            style={{ left: x, top: y, width: seatSize, height: seatSize }}
-          />
-        );
-      })}
+      {/* Seats top */}
+      <div className="flex justify-around w-full px-1 mb-0.5">
+        {Array.from({ length: seatsPerSide }).map((_, i) => {
+          const occupied = i < Math.ceil(taken / 2);
+          return (
+            <span
+              key={`top-${i}`}
+              className={cn(
+                "h-1.5 w-2.5 rounded-sm border",
+                isLocked
+                  ? "bg-muted/40 border-muted-foreground/30"
+                  : occupied
+                  ? "bg-destructive/70 border-destructive/80"
+                  : "bg-card border-primary/40",
+              )}
+            />
+          );
+        })}
+      </div>
 
-      {/* Round table top */}
+      {/* Table body */}
       <div
         className={cn(
-          "absolute rounded-full flex items-center justify-center font-display font-bold border-2 transition-all",
+          "w-full h-10 md:h-12 rounded-md flex items-center justify-center font-display font-bold border-2 transition-all text-xs",
           isLocked
             ? "border-muted-foreground/40 text-muted-foreground/70"
             : isFull
             ? "border-destructive/60 text-destructive"
             : isSelected
-            ? "border-primary text-primary shadow-[0_0_25px_hsl(var(--primary)/0.6)]"
+            ? "border-primary text-primary shadow-[0_0_18px_hsl(var(--primary)/0.6)]"
             : hasMine
             ? "border-primary/80 text-primary"
             : "border-primary/50 text-primary group-hover:border-primary",
         )}
         style={{
-          left: 12,
-          top: 12,
-          width: size,
-          height: size,
           background: isLocked
-            ? "radial-gradient(circle, hsl(0 0% 15%) 0%, hsl(0 0% 8%) 100%)"
-            : "radial-gradient(circle, hsl(45 25% 14%) 0%, hsl(45 15% 7%) 100%)",
-          boxShadow: isSelected
-            ? "0 0 20px hsl(var(--primary) / 0.5)"
-            : "inset 0 0 15px hsl(var(--primary) / 0.15)",
+            ? "linear-gradient(180deg, hsl(0 0% 15%) 0%, hsl(0 0% 8%) 100%)"
+            : isSelected
+            ? "linear-gradient(180deg, hsl(45 35% 18%) 0%, hsl(45 25% 10%) 100%)"
+            : "linear-gradient(180deg, hsl(45 25% 14%) 0%, hsl(45 15% 7%) 100%)",
         }}
       >
         {isLocked ? (
-          <Lock className="h-5 w-5" />
+          <Lock className="h-4 w-4" />
         ) : (
           <div className="flex flex-col items-center leading-none">
-            <span className="text-lg md:text-xl">{num}</span>
+            <span className="text-[11px] md:text-xs">{table.col_index ?? table.table_number}</span>
             <span className="text-[8px] font-normal text-muted-foreground mt-0.5">
               {taken}/{total}
             </span>
           </div>
         )}
+      </div>
+
+      {/* Seats bottom */}
+      <div className="flex justify-around w-full px-1 mt-0.5">
+        {Array.from({ length: seatsPerSide }).map((_, i) => {
+          const occupied = i + seatsPerSide < taken;
+          return (
+            <span
+              key={`bot-${i}`}
+              className={cn(
+                "h-1.5 w-2.5 rounded-sm border",
+                isLocked
+                  ? "bg-muted/40 border-muted-foreground/30"
+                  : occupied
+                  ? "bg-destructive/70 border-destructive/80"
+                  : "bg-card border-primary/40",
+              )}
+            />
+          );
+        })}
       </div>
     </button>
   );

@@ -1029,6 +1029,7 @@ function SeatPickerDialog({
             </div>
             <SeatPicker
               tableNumber={selectedTable?.table_number ?? 0}
+              tableLabel={selectedTable?.label ?? null}
               seatsPerTable={event.seats_per_table}
               takenSeats={tableSeats}
               selectedSeats={selectedSeats}

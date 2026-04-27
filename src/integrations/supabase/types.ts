@@ -1437,30 +1437,39 @@ export type Database = {
       }
       presentation_tables: {
         Row: {
+          age_group: string | null
+          col_index: number | null
           created_at: string
           event_id: string
           id: string
           is_locked: boolean
           is_staff_only: boolean
           label: string | null
+          row_index: number | null
           table_number: number
         }
         Insert: {
+          age_group?: string | null
+          col_index?: number | null
           created_at?: string
           event_id: string
           id?: string
           is_locked?: boolean
           is_staff_only?: boolean
           label?: string | null
+          row_index?: number | null
           table_number: number
         }
         Update: {
+          age_group?: string | null
+          col_index?: number | null
           created_at?: string
           event_id?: string
           id?: string
           is_locked?: boolean
           is_staff_only?: boolean
           label?: string | null
+          row_index?: number | null
           table_number?: number
         }
         Relationships: [
