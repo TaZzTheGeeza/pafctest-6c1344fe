@@ -135,21 +135,21 @@ export function SeatingPlan({
   // Each entry varies hue, saturation AND lightness so adjacent groups never
   // look similar at a glance. Used by the legend and by the theatre seats below.
   const AGE_GROUP_PALETTE: Record<string, { h: number; s: number; l: number }> = {
-    "u6s":         { h: 0,   s: 85, l: 55 }, // pure red
-    "u7s":         { h: 38,  s: 100, l: 50 }, // bold orange
-    "u8s-black":   { h: 60,  s: 95, l: 60 }, // bright yellow
-    "u8s-gold":    { h: 90,  s: 75, l: 45 }, // olive/lime
-    "u9s":         { h: 140, s: 80, l: 38 }, // emerald green
-    "u10s":        { h: 170, s: 90, l: 55 }, // turquoise
-    "u11s-gold":   { h: 200, s: 95, l: 50 }, // azure blue
-    "u11s-black":  { h: 230, s: 70, l: 60 }, // royal blue
-    "u13s-gold":   { h: 260, s: 80, l: 65 }, // lavender
-    "u13s-black":  { h: 285, s: 70, l: 40 }, // deep violet
-    "u14s":        { h: 315, s: 85, l: 55 }, // magenta
-    "u15s":        { h: 340, s: 95, l: 65 }, // hot pink
-    "u16s":        { h: 10,  s: 55, l: 30 }, // dark brick
-    "u17s":        { h: 30,  s: 40, l: 25 }, // dark brown
-    "u18s":        { h: 120, s: 25, l: 75 }, // pale sage
+    "u6s":         { h: 0,   s: 90, l: 60 },
+    "u7s":         { h: 28,  s: 100, l: 55 },
+    "u8s-black":   { h: 55,  s: 100, l: 65 },
+    "u8s-gold":    { h: 95,  s: 70, l: 50 },
+    "u9s":         { h: 145, s: 80, l: 45 },
+    "u10s":        { h: 175, s: 85, l: 55 },
+    "u11s-gold":   { h: 205, s: 95, l: 55 },
+    "u11s-black":  { h: 235, s: 75, l: 65 },
+    "u13s-gold":   { h: 265, s: 80, l: 70 },
+    "u13s-black":  { h: 290, s: 75, l: 50 },
+    "u14s":        { h: 320, s: 90, l: 60 },
+    "u15s":        { h: 345, s: 95, l: 70 },
+    "u16s":        { h: 10,  s: 65, l: 45 },
+    "u17s":        { h: 30,  s: 50, l: 40 },
+    "u18s":        { h: 120, s: 30, l: 75 },
   };
   const ageGroupColor = (ag: string | null | undefined) => {
     if (!ag) return null;
