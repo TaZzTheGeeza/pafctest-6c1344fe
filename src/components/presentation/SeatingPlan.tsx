@@ -510,18 +510,30 @@ function TheatreSeatBlock({
   );
 
   // Distinct colour per age group (matches main legend palette).
-  const THEATRE_AGE_GROUP_HUES: Record<string, number> = {
-    "u6s": 0, "u7s": 25, "u8s-black": 50, "u8s-gold": 75, "u9s": 110,
-    "u10s": 150, "u11s-gold": 180, "u11s-black": 205, "u13s-gold": 230,
-    "u13s-black": 260, "u14s": 290, "u15s": 315, "u16s": 340, "u17s": 15, "u18s": 95,
+  const THEATRE_AGE_GROUP_PALETTE: Record<string, { h: number; s: number; l: number }> = {
+    "u6s":         { h: 0,   s: 80, l: 52 },
+    "u7s":         { h: 28,  s: 95, l: 55 },
+    "u8s-black":   { h: 50,  s: 90, l: 58 },
+    "u8s-gold":    { h: 75,  s: 70, l: 50 },
+    "u9s":         { h: 130, s: 65, l: 42 },
+    "u10s":        { h: 160, s: 80, l: 60 },
+    "u11s-gold":   { h: 188, s: 85, l: 50 },
+    "u11s-black":  { h: 215, s: 75, l: 55 },
+    "u13s-gold":   { h: 245, s: 70, l: 62 },
+    "u13s-black":  { h: 270, s: 65, l: 45 },
+    "u14s":        { h: 300, s: 75, l: 60 },
+    "u15s":        { h: 330, s: 85, l: 55 },
+    "u16s":        { h: 350, s: 60, l: 35 },
+    "u17s":        { h: 15,  s: 50, l: 30 },
+    "u18s":        { h: 95,  s: 40, l: 70 },
   };
-  const hueOf = (ag: string | null | undefined) => {
-    if (!ag) return 45;
+  const colorOf = (ag: string | null | undefined): { h: number; s: number; l: number } => {
+    if (!ag) return { h: 45, s: 30, l: 50 };
     const key = ag.toLowerCase();
-    if (key in THEATRE_AGE_GROUP_HUES) return THEATRE_AGE_GROUP_HUES[key];
+    if (key in THEATRE_AGE_GROUP_PALETTE) return THEATRE_AGE_GROUP_PALETTE[key];
     let hash = 0;
     for (let i = 0; i < ag.length; i++) hash = (hash * 31 + ag.charCodeAt(i)) >>> 0;
-    return Math.round((hash * 137.508) % 360);
+    return { h: Math.round((hash * 137.508) % 360), s: 70, l: 50 };
   };
 
   const totalRows = seatGrid.length;
