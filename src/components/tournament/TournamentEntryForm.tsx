@@ -356,6 +356,8 @@ export function TournamentEntryForm({ ageGroups, onSuccess }: TournamentEntryFor
                     onChange={val => updatePlayer(i, "date_of_birth", val)}
                     placeholder="DOB"
                     className="w-[160px]"
+                    fromYear={new Date().getFullYear() - 18}
+                    toYear={new Date().getFullYear() - 4}
                   />
                 </div>
               ))}
