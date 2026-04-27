@@ -332,12 +332,14 @@ function StatCard({
   );
 }
 
-// ── Seating Plan with click-to-inspect-table ─────────────
+// ── Seating Plan with click-to-inspect-table & theatre seat editor ─────────────
 function SeatingPlanAdmin({
   tables,
   tickets,
   allocations,
   theatrePlayers,
+  theatreAssignments,
+  eventId,
   seatsPerTable,
   onRefresh,
 }: {
@@ -345,10 +347,18 @@ function SeatingPlanAdmin({
   tickets: AdminTicket[];
   allocations: AdminAllocation[];
   theatrePlayers: TheatrePlayer[];
+  theatreAssignments: TheatreAssignment[];
+  eventId: string;
   seatsPerTable: number;
   onRefresh: () => void;
 }) {
   const [openTableId, setOpenTableId] = useState<string | null>(null);
+  const [editingSeat, setEditingSeat] = useState<{
+    side: "left" | "right";
+    row_index: number;
+    col_index: number;
+    player: TheatreSeatPlayer | null;
+  } | null>(null);
 
   return (
     <>
@@ -359,10 +369,11 @@ function SeatingPlanAdmin({
         adminMode
         onSelectTable={(id) => setOpenTableId(id)}
         theatrePlayers={theatrePlayers}
+        theatreAssignments={theatreAssignments}
+        onTheatreSeatClick={(info) => setEditingSeat(info)}
       />
       <p className="text-center text-xs text-muted-foreground mt-3">
-        Players are auto-seated in the theatre blocks flanking the stage (by age group).
-        Click any guest table (including reserved) to view occupants and move people.
+        Click any theatre seat to assign, move, swap or clear a player. Click any guest table to manage occupants.
       </p>
       {openTableId && (
         <TableInspectorDialog
@@ -373,6 +384,19 @@ function SeatingPlanAdmin({
           seatsPerTable={seatsPerTable}
           onClose={() => setOpenTableId(null)}
           onChanged={onRefresh}
+        />
+      )}
+      {editingSeat && (
+        <TheatreSeatEditorDialog
+          eventId={eventId}
+          seat={editingSeat}
+          theatrePlayers={theatrePlayers}
+          theatreAssignments={theatreAssignments}
+          onClose={() => setEditingSeat(null)}
+          onChanged={() => {
+            setEditingSeat(null);
+            onRefresh();
+          }}
         />
       )}
     </>
