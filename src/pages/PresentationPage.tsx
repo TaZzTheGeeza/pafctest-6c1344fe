@@ -139,6 +139,24 @@ export default function PresentationPage() {
     },
   });
 
+  const { data: theatreAssignments = [] } = useQuery({
+    queryKey: ["presentation-theatre-assignments", event?.id],
+    enabled: !!event?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("presentation_theatre_seats")
+        .select("player_stat_id, side, row_index, col_index")
+        .eq("event_id", event!.id);
+      if (error) throw error;
+      return (data ?? []).map((r) => ({
+        player_id: r.player_stat_id,
+        side: r.side as "left" | "right",
+        row_index: r.row_index,
+        col_index: r.col_index,
+      }));
+    },
+  });
+
   // Names of children linked to the current user (highlighted in the theatre block)
   const { data: myChildrenNames = [] } = useQuery({
     queryKey: ["my-children-names", user?.id],
