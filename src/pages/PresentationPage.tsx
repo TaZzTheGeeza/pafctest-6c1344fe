@@ -306,6 +306,7 @@ export default function PresentationPage() {
                   highlightUserId={user?.id ?? null}
                   seatsPerTable={event.seats_per_table}
                   theatrePlayers={theatrePlayers}
+                  theatreAssignments={theatreAssignments}
                   highlightedNames={myChildrenNames}
                 />
                 <p className="text-center text-xs text-muted-foreground mt-4">
