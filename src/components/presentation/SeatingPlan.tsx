@@ -215,6 +215,7 @@ function RectTable({
   isFull,
   isSelected,
   hasMine,
+  ageHue,
   onClick,
 }: {
   table: PresentationTable;
@@ -224,6 +225,7 @@ function RectTable({
   isFull: boolean;
   isSelected: boolean;
   hasMine: boolean;
+  ageHue: number | null;
   onClick: () => void;
 }) {
   const seatsPerSide = Math.ceil(total / 2);
