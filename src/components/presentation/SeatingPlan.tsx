@@ -135,21 +135,21 @@ export function SeatingPlan({
   // Each entry varies hue, saturation AND lightness so adjacent groups never
   // look similar at a glance. Used by the legend and by the theatre seats below.
   const AGE_GROUP_PALETTE: Record<string, { h: number; s: number; l: number }> = {
-    "u6s":         { h: 0,   s: 80, l: 52 }, // bright red
-    "u7s":         { h: 28,  s: 95, l: 55 }, // vivid orange
-    "u8s-black":   { h: 50,  s: 90, l: 58 }, // gold/yellow
-    "u8s-gold":    { h: 75,  s: 70, l: 50 }, // chartreuse
-    "u9s":         { h: 130, s: 65, l: 42 }, // forest green
-    "u10s":        { h: 160, s: 80, l: 60 }, // mint
-    "u11s-gold":   { h: 188, s: 85, l: 50 }, // cyan
-    "u11s-black":  { h: 215, s: 75, l: 55 }, // sky blue
-    "u13s-gold":   { h: 245, s: 70, l: 62 }, // periwinkle
-    "u13s-black":  { h: 270, s: 65, l: 45 }, // deep purple
-    "u14s":        { h: 300, s: 75, l: 60 }, // magenta
-    "u15s":        { h: 330, s: 85, l: 55 }, // hot pink
-    "u16s":        { h: 350, s: 60, l: 35 }, // wine/maroon
-    "u17s":        { h: 15,  s: 50, l: 30 }, // dark brown
-    "u18s":        { h: 95,  s: 40, l: 70 }, // pale olive
+    "u6s":         { h: 0,   s: 85, l: 55 }, // pure red
+    "u7s":         { h: 38,  s: 100, l: 50 }, // bold orange
+    "u8s-black":   { h: 60,  s: 95, l: 60 }, // bright yellow
+    "u8s-gold":    { h: 90,  s: 75, l: 45 }, // olive/lime
+    "u9s":         { h: 140, s: 80, l: 38 }, // emerald green
+    "u10s":        { h: 170, s: 90, l: 55 }, // turquoise
+    "u11s-gold":   { h: 200, s: 95, l: 50 }, // azure blue
+    "u11s-black":  { h: 230, s: 70, l: 60 }, // royal blue
+    "u13s-gold":   { h: 260, s: 80, l: 65 }, // lavender
+    "u13s-black":  { h: 285, s: 70, l: 40 }, // deep violet
+    "u14s":        { h: 315, s: 85, l: 55 }, // magenta
+    "u15s":        { h: 340, s: 95, l: 65 }, // hot pink
+    "u16s":        { h: 10,  s: 55, l: 30 }, // dark brick
+    "u17s":        { h: 30,  s: 40, l: 25 }, // dark brown
+    "u18s":        { h: 120, s: 25, l: 75 }, // pale sage
   };
   const ageGroupColor = (ag: string | null | undefined) => {
     if (!ag) return null;
