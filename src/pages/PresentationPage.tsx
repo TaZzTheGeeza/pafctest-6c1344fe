@@ -498,8 +498,9 @@ function ClaimAllocationForm({
         <Ticket className="h-10 w-10 text-primary mx-auto mb-3" />
         <h2 className="text-2xl font-display font-bold mb-2">Claim your family tickets</h2>
         <p className="text-sm text-muted-foreground">
-          Each player is allocated <strong>1 family ticket</strong> covering up to{" "}
-          <strong>2 adults & 3 children</strong> (the player counts as one of the children).
+          Each player gets <strong>1 family ticket</strong> covering up to{" "}
+          <strong>2 adults & 2 children</strong>. One of the child tickets is for the player
+          themselves.
         </p>
       </div>
 
