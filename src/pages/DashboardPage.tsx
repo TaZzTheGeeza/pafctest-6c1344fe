@@ -55,9 +55,11 @@ const ROLE_CONFIG: Record<AppRole, { label: string; color: string; icon: any }> 
   photographer: { label: "Photographer", color: "bg-violet-500/20 text-violet-400 border-violet-500/30", icon: Eye },
 };
 
+const PRESENTATION_ADMIN_LINK = { label: "Presentation Admin", path: "/presentation-admin", icon: Star, desc: "Manage presentation evening seating" };
+
 const ADMIN_LINKS = [
+  PRESENTATION_ADMIN_LINK,
   { label: "Player Registrations", path: "/admin/player-registrations", icon: UserPlusIcon, desc: "View who's registered for 2026/27 & their details" },
-  { label: "Presentation Admin", path: "/presentation-admin", icon: Star, desc: "Manage presentation evening seating" },
   { label: "Tournament Admin", path: "/tournament-admin", icon: Trophy, desc: "Manage tournaments & brackets" },
   { label: "Raffle Admin", path: "/raffle-admin", icon: Ticket, desc: "Create & manage raffles" },
   { label: "PAFC Hub", path: "/hub", icon: MessageSquare, desc: "Team chat, payments, availability" },
@@ -347,6 +349,16 @@ export default function DashboardPage() {
                 {s.label}
               </button>
             ))}
+
+            {isAdmin && (
+              <Link
+                to={PRESENTATION_ADMIN_LINK.path}
+                className="flex items-center gap-2 font-display text-xs tracking-wider py-2.5 px-4 rounded-lg border border-primary/60 text-primary hover:bg-primary hover:text-primary-foreground transition-all whitespace-nowrap"
+              >
+                <PRESENTATION_ADMIN_LINK.icon className="h-3.5 w-3.5" />
+                {PRESENTATION_ADMIN_LINK.label}
+              </Link>
+            )}
 
             {/* User Manager Dropdown */}
             {userSections.length > 0 && (
