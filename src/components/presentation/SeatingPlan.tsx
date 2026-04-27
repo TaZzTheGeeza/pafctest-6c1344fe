@@ -224,20 +224,20 @@ export function SeatingPlan({
       <div className="grid grid-cols-2 gap-6 md:gap-10 mb-8 md:mb-12 min-w-[1400px]">
         <div className="flex justify-center">
           <TheatreSeatBlock
-            players={leftTheatrePlayers}
+            seatGrid={leftSeatGrid}
             highlightedNames={highlightedNames}
             side="left"
-            rows={7}
-            chairsPerRow={12}
+            adminMode={adminMode}
+            onSeatClick={onTheatreSeatClick}
           />
         </div>
         <div className="flex justify-center">
           <TheatreSeatBlock
-            players={rightTheatrePlayers}
+            seatGrid={rightSeatGrid}
             highlightedNames={highlightedNames}
             side="right"
-            rows={7}
-            chairsPerRow={12}
+            adminMode={adminMode}
+            onSeatClick={onTheatreSeatClick}
           />
         </div>
       </div>
