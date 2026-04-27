@@ -192,7 +192,7 @@ export function SeatingPlan({
 
   return (
     <div
-      className="w-full rounded-2xl p-4 md:p-6 relative overflow-x-auto"
+      className="w-full rounded-2xl p-3 md:p-5 relative"
       style={{
         background:
           "radial-gradient(ellipse at top, hsl(45 60% 8%) 0%, hsl(0 0% 4%) 70%)",
@@ -204,9 +204,9 @@ export function SeatingPlan({
       <div className="pointer-events-none absolute inset-0 rounded-2xl border border-primary/20 m-2" />
 
       {/* STAGE */}
-      <div className="flex justify-center mb-4 md:mb-6 min-w-[1400px]">
+      <div className="flex justify-center mb-4 md:mb-6">
         <div
-          className="min-w-[260px] md:min-w-[360px] py-4 md:py-6 px-8 text-center font-display tracking-[0.4em] uppercase text-primary border-2 border-primary/60 rounded-md"
+          className="min-w-[260px] md:min-w-[420px] py-4 md:py-6 px-8 text-center font-display tracking-[0.4em] uppercase text-primary border-2 border-primary/60 rounded-md"
           style={{
             background:
               "linear-gradient(180deg, hsl(45 50% 15%) 0%, hsl(45 30% 10%) 100%)",
@@ -221,7 +221,7 @@ export function SeatingPlan({
       </div>
 
       {/* Theatre blocks — flanking the stage, no rotation to avoid overlap */}
-      <div className="grid grid-cols-2 gap-6 md:gap-10 mb-8 md:mb-12 min-w-[1400px]">
+      <div className="grid grid-cols-2 gap-3 md:gap-6 mb-6 md:mb-10">
         <div className="flex justify-center">
           <TheatreSeatBlock
             seatGrid={leftSeatGrid}
@@ -243,16 +243,16 @@ export function SeatingPlan({
       </div>
 
       {/* Divider between players and guest tables */}
-      <div className="flex items-center gap-3 mb-4 md:mb-6 min-w-[1400px]">
+      <div className="flex items-center gap-3 mb-4 md:mb-6">
         <div className="flex-1 h-px bg-primary/20" />
-        <p className="text-[10px] font-display tracking-[0.4em] uppercase text-primary/70">
+        <p className="text-[10px] font-display tracking-[0.4em] uppercase text-primary/70 text-center">
           ★ Guest Tables · 70 tables × 6 seats = 420 ★
         </p>
         <div className="flex-1 h-px bg-primary/20" />
       </div>
 
       {/* Rows of tables */}
-      <div className="flex flex-col gap-4 md:gap-5 min-w-[1400px]">
+      <div className="flex flex-col gap-3 md:gap-4">
         {rows.map(([rowIdx, rowTables]) => (
           <div key={rowIdx} className="grid grid-cols-10 gap-3 md:gap-4">
             {rowTables.map((table) => {
@@ -518,7 +518,7 @@ function TheatreSeatBlock({
 
   return (
     <div
-      className="rounded-md border border-primary/30 p-3 md:p-4 inline-block"
+      className="rounded-md border border-primary/30 p-2 md:p-3 inline-block w-full"
       style={{
         background:
           "linear-gradient(180deg, hsl(45 25% 10% / 0.7) 0%, hsl(0 0% 4% / 0.7) 100%)",
@@ -529,7 +529,7 @@ function TheatreSeatBlock({
         {side === "left" ? "◀ Stage Left" : "Stage Right ▶"} · {occupied}/{totalSeats} seats
         {clickable && <span className="ml-2 text-primary/60 normal-case tracking-normal">· click to edit</span>}
       </p>
-      <div className="flex flex-col gap-[3px] md:gap-1">
+      <div className="flex flex-col gap-[2px] md:gap-[3px]">
         {seatGrid.map((rowSeats, rIdx) => (
           <div key={rIdx} className="flex gap-[2px] md:gap-[3px] justify-center items-center">
             <span className="w-3 text-[7px] font-display text-muted-foreground/50 text-right pr-0.5">
@@ -537,7 +537,7 @@ function TheatreSeatBlock({
             </span>
             {rowSeats.map((p, cIdx) => {
               const baseClass =
-                "h-[30px] md:h-[36px] w-[42px] md:w-[52px] rounded-[3px] border flex flex-col items-center justify-center leading-none px-0.5 overflow-hidden transition-transform relative";
+                "h-[28px] md:h-[34px] flex-1 min-w-0 max-w-[56px] rounded-[3px] border flex flex-col items-center justify-center leading-none px-0.5 overflow-hidden transition-transform relative";
               if (!p) {
                 return (
                   <button
