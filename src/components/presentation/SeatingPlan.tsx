@@ -29,6 +29,14 @@ export interface PresentationTicketSeat {
   user_id: string;
 }
 
+export interface TheatreAssignment {
+  /** player_stat_id */
+  player_id: string;
+  side: "left" | "right";
+  row_index: number;
+  col_index: number;
+}
+
 interface Props {
   tables: PresentationTable[];
   tickets: PresentationTicketSeat[];
@@ -40,8 +48,20 @@ interface Props {
   adminMode?: boolean;
   /** Players to render in the two theatre blocks flanking the stage */
   theatrePlayers?: TheatreSeatPlayer[];
+  /** Persisted seat→player assignments (admin-managed). When omitted falls back to auto-sort. */
+  theatreAssignments?: TheatreAssignment[];
   /** Player first names belonging to current user — gold ring */
   highlightedNames?: string[];
+  /** Click handler for any theatre chair (occupied or empty). Triggered in adminMode. */
+  onTheatreSeatClick?: (info: {
+    side: "left" | "right";
+    row_index: number;
+    col_index: number;
+    player: TheatreSeatPlayer | null;
+  }) => void;
+  /** Theatre block dimensions — must match what the editor expects */
+  theatreRows?: number;
+  theatreChairsPerRow?: number;
 }
 
 /**
