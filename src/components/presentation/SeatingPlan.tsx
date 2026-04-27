@@ -288,7 +288,13 @@ function RectTable({
             ? "linear-gradient(180deg, hsl(0 0% 15%) 0%, hsl(0 0% 8%) 100%)"
             : isSelected
             ? "linear-gradient(180deg, hsl(45 35% 18%) 0%, hsl(45 25% 10%) 100%)"
+            : ageHue != null
+            ? `linear-gradient(180deg, hsl(${ageHue} 55% 22%) 0%, hsl(${ageHue} 45% 10%) 100%)`
             : "linear-gradient(180deg, hsl(45 25% 14%) 0%, hsl(45 15% 7%) 100%)",
+          borderColor:
+            ageHue != null && !isLocked && !isSelected && !isFull && !hasMine
+              ? `hsl(${ageHue} 70% 55% / 0.7)`
+              : undefined,
         }}
       >
         {isLocked ? (
