@@ -38,6 +38,16 @@ export function HeroSection() {
               </Link>
             </Button>
             <Button
+              size="lg"
+              className="bg-gold-gradient text-primary-foreground font-display tracking-wider hover:opacity-90 transition-opacity"
+              asChild
+            >
+              <Link to="/presentation">
+                <Sparkles className="w-5 h-5 mr-2" />
+                Presentation Evening
+              </Link>
+            </Button>
+            <Button
               variant="outline"
               size="lg"
               className="border-primary text-primary font-display tracking-wider hover:bg-primary hover:text-primary-foreground transition-colors"
