@@ -470,7 +470,7 @@ function TheatreSeatBlock({
                   return (
                     <span
                       key={`empty-${rIdx}-${cIdx}`}
-                      className="h-[26px] md:h-[30px] w-[34px] md:w-[42px] rounded-[3px] border border-dashed border-primary/15 bg-card/20"
+                      className="h-[30px] md:h-[36px] w-[42px] md:w-[52px] rounded-[3px] border border-dashed border-primary/15 bg-card/20"
                       title="Empty seat"
                     />
                   );
