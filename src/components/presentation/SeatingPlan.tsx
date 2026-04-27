@@ -140,22 +140,54 @@ export function SeatingPlan({
     return { hue };
   };
 
-  // Split players evenly between left & right theatre blocks
-  const { leftTheatrePlayers, rightTheatrePlayers } = useMemo(() => {
-    const sorted = [...theatrePlayers].sort((a, b) => {
-      const ag = (a.age_group ?? "").localeCompare(b.age_group ?? "");
-      if (ag !== 0) return ag;
-      const an = a.shirt_number ?? 999;
-      const bn = b.shirt_number ?? 999;
-      if (an !== bn) return an - bn;
-      return (a.first_name ?? "").localeCompare(b.first_name ?? "");
-    });
-    const half = Math.ceil(sorted.length / 2);
-    return {
-      leftTheatrePlayers: sorted.slice(0, half),
-      rightTheatrePlayers: sorted.slice(half),
-    };
-  }, [theatrePlayers]);
+  // Build seat grids per side. If theatreAssignments is provided, place
+  // players at their persisted (row,col); otherwise fall back to auto-sort
+  // (sorted by age group, shirt number) split evenly L/R.
+  const { leftSeatGrid, rightSeatGrid } = useMemo(() => {
+    const totalSeats = theatreRows * theatreChairsPerRow;
+    const buildEmpty = () =>
+      Array.from({ length: theatreRows }, () =>
+        Array.from({ length: theatreChairsPerRow }, () => null as TheatreSeatPlayer | null),
+      );
+
+    const left = buildEmpty();
+    const right = buildEmpty();
+    const playerById = new Map(theatrePlayers.map((p) => [p.id, p]));
+
+    if (theatreAssignments && theatreAssignments.length > 0) {
+      // Use persisted assignments
+      for (const a of theatreAssignments) {
+        const p = playerById.get(a.player_id);
+        if (!p) continue;
+        if (a.row_index < 1 || a.row_index > theatreRows) continue;
+        if (a.col_index < 1 || a.col_index > theatreChairsPerRow) continue;
+        const grid = a.side === "left" ? left : right;
+        grid[a.row_index - 1][a.col_index - 1] = p;
+      }
+    } else {
+      // Auto-sort fallback
+      const sorted = [...theatrePlayers].sort((a, b) => {
+        const ag = (a.age_group ?? "").localeCompare(b.age_group ?? "");
+        if (ag !== 0) return ag;
+        const an = a.shirt_number ?? 999;
+        const bn = b.shirt_number ?? 999;
+        if (an !== bn) return an - bn;
+        return (a.first_name ?? "").localeCompare(b.first_name ?? "");
+      });
+      const half = Math.ceil(sorted.length / 2);
+      const fillSide = (grid: (TheatreSeatPlayer | null)[][], list: TheatreSeatPlayer[]) => {
+        for (let i = 0; i < Math.min(list.length, totalSeats); i++) {
+          const r = Math.floor(i / theatreChairsPerRow);
+          const c = i % theatreChairsPerRow;
+          grid[r][c] = list[i];
+        }
+      };
+      fillSide(left, sorted.slice(0, half));
+      fillSide(right, sorted.slice(half));
+    }
+
+    return { leftSeatGrid: left, rightSeatGrid: right };
+  }, [theatrePlayers, theatreAssignments, theatreRows, theatreChairsPerRow]);
 
 
   return (
