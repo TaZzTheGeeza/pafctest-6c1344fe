@@ -792,10 +792,12 @@ function ManageTickets({
 function TicketRow({
   ticket,
   tableNumber,
+  tableLabel,
   onRefresh,
 }: {
   ticket: PresentationTicketSeat & { allocation_id: string };
   tableNumber: number | null;
+  tableLabel: string | null;
   onRefresh: () => void;
 }) {
   const [deleting, setDeleting] = useState(false);
@@ -815,6 +817,8 @@ function TicketRow({
     }
   };
 
+  const seated = tableNumber != null && ticket.seat_number != null;
+
   return (
     <div className="flex items-center justify-between gap-3 p-3 bg-card/60 border border-border rounded-lg">
       <div className="flex items-center gap-3 min-w-0">
@@ -830,13 +834,15 @@ function TicketRow({
         <p className="font-medium truncate">{ticket.attendee_name}</p>
       </div>
       <div className="flex items-center gap-2 shrink-0">
-        {tableNumber != null && ticket.seat_number != null ? (
-          <span className="text-xs text-primary flex items-center gap-1">
+        {seated ? (
+          <span className="text-xs text-primary flex items-center gap-1 font-display">
             <CheckCircle2 className="h-3.5 w-3.5" />
-            T{tableNumber} &middot; S{ticket.seat_number}
+            {tableLabel ?? `Table ${tableNumber}`} &middot; Seat {ticket.seat_number}
           </span>
         ) : (
-          <span className="text-xs text-muted-foreground">No seat</span>
+          <span className="text-[10px] font-display tracking-wider uppercase text-muted-foreground">
+            Awaiting seat
+          </span>
         )}
         <Button
           size="icon"
