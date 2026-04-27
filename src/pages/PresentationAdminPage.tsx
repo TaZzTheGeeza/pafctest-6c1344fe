@@ -357,7 +357,7 @@ function TableInspectorDialog({
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>
-            Table {table.table_number}{" "}
+            {table.label ?? `Table ${table.table_number}`}{" "}
             {table.is_locked && (
               <Badge variant="outline" className="ml-2 border-muted-foreground/40 text-muted-foreground">
                 <Lock className="h-3 w-3 mr-1" /> Reserved
@@ -366,6 +366,7 @@ function TableInspectorDialog({
           </DialogTitle>
           <DialogDescription>
             {seated.length} / {seatsPerTable} seats taken
+            {table.age_group ? ` · ${table.age_group}` : ""}
           </DialogDescription>
         </DialogHeader>
 
