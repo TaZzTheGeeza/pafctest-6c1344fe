@@ -381,7 +381,8 @@ function ClaimAllocationForm({
 }) {
   const [selectedPlayer, setSelectedPlayer] = useState<string>("");
   const [adults, setAdults] = useState(2);
-  const [children, setChildren] = useState(3);
+  // Children count INCLUDES the player themselves. Min 1 (just the player), max 2.
+  const [children, setChildren] = useState(1);
   const [submitting, setSubmitting] = useState(false);
 
   // Children linked to this parent via the guardians table
@@ -427,12 +428,8 @@ function ClaimAllocationForm({
       toast.error("Please select which child this ticket is for");
       return;
     }
-    if (adults < 0 || adults > 2 || children < 0 || children > 3) {
-      toast.error("Maximum 2 adults and 3 children per family allocation");
-      return;
-    }
-    if (adults + children === 0) {
-      toast.error("Please claim at least one ticket");
+    if (adults < 0 || adults > 2 || children < 1 || children > 2) {
+      toast.error("Maximum 2 adults and 2 children (including your player) per family");
       return;
     }
     setSubmitting(true);
@@ -501,8 +498,9 @@ function ClaimAllocationForm({
         <Ticket className="h-10 w-10 text-primary mx-auto mb-3" />
         <h2 className="text-2xl font-display font-bold mb-2">Claim your family tickets</h2>
         <p className="text-sm text-muted-foreground">
-          Each player is allocated <strong>1 family ticket</strong> covering up to{" "}
-          <strong>2 adults & 3 children</strong> (the player counts as one of the children).
+          Each player gets <strong>1 family ticket</strong> covering up to{" "}
+          <strong>2 adults & 2 children</strong>. One of the child tickets is for the player
+          themselves.
         </p>
       </div>
 
@@ -552,12 +550,20 @@ function ClaimAllocationForm({
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <Counter label="Adults" value={adults} setValue={setAdults} max={2} />
-          <Counter label="Children" value={children} setValue={setChildren} max={3} />
+          <Counter label="Adults" value={adults} setValue={setAdults} min={0} max={2} />
+          <Counter
+            label="Children"
+            value={children}
+            setValue={setChildren}
+            min={1}
+            max={2}
+            helper="Includes your player"
+          />
         </div>
 
         <p className="text-xs text-muted-foreground">
-          Need fewer tickets? Just lower the count above. Need more? Contact a club admin.
+          One child seat is reserved for your player. You can add 1 extra child and up to 2 adults.
+          Need a different arrangement? Contact a club admin.
         </p>
 
         <Button
@@ -583,22 +589,28 @@ function Counter({
   value,
   setValue,
   max,
+  min = 0,
+  helper,
 }: {
   label: string;
   value: number;
   setValue: (n: number) => void;
   max: number;
+  min?: number;
+  helper?: string;
 }) {
   return (
     <div>
-      <Label>{label} (max {max})</Label>
+      <Label>
+        {label} (max {max})
+      </Label>
       <div className="flex items-center gap-2 mt-2">
         <Button
           type="button"
           size="icon"
           variant="outline"
-          onClick={() => setValue(Math.max(0, value - 1))}
-          disabled={value <= 0}
+          onClick={() => setValue(Math.max(min, value - 1))}
+          disabled={value <= min}
         >
           <Minus className="h-4 w-4" />
         </Button>
@@ -613,6 +625,9 @@ function Counter({
           <Plus className="h-4 w-4" />
         </Button>
       </div>
+      {helper && (
+        <p className="text-[11px] text-muted-foreground mt-1">{helper}</p>
+      )}
     </div>
   );
 }
