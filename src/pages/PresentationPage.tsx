@@ -381,7 +381,8 @@ function ClaimAllocationForm({
 }) {
   const [selectedPlayer, setSelectedPlayer] = useState<string>("");
   const [adults, setAdults] = useState(2);
-  const [children, setChildren] = useState(3);
+  // Children count INCLUDES the player themselves. Min 1 (just the player), max 2.
+  const [children, setChildren] = useState(1);
   const [submitting, setSubmitting] = useState(false);
 
   // Children linked to this parent via the guardians table
