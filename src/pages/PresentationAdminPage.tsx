@@ -329,17 +329,17 @@ function SeatingPlanAdmin({
 
   return (
     <>
-      <TheatreBlock players={theatrePlayers} />
       <SeatingPlan
         tables={tables}
         tickets={tickets}
         seatsPerTable={seatsPerTable}
         adminMode
         onSelectTable={(id) => setOpenTableId(id)}
+        theatrePlayers={theatrePlayers}
       />
       <p className="text-center text-xs text-muted-foreground mt-3">
-        Players are auto-seated in the front theatre block by age group. Click any guest table
-        (including reserved) to view occupants and move people.
+        Players are auto-seated in the theatre blocks flanking the stage (by age group).
+        Click any guest table (including reserved) to view occupants and move people.
       </p>
       {openTableId && (
         <TableInspectorDialog
