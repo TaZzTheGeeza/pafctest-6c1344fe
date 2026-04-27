@@ -99,9 +99,9 @@ export function AnnouncementBanner() {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className={`${config.bg} ${config.border} border-b backdrop-blur-md ${targetPath ? "cursor-pointer hover:bg-primary/20 transition-colors" : ""}`}
+              className={`${config.bg} ${config.border} border-b backdrop-blur-md`}
             >
-              {targetPath ? <Link to={targetPath} className="block">{Inner}</Link> : Inner}
+              {Inner}
             </motion.div>
           );
         })}
