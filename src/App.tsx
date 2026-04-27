@@ -7,7 +7,7 @@ import { useCartSync } from "@/hooks/useCartSync";
 import { usePresence } from "@/hooks/usePresence";
 import { useEffect } from "react";
 import { FootballBackground } from "@/components/FootballBackground";
-import { AnnouncementBanner } from "@/components/AnnouncementBanner";
+
 import { AuthProvider } from "@/contexts/AuthContext";
 import { RoleGate } from "@/components/RoleGate";
 import Index from "./pages/Index.tsx";
