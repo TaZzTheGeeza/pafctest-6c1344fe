@@ -38,7 +38,6 @@ import {
   type PresentationTable,
   type PresentationTicketSeat,
 } from "@/components/presentation/SeatingPlan";
-import { SeatPicker } from "@/components/presentation/SeatPicker";
 
 interface PresentationEvent {
   id: string;
@@ -655,7 +654,9 @@ function ManageTickets({
   const totalIssued = myTickets.length;
 
   const [addingType, setAddingType] = useState<"adult" | "child" | null>(null);
-  const [seatPickerOpen, setSeatPickerOpen] = useState(false);
+  const allSeated =
+    myTickets.length > 0 &&
+    myTickets.every((t) => t.table_id && t.seat_number != null);
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -712,12 +713,18 @@ function ManageTickets({
 
       {/* Tickets list */}
       <Card className="p-6">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
           <h3 className="font-display font-bold">Your tickets</h3>
           {myTickets.length > 0 && (
-            <Button onClick={() => setSeatPickerOpen(true)} size="sm">
-              <Users className="h-4 w-4 mr-2" /> Pick seats
-            </Button>
+            <span
+              className={`text-[10px] font-display tracking-[0.2em] uppercase px-2.5 py-1 rounded-full border ${
+                allSeated
+                  ? "bg-primary/10 text-primary border-primary/40"
+                  : "bg-muted/40 text-muted-foreground border-border"
+              }`}
+            >
+              {allSeated ? "Seats allocated" : "Awaiting seat allocation"}
+            </span>
           )}
         </div>
 
@@ -726,14 +733,43 @@ function ManageTickets({
             No tickets added yet. Use the buttons above to add adults & children.
           </p>
         ) : (
-          <div className="space-y-2">
-            {myTickets.map((t) => {
-              const table = tables.find((tb) => tb.id === t.table_id);
-              return (
-                <TicketRow key={t.id} ticket={t} tableNumber={table?.table_number ?? null} onRefresh={onRefresh} />
-              );
-            })}
-          </div>
+          <>
+            <div className="space-y-2">
+              {myTickets.map((t) => {
+                const table = tables.find((tb) => tb.id === t.table_id);
+                return (
+                  <TicketRow
+                    key={t.id}
+                    ticket={t}
+                    tableNumber={table?.table_number ?? null}
+                    tableLabel={table?.label ?? null}
+                    onRefresh={onRefresh}
+                  />
+                );
+              })}
+            </div>
+            <div
+              className={`mt-4 rounded-lg border p-3 text-xs ${
+                allSeated
+                  ? "border-primary/30 bg-primary/5 text-foreground"
+                  : "border-border bg-card/40 text-muted-foreground"
+              }`}
+            >
+              {allSeated ? (
+                <>
+                  <CheckCircle2 className="h-3.5 w-3.5 inline mr-1.5 text-primary" />
+                  Your seats have been allocated by the club. See your table & seat number on
+                  each ticket above. Please arrive 15 minutes before the start time.
+                </>
+              ) : (
+                <>
+                  <Sparkles className="h-3.5 w-3.5 inline mr-1.5 text-primary" />
+                  Once everyone has claimed their tickets a club admin will allocate your table
+                  & seats. You&apos;ll get a notification here as soon as your seats are confirmed.
+                </>
+              )}
+            </div>
+          </>
         )}
       </Card>
 
@@ -749,20 +785,6 @@ function ManageTickets({
           }}
         />
       )}
-
-      {seatPickerOpen && (
-        <SeatPickerDialog
-          event={event}
-          tables={tables}
-          allTickets={allTickets}
-          myTickets={myTickets}
-          onClose={() => setSeatPickerOpen(false)}
-          onSaved={() => {
-            setSeatPickerOpen(false);
-            onRefresh();
-          }}
-        />
-      )}
     </div>
   );
 }
@@ -770,10 +792,12 @@ function ManageTickets({
 function TicketRow({
   ticket,
   tableNumber,
+  tableLabel,
   onRefresh,
 }: {
   ticket: PresentationTicketSeat & { allocation_id: string };
   tableNumber: number | null;
+  tableLabel: string | null;
   onRefresh: () => void;
 }) {
   const [deleting, setDeleting] = useState(false);
@@ -793,6 +817,8 @@ function TicketRow({
     }
   };
 
+  const seated = tableNumber != null && ticket.seat_number != null;
+
   return (
     <div className="flex items-center justify-between gap-3 p-3 bg-card/60 border border-border rounded-lg">
       <div className="flex items-center gap-3 min-w-0">
@@ -808,13 +834,15 @@ function TicketRow({
         <p className="font-medium truncate">{ticket.attendee_name}</p>
       </div>
       <div className="flex items-center gap-2 shrink-0">
-        {tableNumber != null && ticket.seat_number != null ? (
-          <span className="text-xs text-primary flex items-center gap-1">
+        {seated ? (
+          <span className="text-xs text-primary flex items-center gap-1 font-display">
             <CheckCircle2 className="h-3.5 w-3.5" />
-            T{tableNumber} &middot; S{ticket.seat_number}
+            {tableLabel ?? `Table ${tableNumber}`} &middot; Seat {ticket.seat_number}
           </span>
         ) : (
-          <span className="text-xs text-muted-foreground">No seat</span>
+          <span className="text-[10px] font-display tracking-wider uppercase text-muted-foreground">
+            Awaiting seat
+          </span>
         )}
         <Button
           size="icon"
@@ -898,173 +926,6 @@ function AddAttendeeDialog({
             {submitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
             Add ticket
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function SeatPickerDialog({
-  event,
-  tables,
-  allTickets,
-  myTickets,
-  onClose,
-  onSaved,
-}: {
-  event: PresentationEvent;
-  tables: PresentationTable[];
-  allTickets: (PresentationTicketSeat & { allocation_id: string })[];
-  myTickets: (PresentationTicketSeat & { allocation_id: string })[];
-  onClose: () => void;
-  onSaved: () => void;
-}) {
-  // Step 1: Select a table. Default to existing if any.
-  const initialTable = myTickets.find((t) => t.table_id)?.table_id ?? null;
-  const [selectedTableId, setSelectedTableId] = useState<string | null>(initialTable);
-  const [selectedSeats, setSelectedSeats] = useState<number[]>([]);
-  const [saving, setSaving] = useState(false);
-
-  // Tickets needing a seat (not yet seated, OR seated at the currently picked table)
-  const ticketsToSeat = useMemo(() => {
-    return myTickets.filter(
-      (t) => !t.table_id || t.table_id === selectedTableId,
-    );
-  }, [myTickets, selectedTableId]);
-
-  // Already-seated own tickets at the selected table
-  const ownAtTable = useMemo(
-    () => myTickets.filter((t) => t.table_id === selectedTableId && t.seat_number != null),
-    [myTickets, selectedTableId],
-  );
-
-  // Initialize selected seats with own existing seats when table changes
-  useEffect(() => {
-    setSelectedSeats(ownAtTable.map((t) => t.seat_number!).filter(Boolean));
-  }, [selectedTableId]);
-
-  const tableSeats = useMemo(() => {
-    if (!selectedTableId) return [];
-    return allTickets.filter((t) => t.table_id === selectedTableId);
-  }, [allTickets, selectedTableId]);
-
-  const selectedTable = tables.find((t) => t.id === selectedTableId);
-  const ticketsNeedingSeat = ticketsToSeat.length;
-
-  const toggleSeat = (seatNumber: number) => {
-    setSelectedSeats((prev) => {
-      if (prev.includes(seatNumber)) return prev.filter((n) => n !== seatNumber);
-      if (prev.length >= ticketsNeedingSeat) {
-        toast.error(`You only have ${ticketsNeedingSeat} ticket(s) for this table`);
-        return prev;
-      }
-      return [...prev, seatNumber];
-    });
-  };
-
-  const save = async () => {
-    if (!selectedTableId) {
-      toast.error("Pick a table first");
-      return;
-    }
-    if (selectedSeats.length === 0) {
-      toast.error("Pick at least one seat");
-      return;
-    }
-    setSaving(true);
-    try {
-      // Sort tickets so already-seated ones get their original seat back if possible
-      const ordered = [...ticketsToSeat].sort((a, b) => {
-        const aSeated = a.seat_number != null ? 0 : 1;
-        const bSeated = b.seat_number != null ? 0 : 1;
-        return aSeated - bSeated;
-      });
-
-      // Build assignments. Use the user's selected seats in numerical order.
-      const seatsToAssign = [...selectedSeats].sort((a, b) => a - b);
-      const updates: Promise<any>[] = [];
-
-      for (let i = 0; i < ordered.length; i++) {
-        const ticket = ordered[i];
-        const seat = seatsToAssign[i] ?? null;
-        if (
-          ticket.table_id === selectedTableId &&
-          ticket.seat_number === seat
-        ) continue;
-        updates.push(
-          (async () => {
-            const { error } = await supabase
-              .from("presentation_tickets")
-              .update({
-                table_id: seat != null ? selectedTableId : null,
-                seat_number: seat,
-              })
-              .eq("id", ticket.id);
-            if (error) throw error;
-          })(),
-        );
-      }
-
-      await Promise.all(updates);
-      toast.success("Seats saved!");
-      onSaved();
-    } catch (err: any) {
-      toast.error(err.message ?? "Could not save seats");
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  return (
-    <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Pick your seats</DialogTitle>
-          <DialogDescription>
-            {!selectedTableId
-              ? "Step 1: Choose a table for your family."
-              : `Step 2: Pick ${ticketsNeedingSeat} seat${ticketsNeedingSeat === 1 ? "" : "s"} at Table ${selectedTable?.table_number}.`}
-          </DialogDescription>
-        </DialogHeader>
-
-        {!selectedTableId ? (
-          <SeatingPlan
-            tables={tables}
-            tickets={allTickets}
-            selectedTableId={selectedTableId}
-            onSelectTable={(id) => setSelectedTableId(id)}
-            seatsPerTable={event.seats_per_table}
-          />
-        ) : (
-          <div className="flex flex-col items-center gap-4">
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={() => setSelectedTableId(null)}>
-                ← Pick a different table
-              </Button>
-            </div>
-            <SeatPicker
-              tableNumber={selectedTable?.table_number ?? 0}
-              tableLabel={selectedTable?.label ?? null}
-              seatsPerTable={event.seats_per_table}
-              takenSeats={tableSeats}
-              selectedSeats={selectedSeats}
-              ownTickets={ownAtTable}
-              onToggleSeat={toggleSeat}
-              maxSelectable={ticketsNeedingSeat}
-            />
-          </div>
-        )}
-
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
-            Cancel
-          </Button>
-          {selectedTableId && (
-            <Button onClick={save} disabled={saving || selectedSeats.length === 0}>
-              {saving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-              Save seats
-            </Button>
-          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
