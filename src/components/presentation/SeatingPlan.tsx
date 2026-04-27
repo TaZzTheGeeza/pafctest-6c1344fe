@@ -79,7 +79,11 @@ export function SeatingPlan({
   seatsPerTable = 6,
   adminMode = false,
   theatrePlayers = [],
+  theatreAssignments,
   highlightedNames = [],
+  onTheatreSeatClick,
+  theatreRows = 7,
+  theatreChairsPerRow = 12,
 }: Props) {
   const ticketsByTable = useMemo(() => {
     const map = new Map<string, PresentationTicketSeat[]>();
