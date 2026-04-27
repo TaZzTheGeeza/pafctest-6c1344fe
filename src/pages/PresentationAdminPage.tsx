@@ -208,9 +208,17 @@ export default function PresentationAdminPage() {
             </h1>
             <p className="text-sm text-muted-foreground">{event.title}</p>
           </div>
-          <Button variant="outline" onClick={() => exportCsv(tickets, allocations, tables)}>
-            <Download className="h-4 w-4 mr-2" /> Export CSV
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <NotifyAllSeatedButton
+              tickets={tickets}
+              allocations={allocations}
+              tables={tables}
+              eventTitle={event.title}
+            />
+            <Button variant="outline" onClick={() => exportCsv(tickets, allocations, tables)}>
+              <Download className="h-4 w-4 mr-2" /> Export CSV
+            </Button>
+          </div>
         </div>
 
         {/* Stats */}
