@@ -386,3 +386,114 @@ function RectTable({
     </button>
   );
 }
+
+// ────────────────────────────────────────────────────────
+// Angled theatre-seat block (flanks the stage)
+// ────────────────────────────────────────────────────────
+
+function TheatreSeatBlock({
+  players,
+  highlightedNames,
+  tilt,
+  side,
+}: {
+  players: TheatreSeatPlayer[];
+  highlightedNames: string[];
+  /** Rotation in degrees (negative = anti-clockwise / left side) */
+  tilt: number;
+  side: "left" | "right";
+}) {
+  const highlightSet = useMemo(
+    () =>
+      new Set(
+        highlightedNames
+          .filter(Boolean)
+          .map((n) => n.trim().toLowerCase()),
+      ),
+    [highlightedNames],
+  );
+
+  if (players.length === 0) {
+    return (
+      <div
+        className="w-[180px] md:w-[260px] h-[140px] md:h-[180px] rounded-md border border-dashed border-primary/20 flex items-center justify-center text-[9px] font-display tracking-widest uppercase text-muted-foreground/60"
+        style={{ transform: `rotate(${tilt}deg)` }}
+      >
+        Theatre — {side}
+      </div>
+    );
+  }
+
+  // Lay players out in a fixed grid (rows of ~10 chairs) so the block
+  // visually mirrors the diagram.
+  const chairsPerRow = 10;
+  const rows: TheatreSeatPlayer[][] = [];
+  for (let i = 0; i < players.length; i += chairsPerRow) {
+    rows.push(players.slice(i, i + chairsPerRow));
+  }
+
+  // Stable colour per age group (matches main legend)
+  const hueOf = (ag: string | null | undefined) => {
+    if (!ag) return 45;
+    let hash = 0;
+    for (let i = 0; i < ag.length; i++) hash = (hash * 31 + ag.charCodeAt(i)) >>> 0;
+    return hash % 360;
+  };
+
+  return (
+    <div
+      className="rounded-md border border-primary/30 p-1.5 md:p-2"
+      style={{
+        transform: `rotate(${tilt}deg)`,
+        transformOrigin: side === "left" ? "right center" : "left center",
+        background:
+          "linear-gradient(180deg, hsl(45 25% 10% / 0.7) 0%, hsl(0 0% 4% / 0.7) 100%)",
+        boxShadow: "inset 0 0 20px hsl(var(--primary) / 0.05)",
+      }}
+      title={`${players.length} player seat${players.length === 1 ? "" : "s"}`}
+    >
+      <div className="flex flex-col gap-[3px] md:gap-1">
+        {rows.map((row, rIdx) => (
+          <div key={rIdx} className="flex gap-[2px] md:gap-[3px] justify-center">
+            {row.map((p) => {
+              const hue = hueOf(p.age_group);
+              const isMine =
+                !!p.first_name &&
+                highlightSet.has(p.first_name.trim().toLowerCase());
+              return (
+                <span
+                  key={p.id}
+                  className={cn(
+                    "h-2 w-2 md:h-2.5 md:w-2.5 rounded-full border",
+                    isMine && "ring-1 ring-primary ring-offset-[1px] ring-offset-background",
+                  )}
+                  style={{
+                    background: isMine
+                      ? "hsl(var(--primary))"
+                      : `hsl(${hue} 65% 55%)`,
+                    borderColor: isMine
+                      ? "hsl(var(--primary))"
+                      : `hsl(${hue} 70% 40%)`,
+                  }}
+                  title={
+                    [
+                      p.shirt_number != null ? `#${p.shirt_number}` : null,
+                      p.first_name ?? "?",
+                      p.age_group ? `(${p.age_group})` : null,
+                    ]
+                      .filter(Boolean)
+                      .join(" ")
+                  }
+                />
+              );
+            })}
+          </div>
+        ))}
+      </div>
+      <p className="mt-1 text-center text-[8px] font-display tracking-widest uppercase text-muted-foreground">
+        {players.length} player seats
+      </p>
+    </div>
+  );
+}
+
