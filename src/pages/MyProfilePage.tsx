@@ -362,6 +362,11 @@ export default function MyProfilePage() {
             </div>
           </div>
 
+          {/* App update / cache refresh */}
+          <div className="mb-6">
+            <CheckForUpdatesButton />
+          </div>
+
           {/* Tabs */}
           <div className="flex gap-1 mb-6 bg-card border border-border rounded-xl p-1 overflow-x-auto">
             {TABS.map(tab => (
