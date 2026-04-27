@@ -1134,7 +1134,7 @@ function NotifyFamilyButton({
     });
     setSending(false);
     if (res.ok) toast.success(`Notified ${allocation.player_name}'s family`);
-    else toast.error(res.error);
+    else toast.error((res as { ok: false; error: string }).error);
   };
   return (
     <Button
