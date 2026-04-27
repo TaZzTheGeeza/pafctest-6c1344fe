@@ -539,9 +539,10 @@ function MoveSeatDialog({
               <SelectContent>
                 {tables.map((t) => {
                   const taken = tickets.filter((tk) => tk.table_id === t.id).length;
+                  const name = t.label ?? `Table ${t.table_number}`;
                   return (
                     <SelectItem key={t.id} value={t.id}>
-                      Table {t.table_number} ({taken}/{seatsPerTable}){t.is_locked ? " · Reserved" : ""}
+                      {name} ({taken}/{seatsPerTable}){t.is_locked ? " · Reserved" : ""}
                     </SelectItem>
                   );
                 })}
