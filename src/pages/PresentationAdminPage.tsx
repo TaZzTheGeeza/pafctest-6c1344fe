@@ -687,7 +687,7 @@ function PeoplePanel({
   );
 }
 
-// ── Manage tables: lock / unlock / label ─────────────────
+// ── Manage tables: rename / set age group / lock ────────
 function ManageTablesPanel({
   tables,
   tickets,
@@ -706,14 +706,43 @@ function ManageTablesPanel({
     return m;
   }, [tickets]);
 
-  const toggleLock = async (table: PresentationTable) => {
+  const [bulkRow, setBulkRow] = useState<string>("");
+  const [bulkAgeGroup, setBulkAgeGroup] = useState<string>("");
+
+  // Group tables by row_index for display
+  const rows = useMemo(() => {
+    const map = new Map<number, PresentationTable[]>();
+    for (const t of tables) {
+      const r = t.row_index ?? Math.ceil(t.table_number / 8);
+      const arr = map.get(r) ?? [];
+      arr.push(t);
+      map.set(r, arr);
+    }
+    for (const arr of map.values()) {
+      arr.sort(
+        (a, b) =>
+          (a.col_index ?? a.table_number) - (b.col_index ?? b.table_number),
+      );
+    }
+    return Array.from(map.entries()).sort(([a], [b]) => a - b);
+  }, [tables]);
+
+  const applyRowAgeGroup = async () => {
+    if (!bulkRow || !bulkAgeGroup.trim()) {
+      toast.error("Pick a row and enter an age group");
+      return;
+    }
+    const rowNum = parseInt(bulkRow, 10);
+    const ids = (rows.find(([r]) => r === rowNum)?.[1] ?? []).map((t) => t.id);
+    if (!ids.length) return;
     const { error } = await supabase
       .from("presentation_tables")
-      .update({ is_locked: !table.is_locked })
-      .eq("id", table.id);
+      .update({ age_group: bulkAgeGroup.trim() })
+      .in("id", ids);
     if (error) toast.error(error.message);
     else {
-      toast.success(table.is_locked ? "Table unlocked" : "Table locked");
+      toast.success(`Row ${rowNum} set to ${bulkAgeGroup.trim()}`);
+      setBulkAgeGroup("");
       onRefresh();
     }
   };
@@ -721,37 +750,190 @@ function ManageTablesPanel({
   return (
     <Card className="p-4 md:p-6">
       <p className="text-xs text-muted-foreground mb-4">
-        Lock tables to prevent families selecting them. Locked tables stay visible but appear as
-        "Reserved". Tables 1-4 (closest to stage/dance floor) are locked by default.
+        Rename any table or change its age group. Use the bulk action to quickly
+        rename a whole row at once. Lock tables to mark them reserved.
       </p>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-        {tables.map((t) => {
-          const used = ticketsByTable.get(t.id) ?? 0;
-          return (
-            <div
-              key={t.id}
-              className={`p-3 rounded-lg border flex items-center justify-between gap-2 ${
-                t.is_locked ? "border-muted-foreground/40 bg-muted/20" : "border-border"
-              }`}
-            >
-              <div>
-                <p className="font-display font-bold">Table {t.table_number}</p>
-                <p className="text-[10px] text-muted-foreground">
-                  {used} seated{t.is_locked ? " · reserved" : ""}
-                </p>
-              </div>
-              <Button
-                size="sm"
-                variant={t.is_locked ? "default" : "outline"}
-                onClick={() => toggleLock(t)}
-              >
-                {t.is_locked ? <Unlock className="h-3.5 w-3.5" /> : <Lock className="h-3.5 w-3.5" />}
-              </Button>
+
+      {/* Bulk row → age group */}
+      <div className="flex flex-wrap items-end gap-2 mb-6 p-3 rounded-lg border border-primary/30 bg-primary/5">
+        <div className="flex-1 min-w-[140px]">
+          <label className="text-[10px] font-display tracking-wider uppercase text-muted-foreground">
+            Row
+          </label>
+          <Select value={bulkRow} onValueChange={setBulkRow}>
+            <SelectTrigger className="mt-1">
+              <SelectValue placeholder="Pick row" />
+            </SelectTrigger>
+            <SelectContent>
+              {rows.map(([r, arr]) => (
+                <SelectItem key={r} value={String(r)}>
+                  Row {r} ({arr[0]?.age_group ?? "—"})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex-1 min-w-[180px]">
+          <label className="text-[10px] font-display tracking-wider uppercase text-muted-foreground">
+            New age group label
+          </label>
+          <Input
+            placeholder="e.g. U10s"
+            value={bulkAgeGroup}
+            onChange={(e) => setBulkAgeGroup(e.target.value)}
+            className="mt-1"
+          />
+        </div>
+        <Button onClick={applyRowAgeGroup}>Apply to row</Button>
+      </div>
+
+      {/* Per-row table cards */}
+      <div className="space-y-6">
+        {rows.map(([rowIdx, rowTables]) => (
+          <div key={rowIdx}>
+            <p className="text-xs font-display tracking-[0.18em] uppercase text-primary mb-2">
+              Row {rowIdx} · {rowTables[0]?.age_group ?? "Unassigned"}
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-2">
+              {rowTables.map((t) => (
+                <TableEditorCard
+                  key={t.id}
+                  table={t}
+                  used={ticketsByTable.get(t.id) ?? 0}
+                  onRefresh={onRefresh}
+                />
+              ))}
             </div>
-          );
-        })}
+          </div>
+        ))}
       </div>
     </Card>
+  );
+}
+
+function TableEditorCard({
+  table,
+  used,
+  onRefresh,
+}: {
+  table: PresentationTable;
+  used: number;
+  onRefresh: () => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [label, setLabel] = useState(table.label ?? "");
+  const [ageGroup, setAgeGroup] = useState(table.age_group ?? "");
+  const [saving, setSaving] = useState(false);
+
+  const save = async () => {
+    setSaving(true);
+    const { error } = await supabase
+      .from("presentation_tables")
+      .update({
+        label: label.trim() || null,
+        age_group: ageGroup.trim() || null,
+      })
+      .eq("id", table.id);
+    setSaving(false);
+    if (error) toast.error(error.message);
+    else {
+      toast.success("Updated");
+      setEditing(false);
+      onRefresh();
+    }
+  };
+
+  const toggleLock = async () => {
+    const { error } = await supabase
+      .from("presentation_tables")
+      .update({ is_locked: !table.is_locked })
+      .eq("id", table.id);
+    if (error) toast.error(error.message);
+    else {
+      toast.success(table.is_locked ? "Unlocked" : "Locked");
+      onRefresh();
+    }
+  };
+
+  return (
+    <div
+      className={`p-2 rounded-lg border flex flex-col gap-1.5 ${
+        table.is_locked ? "border-muted-foreground/40 bg-muted/20" : "border-border bg-card/40"
+      }`}
+    >
+      {editing ? (
+        <div className="space-y-1.5">
+          <Input
+            value={label}
+            onChange={(e) => setLabel(e.target.value)}
+            placeholder="Table name"
+            className="h-7 text-xs"
+          />
+          <Input
+            value={ageGroup}
+            onChange={(e) => setAgeGroup(e.target.value)}
+            placeholder="Age group"
+            className="h-7 text-xs"
+          />
+          <div className="flex gap-1">
+            <Button
+              size="icon"
+              className="h-7 w-7"
+              onClick={save}
+              disabled={saving}
+            >
+              {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
+            </Button>
+            <Button
+              size="icon"
+              variant="outline"
+              className="h-7 w-7"
+              onClick={() => {
+                setEditing(false);
+                setLabel(table.label ?? "");
+                setAgeGroup(table.age_group ?? "");
+              }}
+            >
+              <X className="h-3 w-3" />
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <>
+          <p className="font-display font-bold text-xs leading-tight truncate">
+            {table.label ?? `Table ${table.table_number}`}
+          </p>
+          <p className="text-[10px] text-muted-foreground">
+            {table.age_group ?? "—"} · {used} seated
+            {table.is_locked ? " · reserved" : ""}
+          </p>
+          <div className="flex gap-1">
+            <Button
+              size="icon"
+              variant="outline"
+              className="h-6 w-6"
+              onClick={() => setEditing(true)}
+              title="Rename / change age group"
+            >
+              <Pencil className="h-3 w-3" />
+            </Button>
+            <Button
+              size="icon"
+              variant={table.is_locked ? "default" : "outline"}
+              className="h-6 w-6"
+              onClick={toggleLock}
+              title={table.is_locked ? "Unlock" : "Lock as reserved"}
+            >
+              {table.is_locked ? (
+                <Unlock className="h-3 w-3" />
+              ) : (
+                <Lock className="h-3 w-3" />
+              )}
+            </Button>
+          </div>
+        </>
+      )}
+    </div>
   );
 }
 
