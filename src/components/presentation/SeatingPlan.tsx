@@ -320,8 +320,8 @@ export function SeatingPlan({
                 <span
                   className="h-3 w-5 rounded-sm border"
                   style={{
-                    background: `hsl(${c?.hue} 60% 30% / 0.45)`,
-                    borderColor: `hsl(${c?.hue} 70% 55% / 0.7)`,
+                    background: `hsl(${c?.h} ${c?.s}% ${Math.max(20, (c?.l ?? 50) - 20)}% / 0.55)`,
+                    borderColor: `hsl(${c?.h} ${c?.s}% ${c?.l}% / 0.85)`,
                   }}
                 />
                 {ag}
