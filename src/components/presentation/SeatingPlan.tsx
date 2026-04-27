@@ -192,7 +192,7 @@ export function SeatingPlan({
 
   return (
     <div
-      className="w-full rounded-2xl p-4 md:p-6 relative overflow-x-auto"
+      className="w-full rounded-2xl p-3 md:p-5 relative"
       style={{
         background:
           "radial-gradient(ellipse at top, hsl(45 60% 8%) 0%, hsl(0 0% 4%) 70%)",
@@ -204,9 +204,9 @@ export function SeatingPlan({
       <div className="pointer-events-none absolute inset-0 rounded-2xl border border-primary/20 m-2" />
 
       {/* STAGE */}
-      <div className="flex justify-center mb-4 md:mb-6 min-w-[1400px]">
+      <div className="flex justify-center mb-4 md:mb-6">
         <div
-          className="min-w-[260px] md:min-w-[360px] py-4 md:py-6 px-8 text-center font-display tracking-[0.4em] uppercase text-primary border-2 border-primary/60 rounded-md"
+          className="min-w-[260px] md:min-w-[420px] py-4 md:py-6 px-8 text-center font-display tracking-[0.4em] uppercase text-primary border-2 border-primary/60 rounded-md"
           style={{
             background:
               "linear-gradient(180deg, hsl(45 50% 15%) 0%, hsl(45 30% 10%) 100%)",
@@ -221,7 +221,7 @@ export function SeatingPlan({
       </div>
 
       {/* Theatre blocks — flanking the stage, no rotation to avoid overlap */}
-      <div className="grid grid-cols-2 gap-6 md:gap-10 mb-8 md:mb-12 min-w-[1400px]">
+      <div className="grid grid-cols-2 gap-3 md:gap-6 mb-6 md:mb-10">
         <div className="flex justify-center">
           <TheatreSeatBlock
             seatGrid={leftSeatGrid}
@@ -243,16 +243,16 @@ export function SeatingPlan({
       </div>
 
       {/* Divider between players and guest tables */}
-      <div className="flex items-center gap-3 mb-4 md:mb-6 min-w-[1400px]">
+      <div className="flex items-center gap-3 mb-4 md:mb-6">
         <div className="flex-1 h-px bg-primary/20" />
-        <p className="text-[10px] font-display tracking-[0.4em] uppercase text-primary/70">
+        <p className="text-[10px] font-display tracking-[0.4em] uppercase text-primary/70 text-center">
           ★ Guest Tables · 70 tables × 6 seats = 420 ★
         </p>
         <div className="flex-1 h-px bg-primary/20" />
       </div>
 
       {/* Rows of tables */}
-      <div className="flex flex-col gap-4 md:gap-5 min-w-[1400px]">
+      <div className="flex flex-col gap-3 md:gap-4">
         {rows.map(([rowIdx, rowTables]) => (
           <div key={rowIdx} className="grid grid-cols-10 gap-3 md:gap-4">
             {rowTables.map((table) => {
