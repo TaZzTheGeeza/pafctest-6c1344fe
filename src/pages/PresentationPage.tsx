@@ -496,7 +496,7 @@ function ClaimAllocationForm({
         max_children: children,
       });
       if (error) throw error;
-      toast.success("Tickets claimed! Now pick your seats.");
+      toast.success("Tickets claimed! Club admins will allocate your seats.");
       onCreated();
     } catch (err: any) {
       toast.error(err.message ?? "Could not claim tickets");
@@ -539,7 +539,7 @@ function ClaimAllocationForm({
         <h2 className="text-xl font-display font-bold mb-2">All your players have tickets</h2>
         <p className="text-sm text-muted-foreground">
           You&apos;ve already claimed a family ticket for every child linked to your account.
-          Switch to the seating plan to pick or update seats.
+          Club admins will allocate seats and you can view them on the seating plan.
         </p>
       </Card>
     );
