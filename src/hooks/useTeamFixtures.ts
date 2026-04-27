@@ -37,6 +37,11 @@ async function fetchTeamFixtures(
   const config = faTeamConfigs.find((c) => c.slug === slug);
   if (!config) return null;
 
+  // Skip teams with no FA fixtures URL configured (e.g. U6)
+  if (!config.fixtureUrl) {
+    return { team: config.team, fixtures: [], results: [] };
+  }
+
   const resultUrl = options?.includeHistory
     ? config.resultUrl ?? deriveResultUrl(config.fixtureUrl)
     : config.resultUrl;
