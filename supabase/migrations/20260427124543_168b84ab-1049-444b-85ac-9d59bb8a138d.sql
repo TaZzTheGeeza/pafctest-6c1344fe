@@ -1,0 +1,1 @@
+UPDATE public.presentation_allocations SET max_children = 2 WHERE max_children > 2;
