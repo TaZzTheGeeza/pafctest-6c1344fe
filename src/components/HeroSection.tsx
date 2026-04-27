@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ShoppingBag, Trophy, ChevronRight, Smartphone } from "lucide-react";
+import { ShoppingBag, Trophy, ChevronRight, Smartphone, Sparkles } from "lucide-react";
 import heroBg from "@/assets/hero-bg.jpg";
 
 export function HeroSection() {
@@ -35,6 +35,16 @@ export function HeroSection() {
               <Link to="/tournament">
                 <Trophy className="w-5 h-5 mr-2" />
                 Tournament
+              </Link>
+            </Button>
+            <Button
+              size="lg"
+              className="bg-gold-gradient text-primary-foreground font-display tracking-wider hover:opacity-90 transition-opacity"
+              asChild
+            >
+              <Link to="/presentation">
+                <Sparkles className="w-5 h-5 mr-2" />
+                Presentation Evening
               </Link>
             </Button>
             <Button
