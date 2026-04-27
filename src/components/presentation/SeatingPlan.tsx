@@ -518,7 +518,7 @@ function TheatreSeatBlock({
 
   return (
     <div
-      className="rounded-md border border-primary/30 p-3 md:p-4 inline-block"
+      className="rounded-md border border-primary/30 p-2 md:p-3 inline-block w-full"
       style={{
         background:
           "linear-gradient(180deg, hsl(45 25% 10% / 0.7) 0%, hsl(0 0% 4% / 0.7) 100%)",
@@ -529,7 +529,7 @@ function TheatreSeatBlock({
         {side === "left" ? "◀ Stage Left" : "Stage Right ▶"} · {occupied}/{totalSeats} seats
         {clickable && <span className="ml-2 text-primary/60 normal-case tracking-normal">· click to edit</span>}
       </p>
-      <div className="flex flex-col gap-[3px] md:gap-1">
+      <div className="flex flex-col gap-[2px] md:gap-[3px]">
         {seatGrid.map((rowSeats, rIdx) => (
           <div key={rIdx} className="flex gap-[2px] md:gap-[3px] justify-center items-center">
             <span className="w-3 text-[7px] font-display text-muted-foreground/50 text-right pr-0.5">
@@ -537,7 +537,7 @@ function TheatreSeatBlock({
             </span>
             {rowSeats.map((p, cIdx) => {
               const baseClass =
-                "h-[30px] md:h-[36px] w-[42px] md:w-[52px] rounded-[3px] border flex flex-col items-center justify-center leading-none px-0.5 overflow-hidden transition-transform relative";
+                "h-[28px] md:h-[34px] flex-1 min-w-0 max-w-[56px] rounded-[3px] border flex flex-col items-center justify-center leading-none px-0.5 overflow-hidden transition-transform relative";
               if (!p) {
                 return (
                   <button
