@@ -297,7 +297,7 @@ export function SeatingPlan({
                   isFull={isFull}
                   isSelected={isSelected}
                   hasMine={hasMine}
-                  ageHue={ageGroupColor(table.age_group)?.hue ?? null}
+                  ageHue={ageGroupColor(table.age_group)?.h ?? null}
                   onClick={() =>
                     !isLocked &&
                     (!isFull || isSelected || adminMode) &&
