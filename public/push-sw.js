@@ -1,4 +1,6 @@
 // Push notification service worker
+const PUSH_ICON = '/pwa-icon-192-v4.png';
+
 const DEFAULT_PUSH_NOTIFICATION = {
   title: 'PAFC',
   body: 'Open the app to view your latest notification.',
@@ -39,8 +41,8 @@ self.addEventListener('push', (event) => {
     try {
       await self.registration.showNotification(notification.title, {
         body: notification.body,
-        icon: '/pwa-icon-192-v3.png',
-        badge: '/pwa-icon-192-v3.png',
+        icon: PUSH_ICON,
+        badge: PUSH_ICON,
         tag: notification.tag,
         data: {
           url: notification.url,
