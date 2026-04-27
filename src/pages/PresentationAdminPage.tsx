@@ -14,6 +14,9 @@ import {
   Trash2,
   Download,
   ShieldAlert,
+  Pencil,
+  Check,
+  X,
 } from "lucide-react";
 
 import { Navbar } from "@/components/Navbar";
