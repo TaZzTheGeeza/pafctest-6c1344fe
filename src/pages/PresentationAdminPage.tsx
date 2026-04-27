@@ -314,12 +314,14 @@ function SeatingPlanAdmin({
   tables,
   tickets,
   allocations,
+  theatrePlayers,
   seatsPerTable,
   onRefresh,
 }: {
   tables: PresentationTable[];
   tickets: AdminTicket[];
   allocations: AdminAllocation[];
+  theatrePlayers: TheatrePlayer[];
   seatsPerTable: number;
   onRefresh: () => void;
 }) {
@@ -327,6 +329,7 @@ function SeatingPlanAdmin({
 
   return (
     <>
+      <TheatreBlock players={theatrePlayers} />
       <SeatingPlan
         tables={tables}
         tickets={tickets}
@@ -335,7 +338,8 @@ function SeatingPlanAdmin({
         onSelectTable={(id) => setOpenTableId(id)}
       />
       <p className="text-center text-xs text-muted-foreground mt-3">
-        Click any table (including reserved) to view occupants and move people.
+        Players are auto-seated in the front theatre block by age group. Click any guest table
+        (including reserved) to view occupants and move people.
       </p>
       {openTableId && (
         <TableInspectorDialog
