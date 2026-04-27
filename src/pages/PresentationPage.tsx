@@ -127,6 +127,36 @@ export default function PresentationPage() {
     },
   });
 
+  // ── Players (for theatre block) ──────────────────────
+  const { data: theatrePlayers = [] } = useQuery({
+    queryKey: ["presentation-theatre-players"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("player_stats")
+        .select("id, first_name, shirt_number, age_group");
+      if (error) throw error;
+      return (data ?? []) as TheatrePlayer[];
+    },
+  });
+
+  // Names of children linked to the current user (highlighted in the theatre block)
+  const { data: myChildrenNames = [] } = useQuery({
+    queryKey: ["my-children-names", user?.id],
+    enabled: !!user?.id,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("guardians")
+        .select("player_name")
+        .eq("parent_user_id", user!.id)
+        .eq("status", "active");
+      return (data ?? [])
+        .map((g) => (g.player_name ?? "").trim())
+        .filter(Boolean)
+        // Use first-name only to match player_stats.first_name
+        .map((n) => n.split(/\s+/)[0]);
+    },
+  });
+
   // ── User allocation ──────────────────────────────────
   const { data: myAllocation, isLoading: allocLoading } = useQuery({
     queryKey: ["presentation-allocation", event?.id, user?.id],
