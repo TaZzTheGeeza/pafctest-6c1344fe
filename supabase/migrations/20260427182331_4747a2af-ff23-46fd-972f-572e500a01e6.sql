@@ -1,0 +1,1 @@
+UPDATE public.announcements SET message = '🏆 Presentation Evening — Fri 5 June 2026 at Holiday Inn, Thorpe Wood. Tap the link to claim your family tickets — admins will allocate seats: /presentation' WHERE id = '20c42111-9365-4260-8e0c-b0912470e1c5';
