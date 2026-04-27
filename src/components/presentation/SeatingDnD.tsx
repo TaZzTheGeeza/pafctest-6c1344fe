@@ -392,7 +392,7 @@ function DraggableTicket({
       {...attributes}
       {...listeners}
       className={cn(
-        "flex items-center gap-1.5 rounded-md border border-border bg-card/80 px-2 py-1 cursor-grab active:cursor-grabbing select-none transition-opacity touch-none",
+        "flex items-center gap-1.5 rounded-md border border-border bg-card/80 px-2 py-1 cursor-grab active:cursor-grabbing select-none transition-opacity touch-none w-full min-w-0 overflow-hidden",
         compact ? "text-[11px]" : "text-xs",
         isDragging && "opacity-30",
       )}
