@@ -44,6 +44,8 @@ import {
   SeatingPlan,
   type PresentationTable,
   type PresentationTicketSeat,
+  type TheatreAssignment,
+  type TheatreSeatPlayer,
 } from "@/components/presentation/SeatingPlan";
 import type { TheatrePlayer } from "@/components/presentation/TheatreBlock";
 
