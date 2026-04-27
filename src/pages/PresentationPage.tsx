@@ -379,8 +379,8 @@ function ClaimAllocationForm({
   onCreated: () => void;
 }) {
   const [selectedPlayer, setSelectedPlayer] = useState<string>("");
+  // Guest tickets only — the player gets their own seat in the theatre block at the front.
   const [adults, setAdults] = useState(2);
-  // Children count INCLUDES the player themselves. Min 1 (just the player), max 2.
   const [children, setChildren] = useState(1);
   const [submitting, setSubmitting] = useState(false);
 
