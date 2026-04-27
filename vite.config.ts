@@ -19,11 +19,24 @@ export default defineConfig(({ mode }) => ({
     VitePWA({
       registerType: "autoUpdate",
       includeAssets: ["favicon-v3.ico", "apple-touch-icon-v4.png", "pwa-icon-192-v4.png", "pwa-icon-512-v4.png", "pwa-maskable-v4.png"],
+      devOptions: {
+        enabled: false,
+      },
       workbox: {
         skipWaiting: true,
         clientsClaim: true,
         cleanupOutdatedCaches: true,
         navigateFallbackDenylist: [/^\/~oauth/, /^\/auth(?:\/|$)/],
+        runtimeCaching: [
+          {
+            urlPattern: ({ request }) => request.mode === "navigate",
+            handler: "NetworkFirst",
+            options: {
+              cacheName: "pafc-pages",
+              networkTimeoutSeconds: 3,
+            },
+          },
+        ],
         globPatterns: ["**/*.{js,css,html,ico,png,svg,jpg,webp,woff,woff2}"],
         importScripts: ["/push-sw.js"],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
