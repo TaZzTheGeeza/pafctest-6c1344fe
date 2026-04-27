@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { TeamAccessRequest } from "@/components/hub/TeamAccessRequest";
+import { CheckForUpdatesButton } from "@/components/CheckForUpdatesButton";
 import {
   User, Trophy, FileText, Calendar, Loader2,
   Activity, Award, Star, ArrowLeft, Camera, Pencil, Check, X, UserPlus, Shield,
@@ -360,6 +361,11 @@ export default function MyProfilePage() {
                 </div>
               ))}
             </div>
+          </div>
+
+          {/* App update / cache refresh */}
+          <div className="mb-6">
+            <CheckForUpdatesButton />
           </div>
 
           {/* Tabs */}
