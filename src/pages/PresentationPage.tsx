@@ -299,7 +299,7 @@ export default function PresentationPage() {
             </TabsContent>
 
             <TabsContent value="seating">
-              <div className="max-w-5xl mx-auto">
+              <div className="w-full max-w-[1600px] mx-auto">
                 <SeatingPlan
                   tables={tables}
                   tickets={allTickets}
@@ -311,8 +311,9 @@ export default function PresentationPage() {
                 />
                 <p className="text-center text-xs text-muted-foreground mt-4">
                   Players sit in the theatre blocks flanking the stage (auto-allocated by
-                  age group). Guest tables seat 2 adults + 1 child per player. Your child&apos;s
-                  chair is highlighted in gold.
+                  age group). Each player&apos;s family is allocated a guest table seating
+                  <strong> 2 adults + 1 child guest</strong>. Your child&apos;s chair is
+                  highlighted in gold.
                 </p>
               </div>
             </TabsContent>
