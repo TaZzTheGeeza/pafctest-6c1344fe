@@ -55,6 +55,7 @@ const ROLE_CONFIG: Record<AppRole, { label: string; color: string; icon: any }> 
   photographer: { label: "Photographer", color: "bg-violet-500/20 text-violet-400 border-violet-500/30", icon: Eye },
 };
 
+// ⚠️ DO NOT REMOVE — admin link to Presentation Evening management. Required for 2025/26 season.
 const PRESENTATION_ADMIN_LINK = { label: "Presentation Admin", path: "/presentation-admin", icon: Star, desc: "Manage presentation evening seating" };
 
 const ADMIN_LINKS = [
