@@ -20,11 +20,11 @@ interface DateInputProps {
   id?: string;
   required?: boolean;
   disabled?: boolean;
-  /** Show month/year dropdowns in the calendar (great for DOB selection) */
+  /** Show month/year dropdowns in the calendar (great for DOB selection). Defaults to true. */
   dropdownNav?: boolean;
   /** Earliest selectable year. Defaults to 1920 when dropdownNav is enabled. */
   fromYear?: number;
-  /** Latest selectable year. Defaults to current year when dropdownNav is enabled. */
+  /** Latest selectable year. Defaults to (current year + 5) when dropdownNav is enabled. */
   toYear?: number;
 }
 
@@ -36,7 +36,7 @@ export function DateInput({
   id,
   required,
   disabled,
-  dropdownNav,
+  dropdownNav = true,
   fromYear,
   toYear,
 }: DateInputProps) {
@@ -50,7 +50,7 @@ export function DateInput({
 
   const currentYear = new Date().getFullYear();
   const resolvedFromYear = fromYear ?? 1920;
-  const resolvedToYear = toYear ?? currentYear;
+  const resolvedToYear = toYear ?? currentYear + 5;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
