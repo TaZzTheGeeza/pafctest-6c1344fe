@@ -148,36 +148,43 @@ export function SeatingPlan({
       <div className="pointer-events-none absolute inset-0 rounded-2xl border border-primary/20 m-2" />
 
       {/* STAGE + flanking theatre blocks */}
-      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 md:gap-6 mb-6 md:mb-8 min-w-[900px]">
+      <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-3 md:gap-6 mb-6 md:mb-8 min-w-[1200px]">
         {/* Left theatre block — angled toward stage */}
-        <div className="flex justify-end">
+        <div className="flex justify-end pt-10 md:pt-14">
           <TheatreSeatBlock
             players={leftTheatrePlayers}
             highlightedNames={highlightedNames}
             tilt={-14}
             side="left"
+            rows={7}
+            chairsPerRow={12}
           />
         </div>
 
         {/* STAGE */}
         <div
-          className="min-w-[180px] md:min-w-[260px] py-3 md:py-4 px-6 text-center font-display tracking-[0.4em] uppercase text-primary border-2 border-primary/60 rounded-md self-start"
+          className="min-w-[200px] md:min-w-[300px] py-4 md:py-6 px-6 text-center font-display tracking-[0.4em] uppercase text-primary border-2 border-primary/60 rounded-md"
           style={{
             background:
               "linear-gradient(180deg, hsl(45 50% 15%) 0%, hsl(45 30% 10%) 100%)",
             boxShadow: "0 0 25px hsl(var(--primary) / 0.25)",
           }}
         >
-          <p className="text-base md:text-xl font-bold">★ Stage ★</p>
+          <p className="text-base md:text-2xl font-bold">★ Stage ★</p>
+          <p className="text-[9px] md:text-[10px] tracking-[0.3em] text-muted-foreground mt-2">
+            7 rows × 12 seats per side
+          </p>
         </div>
 
         {/* Right theatre block — angled toward stage */}
-        <div className="flex justify-start">
+        <div className="flex justify-start pt-10 md:pt-14">
           <TheatreSeatBlock
             players={rightTheatrePlayers}
             highlightedNames={highlightedNames}
             tilt={14}
             side="right"
+            rows={7}
+            chairsPerRow={12}
           />
         </div>
       </div>
