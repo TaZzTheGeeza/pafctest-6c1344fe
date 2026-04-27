@@ -147,23 +147,10 @@ export function SeatingPlan({
     >
       <div className="pointer-events-none absolute inset-0 rounded-2xl border border-primary/20 m-2" />
 
-      {/* STAGE + flanking theatre blocks */}
-      <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-3 md:gap-6 mb-6 md:mb-8 min-w-[1200px]">
-        {/* Left theatre block — angled toward stage */}
-        <div className="flex justify-end pt-10 md:pt-14">
-          <TheatreSeatBlock
-            players={leftTheatrePlayers}
-            highlightedNames={highlightedNames}
-            tilt={-14}
-            side="left"
-            rows={7}
-            chairsPerRow={12}
-          />
-        </div>
-
-        {/* STAGE */}
+      {/* STAGE */}
+      <div className="flex justify-center mb-4 md:mb-6 min-w-[1400px]">
         <div
-          className="min-w-[200px] md:min-w-[300px] py-4 md:py-6 px-6 text-center font-display tracking-[0.4em] uppercase text-primary border-2 border-primary/60 rounded-md"
+          className="min-w-[260px] md:min-w-[360px] py-4 md:py-6 px-8 text-center font-display tracking-[0.4em] uppercase text-primary border-2 border-primary/60 rounded-md"
           style={{
             background:
               "linear-gradient(180deg, hsl(45 50% 15%) 0%, hsl(45 30% 10%) 100%)",
@@ -172,16 +159,26 @@ export function SeatingPlan({
         >
           <p className="text-base md:text-2xl font-bold">★ Stage ★</p>
           <p className="text-[9px] md:text-[10px] tracking-[0.3em] text-muted-foreground mt-2">
-            7 rows × 12 seats per side
+            168 player seats · 7 rows × 12 seats per side
           </p>
         </div>
+      </div>
 
-        {/* Right theatre block — angled toward stage */}
-        <div className="flex justify-start pt-10 md:pt-14">
+      {/* Theatre blocks — flanking the stage, no rotation to avoid overlap */}
+      <div className="grid grid-cols-2 gap-6 md:gap-10 mb-8 md:mb-12 min-w-[1400px]">
+        <div className="flex justify-center">
+          <TheatreSeatBlock
+            players={leftTheatrePlayers}
+            highlightedNames={highlightedNames}
+            side="left"
+            rows={7}
+            chairsPerRow={12}
+          />
+        </div>
+        <div className="flex justify-center">
           <TheatreSeatBlock
             players={rightTheatrePlayers}
             highlightedNames={highlightedNames}
-            tilt={14}
             side="right"
             rows={7}
             chairsPerRow={12}
@@ -189,10 +186,19 @@ export function SeatingPlan({
         </div>
       </div>
 
+      {/* Divider between players and guest tables */}
+      <div className="flex items-center gap-3 mb-4 md:mb-6 min-w-[1400px]">
+        <div className="flex-1 h-px bg-primary/20" />
+        <p className="text-[10px] font-display tracking-[0.4em] uppercase text-primary/70">
+          ★ Guest Tables · 70 tables × 6 seats = 420 ★
+        </p>
+        <div className="flex-1 h-px bg-primary/20" />
+      </div>
+
       {/* Rows of tables */}
-      <div className="flex flex-col gap-4 md:gap-5 min-w-[900px]">
+      <div className="flex flex-col gap-4 md:gap-5 min-w-[1400px]">
         {rows.map(([rowIdx, rowTables]) => (
-          <div key={rowIdx} className="grid grid-cols-10 gap-2 md:gap-3">
+          <div key={rowIdx} className="grid grid-cols-10 gap-3 md:gap-4">
             {rowTables.map((table) => {
               const seated = ticketsByTable.get(table.id) ?? [];
               const taken = seated.length;
@@ -401,15 +407,12 @@ function RectTable({
 function TheatreSeatBlock({
   players,
   highlightedNames,
-  tilt,
   side,
   rows = 7,
   chairsPerRow = 12,
 }: {
   players: TheatreSeatPlayer[];
   highlightedNames: string[];
-  /** Rotation in degrees (negative = anti-clockwise / left side) */
-  tilt: number;
   side: "left" | "right";
   rows?: number;
   chairsPerRow?: number;
@@ -444,17 +447,15 @@ function TheatreSeatBlock({
 
   return (
     <div
-      className="rounded-md border border-primary/30 p-2 md:p-3 inline-block"
+      className="rounded-md border border-primary/30 p-3 md:p-4 inline-block"
       style={{
-        transform: `rotate(${tilt}deg)`,
-        transformOrigin: side === "left" ? "right center" : "left center",
         background:
           "linear-gradient(180deg, hsl(45 25% 10% / 0.7) 0%, hsl(0 0% 4% / 0.7) 100%)",
         boxShadow: "inset 0 0 20px hsl(var(--primary) / 0.05)",
       }}
     >
-      <p className="text-center text-[8px] md:text-[9px] font-display tracking-[0.25em] uppercase text-primary/80 mb-1.5">
-        {side === "left" ? "◀ Stage Left" : "Stage Right ▶"} · {players.length}/{totalSeats}
+      <p className="text-center text-[9px] md:text-[10px] font-display tracking-[0.3em] uppercase text-primary/80 mb-2">
+        {side === "left" ? "◀ Stage Left" : "Stage Right ▶"} · {players.length}/{totalSeats} seats
       </p>
       <div className="flex flex-col gap-[3px] md:gap-1">
         {Array.from({ length: rows }).map((_, rIdx) => {
@@ -469,7 +470,7 @@ function TheatreSeatBlock({
                   return (
                     <span
                       key={`empty-${rIdx}-${cIdx}`}
-                      className="h-[26px] md:h-[30px] w-[34px] md:w-[42px] rounded-[3px] border border-dashed border-primary/15 bg-card/20"
+                      className="h-[30px] md:h-[36px] w-[42px] md:w-[52px] rounded-[3px] border border-dashed border-primary/15 bg-card/20"
                       title="Empty seat"
                     />
                   );
@@ -482,7 +483,7 @@ function TheatreSeatBlock({
                   <div
                     key={p.id}
                     className={cn(
-                      "h-[26px] md:h-[30px] w-[34px] md:w-[42px] rounded-[3px] border flex flex-col items-center justify-center leading-none px-0.5 overflow-hidden transition-transform hover:scale-110 hover:z-10 relative",
+                      "h-[30px] md:h-[36px] w-[42px] md:w-[52px] rounded-[3px] border flex flex-col items-center justify-center leading-none px-0.5 overflow-hidden transition-transform hover:scale-110 hover:z-10 relative",
                       isMine && "ring-1 ring-primary ring-offset-[1px] ring-offset-background",
                     )}
                     style={{
@@ -493,7 +494,6 @@ function TheatreSeatBlock({
                         ? "hsl(var(--primary))"
                         : `hsl(${hue} 70% 50%)`,
                       color: isMine ? "hsl(var(--primary))" : `hsl(${hue} 90% 88%)`,
-                      transform: `rotate(${-tilt}deg)`,
                     }}
                     title={
                       [
@@ -506,11 +506,11 @@ function TheatreSeatBlock({
                     }
                   >
                     {p.shirt_number != null && (
-                      <span className="text-[6px] md:text-[7px] font-display font-bold opacity-70">
+                      <span className="text-[7px] md:text-[8px] font-display font-bold opacity-70">
                         #{p.shirt_number}
                       </span>
                     )}
-                    <span className="text-[7px] md:text-[8px] font-display font-bold truncate w-full text-center">
+                    <span className="text-[8px] md:text-[9px] font-display font-bold truncate w-full text-center">
                       {p.first_name ?? "?"}
                     </span>
                   </div>
