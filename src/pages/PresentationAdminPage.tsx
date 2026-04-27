@@ -253,6 +253,7 @@ export default function PresentationAdminPage() {
               tables={tables}
               allocations={allocations}
               seatsPerTable={event.seats_per_table}
+              eventTitle={event.title}
               onRefresh={refresh}
             />
           </TabsContent>
