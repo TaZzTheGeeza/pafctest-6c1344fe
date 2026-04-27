@@ -427,8 +427,8 @@ function ClaimAllocationForm({
       toast.error("Please select which child this ticket is for");
       return;
     }
-    if (adults < 0 || adults > 2 || children < 1 || children > 2) {
-      toast.error("Maximum 2 adults and 2 children (including your player) per family");
+    if (adults < 0 || adults > 2 || children < 0 || children > 1) {
+      toast.error("Maximum 2 adults and 1 child guest per player");
       return;
     }
     setSubmitting(true);
