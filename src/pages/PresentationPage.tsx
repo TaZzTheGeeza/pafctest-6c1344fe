@@ -282,19 +282,18 @@ export default function PresentationPage() {
 
             <TabsContent value="seating">
               <div className="max-w-5xl mx-auto">
-                <TheatreBlock
-                  players={theatrePlayers}
-                  highlightedNames={myChildrenNames}
-                />
                 <SeatingPlan
                   tables={tables}
                   tickets={allTickets}
                   highlightUserId={user?.id ?? null}
                   seatsPerTable={event.seats_per_table}
+                  theatrePlayers={theatrePlayers}
+                  highlightedNames={myChildrenNames}
                 />
                 <p className="text-center text-xs text-muted-foreground mt-4">
-                  Players sit in the front theatre block (auto-allocated by age group).
-                  Guest tables are behind. Your child&apos;s chair is highlighted in gold.
+                  Players sit in the theatre blocks flanking the stage (auto-allocated by
+                  age group). Guest tables seat 2 adults + 1 child per player. Your child&apos;s
+                  chair is highlighted in gold.
                 </p>
               </div>
             </TabsContent>
