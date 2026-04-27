@@ -653,7 +653,7 @@ function PeoplePanel({
                 <div className="flex items-center gap-2 shrink-0">
                   {table && t.seat_number != null ? (
                     <Badge variant="outline" className="text-primary border-primary/40">
-                      T{table.table_number} · S{t.seat_number}
+                      {table.label ?? `T${table.table_number}`} · S{t.seat_number}
                     </Badge>
                   ) : (
                     <Badge variant="outline" className="text-destructive border-destructive/40">
