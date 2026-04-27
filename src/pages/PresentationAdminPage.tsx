@@ -44,6 +44,8 @@ import {
   SeatingPlan,
   type PresentationTable,
   type PresentationTicketSeat,
+  type TheatreAssignment,
+  type TheatreSeatPlayer,
 } from "@/components/presentation/SeatingPlan";
 import type { TheatrePlayer } from "@/components/presentation/TheatreBlock";
 
@@ -151,9 +153,28 @@ export default function PresentationAdminPage() {
     },
   });
 
+  const { data: theatreAssignments = [], refetch: refetchTheatreAssignments } = useQuery({
+    queryKey: ["presentation-theatre-assignments-admin", event?.id],
+    enabled: !!event?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("presentation_theatre_seats")
+        .select("player_stat_id, side, row_index, col_index")
+        .eq("event_id", event!.id);
+      if (error) throw error;
+      return (data ?? []).map((r) => ({
+        player_id: r.player_stat_id,
+        side: r.side as "left" | "right",
+        row_index: r.row_index,
+        col_index: r.col_index,
+      })) as TheatreAssignment[];
+    },
+  });
+
   const refresh = () => {
     refetchTables();
     refetchTickets();
+    refetchTheatreAssignments();
     qc.invalidateQueries({ queryKey: ["presentation-allocations-admin"] });
   };
 
@@ -254,6 +275,8 @@ export default function PresentationAdminPage() {
               tickets={tickets}
               allocations={allocations}
               theatrePlayers={theatrePlayers}
+              theatreAssignments={theatreAssignments}
+              eventId={event.id}
               seatsPerTable={event.seats_per_table}
               onRefresh={refresh}
             />
@@ -309,12 +332,14 @@ function StatCard({
   );
 }
 
-// ── Seating Plan with click-to-inspect-table ─────────────
+// ── Seating Plan with click-to-inspect-table & theatre seat editor ─────────────
 function SeatingPlanAdmin({
   tables,
   tickets,
   allocations,
   theatrePlayers,
+  theatreAssignments,
+  eventId,
   seatsPerTable,
   onRefresh,
 }: {
@@ -322,10 +347,18 @@ function SeatingPlanAdmin({
   tickets: AdminTicket[];
   allocations: AdminAllocation[];
   theatrePlayers: TheatrePlayer[];
+  theatreAssignments: TheatreAssignment[];
+  eventId: string;
   seatsPerTable: number;
   onRefresh: () => void;
 }) {
   const [openTableId, setOpenTableId] = useState<string | null>(null);
+  const [editingSeat, setEditingSeat] = useState<{
+    side: "left" | "right";
+    row_index: number;
+    col_index: number;
+    player: TheatreSeatPlayer | null;
+  } | null>(null);
 
   return (
     <>
@@ -336,10 +369,11 @@ function SeatingPlanAdmin({
         adminMode
         onSelectTable={(id) => setOpenTableId(id)}
         theatrePlayers={theatrePlayers}
+        theatreAssignments={theatreAssignments}
+        onTheatreSeatClick={(info) => setEditingSeat(info)}
       />
       <p className="text-center text-xs text-muted-foreground mt-3">
-        Players are auto-seated in the theatre blocks flanking the stage (by age group).
-        Click any guest table (including reserved) to view occupants and move people.
+        Click any theatre seat to assign, move, swap or clear a player. Click any guest table to manage occupants.
       </p>
       {openTableId && (
         <TableInspectorDialog
@@ -350,6 +384,19 @@ function SeatingPlanAdmin({
           seatsPerTable={seatsPerTable}
           onClose={() => setOpenTableId(null)}
           onChanged={onRefresh}
+        />
+      )}
+      {editingSeat && (
+        <TheatreSeatEditorDialog
+          eventId={eventId}
+          seat={editingSeat}
+          theatrePlayers={theatrePlayers}
+          theatreAssignments={theatreAssignments}
+          onClose={() => setEditingSeat(null)}
+          onChanged={() => {
+            setEditingSeat(null);
+            onRefresh();
+          }}
         />
       )}
     </>
@@ -1237,6 +1284,253 @@ function NotifyAllSeatedButton({
       )}
       Notify all seated ({groups.length})
     </Button>
+  );
+}
+
+// ── Theatre Seat Editor Dialog ─────────────
+function TheatreSeatEditorDialog({
+  eventId,
+  seat,
+  theatrePlayers,
+  theatreAssignments,
+  onClose,
+  onChanged,
+}: {
+  eventId: string;
+  seat: {
+    side: "left" | "right";
+    row_index: number;
+    col_index: number;
+    player: TheatreSeatPlayer | null;
+  };
+  theatrePlayers: TheatrePlayer[];
+  theatreAssignments: TheatreAssignment[];
+  onClose: () => void;
+  onChanged: () => void;
+}) {
+  const [search, setSearch] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  // Map of player_id → its current seat (so we can show who's already placed)
+  const seatByPlayer = useMemo(() => {
+    const m = new Map<string, TheatreAssignment>();
+    for (const a of theatreAssignments) m.set(a.player_id, a);
+    return m;
+  }, [theatreAssignments]);
+
+  // Sort players: unassigned first, then by age group + first name
+  const sortedPlayers = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return [...theatrePlayers]
+      .filter((p) => {
+        if (!q) return true;
+        const hay = `${p.first_name ?? ""} ${p.shirt_number ?? ""} ${p.age_group ?? ""}`.toLowerCase();
+        return hay.includes(q);
+      })
+      .sort((a, b) => {
+        const aAssigned = seatByPlayer.has(a.id) ? 1 : 0;
+        const bAssigned = seatByPlayer.has(b.id) ? 1 : 0;
+        if (aAssigned !== bAssigned) return aAssigned - bAssigned;
+        const ag = (a.age_group ?? "").localeCompare(b.age_group ?? "");
+        if (ag !== 0) return ag;
+        return (a.first_name ?? "").localeCompare(b.first_name ?? "");
+      });
+  }, [theatrePlayers, seatByPlayer, search]);
+
+  const seatLabel = `${seat.side === "left" ? "Stage Left" : "Stage Right"} · Row ${seat.row_index}, Col ${seat.col_index}`;
+
+  const handleClear = async () => {
+    if (!seat.player) return;
+    if (!confirm(`Remove ${seat.player.first_name} from this seat?`)) return;
+    setSaving(true);
+    const { error } = await supabase
+      .from("presentation_theatre_seats")
+      .delete()
+      .eq("event_id", eventId)
+      .eq("side", seat.side)
+      .eq("row_index", seat.row_index)
+      .eq("col_index", seat.col_index);
+    setSaving(false);
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success("Seat cleared");
+      onChanged();
+    }
+  };
+
+  const handleAssign = async (playerId: string) => {
+    setSaving(true);
+    try {
+      const existing = seatByPlayer.get(playerId);
+      const occupant = seat.player;
+
+      // 1. If chair already has the same player, just close
+      if (occupant?.id === playerId) {
+        onClose();
+        return;
+      }
+
+      // 2. Free the player's previous seat (if any) so we can move them
+      if (existing) {
+        const { error: delErr } = await supabase
+          .from("presentation_theatre_seats")
+          .delete()
+          .eq("event_id", eventId)
+          .eq("player_stat_id", playerId);
+        if (delErr) throw delErr;
+      }
+
+      // 3. If there's currently an occupant, decide: swap (if player came from another chair) or evict
+      if (occupant) {
+        // Remove the current occupant from this chair first
+        const { error: clearErr } = await supabase
+          .from("presentation_theatre_seats")
+          .delete()
+          .eq("event_id", eventId)
+          .eq("side", seat.side)
+          .eq("row_index", seat.row_index)
+          .eq("col_index", seat.col_index);
+        if (clearErr) throw clearErr;
+
+        // If incoming player had a previous seat → swap occupant into it
+        if (existing) {
+          const { error: swapErr } = await supabase
+            .from("presentation_theatre_seats")
+            .insert({
+              event_id: eventId,
+              player_stat_id: occupant.id,
+              side: existing.side,
+              row_index: existing.row_index,
+              col_index: existing.col_index,
+            });
+          if (swapErr) throw swapErr;
+        }
+      }
+
+      // 4. Place the new player into the target seat
+      const { error: insErr } = await supabase
+        .from("presentation_theatre_seats")
+        .insert({
+          event_id: eventId,
+          player_stat_id: playerId,
+          side: seat.side,
+          row_index: seat.row_index,
+          col_index: seat.col_index,
+        });
+      if (insErr) throw insErr;
+
+      toast.success(
+        existing && occupant
+          ? "Players swapped"
+          : existing
+          ? "Player moved"
+          : occupant
+          ? "Player replaced"
+          : "Player assigned",
+      );
+      onChanged();
+    } catch (e: any) {
+      toast.error(e.message ?? "Failed to update seat");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Dialog open onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="max-w-xl">
+        <DialogHeader>
+          <DialogTitle>Theatre Seat — {seatLabel}</DialogTitle>
+          <DialogDescription>
+            {seat.player ? (
+              <>
+                Currently seated: <span className="font-semibold text-foreground">{seat.player.first_name}</span>
+                {seat.player.shirt_number != null && ` · #${seat.player.shirt_number}`}
+                {seat.player.age_group && ` · ${seat.player.age_group}`}
+              </>
+            ) : (
+              "Empty seat — pick a player to assign."
+            )}
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search by name, shirt #, age group…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-8"
+            />
+          </div>
+          {seat.player && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleClear}
+              disabled={saving}
+              className="text-destructive border-destructive/40 hover:bg-destructive/10"
+            >
+              <Trash2 className="h-3.5 w-3.5 mr-1" /> Clear seat
+            </Button>
+          )}
+        </div>
+
+        <div className="max-h-[55vh] overflow-y-auto space-y-1.5 border border-border rounded-lg p-2 bg-card/40">
+          {sortedPlayers.length === 0 && (
+            <p className="text-sm text-muted-foreground text-center py-4">No matching players.</p>
+          )}
+          {sortedPlayers.map((p) => {
+            const where = seatByPlayer.get(p.id);
+            const isHere = seat.player?.id === p.id;
+            return (
+              <button
+                key={p.id}
+                type="button"
+                disabled={saving || isHere}
+                onClick={() => handleAssign(p.id)}
+                className={`w-full flex items-center justify-between gap-3 p-2.5 rounded-md border text-left transition-colors ${
+                  isHere
+                    ? "border-primary bg-primary/10"
+                    : "border-border hover:border-primary/60 hover:bg-card"
+                } ${saving ? "opacity-60" : ""}`}
+              >
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    {p.shirt_number != null && (
+                      <Badge variant="outline" className="text-[10px]">#{p.shirt_number}</Badge>
+                    )}
+                    <span className="font-medium truncate">{p.first_name ?? "?"}</span>
+                    {p.age_group && (
+                      <span className="text-[10px] text-muted-foreground">{p.age_group}</span>
+                    )}
+                  </div>
+                  {where && !isHere && (
+                    <p className="text-[10px] text-muted-foreground mt-0.5">
+                      Currently in {where.side === "left" ? "Stage Left" : "Stage Right"} R{where.row_index} C{where.col_index}
+                      {seat.player ? " — will swap" : " — will move"}
+                    </p>
+                  )}
+                  {!where && !isHere && (
+                    <p className="text-[10px] text-emerald-500/80 mt-0.5">Unassigned</p>
+                  )}
+                  {isHere && (
+                    <p className="text-[10px] text-primary mt-0.5">Currently in this seat</p>
+                  )}
+                </div>
+                {!isHere && <Move className="h-4 w-4 text-muted-foreground shrink-0" />}
+              </button>
+            );
+          })}
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose} disabled={saving}>Close</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 

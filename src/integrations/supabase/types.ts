@@ -1482,6 +1482,47 @@ export type Database = {
           },
         ]
       }
+      presentation_theatre_seats: {
+        Row: {
+          col_index: number
+          created_at: string
+          event_id: string
+          id: string
+          player_stat_id: string
+          row_index: number
+          side: string
+          updated_at: string
+        }
+        Insert: {
+          col_index: number
+          created_at?: string
+          event_id: string
+          id?: string
+          player_stat_id: string
+          row_index: number
+          side: string
+          updated_at?: string
+        }
+        Update: {
+          col_index?: number
+          created_at?: string
+          event_id?: string
+          id?: string
+          player_stat_id?: string
+          row_index?: number
+          side?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "presentation_theatre_seats_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "presentation_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       presentation_tickets: {
         Row: {
           allocation_id: string
