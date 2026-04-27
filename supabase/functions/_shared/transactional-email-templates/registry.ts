@@ -17,6 +17,7 @@ import { template as adminBroadcast } from './admin-broadcast.tsx'
 import { template as shopOrderNotification } from './shop-order-notification.tsx'
 import { template as meetingInvite } from './meeting-invite.tsx'
 import { template as teamInvite } from './team-invite.tsx'
+import { template as presentationSeatsAllocated } from './presentation-seats-allocated.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'payment-request-created': paymentRequestCreated,
@@ -27,4 +28,5 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'shop-order-notification': shopOrderNotification,
   'meeting-invite': meetingInvite,
   'team-invite': teamInvite,
+  'presentation-seats-allocated': presentationSeatsAllocated,
 }

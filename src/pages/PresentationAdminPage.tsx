@@ -1161,6 +1161,8 @@ async function sendSeatNotification(params: {
     (allSeated
       ? "\n\nPlease arrive 15 minutes before the start time."
       : "");
+
+  // 1. In-app notification
   const { error } = await supabase.from("hub_notifications").insert({
     user_id: params.userId,
     title,
@@ -1169,6 +1171,65 @@ async function sendSeatNotification(params: {
     link: "/presentation",
   } as any);
   if (error) return { ok: false, error: error.message };
+
+  // 2. Email notification (fire and forget)
+  const tableById = new Map(params.tables.map((t) => [t.id, t]));
+  const seats = params.familyTickets.map((t) => {
+    const tb = t.table_id ? tableById.get(t.table_id) : null;
+    return {
+      attendee: t.attendee_name,
+      ticketType: t.ticket_type,
+      table: tb ? (tb.label ?? `Table ${tb.table_number}`) : undefined,
+      seat: t.seat_number ?? undefined,
+    };
+  });
+
+  (async () => {
+    try {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("email")
+        .eq("id", params.userId)
+        .maybeSingle();
+      if (profile?.email) {
+        const idempotencyKey = `presentation-seats-${params.userId}-${params.familyTickets
+          .map((t) => `${t.id}:${t.table_id ?? "_"}:${t.seat_number ?? "_"}`)
+          .sort()
+          .join("|")}`;
+        await supabase.functions.invoke("send-transactional-email", {
+          body: {
+            templateName: "presentation-seats-allocated",
+            recipientEmail: profile.email,
+            idempotencyKey,
+            templateData: {
+              playerName: params.playerName,
+              eventTitle: params.eventTitle,
+              allSeated,
+              seats,
+            },
+          },
+        });
+      }
+    } catch (err) {
+      console.error("Presentation seat email failed:", err);
+    }
+  })();
+
+  // 3. Push notification (fire and forget)
+  supabase.functions
+    .invoke("send-push-notification", {
+      body: {
+        userIds: [params.userId],
+        title,
+        message: allSeated
+          ? `Seats confirmed for ${params.familyTickets.length} ticket(s). Tap to view.`
+          : `Your ticket allocation has been updated. Tap to view.`,
+        link: "/presentation",
+        tag: `presentation-seats-${params.userId}`,
+      },
+    })
+    .catch((err) => console.error("Presentation seat push failed:", err));
+
   return { ok: true };
 }
 
