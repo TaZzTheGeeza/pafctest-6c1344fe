@@ -190,28 +190,53 @@ export default function HubPage() {
       {activeTab === "members" && activeTeam && (isAdmin || isCoach) && <TeamMemberManager teamSlug={activeTeam} teamName={activeTeamName || ""} />}
       {activeTab === "meetings" && <HubMeetingsEmbed />}
       {activeTab === "player" && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {playerHubItems.map((item) => (
-            <Link
-              key={item.title}
-              to={item.path}
-              className={`group relative flex flex-col bg-card border ${item.borderColor} rounded-xl p-6 hover:border-primary/40 transition-all hover:shadow-lg hover:shadow-primary/5 ${item.featured ? "sm:col-span-2 ring-1 ring-primary/30" : ""}`}
-            >
-              {item.featured && (
+        <div className="space-y-4">
+          {/* Featured: Presentation Evening — always rendered prominently at top */}
+          {playerHubItems
+            .filter((i) => i.featured)
+            .map((item) => (
+              <Link
+                key={item.title}
+                to={item.path}
+                className={`group relative flex items-center gap-5 bg-gradient-to-br from-primary/15 via-card to-card border-2 ${item.borderColor} rounded-xl p-6 hover:border-primary transition-all hover:shadow-lg hover:shadow-primary/10 ring-1 ring-primary/30`}
+              >
                 <span className="absolute top-3 right-3 text-[10px] tracking-[0.15em] uppercase font-display font-semibold text-primary bg-primary/10 border border-primary/30 px-2 py-0.5 rounded-full">
                   Featured
                 </span>
-              )}
-              <div className={`${item.bgColor} w-12 h-12 rounded-lg flex items-center justify-center mb-4`}>
-                <item.icon className={`h-6 w-6 ${item.color}`} />
-              </div>
-              <h3 className="font-display font-bold text-sm mb-2 group-hover:text-primary transition-colors">{item.title}</h3>
-              <p className="text-xs text-muted-foreground leading-relaxed flex-1">{item.description}</p>
-              <div className="flex items-center gap-1 text-xs text-muted-foreground group-hover:text-primary transition-colors mt-4 font-display tracking-wider">
-                View <ChevronRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
-              </div>
-            </Link>
-          ))}
+                <div className={`${item.bgColor} w-14 h-14 rounded-lg flex items-center justify-center shrink-0`}>
+                  <item.icon className={`h-7 w-7 ${item.color}`} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-display font-bold text-base mb-1 group-hover:text-primary transition-colors">{item.title}</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{item.description}</p>
+                </div>
+                <div className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground group-hover:text-primary transition-colors font-display tracking-wider shrink-0">
+                  Claim Tickets <ChevronRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </Link>
+            ))}
+
+          {/* Standard items grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {playerHubItems
+              .filter((i) => !i.featured)
+              .map((item) => (
+                <Link
+                  key={item.title}
+                  to={item.path}
+                  className={`group relative flex flex-col bg-card border ${item.borderColor} rounded-xl p-6 hover:border-primary/40 transition-all hover:shadow-lg hover:shadow-primary/5`}
+                >
+                  <div className={`${item.bgColor} w-12 h-12 rounded-lg flex items-center justify-center mb-4`}>
+                    <item.icon className={`h-6 w-6 ${item.color}`} />
+                  </div>
+                  <h3 className="font-display font-bold text-sm mb-2 group-hover:text-primary transition-colors">{item.title}</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed flex-1">{item.description}</p>
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground group-hover:text-primary transition-colors mt-4 font-display tracking-wider">
+                    View <ChevronRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </Link>
+              ))}
+          </div>
         </div>
       )}
     </>
