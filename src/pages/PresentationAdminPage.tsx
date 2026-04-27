@@ -1058,3 +1058,169 @@ function exportCsv(
   a.click();
   URL.revokeObjectURL(url);
 }
+
+// ── Notify families: send seat info via in-app notification ──
+function buildSeatLines(
+  familyTickets: AdminTicket[],
+  tables: PresentationTable[],
+): { lines: string[]; allSeated: boolean } {
+  const tableById = new Map(tables.map((t) => [t.id, t]));
+  let allSeated = familyTickets.length > 0;
+  const lines = familyTickets.map((t) => {
+    const table = t.table_id ? tableById.get(t.table_id) : null;
+    if (!table || t.seat_number == null) {
+      allSeated = false;
+      return `• ${t.attendee_name} (${t.ticket_type}) — no seat yet`;
+    }
+    const tableLabel = table.label ?? `Table ${table.table_number}`;
+    return `• ${t.attendee_name} (${t.ticket_type}) — ${tableLabel}, seat ${t.seat_number}`;
+  });
+  return { lines, allSeated };
+}
+
+async function sendSeatNotification(params: {
+  userId: string;
+  playerName: string;
+  eventTitle: string;
+  familyTickets: AdminTicket[];
+  tables: PresentationTable[];
+}): Promise<{ ok: true } | { ok: false; error: string }> {
+  const { lines, allSeated } = buildSeatLines(params.familyTickets, params.tables);
+  if (params.familyTickets.length === 0) {
+    return { ok: false, error: "No tickets to notify about" };
+  }
+  const title = allSeated
+    ? `Your ${params.eventTitle} seats are confirmed`
+    : `Update on your ${params.eventTitle} tickets`;
+  const message =
+    `Family of ${params.playerName}:\n` +
+    lines.join("\n") +
+    (allSeated
+      ? "\n\nPlease arrive 15 minutes before the start time."
+      : "");
+  const { error } = await supabase.from("hub_notifications").insert({
+    user_id: params.userId,
+    title,
+    message,
+    type: "info",
+    link: "/presentation",
+  } as any);
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
+
+function NotifyFamilyButton({
+  allocation,
+  familyTickets,
+  tables,
+  eventTitle,
+  disabled,
+}: {
+  allocation: AdminAllocation;
+  familyTickets: AdminTicket[];
+  tables: PresentationTable[];
+  eventTitle: string;
+  disabled?: boolean;
+}) {
+  const [sending, setSending] = useState(false);
+  const onClick = async () => {
+    setSending(true);
+    const res = await sendSeatNotification({
+      userId: allocation.user_id,
+      playerName: allocation.player_name,
+      eventTitle,
+      familyTickets,
+      tables,
+    });
+    setSending(false);
+    if (res.ok) toast.success(`Notified ${allocation.player_name}'s family`);
+    else toast.error(res.error);
+  };
+  return (
+    <Button
+      size="sm"
+      variant="outline"
+      onClick={onClick}
+      disabled={disabled || sending}
+    >
+      {sending ? (
+        <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
+      ) : (
+        <Bell className="h-3.5 w-3.5 mr-1" />
+      )}
+      Notify
+    </Button>
+  );
+}
+
+function NotifyAllSeatedButton({
+  tickets,
+  allocations,
+  tables,
+  eventTitle,
+}: {
+  tickets: AdminTicket[];
+  allocations: AdminAllocation[];
+  tables: PresentationTable[];
+  eventTitle: string;
+}) {
+  const [sending, setSending] = useState(false);
+
+  const groups = useMemo(() => {
+    const map = new Map<string, AdminTicket[]>();
+    for (const t of tickets) {
+      const arr = map.get(t.allocation_id) ?? [];
+      arr.push(t);
+      map.set(t.allocation_id, arr);
+    }
+    return allocations
+      .map((a) => ({ alloc: a, family: map.get(a.id) ?? [] }))
+      .filter(
+        ({ family }) =>
+          family.length > 0 &&
+          family.every((t) => t.table_id && t.seat_number != null),
+      );
+  }, [tickets, allocations]);
+
+  const onClick = async () => {
+    if (groups.length === 0) {
+      toast.error("No fully seated families to notify yet");
+      return;
+    }
+    if (
+      !confirm(
+        `Send seat notifications to ${groups.length} fully-seated family(ies)?`,
+      )
+    )
+      return;
+    setSending(true);
+    let ok = 0;
+    let fail = 0;
+    for (const { alloc, family } of groups) {
+      const res = await sendSeatNotification({
+        userId: alloc.user_id,
+        playerName: alloc.player_name,
+        eventTitle,
+        familyTickets: family,
+        tables,
+      });
+      if (res.ok) ok++;
+      else fail++;
+    }
+    setSending(false);
+    if (fail === 0) toast.success(`Notified ${ok} family(ies)`);
+    else toast.error(`Sent ${ok}, failed ${fail}`);
+  };
+
+  return (
+    <Button onClick={onClick} disabled={sending}>
+      {sending ? (
+        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+      ) : (
+        <Send className="h-4 w-4 mr-2" />
+      )}
+      Notify all seated ({groups.length})
+    </Button>
+  );
+}
+
