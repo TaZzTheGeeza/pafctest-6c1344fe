@@ -116,6 +116,24 @@ export function SeatingPlan({
     return { hue };
   };
 
+  // Split players evenly between left & right theatre blocks
+  const { leftTheatrePlayers, rightTheatrePlayers } = useMemo(() => {
+    const sorted = [...theatrePlayers].sort((a, b) => {
+      const ag = (a.age_group ?? "").localeCompare(b.age_group ?? "");
+      if (ag !== 0) return ag;
+      const an = a.shirt_number ?? 999;
+      const bn = b.shirt_number ?? 999;
+      if (an !== bn) return an - bn;
+      return (a.first_name ?? "").localeCompare(b.first_name ?? "");
+    });
+    const half = Math.ceil(sorted.length / 2);
+    return {
+      leftTheatrePlayers: sorted.slice(0, half),
+      rightTheatrePlayers: sorted.slice(half),
+    };
+  }, [theatrePlayers]);
+
+
   return (
     <div
       className="w-full rounded-2xl p-4 md:p-6 relative overflow-x-auto"
