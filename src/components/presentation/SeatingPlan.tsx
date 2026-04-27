@@ -135,21 +135,21 @@ export function SeatingPlan({
   // Each entry varies hue, saturation AND lightness so adjacent groups never
   // look similar at a glance. Used by the legend and by the theatre seats below.
   const AGE_GROUP_PALETTE: Record<string, { h: number; s: number; l: number }> = {
-    "u6s":         { h: 0,   s: 80, l: 52 }, // bright red
-    "u7s":         { h: 28,  s: 95, l: 55 }, // vivid orange
-    "u8s-black":   { h: 50,  s: 90, l: 58 }, // gold/yellow
-    "u8s-gold":    { h: 75,  s: 70, l: 50 }, // chartreuse
-    "u9s":         { h: 130, s: 65, l: 42 }, // forest green
-    "u10s":        { h: 160, s: 80, l: 60 }, // mint
-    "u11s-gold":   { h: 188, s: 85, l: 50 }, // cyan
-    "u11s-black":  { h: 215, s: 75, l: 55 }, // sky blue
-    "u13s-gold":   { h: 245, s: 70, l: 62 }, // periwinkle
-    "u13s-black":  { h: 270, s: 65, l: 45 }, // deep purple
-    "u14s":        { h: 300, s: 75, l: 60 }, // magenta
-    "u15s":        { h: 330, s: 85, l: 55 }, // hot pink
-    "u16s":        { h: 350, s: 60, l: 35 }, // wine/maroon
-    "u17s":        { h: 15,  s: 50, l: 30 }, // dark brown
-    "u18s":        { h: 95,  s: 40, l: 70 }, // pale olive
+    "u6s":         { h: 0,   s: 90, l: 60 },
+    "u7s":         { h: 28,  s: 100, l: 55 },
+    "u8s-black":   { h: 55,  s: 100, l: 65 },
+    "u8s-gold":    { h: 95,  s: 70, l: 50 },
+    "u9s":         { h: 145, s: 80, l: 45 },
+    "u10s":        { h: 175, s: 85, l: 55 },
+    "u11s-gold":   { h: 205, s: 95, l: 55 },
+    "u11s-black":  { h: 235, s: 75, l: 65 },
+    "u13s-gold":   { h: 265, s: 80, l: 70 },
+    "u13s-black":  { h: 290, s: 75, l: 50 },
+    "u14s":        { h: 320, s: 90, l: 60 },
+    "u15s":        { h: 345, s: 95, l: 70 },
+    "u16s":        { h: 10,  s: 65, l: 45 },
+    "u17s":        { h: 30,  s: 50, l: 40 },
+    "u18s":        { h: 120, s: 30, l: 75 },
   };
   const ageGroupColor = (ag: string | null | undefined) => {
     if (!ag) return null;
@@ -509,31 +509,34 @@ function TheatreSeatBlock({
     [highlightedNames],
   );
 
-  // Distinct colour per age group (matches main legend palette).
-  const THEATRE_AGE_GROUP_PALETTE: Record<string, { h: number; s: number; l: number }> = {
-    "u6s":         { h: 0,   s: 80, l: 52 },
-    "u7s":         { h: 28,  s: 95, l: 55 },
-    "u8s-black":   { h: 50,  s: 90, l: 58 },
-    "u8s-gold":    { h: 75,  s: 70, l: 50 },
-    "u9s":         { h: 130, s: 65, l: 42 },
-    "u10s":        { h: 160, s: 80, l: 60 },
-    "u11s-gold":   { h: 188, s: 85, l: 50 },
-    "u11s-black":  { h: 215, s: 75, l: 55 },
-    "u13s-gold":   { h: 245, s: 70, l: 62 },
-    "u13s-black":  { h: 270, s: 65, l: 45 },
-    "u14s":        { h: 300, s: 75, l: 60 },
-    "u15s":        { h: 330, s: 85, l: 55 },
-    "u16s":        { h: 350, s: 60, l: 35 },
-    "u17s":        { h: 15,  s: 50, l: 30 },
-    "u18s":        { h: 95,  s: 40, l: 70 },
+  // Pre-baked chair colours (bg gradient + border + text) hand-tuned so each
+  // age group reads as a clearly different colour on the black background.
+  type ChairColors = { bg1: string; bg2: string; border: string; text: string };
+  const THEATRE_CHAIR_COLORS: Record<string, ChairColors> = {
+    "u6s":        { bg1: "hsl(0 75% 35%)",   bg2: "hsl(0 70% 18%)",   border: "hsl(0 90% 60%)",   text: "hsl(0 90% 90%)" },     // red
+    "u7s":        { bg1: "hsl(28 95% 42%)",  bg2: "hsl(28 90% 22%)",  border: "hsl(28 100% 60%)", text: "hsl(28 100% 88%)" },   // orange
+    "u8s-black":  { bg1: "hsl(55 90% 45%)",  bg2: "hsl(55 85% 22%)",  border: "hsl(55 100% 65%)", text: "hsl(55 100% 88%)" },   // yellow
+    "u8s-gold":   { bg1: "hsl(95 65% 28%)",  bg2: "hsl(95 60% 14%)",  border: "hsl(95 70% 50%)",  text: "hsl(95 80% 80%)" },    // olive
+    "u9s":        { bg1: "hsl(145 80% 25%)", bg2: "hsl(145 75% 12%)", border: "hsl(145 80% 45%)", text: "hsl(145 80% 80%)" },   // emerald
+    "u10s":       { bg1: "hsl(175 75% 32%)", bg2: "hsl(175 70% 16%)", border: "hsl(175 85% 55%)", text: "hsl(175 90% 85%)" },   // turquoise
+    "u11s-gold":  { bg1: "hsl(205 90% 35%)", bg2: "hsl(205 85% 18%)", border: "hsl(205 95% 55%)", text: "hsl(205 95% 85%)" },   // azure
+    "u11s-black": { bg1: "hsl(235 60% 45%)", bg2: "hsl(235 55% 22%)", border: "hsl(235 75% 65%)", text: "hsl(235 85% 88%)" },   // royal blue
+    "u13s-gold":  { bg1: "hsl(265 65% 50%)", bg2: "hsl(265 60% 25%)", border: "hsl(265 80% 70%)", text: "hsl(265 90% 90%)" },   // lavender
+    "u13s-black": { bg1: "hsl(290 70% 30%)", bg2: "hsl(290 65% 15%)", border: "hsl(290 75% 50%)", text: "hsl(290 85% 82%)" },   // violet
+    "u14s":       { bg1: "hsl(320 75% 38%)", bg2: "hsl(320 70% 18%)", border: "hsl(320 90% 60%)", text: "hsl(320 95% 88%)" },   // magenta
+    "u15s":       { bg1: "hsl(345 85% 50%)", bg2: "hsl(345 80% 25%)", border: "hsl(345 95% 70%)", text: "hsl(345 100% 90%)" },  // hot pink
+    "u16s":       { bg1: "hsl(10 60% 25%)",  bg2: "hsl(10 55% 12%)",  border: "hsl(10 65% 45%)",  text: "hsl(10 70% 78%)" },    // brick
+    "u17s":       { bg1: "hsl(30 45% 20%)",  bg2: "hsl(30 40% 10%)",  border: "hsl(30 50% 40%)",  text: "hsl(30 60% 75%)" },    // brown
+    "u18s":       { bg1: "hsl(120 25% 55%)", bg2: "hsl(120 20% 28%)", border: "hsl(120 30% 75%)", text: "hsl(120 40% 92%)" },   // sage
   };
-  const colorOf = (ag: string | null | undefined): { h: number; s: number; l: number } => {
-    if (!ag) return { h: 45, s: 30, l: 50 };
+  const chairColorsOf = (ag: string | null | undefined): ChairColors => {
+    if (!ag) return { bg1: "hsl(0 0% 25%)", bg2: "hsl(0 0% 12%)", border: "hsl(0 0% 45%)", text: "hsl(0 0% 80%)" };
     const key = ag.toLowerCase();
-    if (key in THEATRE_AGE_GROUP_PALETTE) return THEATRE_AGE_GROUP_PALETTE[key];
+    if (key in THEATRE_CHAIR_COLORS) return THEATRE_CHAIR_COLORS[key];
     let hash = 0;
     for (let i = 0; i < ag.length; i++) hash = (hash * 31 + ag.charCodeAt(i)) >>> 0;
-    return { h: Math.round((hash * 137.508) % 360), s: 70, l: 50 };
+    const h = Math.round((hash * 137.508) % 360);
+    return { bg1: `hsl(${h} 70% 30%)`, bg2: `hsl(${h} 65% 15%)`, border: `hsl(${h} 75% 50%)`, text: `hsl(${h} 85% 85%)` };
   };
 
   const totalRows = seatGrid.length;
@@ -604,11 +607,7 @@ function TheatreSeatBlock({
                   </button>
                 );
               }
-              const c = colorOf(p.age_group);
-              const bgL = Math.max(10, c.l - 30);
-              const bgL2 = Math.max(6, c.l - 42);
-              const borderL = Math.min(70, c.l + 5);
-              const textL = Math.min(92, c.l + 35);
+              const cc = chairColorsOf(p.age_group);
               const isMine =
                 !!p.first_name &&
                 highlightSet.has(p.first_name.trim().toLowerCase());
@@ -627,11 +626,9 @@ function TheatreSeatBlock({
                   style={{
                     background: isMine
                       ? "linear-gradient(180deg, hsl(45 60% 28%) 0%, hsl(45 50% 14%) 100%)"
-                      : `linear-gradient(180deg, hsl(${c.h} ${c.s}% ${bgL}%) 0%, hsl(${c.h} ${c.s}% ${bgL2}%) 100%)`,
-                    borderColor: isMine
-                      ? "hsl(var(--primary))"
-                      : `hsl(${c.h} ${c.s}% ${borderL}%)`,
-                    color: isMine ? "hsl(var(--primary))" : `hsl(${c.h} ${Math.min(95, c.s + 10)}% ${textL}%)`,
+                      : `linear-gradient(180deg, ${cc.bg1} 0%, ${cc.bg2} 100%)`,
+                    borderColor: isMine ? "hsl(var(--primary))" : cc.border,
+                    color: isMine ? "hsl(var(--primary))" : cc.text,
                   }}
                   title={
                     [
