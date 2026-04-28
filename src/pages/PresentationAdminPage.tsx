@@ -911,49 +911,17 @@ function ManageTablesPanel({
   return (
     <Card className="p-4 md:p-6">
       <p className="text-xs text-muted-foreground mb-4">
-        Rename any table or change its age group. Use the bulk action to quickly
-        rename a whole row at once. Lock tables to mark them reserved.
+        Rename any table or change its label individually. Lock tables to mark
+        them reserved. No rows are dedicated to teams — assign labels per table
+        as needed.
       </p>
-
-      {/* Bulk row → age group */}
-      <div className="flex flex-wrap items-end gap-2 mb-6 p-3 rounded-lg border border-primary/30 bg-primary/5">
-        <div className="flex-1 min-w-[140px]">
-          <label className="text-[10px] font-display tracking-wider uppercase text-muted-foreground">
-            Row
-          </label>
-          <Select value={bulkRow} onValueChange={setBulkRow}>
-            <SelectTrigger className="mt-1">
-              <SelectValue placeholder="Pick row" />
-            </SelectTrigger>
-            <SelectContent>
-              {rows.map(([r, arr]) => (
-                <SelectItem key={r} value={String(r)}>
-                  Row {r} ({arr[0]?.age_group ?? "—"})
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="flex-1 min-w-[180px]">
-          <label className="text-[10px] font-display tracking-wider uppercase text-muted-foreground">
-            New age group label
-          </label>
-          <Input
-            placeholder="e.g. U10s"
-            value={bulkAgeGroup}
-            onChange={(e) => setBulkAgeGroup(e.target.value)}
-            className="mt-1"
-          />
-        </div>
-        <Button onClick={applyRowAgeGroup}>Apply to row</Button>
-      </div>
 
       {/* Per-row table cards */}
       <div className="space-y-6">
         {rows.map(([rowIdx, rowTables]) => (
           <div key={rowIdx}>
             <p className="text-xs font-display tracking-[0.18em] uppercase text-primary mb-2">
-              Row {rowIdx} · {rowTables[0]?.age_group ?? "Unassigned"}
+              Row {rowIdx}
             </p>
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-2">
               {rowTables.map((t) => (
