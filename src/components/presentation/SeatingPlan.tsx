@@ -297,7 +297,7 @@ export function SeatingPlan({
                   isFull={isFull}
                   isSelected={isSelected}
                   hasMine={hasMine}
-                  ageHue={ageGroupColor(table.age_group)?.h ?? null}
+                  ageHue={null}
                   onClick={() =>
                     !isLocked &&
                     (!isFull || isSelected || adminMode) &&
@@ -310,26 +310,7 @@ export function SeatingPlan({
         ))}
       </div>
 
-      {/* Age group legend */}
-      {ageGroupOrder.length > 0 && (
-        <div className="mt-6 md:mt-7 pt-4 border-t border-primary/20 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[10px] font-display tracking-wider uppercase text-muted-foreground">
-          {ageGroupOrder.map((ag) => {
-            const c = ageGroupColor(ag);
-            return (
-              <span key={ag} className="flex items-center gap-1.5">
-                <span
-                  className="h-3 w-5 rounded-sm border"
-                  style={{
-                    background: `hsl(${c?.h} ${c?.s}% ${Math.max(20, (c?.l ?? 50) - 20)}% / 0.55)`,
-                    borderColor: `hsl(${c?.h} ${c?.s}% ${c?.l}% / 0.85)`,
-                  }}
-                />
-                {ag}
-              </span>
-            );
-          })}
-        </div>
-      )}
+      {/* Age group legend removed — tables are numbered 1–80 with no colour coding */}
 
       {/* Legend */}
       <div className="mt-6 md:mt-8 pt-4 md:pt-5 border-t border-primary/20 flex flex-wrap items-center justify-center gap-4 text-[10px] font-display tracking-wider uppercase text-muted-foreground">
@@ -445,7 +426,7 @@ function RectTable({
         ) : (
           <div className="flex flex-col items-center leading-none">
             <span className="text-[10px] md:text-[11px]">
-              {table.col_index ?? table.table_number}
+              {table.table_number}
             </span>
             <span className="text-[7px] md:text-[8px] font-normal text-muted-foreground mt-0.5">
               {taken}/{total}
