@@ -1,0 +1,1 @@
+UPDATE public.presentation_tables SET age_group = NULL;
