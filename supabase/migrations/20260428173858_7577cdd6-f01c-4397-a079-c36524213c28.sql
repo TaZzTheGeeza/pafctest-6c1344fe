@@ -1,0 +1,1 @@
+CREATE POLICY "Anon can read just-inserted team" ON public.tournament_teams FOR SELECT TO anon USING (true);
