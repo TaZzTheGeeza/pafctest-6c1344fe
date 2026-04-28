@@ -900,7 +900,7 @@ function ManageTablesPanel({
             <p className="text-xs font-display tracking-[0.18em] uppercase text-primary mb-2">
               Row {rowIdx}
             </p>
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-2">
+            <div className="grid grid-cols-5 md:grid-cols-10 gap-2 md:gap-3">
               {rowTables.map((t) => (
                 <TableEditorCard
                   key={t.id}
