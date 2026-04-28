@@ -1007,7 +1007,8 @@ function TableEditorCard({
       ) : (
         <>
           <p className="font-display font-bold text-xs leading-tight truncate">
-            {table.label ?? `Table ${table.table_number}`}
+            <span className="text-primary">#{table.table_number}</span>
+            {table.label ? ` · ${table.label}` : ""}
           </p>
           <p className="text-[10px] text-muted-foreground">
             {table.age_group ?? "—"} · {used} seated
