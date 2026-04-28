@@ -867,9 +867,6 @@ function ManageTablesPanel({
     return m;
   }, [tickets]);
 
-  const [bulkRow, setBulkRow] = useState<string>("");
-  const [bulkAgeGroup, setBulkAgeGroup] = useState<string>("");
-
   // Group tables by row_index for display
   const rows = useMemo(() => {
     const map = new Map<number, PresentationTable[]>();
@@ -887,26 +884,6 @@ function ManageTablesPanel({
     }
     return Array.from(map.entries()).sort(([a], [b]) => a - b);
   }, [tables]);
-
-  const applyRowAgeGroup = async () => {
-    if (!bulkRow || !bulkAgeGroup.trim()) {
-      toast.error("Pick a row and enter an age group");
-      return;
-    }
-    const rowNum = parseInt(bulkRow, 10);
-    const ids = (rows.find(([r]) => r === rowNum)?.[1] ?? []).map((t) => t.id);
-    if (!ids.length) return;
-    const { error } = await supabase
-      .from("presentation_tables")
-      .update({ age_group: bulkAgeGroup.trim() })
-      .in("id", ids);
-    if (error) toast.error(error.message);
-    else {
-      toast.success(`Row ${rowNum} set to ${bulkAgeGroup.trim()}`);
-      setBulkAgeGroup("");
-      onRefresh();
-    }
-  };
 
   return (
     <Card className="p-4 md:p-6">
