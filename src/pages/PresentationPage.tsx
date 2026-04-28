@@ -300,25 +300,27 @@ export default function PresentationPage() {
               />
             </TabsContent>
 
-            <TabsContent value="seating">
-              <div className="w-full max-w-[1600px] mx-auto">
-                <SeatingPlan
-                  tables={tables}
-                  tickets={allTickets}
-                  highlightUserId={user?.id ?? null}
-                  seatsPerTable={event.seats_per_table}
-                  theatrePlayers={theatrePlayers}
-                  theatreAssignments={theatreAssignments}
-                  highlightedNames={myChildrenNames}
-                />
-                <p className="text-center text-xs text-muted-foreground mt-4">
-                  Players sit in the theatre blocks flanking the stage (auto-allocated by
-                  age group). Each player&apos;s family is allocated a guest table seating
-                  <strong> 2 adults + 1 child guest</strong>. Your child&apos;s chair is
-                  highlighted in gold.
-                </p>
-              </div>
-            </TabsContent>
+            {isAdmin && (
+              <TabsContent value="seating">
+                <div className="w-full max-w-[1600px] mx-auto">
+                  <SeatingPlan
+                    tables={tables}
+                    tickets={allTickets}
+                    highlightUserId={user?.id ?? null}
+                    seatsPerTable={event.seats_per_table}
+                    theatrePlayers={theatrePlayers}
+                    theatreAssignments={theatreAssignments}
+                    highlightedNames={myChildrenNames}
+                  />
+                  <p className="text-center text-xs text-muted-foreground mt-4">
+                    Players sit in the theatre blocks flanking the stage (auto-allocated by
+                    age group). Each player&apos;s family is allocated a guest table seating
+                    <strong> 2 adults + 1 child guest</strong>. Your child&apos;s chair is
+                    highlighted in gold.
+                  </p>
+                </div>
+              </TabsContent>
+            )}
           </Tabs>
         </section>
       </main>
