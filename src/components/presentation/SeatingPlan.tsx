@@ -426,7 +426,7 @@ function RectTable({
         ) : (
           <div className="flex flex-col items-center leading-none">
             <span className="text-[10px] md:text-[11px]">
-              {table.col_index ?? table.table_number}
+              {table.table_number}
             </span>
             <span className="text-[7px] md:text-[8px] font-normal text-muted-foreground mt-0.5">
               {taken}/{total}
