@@ -1,0 +1,1 @@
+UPDATE public.presentation_tables SET table_number = table_number - 100 WHERE table_number BETWEEN 101 AND 104;
