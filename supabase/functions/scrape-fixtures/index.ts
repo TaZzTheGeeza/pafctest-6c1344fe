@@ -120,33 +120,45 @@ Deno.serve(async (req) => {
       );
     }
 
-    const fetchOpts = {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        'Accept': 'text/html,application/xhtml+xml',
-      },
+    const fetchWithTimeout = async (url: string, timeoutMs = 10000) => {
+      const controller = new AbortController();
+      const id = setTimeout(() => controller.abort(), timeoutMs);
+      try {
+        return await fetch(url, {
+          signal: controller.signal,
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Accept': 'text/html,application/xhtml+xml',
+          },
+        });
+      } finally {
+        clearTimeout(id);
+      }
     };
 
-    // Fetch fixtures and results in parallel
-    const [fixtureRes, resultRes] = await Promise.all([
-      fetch(fixtureUrl, fetchOpts),
-      resultUrl ? fetch(resultUrl, fetchOpts) : Promise.resolve(null),
+    // Fetch fixtures and results in parallel — never let one slow request hang the whole call
+    const [fixtureSettled, resultSettled] = await Promise.allSettled([
+      fetchWithTimeout(fixtureUrl),
+      resultUrl ? fetchWithTimeout(resultUrl) : Promise.resolve(null),
     ]);
 
-    if (!fixtureRes.ok) {
-      return new Response(
-        JSON.stringify({ success: false, error: `FA site returned ${fixtureRes.status}` }),
-        { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    let fixtures: Fixture[] = [];
+    if (fixtureSettled.status === 'fulfilled' && fixtureSettled.value && fixtureSettled.value.ok) {
+      const fixtureHtml = await fixtureSettled.value.text();
+      fixtures = parseFixturesPage(fixtureHtml);
+    } else {
+      const reason = fixtureSettled.status === 'rejected'
+        ? (fixtureSettled.reason?.message || 'fetch failed')
+        : `FA site returned ${fixtureSettled.value?.status}`;
+      console.warn(`Fixtures fetch failed for ${team || 'unknown'}: ${reason}`);
     }
 
-    const fixtureHtml = await fixtureRes.text();
-    const fixtures = parseFixturesPage(fixtureHtml);
-
     let results: Fixture[] = [];
-    if (resultRes && resultRes.ok) {
-      const resultHtml = await resultRes.text();
+    if (resultSettled.status === 'fulfilled' && resultSettled.value && resultSettled.value.ok) {
+      const resultHtml = await resultSettled.value.text();
       results = parseResultsPage(resultHtml);
+    } else if (resultSettled.status === 'rejected') {
+      console.warn(`Results fetch failed for ${team || 'unknown'}: ${resultSettled.reason?.message || 'fetch failed'}`);
     }
 
     console.log(`Parsed ${fixtures.length} fixtures and ${results.length} results for ${team || 'unknown'}`);
