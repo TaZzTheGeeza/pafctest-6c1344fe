@@ -93,7 +93,7 @@ export function FixtureAvailability({ teamSlug }: Props) {
   const [reminderItem, setReminderItem] = useState<AvailabilityItem | null>(null);
   const [editingVenue, setEditingVenue] = useState<string | null>(null);
   const [venueInput, setVenueInput] = useState("");
-  const { data: teamData, isLoading: fixturesLoading } = useTeamFixtures(teamSlug);
+  const { data: teamData, isLoading: fixturesLoading, isError: fixturesError } = useTeamFixtures(teamSlug);
 
   const getFriendlyDate = (date: string) => {
     const [dd, mm, yy] = date.split("/").map(Number);
@@ -296,7 +296,9 @@ export function FixtureAvailability({ teamSlug }: Props) {
     return new Date(2000 + ay, am - 1, ad).getTime() - new Date(2000 + by, bm - 1, bd).getTime();
   });
 
-  if (fixturesLoading || availLoading || eventsLoading) {
+  // Only block on fixtures while the FA scrape is actually loading; if it errors,
+  // continue so users can still see/manage custom events.
+  if ((fixturesLoading && !fixturesError) || availLoading || eventsLoading) {
     return (
       <div className="flex items-center justify-center py-16 text-muted-foreground">
         <Loader2 className="h-5 w-5 animate-spin mr-2" /> Loading fixtures…
