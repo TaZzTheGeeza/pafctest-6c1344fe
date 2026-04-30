@@ -93,7 +93,7 @@ export function FixtureAvailability({ teamSlug }: Props) {
   const [reminderItem, setReminderItem] = useState<AvailabilityItem | null>(null);
   const [editingVenue, setEditingVenue] = useState<string | null>(null);
   const [venueInput, setVenueInput] = useState("");
-  const { data: teamData, isLoading: fixturesLoading } = useTeamFixtures(teamSlug);
+  const { data: teamData, isLoading: fixturesLoading, isError: fixturesError } = useTeamFixtures(teamSlug);
 
   const getFriendlyDate = (date: string) => {
     const [dd, mm, yy] = date.split("/").map(Number);
