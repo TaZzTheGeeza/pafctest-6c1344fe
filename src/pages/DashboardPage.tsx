@@ -625,6 +625,7 @@ export default function DashboardPage() {
                         addingRole={addingRole}
                         onAddRole={addRole}
                         onRemoveRole={removeRole}
+                        onSendReset={sendPasswordReset}
                       />
                     ))
                   )}
