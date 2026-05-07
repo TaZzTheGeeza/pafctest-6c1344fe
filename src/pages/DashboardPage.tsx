@@ -1074,6 +1074,19 @@ function UserRow({
               {sendingReset ? <Loader2 className="h-3 w-3 animate-spin" /> : <KeyRound className="h-3 w-3" />}
               Reset Password
             </button>
+
+            {/* Set Password (admin-chosen, forces change on next login) */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onSetPassword(user.id, user.full_name);
+              }}
+              className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-display border border-dashed border-border text-muted-foreground hover:border-primary hover:text-primary transition-colors"
+              title="Set a temporary password (user must change on next login)"
+            >
+              <KeySquare className="h-3 w-3" />
+              Set Password
+            </button>
           </div>
         </div>
       </div>
