@@ -731,14 +731,17 @@ function UserRow({
   addingRole,
   onAddRole,
   onRemoveRole,
+  onSendReset,
 }: {
   user: UserWithRoles;
   currentUserId?: string;
   addingRole: string | null;
   onAddRole: (userId: string, role: AppRole) => void;
   onRemoveRole: (userId: string, role: AppRole) => void;
+  onSendReset: (email: string | null) => void | Promise<void>;
 }) {
   const [showAddMenu, setShowAddMenu] = useState(false);
+  const [sendingReset, setSendingReset] = useState(false);
   const [showTeamAssign, setShowTeamAssign] = useState(false);
   const [assignedTeams, setAssignedTeams] = useState<string[]>([]);
   const [loadingTeams, setLoadingTeams] = useState(false);
