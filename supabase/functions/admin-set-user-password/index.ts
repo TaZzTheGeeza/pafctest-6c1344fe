@@ -21,7 +21,7 @@ Deno.serve(async (req) => {
     });
     const { data: { user }, error: userErr } = await userClient.auth.getUser();
     if (userErr || !user) {
-      return new Response(JSON.stringify({ error: "Not authenticated" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({ error: "Not authenticated" }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     const admin = createClient(SUPABASE_URL, SERVICE);
@@ -33,12 +33,12 @@ Deno.serve(async (req) => {
       .maybeSingle();
 
     if (!roleRow) {
-      return new Response(JSON.stringify({ error: "Admin only" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({ error: "Admin only" }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     const { target_user_id, new_password } = await req.json();
     if (!target_user_id || !new_password || typeof new_password !== "string" || new_password.length < 6) {
-      return new Response(JSON.stringify({ error: "target_user_id and new_password (min 6 chars) are required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({ error: "target_user_id and new_password (min 6 chars) are required" }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     const { error: updErr } = await admin.auth.admin.updateUserById(target_user_id, { password: new_password });
@@ -50,6 +50,6 @@ Deno.serve(async (req) => {
 
     return new Response(JSON.stringify({ success: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e) {
-    return new Response(JSON.stringify({ error: (e as Error).message }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    return new Response(JSON.stringify({ error: (e as Error).message }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 });
