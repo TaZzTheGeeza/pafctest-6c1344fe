@@ -388,14 +388,17 @@ function UserRow({
   addingRole,
   onAddRole,
   onRemoveRole,
+  onSendReset,
 }: {
   user: UserWithRoles;
   currentUserId?: string;
   addingRole: string | null;
   onAddRole: (userId: string, role: AppRole) => void;
   onRemoveRole: (userId: string, role: AppRole) => void;
+  onSendReset: (email: string | null) => void;
 }) {
   const [showAddMenu, setShowAddMenu] = useState(false);
+  const [sendingReset, setSendingReset] = useState(false);
   const navigate = useNavigate();
   const isCurrentUser = user.id === currentUserId;
   const availableRoles = (["admin", "coach", "player", "user", "news_editor", "welfare_officer", "photographer"] as AppRole[]).filter(
