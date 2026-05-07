@@ -489,6 +489,21 @@ function UserRow({
               )}
             </div>
           )}
+
+          {/* Send Password Reset */}
+          <button
+            onClick={async () => {
+              setSendingReset(true);
+              await onSendReset(user.email);
+              setSendingReset(false);
+            }}
+            disabled={sendingReset || !user.email}
+            className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-display border border-dashed border-border text-muted-foreground hover:border-primary hover:text-primary transition-colors disabled:opacity-50"
+            title="Send password reset email"
+          >
+            {sendingReset ? <Loader2 className="h-3 w-3 animate-spin" /> : <KeyRound className="h-3 w-3" />}
+            Reset Password
+          </button>
         </div>
       </div>
     </div>
