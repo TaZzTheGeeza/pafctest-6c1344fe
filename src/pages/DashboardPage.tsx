@@ -9,7 +9,7 @@ import {
   Users, Shield, ShieldCheck, ShieldAlert, UserCog, Trash2,
   Search, ChevronDown, Trophy, Ticket, BarChart3, FileText,
    MessageSquare, Settings, Eye, Plus, Loader2, Crown, Swords, ShoppingBag,
-   Star, LayoutDashboard, Mail, Clock, ExternalLink, Pencil, Check, X as XIcon, Megaphone, CreditCard, Video, Newspaper
+   Star, LayoutDashboard, Mail, Clock, ExternalLink, Pencil, Check, X as XIcon, Megaphone, CreditCard, Video, Newspaper, KeyRound
 } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 import { isUserOnline, formatLastSeen } from "@/hooks/usePresence";
@@ -264,7 +264,18 @@ export default function DashboardPage() {
     }
   }
 
-  // Collect unique team slugs for the filter dropdown
+  async function sendPasswordReset(email: string | null) {
+    if (!email) {
+      toast.error("User has no email on file");
+      return;
+    }
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    if (error) toast.error(`Failed: ${error.message}`);
+    else toast.success(`Password reset email sent to ${email}`);
+  }
+
   const allTeamSlugs = Array.from(new Set(Object.values(teamMemberships).flat())).sort();
 
   const filteredUsers = users.filter((u) => {
@@ -614,6 +625,7 @@ export default function DashboardPage() {
                         addingRole={addingRole}
                         onAddRole={addRole}
                         onRemoveRole={removeRole}
+                        onSendReset={sendPasswordReset}
                       />
                     ))
                   )}
@@ -719,14 +731,17 @@ function UserRow({
   addingRole,
   onAddRole,
   onRemoveRole,
+  onSendReset,
 }: {
   user: UserWithRoles;
   currentUserId?: string;
   addingRole: string | null;
   onAddRole: (userId: string, role: AppRole) => void;
   onRemoveRole: (userId: string, role: AppRole) => void;
+  onSendReset: (email: string | null) => void | Promise<void>;
 }) {
   const [showAddMenu, setShowAddMenu] = useState(false);
+  const [sendingReset, setSendingReset] = useState(false);
   const [showTeamAssign, setShowTeamAssign] = useState(false);
   const [assignedTeams, setAssignedTeams] = useState<string[]>([]);
   const [loadingTeams, setLoadingTeams] = useState(false);
@@ -1021,6 +1036,22 @@ function UserRow({
                 {isDocUploader ? "Doc Uploader ✓" : "Doc Uploader"}
               </button>
             )}
+
+            {/* Send Password Reset */}
+            <button
+              onClick={async (e) => {
+                e.stopPropagation();
+                setSendingReset(true);
+                await onSendReset(user.email);
+                setSendingReset(false);
+              }}
+              disabled={sendingReset || !user.email}
+              className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-display border border-dashed border-border text-muted-foreground hover:border-primary hover:text-primary transition-colors disabled:opacity-50"
+              title="Send password reset email"
+            >
+              {sendingReset ? <Loader2 className="h-3 w-3 animate-spin" /> : <KeyRound className="h-3 w-3" />}
+              Reset Password
+            </button>
           </div>
         </div>
       </div>
