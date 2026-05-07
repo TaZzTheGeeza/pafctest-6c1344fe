@@ -8,7 +8,7 @@ import { usePresence } from "@/hooks/usePresence";
 import { useEffect } from "react";
 import { FootballBackground } from "@/components/FootballBackground";
 
-import { AuthProvider } from "@/contexts/AuthContext";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { RoleGate } from "@/components/RoleGate";
 import Index from "./pages/Index.tsx";
 import ShopPage from "./pages/Shop.tsx";
@@ -71,12 +71,22 @@ function PlayerHubRedirect() {
   return <Navigate to="/hub?tab=player" replace />;
 }
 
+function ForcePasswordChangeGate() {
+  const { mustChangePassword, user } = useAuth();
+  const location = useLocation();
+  if (user && mustChangePassword && location.pathname !== "/reset-password") {
+    return <Navigate to="/reset-password?forced=1" replace />;
+  }
+  return null;
+}
+
 function AppContent() {
   useCartSync();
   usePresence();
   return (
     <BrowserRouter>
       <ScrollToTop />
+      <ForcePasswordChangeGate />
       
       <Routes>
         <Route path="/" element={<Index />} />

@@ -13,6 +13,8 @@ interface AuthContextType {
   isNewsEditor: boolean;
   isPhotographer: boolean;
   rolesLoading: boolean;
+  mustChangePassword: boolean;
+  clearMustChangePassword: () => void;
   signOut: () => Promise<void>;
 }
 
@@ -27,6 +29,8 @@ const AuthContext = createContext<AuthContextType>({
   isNewsEditor: false,
   isPhotographer: false,
   rolesLoading: true,
+  mustChangePassword: false,
+  clearMustChangePassword: () => {},
   signOut: async () => {},
 });
 
@@ -43,6 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isNewsEditor, setIsNewsEditor] = useState(false);
   const [isPhotographer, setIsPhotographer] = useState(false);
   const [rolesLoading, setRolesLoading] = useState(true);
+  const [mustChangePassword, setMustChangePassword] = useState(false);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -69,6 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsNewsEditor(false);
       setIsPhotographer(false);
       setRolesLoading(false);
+      setMustChangePassword(false);
       return;
     }
 
@@ -87,14 +93,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setIsPhotographer(roles.includes("photographer") || roles.includes("admin"));
         setRolesLoading(false);
       });
+
+    supabase
+      .from("profiles")
+      .select("must_change_password")
+      .eq("id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        setMustChangePassword(Boolean((data as any)?.must_change_password));
+      });
   }, [user]);
 
   const signOut = async () => {
     await supabase.auth.signOut();
   };
 
+  const clearMustChangePassword = () => setMustChangePassword(false);
+
   return (
-    <AuthContext.Provider value={{ user, session, loading, isCoach, isPlayer, isAdmin, isTreasurer, isNewsEditor, isPhotographer, rolesLoading, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, isCoach, isPlayer, isAdmin, isTreasurer, isNewsEditor, isPhotographer, rolesLoading, mustChangePassword, clearMustChangePassword, signOut }}>
       {children}
     </AuthContext.Provider>
   );
