@@ -9,7 +9,7 @@ import {
   Users, Shield, ShieldCheck, ShieldAlert, UserCog, Trash2,
   Search, ChevronDown, Trophy, Ticket, BarChart3, FileText,
    MessageSquare, Settings, Eye, Plus, Loader2, Crown, Swords, ShoppingBag,
-   Star, LayoutDashboard, Mail, Clock, ExternalLink, Pencil, Check, X as XIcon, Megaphone, CreditCard, Video, Newspaper, KeyRound
+   Star, LayoutDashboard, Mail, Clock, ExternalLink, Pencil, Check, X as XIcon, Megaphone, CreditCard, Video, Newspaper, KeyRound, KeySquare
 } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 import { isUserOnline, formatLastSeen } from "@/hooks/usePresence";
@@ -274,6 +274,25 @@ export default function DashboardPage() {
     });
     if (error) toast.error(`Failed: ${error.message}`);
     else toast.success(`Password reset email sent to ${email}`);
+  }
+
+  async function setUserPassword(targetUserId: string, fullName: string | null) {
+    const newPassword = window.prompt(
+      `Set a temporary password for ${fullName ?? "this user"}.\n\nThey will be required to change it on next login.\n(Minimum 6 characters)`
+    );
+    if (!newPassword) return;
+    if (newPassword.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+    const { data, error } = await supabase.functions.invoke("admin-set-user-password", {
+      body: { target_user_id: targetUserId, new_password: newPassword },
+    });
+    if (error || (data as any)?.error) {
+      toast.error(`Failed: ${error?.message ?? (data as any)?.error}`);
+    } else {
+      toast.success(`Password set. User must change it on next login.`);
+    }
   }
 
   const allTeamSlugs = Array.from(new Set(Object.values(teamMemberships).flat())).sort();
@@ -626,6 +645,7 @@ export default function DashboardPage() {
                         onAddRole={addRole}
                         onRemoveRole={removeRole}
                         onSendReset={sendPasswordReset}
+                        onSetPassword={setUserPassword}
                       />
                     ))
                   )}
