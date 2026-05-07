@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Loader2, Lock } from "lucide-react";
@@ -9,45 +10,48 @@ import { motion } from "framer-motion";
 
 export default function ResetPasswordPage() {
   const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const { user, clearMustChangePassword } = useAuth();
+  const forced = params.get("forced") === "1";
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    if (forced && user) {
+      setReady(true);
+      return;
+    }
     const hash = window.location.hash;
     if (hash && hash.includes("type=recovery")) {
       setReady(true);
     } else {
-      // Listen for auth state change from recovery link
       const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-        if (event === "PASSWORD_RECOVERY") {
-          setReady(true);
-        }
+        if (event === "PASSWORD_RECOVERY") setReady(true);
       });
       return () => subscription.unsubscribe();
     }
-  }, []);
+  }, [forced, user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password.length < 6) {
-      toast.error("Password must be at least 6 characters");
-      return;
-    }
-    if (password !== confirm) {
-      toast.error("Passwords do not match");
-      return;
-    }
+    if (password.length < 6) { toast.error("Password must be at least 6 characters"); return; }
+    if (password !== confirm) { toast.error("Passwords do not match"); return; }
     setSubmitting(true);
     const { error } = await supabase.auth.updateUser({ password });
-    setSubmitting(false);
     if (error) {
+      setSubmitting(false);
       toast.error(error.message);
-    } else {
-      toast.success("Password updated successfully!");
-      navigate("/");
+      return;
     }
+    if (forced && user) {
+      await supabase.from("profiles").update({ must_change_password: false } as any).eq("id", user.id);
+      clearMustChangePassword();
+    }
+    setSubmitting(false);
+    toast.success("Password updated successfully!");
+    navigate("/");
   };
 
   return (
@@ -58,8 +62,16 @@ export default function ResetPasswordPage() {
           <div className="bg-card border border-border rounded-xl p-8">
             <div className="flex items-center justify-center gap-3 mb-6">
               <Lock className="h-6 w-6 text-primary" />
-              <h1 className="text-2xl font-bold font-display">Reset Password</h1>
+              <h1 className="text-2xl font-bold font-display">
+                {forced ? "Set Your Password" : "Reset Password"}
+              </h1>
             </div>
+
+            {forced && (
+              <p className="text-xs text-muted-foreground text-center mb-4">
+                An admin set a temporary password for your account. Please choose your own password to continue.
+              </p>
+            )}
 
             {!ready ? (
               <p className="text-sm text-muted-foreground text-center">
@@ -105,8 +117,7 @@ export default function ResetPasswordPage() {
               </form>
             )}
           </div>
-        </motion.div>
-      </main>
+        </main>
       <Footer />
     </div>
   );
