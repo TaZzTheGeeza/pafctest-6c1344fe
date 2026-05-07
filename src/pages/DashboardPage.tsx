@@ -27,6 +27,7 @@ import { AdminNotificationComposer } from "@/components/dashboard/AdminNotificat
 import { OrdersTab } from "@/components/dashboard/OrdersTab";
 import { TreasurerPaymentsBoard } from "@/components/dashboard/TreasurerPaymentsBoard";
 import { RolePermissionManager } from "@/components/dashboard/RolePermissionManager";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 
 type AppRole = string;
 
