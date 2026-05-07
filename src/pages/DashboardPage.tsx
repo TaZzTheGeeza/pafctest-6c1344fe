@@ -752,6 +752,7 @@ function UserRow({
   onAddRole,
   onRemoveRole,
   onSendReset,
+  onSetPassword,
 }: {
   user: UserWithRoles;
   currentUserId?: string;
@@ -759,6 +760,7 @@ function UserRow({
   onAddRole: (userId: string, role: AppRole) => void;
   onRemoveRole: (userId: string, role: AppRole) => void;
   onSendReset: (email: string | null) => void | Promise<void>;
+  onSetPassword: (targetUserId: string, fullName: string | null) => void | Promise<void>;
 }) {
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [sendingReset, setSendingReset] = useState(false);
