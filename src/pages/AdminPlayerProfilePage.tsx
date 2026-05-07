@@ -234,11 +234,14 @@ export default function AdminPlayerProfilePage() {
                 </h1>
                 <p className="text-sm text-muted-foreground mb-3">{profile.email}</p>
                 <div className="flex flex-wrap gap-1.5 mb-3">
-                  {roles.map(role => (
-                    <span key={role} className={`px-2.5 py-1 rounded-full text-xs font-display border ${ROLE_CONFIG[role].color}`}>
-                      {ROLE_CONFIG[role].label}
-                    </span>
-                  ))}
+                  {roles.map(role => {
+                    const cfg = ROLE_CONFIG[role] ?? { label: role.replace(/_/g, " "), color: "bg-slate-500/20 text-slate-400 border-slate-500/30" };
+                    return (
+                      <span key={role} className={`px-2.5 py-1 rounded-full text-xs font-display border ${cfg.color}`}>
+                        {cfg.label}
+                      </span>
+                    );
+                  })}
                   {roles.length === 0 && <span className="text-xs text-muted-foreground italic">No roles assigned</span>}
                 </div>
                 {ageGroups.length > 0 && (
