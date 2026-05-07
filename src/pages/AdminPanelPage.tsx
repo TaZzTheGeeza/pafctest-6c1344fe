@@ -8,7 +8,7 @@ import { Link, useNavigate } from "react-router-dom";
 import {
   Users, Shield, ShieldCheck, ShieldAlert, UserCog, Trash2,
    Search, ChevronDown, Trophy, Ticket, BarChart3, FileText,
-   MessageSquare, Settings, Eye, Plus, Loader2, Crown, Swords, ShoppingBag, Newspaper
+   MessageSquare, Settings, Eye, Plus, Loader2, Crown, Swords, ShoppingBag, Newspaper, KeyRound
 } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -173,6 +173,21 @@ export default function AdminPanelPage() {
     } else {
       toast.success(`${ROLE_CONFIG[role].label} role removed`);
       loadUsers();
+    }
+  }
+
+  async function sendPasswordReset(email: string | null) {
+    if (!email) {
+      toast.error("User has no email on file");
+      return;
+    }
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    if (error) {
+      toast.error(`Failed to send reset email: ${error.message}`);
+    } else {
+      toast.success(`Password reset email sent to ${email}`);
     }
   }
 
@@ -347,6 +362,7 @@ export default function AdminPanelPage() {
                       addingRole={addingRole}
                       onAddRole={addRole}
                       onRemoveRole={removeRole}
+                      onSendReset={sendPasswordReset}
                     />
                   ))
                 )}
@@ -372,14 +388,17 @@ function UserRow({
   addingRole,
   onAddRole,
   onRemoveRole,
+  onSendReset,
 }: {
   user: UserWithRoles;
   currentUserId?: string;
   addingRole: string | null;
   onAddRole: (userId: string, role: AppRole) => void;
   onRemoveRole: (userId: string, role: AppRole) => void;
+  onSendReset: (email: string | null) => void;
 }) {
   const [showAddMenu, setShowAddMenu] = useState(false);
+  const [sendingReset, setSendingReset] = useState(false);
   const navigate = useNavigate();
   const isCurrentUser = user.id === currentUserId;
   const availableRoles = (["admin", "coach", "player", "user", "news_editor", "welfare_officer", "photographer"] as AppRole[]).filter(
@@ -470,6 +489,21 @@ function UserRow({
               )}
             </div>
           )}
+
+          {/* Send Password Reset */}
+          <button
+            onClick={async () => {
+              setSendingReset(true);
+              await onSendReset(user.email);
+              setSendingReset(false);
+            }}
+            disabled={sendingReset || !user.email}
+            className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-display border border-dashed border-border text-muted-foreground hover:border-primary hover:text-primary transition-colors disabled:opacity-50"
+            title="Send password reset email"
+          >
+            {sendingReset ? <Loader2 className="h-3 w-3 animate-spin" /> : <KeyRound className="h-3 w-3" />}
+            Reset Password
+          </button>
         </div>
       </div>
     </div>
