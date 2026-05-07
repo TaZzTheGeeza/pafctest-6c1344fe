@@ -362,6 +362,7 @@ export default function AdminPanelPage() {
                       addingRole={addingRole}
                       onAddRole={addRole}
                       onRemoveRole={removeRole}
+                      onSendReset={sendPasswordReset}
                     />
                   ))
                 )}
