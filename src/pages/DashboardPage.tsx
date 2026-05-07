@@ -27,6 +27,7 @@ import { AdminNotificationComposer } from "@/components/dashboard/AdminNotificat
 import { OrdersTab } from "@/components/dashboard/OrdersTab";
 import { TreasurerPaymentsBoard } from "@/components/dashboard/TreasurerPaymentsBoard";
 import { RolePermissionManager } from "@/components/dashboard/RolePermissionManager";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 
 type AppRole = string;
 
@@ -1059,34 +1060,37 @@ function UserRow({
               </button>
             )}
 
-            {/* Send Password Reset */}
-            <button
-              onClick={async (e) => {
-                e.stopPropagation();
-                setSendingReset(true);
-                await onSendReset(user.email);
-                setSendingReset(false);
-              }}
-              disabled={sendingReset || !user.email}
-              className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-display border border-dashed border-border text-muted-foreground hover:border-primary hover:text-primary transition-colors disabled:opacity-50"
-              title="Send password reset email"
-            >
-              {sendingReset ? <Loader2 className="h-3 w-3 animate-spin" /> : <KeyRound className="h-3 w-3" />}
-              Reset Password
-            </button>
-
-            {/* Set Password (admin-chosen, forces change on next login) */}
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onSetPassword(user.id, user.full_name);
-              }}
-              className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-display border border-dashed border-border text-muted-foreground hover:border-primary hover:text-primary transition-colors"
-              title="Set a temporary password (user must change on next login)"
-            >
-              <KeySquare className="h-3 w-3" />
-              Set Password
-            </button>
+            {/* Password actions menu */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                <button
+                  disabled={sendingReset}
+                  className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-display border border-dashed border-border text-muted-foreground hover:border-primary hover:text-primary transition-colors disabled:opacity-50"
+                  title="Password options"
+                >
+                  {sendingReset ? <Loader2 className="h-3 w-3 animate-spin" /> : <KeyRound className="h-3 w-3" />}
+                  Password
+                  <ChevronDown className="h-3 w-3" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                <DropdownMenuItem
+                  disabled={!user.email || sendingReset}
+                  onClick={async () => {
+                    setSendingReset(true);
+                    await onSendReset(user.email);
+                    setSendingReset(false);
+                  }}
+                >
+                  <KeyRound className="h-3.5 w-3.5 mr-2" />
+                  Send reset email
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onSetPassword(user.id, user.full_name)}>
+                  <KeySquare className="h-3.5 w-3.5 mr-2" />
+                  Set temporary password
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </div>
