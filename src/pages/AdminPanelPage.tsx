@@ -176,6 +176,21 @@ export default function AdminPanelPage() {
     }
   }
 
+  async function sendPasswordReset(email: string | null) {
+    if (!email) {
+      toast.error("User has no email on file");
+      return;
+    }
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    if (error) {
+      toast.error(`Failed to send reset email: ${error.message}`);
+    } else {
+      toast.success(`Password reset email sent to ${email}`);
+    }
+  }
+
   const filteredUsers = users.filter((u) => {
     const matchesSearch =
       !search ||
