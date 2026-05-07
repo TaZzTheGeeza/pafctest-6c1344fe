@@ -117,7 +117,8 @@ export default function ResetPasswordPage() {
               </form>
             )}
           </div>
-        </main>
+        </motion.div>
+      </main>
       <Footer />
     </div>
   );
