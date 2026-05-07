@@ -43,7 +43,7 @@ Deno.serve(async (req) => {
 
     const { error: updErr } = await admin.auth.admin.updateUserById(target_user_id, { password: new_password });
     if (updErr) {
-      return new Response(JSON.stringify({ error: updErr.message }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({ error: updErr.message }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     await admin.from("profiles").update({ must_change_password: true }).eq("id", target_user_id);
