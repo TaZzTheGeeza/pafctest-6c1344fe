@@ -385,12 +385,16 @@ export function FixtureAvailability({ teamSlug }: Props) {
   }
 
   const hasGuardians = guardians.length > 0;
-  const isParentOnly = hasGuardians;
+  const isStaff = isCoach || isAdmin;
 
-  // Parents can ONLY respond for their linked children, not themselves
-  const respondingOptions: { value: string | null; label: string }[] = isParentOnly
-    ? guardians.map((g) => ({ value: g.player_name, label: g.player_name }))
-    : [{ value: null, label: "Myself" }];
+  // Non-staff users can ONLY respond for their linked children, never themselves.
+  // Coaches/admins may still respond for themselves (and any linked children).
+  const respondingOptions: { value: string | null; label: string }[] = isStaff
+    ? [
+        { value: null, label: "Myself" },
+        ...guardians.map((g) => ({ value: g.player_name, label: g.player_name })),
+      ]
+    : guardians.map((g) => ({ value: g.player_name, label: g.player_name }));
 
   const statusButtons: { status: AvailabilityStatus; icon: typeof Check; label: string; activeClass: string }[] = [
     { status: "available", icon: Check, label: "Available", activeClass: "bg-green-600 text-white border-green-600" },
