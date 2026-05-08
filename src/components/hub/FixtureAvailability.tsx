@@ -385,12 +385,16 @@ export function FixtureAvailability({ teamSlug }: Props) {
   }
 
   const hasGuardians = guardians.length > 0;
-  const isParentOnly = hasGuardians;
+  const isStaff = isCoach || isAdmin;
 
-  // Parents can ONLY respond for their linked children, not themselves
-  const respondingOptions: { value: string | null; label: string }[] = isParentOnly
-    ? guardians.map((g) => ({ value: g.player_name, label: g.player_name }))
-    : [{ value: null, label: "Myself" }];
+  // Non-staff users can ONLY respond for their linked children, never themselves.
+  // Coaches/admins may still respond for themselves (and any linked children).
+  const respondingOptions: { value: string | null; label: string }[] = isStaff
+    ? [
+        { value: null, label: "Myself" },
+        ...guardians.map((g) => ({ value: g.player_name, label: g.player_name })),
+      ]
+    : guardians.map((g) => ({ value: g.player_name, label: g.player_name }));
 
   const statusButtons: { status: AvailabilityStatus; icon: typeof Check; label: string; activeClass: string }[] = [
     { status: "available", icon: Check, label: "Available", activeClass: "bg-green-600 text-white border-green-600" },
@@ -549,30 +553,36 @@ export function FixtureAvailability({ teamSlug }: Props) {
               </div>
             )}
 
-            <div className="flex gap-2">
-              {statusButtons.map(({ status, icon: Icon, label, activeClass }) => (
-                <button
-                  key={status}
-                  onClick={() =>
-                    mutation.mutate({
-                      fixtureDate: item.date,
-                      opponent: item.opponent,
-                      status,
-                      respondingFor: selectedRespondingFor,
-                    })
-                  }
-                  disabled={mutation.isPending}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-display tracking-wider border transition-colors ${
-                    myStatus === status
-                      ? activeClass
-                      : "border-border text-muted-foreground hover:text-foreground hover:border-primary/30"
-                  }`}
-                >
-                  <Icon className="h-3.5 w-3.5" />
-                  {label}
-                </button>
-              ))}
-            </div>
+            {!isStaff && !hasGuardians ? (
+              <div className="text-xs text-muted-foreground italic bg-secondary/30 border border-border rounded-md p-3">
+                Link your child in the Guardians section to respond to availability on their behalf.
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                {statusButtons.map(({ status, icon: Icon, label, activeClass }) => (
+                  <button
+                    key={status}
+                    onClick={() =>
+                      mutation.mutate({
+                        fixtureDate: item.date,
+                        opponent: item.opponent,
+                        status,
+                        respondingFor: selectedRespondingFor,
+                      })
+                    }
+                    disabled={mutation.isPending || (!isStaff && !selectedRespondingFor)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-display tracking-wider border transition-colors ${
+                      myStatus === status
+                        ? activeClass
+                        : "border-border text-muted-foreground hover:text-foreground hover:border-primary/30"
+                    }`}
+                  >
+                    <Icon className="h-3.5 w-3.5" />
+                    {label}
+                  </button>
+                ))}
+              </div>
+            )}
 
             {/* Show status chips for each person the user has responded for */}
             {hasGuardians && (
