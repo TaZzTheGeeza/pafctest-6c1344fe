@@ -66,6 +66,21 @@ export function AwardsVoting({ teamSlug, teamName }: Props) {
     },
   });
 
+  const { data: profile } = useQuery({
+    queryKey: ["my-profile-name", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("full_name, email")
+        .eq("id", user!.id)
+        .maybeSingle();
+      return data;
+    },
+  });
+
+  const userDisplayName = (profile?.full_name?.trim()) || profile?.email || user?.email || "You";
+
   const { data: myVotes } = useQuery({
     queryKey: ["my-award-votes", teamSlug, user?.id],
     enabled: !!user,
@@ -82,11 +97,17 @@ export function AwardsVoting({ teamSlug, teamName }: Props) {
   const settingFor = (award: string) =>
     settings?.find((s: any) => s.award_type === award);
 
-  const voteFor = (award: string, child: string) =>
-    myVotes?.find((v: any) => v.award_type === award && v.responding_for === child);
+  // For players_player we look up by child name; for parents_player there is one vote per user
+  const voteFor = (award: string, child: string) => {
+    if (award === "parents_player") {
+      return myVotes?.find((v: any) => v.award_type === "parents_player");
+    }
+    return myVotes?.find((v: any) => v.award_type === award && v.responding_for === child);
+  };
 
   const castVote = useMutation({
     mutationFn: async (args: { award: string; child: string; player: { id: string; first_name: string } }) => {
+      const respondingFor = args.award === "parents_player" ? userDisplayName : args.child;
       const existing = voteFor(args.award, args.child);
       if (existing) {
         const { error } = await supabase
@@ -94,13 +115,14 @@ export function AwardsVoting({ teamSlug, teamName }: Props) {
           .update({
             voted_for_player_name: args.player.first_name,
             voted_for_player_id: args.player.id,
+            responding_for: respondingFor,
           })
           .eq("id", (existing as any).id);
         if (error) throw error;
       } else {
         const { error } = await supabase.from("presentation_award_votes").insert({
           voter_user_id: user!.id,
-          responding_for: args.child,
+          responding_for: respondingFor,
           team_slug: teamSlug,
           award_type: args.award,
           voted_for_player_name: args.player.first_name,
@@ -168,12 +190,13 @@ export function AwardsVoting({ teamSlug, teamName }: Props) {
               <div className="text-sm text-muted-foreground">No linked child to vote on behalf of.</div>
             ) : (
               <div className="space-y-4">
-                {childrenList.map((child) => {
-                  const current = voteFor(award.type, child);
+                {(award.type === "parents_player" ? [userDisplayName] : childrenList).map((voterLabel) => {
+                  // For parents_player we use a single block keyed off the user; child arg is irrelevant
+                  const current = voteFor(award.type, voterLabel);
                   return (
-                    <div key={child} className="space-y-2">
+                    <div key={voterLabel} className="space-y-2">
                       <div className="text-xs font-display tracking-wider uppercase text-muted-foreground">
-                        Voting as: <span className="text-foreground">{child}</span>
+                        Voting as: <span className="text-foreground">{voterLabel}</span>
                         {current && (
                           <span className="ml-2 text-primary normal-case tracking-normal">
                             · Voted: {(current as any).voted_for_player_name}
@@ -187,7 +210,7 @@ export function AwardsVoting({ teamSlug, teamName }: Props) {
                             <button
                               key={p.id}
                               disabled={castVote.isPending}
-                              onClick={() => castVote.mutate({ award: award.type, child, player: p })}
+                              onClick={() => castVote.mutate({ award: award.type, child: voterLabel, player: p })}
                               className={`text-xs font-display tracking-wider px-3 py-1.5 rounded-full border transition-all flex items-center gap-1.5 ${
                                 selected
                                   ? "bg-primary text-primary-foreground border-primary"
