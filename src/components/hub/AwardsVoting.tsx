@@ -45,10 +45,14 @@ export function AwardsVoting({ teamSlug, teamName }: Props) {
     queryFn: async () => {
       const { data } = await supabase
         .from("player_stats")
-        .select("id, first_name, shirt_number")
+        .select("id, first_name, shirt_number, position")
         .eq("age_group", ageGroup)
         .order("first_name");
-      return data ?? [];
+      // Exclude coaching staff from being voted for
+      return (data ?? []).filter((p: any) => {
+        const pos = (p.position || "").toLowerCase();
+        return !pos.includes("coach");
+      });
     },
   });
 
@@ -193,6 +197,17 @@ export function AwardsVoting({ teamSlug, teamName }: Props) {
                 {(award.type === "parents_player" ? [userDisplayName] : childrenList).map((voterLabel) => {
                   // For parents_player we use a single block keyed off the user; child arg is irrelevant
                   const current = voteFor(award.type, voterLabel);
+
+                  // Players' Player: a child can't vote for themselves.
+                  // Parents' Player: a parent can't vote for any of their own linked children.
+                  const norm = (s: string) => (s || "").trim().toLowerCase();
+                  const blocked = new Set<string>(
+                    award.type === "parents_player"
+                      ? childrenList.map((c) => norm(c))
+                      : [norm(voterLabel)]
+                  );
+                  const eligible = players!.filter((p: any) => !blocked.has(norm(p.first_name)));
+
                   return (
                     <div key={voterLabel} className="space-y-2">
                       <div className="text-xs font-display tracking-wider uppercase text-muted-foreground">
@@ -203,26 +218,30 @@ export function AwardsVoting({ teamSlug, teamName }: Props) {
                           </span>
                         )}
                       </div>
-                      <div className="flex flex-wrap gap-2">
-                        {players!.map((p: any) => {
-                          const selected = current && (current as any).voted_for_player_id === p.id;
-                          return (
-                            <button
-                              key={p.id}
-                              disabled={castVote.isPending}
-                              onClick={() => castVote.mutate({ award: award.type, child: voterLabel, player: p })}
-                              className={`text-xs font-display tracking-wider px-3 py-1.5 rounded-full border transition-all flex items-center gap-1.5 ${
-                                selected
-                                  ? "bg-primary text-primary-foreground border-primary"
-                                  : "bg-transparent text-muted-foreground border-border hover:border-primary/50 hover:text-foreground"
-                              }`}
-                            >
-                              {selected && <Check className="h-3 w-3" />}
-                              {p.first_name}{p.shirt_number ? ` #${p.shirt_number}` : ""}
-                            </button>
-                          );
-                        })}
-                      </div>
+                      {eligible.length === 0 ? (
+                        <div className="text-xs text-muted-foreground italic">No eligible players to vote for.</div>
+                      ) : (
+                        <div className="flex flex-wrap gap-2">
+                          {eligible.map((p: any) => {
+                            const selected = current && (current as any).voted_for_player_id === p.id;
+                            return (
+                              <button
+                                key={p.id}
+                                disabled={castVote.isPending}
+                                onClick={() => castVote.mutate({ award: award.type, child: voterLabel, player: p })}
+                                className={`text-xs font-display tracking-wider px-3 py-1.5 rounded-full border transition-all flex items-center gap-1.5 ${
+                                  selected
+                                    ? "bg-primary text-primary-foreground border-primary"
+                                    : "bg-transparent text-muted-foreground border-border hover:border-primary/50 hover:text-foreground"
+                                }`}
+                              >
+                                {selected && <Check className="h-3 w-3" />}
+                                {p.first_name}{p.shirt_number ? ` #${p.shirt_number}` : ""}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
                   );
                 })}
