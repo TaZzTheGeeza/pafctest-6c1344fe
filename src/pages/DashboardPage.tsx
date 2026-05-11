@@ -21,7 +21,7 @@ import { useUserAgeGroups } from "@/hooks/useUserAgeGroups";
 import { faTeamConfigs } from "@/lib/faFixtureConfig";
 import { POTMForm } from "@/pages/CoachPanelPage";
 import { MatchReportForm } from "@/pages/CoachPanelPage";
-import { Upload, CheckCircle, AlertTriangle, UserPlus as UserPlusIcon } from "lucide-react";
+import { Upload, CheckCircle, AlertTriangle, UserPlus as UserPlusIcon, Award } from "lucide-react";
 import { TeamRequestsManager } from "@/components/dashboard/TeamRequestsManager";
 import { AdminNotificationComposer } from "@/components/dashboard/AdminNotificationComposer";
 import { OrdersTab } from "@/components/dashboard/OrdersTab";
@@ -389,6 +389,16 @@ export default function DashboardPage() {
               >
                 <PRESENTATION_ADMIN_LINK.icon className="h-3.5 w-3.5" />
                 {PRESENTATION_ADMIN_LINK.label}
+              </Link>
+            )}
+
+            {isAdmin && (
+              <Link
+                to="/presentation-awards-admin"
+                className="flex items-center gap-2 font-display text-xs tracking-wider py-2.5 px-4 rounded-lg border border-primary/60 text-primary hover:bg-primary hover:text-primary-foreground transition-all whitespace-nowrap"
+              >
+                <Award className="h-3.5 w-3.5" />
+                Award Votes
               </Link>
             )}
 

@@ -7,7 +7,8 @@ import { TeamChat } from "@/components/hub/TeamChat";
 import { PaymentCenter } from "@/components/hub/PaymentCenter";
 import { NotificationCenter } from "@/components/hub/NotificationCenter";
 import { TeamMemberManager } from "@/components/hub/TeamMemberManager";
-import { MessageSquare, CreditCard, Bell, CalendarCheck, Users, Shield, ChevronDown, Car, TrendingUp, UserPlus, User, FileText, ChevronRight, Video, Sparkles } from "lucide-react";
+import { MessageSquare, CreditCard, Bell, CalendarCheck, Users, Shield, ChevronDown, Car, TrendingUp, UserPlus, User, FileText, ChevronRight, Video, Sparkles, Award } from "lucide-react";
+import { AwardsVoting } from "@/components/hub/AwardsVoting";
 import { FixtureAvailability } from "@/components/hub/FixtureAvailability";
 import { CarpoolBoard } from "@/components/hub/CarpoolBoard";
 import { AttendanceStats } from "@/components/hub/AttendanceStats";
@@ -43,6 +44,7 @@ const tabs = [
   { id: "attendance", label: "Attendance", icon: TrendingUp },
   { id: "guardian", label: "Guardian", icon: UserPlus },
   { id: "meetings", label: "Meetings", icon: Video },
+  { id: "awards", label: "Awards", icon: Award },
   { id: "player", label: "Player Zone", icon: User },
 ];
 
@@ -192,6 +194,7 @@ export default function HubPage() {
       {activeTab === "guardian" && activeTeam && <GuardianManager teamSlug={activeTeam} teamName={activeTeamName || ""} />}
       {activeTab === "members" && activeTeam && (isAdmin || isCoach) && <TeamMemberManager teamSlug={activeTeam} teamName={activeTeamName || ""} />}
       {activeTab === "meetings" && <HubMeetingsEmbed />}
+      {activeTab === "awards" && activeTeam && <AwardsVoting teamSlug={activeTeam} teamName={activeTeamName || ""} />}
       {activeTab === "player" && (
         <div className="space-y-4">
           {/* Featured: Presentation Evening — always rendered prominently at top */}
