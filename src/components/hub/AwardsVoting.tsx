@@ -45,10 +45,14 @@ export function AwardsVoting({ teamSlug, teamName }: Props) {
     queryFn: async () => {
       const { data } = await supabase
         .from("player_stats")
-        .select("id, first_name, shirt_number")
+        .select("id, first_name, shirt_number, position")
         .eq("age_group", ageGroup)
         .order("first_name");
-      return data ?? [];
+      // Exclude coaching staff from being voted for
+      return (data ?? []).filter((p: any) => {
+        const pos = (p.position || "").toLowerCase();
+        return !pos.includes("coach");
+      });
     },
   });
 
