@@ -190,13 +190,34 @@ export default function PresentationAwardsAdminPage() {
               </h1>
               <p className="text-sm text-muted-foreground mt-1">Manage voting and view live results per team.</p>
             </div>
-            <button
-              onClick={exportCsv}
-              disabled={!votes || votes.length === 0}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border text-xs font-display tracking-wider hover:border-primary/50 hover:text-primary transition-colors disabled:opacity-50"
-            >
-              <Download className="h-3.5 w-3.5" /> Export CSV
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => toggleAll.mutate(!allOpen)}
+                disabled={toggleAll.isPending}
+                className={`inline-flex items-center gap-1.5 text-xs font-display tracking-wider px-4 py-2 rounded-lg border transition-all disabled:opacity-50 ${
+                  allOpen
+                    ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/40 hover:bg-emerald-500/20"
+                    : "bg-primary/10 text-primary border-primary/40 hover:bg-primary/20"
+                }`}
+                title="Open or close voting for every team and award at once"
+              >
+                {toggleAll.isPending ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : allOpen ? (
+                  <Lock className="h-3.5 w-3.5" />
+                ) : (
+                  <Unlock className="h-3.5 w-3.5" />
+                )}
+                {allOpen ? "Close Voting (All Teams)" : "Open Voting (All Teams)"}
+              </button>
+              <button
+                onClick={exportCsv}
+                disabled={!votes || votes.length === 0}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border text-xs font-display tracking-wider hover:border-primary/50 hover:text-primary transition-colors disabled:opacity-50"
+              >
+                <Download className="h-3.5 w-3.5" /> Export CSV
+              </button>
+            </div>
           </div>
 
           {/* Team filter */}
