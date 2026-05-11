@@ -190,12 +190,13 @@ export function AwardsVoting({ teamSlug, teamName }: Props) {
               <div className="text-sm text-muted-foreground">No linked child to vote on behalf of.</div>
             ) : (
               <div className="space-y-4">
-                {childrenList.map((child) => {
-                  const current = voteFor(award.type, child);
+                {(award.type === "parents_player" ? [userDisplayName] : childrenList).map((voterLabel) => {
+                  // For parents_player we use a single block keyed off the user; child arg is irrelevant
+                  const current = voteFor(award.type, voterLabel);
                   return (
-                    <div key={child} className="space-y-2">
+                    <div key={voterLabel} className="space-y-2">
                       <div className="text-xs font-display tracking-wider uppercase text-muted-foreground">
-                        Voting as: <span className="text-foreground">{child}</span>
+                        Voting as: <span className="text-foreground">{voterLabel}</span>
                         {current && (
                           <span className="ml-2 text-primary normal-case tracking-normal">
                             · Voted: {(current as any).voted_for_player_name}
@@ -209,7 +210,7 @@ export function AwardsVoting({ teamSlug, teamName }: Props) {
                             <button
                               key={p.id}
                               disabled={castVote.isPending}
-                              onClick={() => castVote.mutate({ award: award.type, child, player: p })}
+                              onClick={() => castVote.mutate({ award: award.type, child: voterLabel, player: p })}
                               className={`text-xs font-display tracking-wider px-3 py-1.5 rounded-full border transition-all flex items-center gap-1.5 ${
                                 selected
                                   ? "bg-primary text-primary-foreground border-primary"
