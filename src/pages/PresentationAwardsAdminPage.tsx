@@ -41,6 +41,50 @@ export default function PresentationAwardsAdminPage() {
     },
   });
 
+  const { data: allSettings } = useQuery({
+    queryKey: ["paw-settings-all"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("presentation_award_settings")
+        .select("*");
+      return data ?? [];
+    },
+  });
+
+  const allOpen = useMemo(() => {
+    if (!allSettings) return false;
+    // Open if every team has both awards open
+    for (const t of TEAMS) {
+      for (const a of AWARDS) {
+        const s = (allSettings as any[]).find((x) => x.team_slug === t.slug && x.award_type === a.type);
+        if (!s?.voting_open) return false;
+      }
+    }
+    return true;
+  }, [allSettings]);
+
+  const toggleAll = useMutation({
+    mutationFn: async (open: boolean) => {
+      const rows: any[] = [];
+      for (const t of TEAMS) {
+        for (const a of AWARDS) {
+          rows.push({ team_slug: t.slug, award_type: a.type, voting_open: open });
+        }
+      }
+      const { error } = await supabase
+        .from("presentation_award_settings")
+        .upsert(rows, { onConflict: "team_slug,award_type" });
+      if (error) throw error;
+    },
+    onSuccess: (_d, open) => {
+      qc.invalidateQueries({ queryKey: ["paw-settings"] });
+      qc.invalidateQueries({ queryKey: ["paw-settings-all"] });
+      qc.invalidateQueries({ queryKey: ["paw-settings", team] });
+      toast.success(open ? "Voting opened for all teams" : "Voting closed for all teams");
+    },
+    onError: (e: any) => toast.error(e?.message || "Failed"),
+  });
+
   const { data: votes, isLoading: votesLoading } = useQuery({
     queryKey: ["paw-votes", team],
     queryFn: async () => {
@@ -146,13 +190,34 @@ export default function PresentationAwardsAdminPage() {
               </h1>
               <p className="text-sm text-muted-foreground mt-1">Manage voting and view live results per team.</p>
             </div>
-            <button
-              onClick={exportCsv}
-              disabled={!votes || votes.length === 0}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border text-xs font-display tracking-wider hover:border-primary/50 hover:text-primary transition-colors disabled:opacity-50"
-            >
-              <Download className="h-3.5 w-3.5" /> Export CSV
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => toggleAll.mutate(!allOpen)}
+                disabled={toggleAll.isPending}
+                className={`inline-flex items-center gap-1.5 text-xs font-display tracking-wider px-4 py-2 rounded-lg border transition-all disabled:opacity-50 ${
+                  allOpen
+                    ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/40 hover:bg-emerald-500/20"
+                    : "bg-primary/10 text-primary border-primary/40 hover:bg-primary/20"
+                }`}
+                title="Open or close voting for every team and award at once"
+              >
+                {toggleAll.isPending ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : allOpen ? (
+                  <Lock className="h-3.5 w-3.5" />
+                ) : (
+                  <Unlock className="h-3.5 w-3.5" />
+                )}
+                {allOpen ? "Close Voting (All Teams)" : "Open Voting (All Teams)"}
+              </button>
+              <button
+                onClick={exportCsv}
+                disabled={!votes || votes.length === 0}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border text-xs font-display tracking-wider hover:border-primary/50 hover:text-primary transition-colors disabled:opacity-50"
+              >
+                <Download className="h-3.5 w-3.5" /> Export CSV
+              </button>
+            </div>
           </div>
 
           {/* Team filter */}
