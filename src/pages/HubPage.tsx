@@ -181,7 +181,7 @@ export default function HubPage() {
   const allTabs = [
     ...tabs,
     ...((isAdmin || isCoach) ? [{ id: "members", label: "Members", icon: Users }] : []),
-  ];
+  ].filter((t) => !(t.id === "awards" && activeTeam === "u6s"));
 
   const renderContent = () => (
     <>
