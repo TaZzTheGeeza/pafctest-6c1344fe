@@ -961,7 +961,7 @@ function AddTicketButton({
     setBusy(true);
     const { error } = await supabase.from("presentation_tickets").insert({
       allocation_id: allocation.id,
-      event_id: (allocation as any).event_id ?? undefined,
+      event_id: allocation.event_id,
       user_id: allocation.user_id,
       ticket_type: ticketType,
       attendee_name: trimmed,
