@@ -315,18 +315,31 @@ export default function HubPage() {
                     {allTabs.map((tab) => {
                       const Icon = tab.icon;
                       const isActive = activeTab === tab.id;
+                      const isAwards = tab.id === "awards";
                       const btn = (
                         <button
                           key={tab.id}
                           onClick={() => selectTab(tab.id)}
-                          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-display tracking-wider transition-all ${
-                            isActive
-                              ? "bg-primary/15 text-primary border border-primary/20"
-                              : "text-muted-foreground hover:text-foreground hover:bg-secondary/50 border border-transparent"
+                          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-display tracking-wider transition-all relative ${
+                            isAwards
+                              ? isActive
+                                ? "bg-gradient-to-r from-primary/30 to-primary/10 text-primary border border-primary shadow-md shadow-primary/20"
+                                : "bg-gradient-to-r from-primary/15 to-transparent text-primary border border-primary/40 hover:from-primary/25 hover:border-primary/70"
+                              : isActive
+                                ? "bg-primary/15 text-primary border border-primary/20"
+                                : "text-muted-foreground hover:text-foreground hover:bg-secondary/50 border border-transparent"
                           }`}
                         >
-                          <Icon className={`h-4 w-4 shrink-0 ${isActive ? "text-primary" : ""}`} />
+                          <Icon className={`h-4 w-4 shrink-0 ${isActive || isAwards ? "text-primary" : ""}`} />
                           <span className="hidden md:block truncate">{tab.label}</span>
+                          {isAwards && (
+                            <>
+                              <span className="hidden md:inline-block ml-auto text-[9px] font-display font-bold tracking-wider px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground">
+                                VOTE
+                              </span>
+                              <span className="md:hidden absolute top-1 right-1 h-2 w-2 rounded-full bg-primary animate-pulse" />
+                            </>
+                          )}
                         </button>
                       );
 
