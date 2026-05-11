@@ -392,6 +392,16 @@ export default function DashboardPage() {
               </Link>
             )}
 
+            {isAdmin && (
+              <Link
+                to="/presentation-awards-admin"
+                className="flex items-center gap-2 font-display text-xs tracking-wider py-2.5 px-4 rounded-lg border border-primary/60 text-primary hover:bg-primary hover:text-primary-foreground transition-all whitespace-nowrap"
+              >
+                <Award className="h-3.5 w-3.5" />
+                Award Votes
+              </Link>
+            )}
+
             {/* User Manager Dropdown */}
             {userSections.length > 0 && (
               <div className="relative group">
