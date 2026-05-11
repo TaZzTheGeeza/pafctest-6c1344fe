@@ -65,6 +65,7 @@ interface AdminTicket extends PresentationTicketSeat {
 
 interface AdminAllocation {
   id: string;
+  event_id: string;
   user_id: string;
   player_name: string;
   team_slug: string | null;
@@ -752,7 +753,10 @@ function PeoplePanel({
                       {familyTickets.length} ticket(s) · {seatedCount}/{familyTickets.length} seated
                     </p>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Badge variant="outline" className="text-[10px] text-muted-foreground">
+                      Limit {alloc.max_adults}A / {alloc.max_children}C
+                    </Badge>
                     <Badge
                       variant="outline"
                       className={
@@ -763,6 +767,9 @@ function PeoplePanel({
                     >
                       {allSeated ? "Seats allocated" : "Awaiting allocation"}
                     </Badge>
+                    <AddTicketButton allocation={alloc} ticketType="adult" onDone={onRefresh} />
+                    <AddTicketButton allocation={alloc} ticketType="child" onDone={onRefresh} />
+                    <EditAllocationLimitsButton allocation={alloc} onDone={onRefresh} />
                     <NotifyFamilyButton
                       allocation={alloc}
                       familyTickets={familyTickets}
@@ -781,46 +788,13 @@ function PeoplePanel({
                     familyTickets.map((t) => {
                       const table = t.table_id ? tableByid.get(t.table_id) : null;
                       return (
-                        <div
+                        <TicketRow
                           key={t.id}
-                          className="flex items-center justify-between gap-3 p-2.5 bg-card/60 border border-border rounded-md"
-                        >
-                          <div className="flex items-center gap-2 min-w-0">
-                            <Badge
-                              variant="outline"
-                              className={`text-[9px] ${t.ticket_type === "adult" ? "text-primary border-primary/40" : ""}`}
-                            >
-                              {t.ticket_type}
-                            </Badge>
-                            <p className="font-medium truncate text-sm">
-                              {t.attendee_name}
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-2 shrink-0">
-                            {table && t.seat_number != null ? (
-                              <Badge
-                                variant="outline"
-                                className="text-primary border-primary/40 text-[10px]"
-                              >
-                                {table.label ?? `T${table.table_number}`} · S{t.seat_number}
-                              </Badge>
-                            ) : (
-                              <Badge
-                                variant="outline"
-                                className="text-destructive border-destructive/40 text-[10px]"
-                              >
-                                Unseated
-                              </Badge>
-                            )}
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => setMoving(t)}
-                            >
-                              <Move className="h-3.5 w-3.5 mr-1" /> Move
-                            </Button>
-                          </div>
-                        </div>
+                          ticket={t}
+                          table={table ?? null}
+                          onMove={() => setMoving(t)}
+                          onChanged={onRefresh}
+                        />
                       );
                     })
                   )}
@@ -845,6 +819,265 @@ function PeoplePanel({
         />
       )}
     </Card>
+  );
+}
+
+// ── Ticket row with inline edit/delete ────────────────────
+function TicketRow({
+  ticket,
+  table,
+  onMove,
+  onChanged,
+}: {
+  ticket: AdminTicket;
+  table: PresentationTable | null;
+  onMove: () => void;
+  onChanged: () => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [name, setName] = useState(ticket.attendee_name);
+  const [busy, setBusy] = useState(false);
+
+  const saveName = async () => {
+    const trimmed = name.trim();
+    if (!trimmed) {
+      toast.error("Name cannot be empty");
+      return;
+    }
+    setBusy(true);
+    const { error } = await supabase
+      .from("presentation_tickets")
+      .update({ attendee_name: trimmed })
+      .eq("id", ticket.id);
+    setBusy(false);
+    if (error) toast.error(error.message);
+    else {
+      toast.success("Updated");
+      setEditing(false);
+      onChanged();
+    }
+  };
+
+  const remove = async () => {
+    if (!confirm(`Delete ticket for ${ticket.attendee_name}? This frees their seat.`)) return;
+    setBusy(true);
+    const { error } = await supabase
+      .from("presentation_tickets")
+      .delete()
+      .eq("id", ticket.id);
+    setBusy(false);
+    if (error) toast.error(error.message);
+    else {
+      toast.success("Ticket removed");
+      onChanged();
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-between gap-3 p-2.5 bg-card/60 border border-border rounded-md flex-wrap">
+      <div className="flex items-center gap-2 min-w-0 flex-1">
+        <Badge
+          variant="outline"
+          className={`text-[9px] ${ticket.ticket_type === "adult" ? "text-primary border-primary/40" : ""}`}
+        >
+          {ticket.ticket_type}
+        </Badge>
+        {editing ? (
+          <Input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="h-7 text-sm"
+            autoFocus
+          />
+        ) : (
+          <p className="font-medium truncate text-sm">{ticket.attendee_name}</p>
+        )}
+      </div>
+      <div className="flex items-center gap-1.5 shrink-0">
+        {table && ticket.seat_number != null ? (
+          <Badge variant="outline" className="text-primary border-primary/40 text-[10px]">
+            {table.label ?? `T${table.table_number}`} · S{ticket.seat_number}
+          </Badge>
+        ) : (
+          <Badge variant="outline" className="text-destructive border-destructive/40 text-[10px]">
+            Unseated
+          </Badge>
+        )}
+        {editing ? (
+          <>
+            <Button size="icon" className="h-7 w-7" onClick={saveName} disabled={busy}>
+              {busy ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
+            </Button>
+            <Button
+              size="icon"
+              variant="outline"
+              className="h-7 w-7"
+              onClick={() => {
+                setEditing(false);
+                setName(ticket.attendee_name);
+              }}
+            >
+              <X className="h-3 w-3" />
+            </Button>
+          </>
+        ) : (
+          <>
+            <Button size="sm" variant="outline" onClick={onMove}>
+              <Move className="h-3.5 w-3.5 mr-1" /> Move
+            </Button>
+            <Button size="icon" variant="outline" className="h-8 w-8" onClick={() => setEditing(true)} title="Rename attendee">
+              <Pencil className="h-3.5 w-3.5" />
+            </Button>
+            <Button size="icon" variant="outline" className="h-8 w-8 text-destructive hover:text-destructive" onClick={remove} disabled={busy} title="Delete ticket">
+              {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+            </Button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Add ticket (admin) ──────────────────────────────────
+function AddTicketButton({
+  allocation,
+  ticketType,
+  onDone,
+}: {
+  allocation: AdminAllocation;
+  ticketType: "adult" | "child";
+  onDone: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const submit = async () => {
+    const trimmed = name.trim();
+    if (!trimmed) {
+      toast.error("Enter an attendee name");
+      return;
+    }
+    setBusy(true);
+    const { error } = await supabase.from("presentation_tickets").insert({
+      allocation_id: allocation.id,
+      event_id: allocation.event_id,
+      user_id: allocation.user_id,
+      ticket_type: ticketType,
+      attendee_name: trimmed,
+    } as any);
+    setBusy(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success(`${ticketType === "adult" ? "Adult" : "Child"} ticket added`);
+    setName("");
+    setOpen(false);
+    onDone();
+  };
+
+  return (
+    <>
+      <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
+        + {ticketType === "adult" ? "Adult" : "Child"}
+      </Button>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add {ticketType} ticket</DialogTitle>
+            <DialogDescription>
+              Adding a ticket for the family of {allocation.player_name}. Limits are bypassed for admins.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <label className="text-xs font-display tracking-wider uppercase text-muted-foreground">
+              Attendee name
+            </label>
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Full name"
+              onKeyDown={(e) => e.key === "Enter" && submit()}
+              autoFocus
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+            <Button onClick={submit} disabled={busy}>
+              {busy && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              Add ticket
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+
+// ── Edit allocation limits (admin) ──────────────────────
+function EditAllocationLimitsButton({
+  allocation,
+  onDone,
+}: {
+  allocation: AdminAllocation;
+  onDone: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [adults, setAdults] = useState(String(allocation.max_adults));
+  const [children, setChildren] = useState(String(allocation.max_children));
+  const [busy, setBusy] = useState(false);
+
+  const save = async () => {
+    const a = Math.max(0, parseInt(adults, 10) || 0);
+    const c = Math.max(0, parseInt(children, 10) || 0);
+    setBusy(true);
+    const { error } = await supabase
+      .from("presentation_allocations")
+      .update({ max_adults: a, max_children: c })
+      .eq("id", allocation.id);
+    setBusy(false);
+    if (error) toast.error(error.message);
+    else {
+      toast.success("Allocation limits updated");
+      setOpen(false);
+      onDone();
+    }
+  };
+
+  return (
+    <>
+      <Button size="sm" variant="outline" onClick={() => setOpen(true)} title="Edit ticket limits">
+        <Pencil className="h-3.5 w-3.5 mr-1" /> Limits
+      </Button>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit allocation limits</DialogTitle>
+            <DialogDescription>
+              Set how many adult and child tickets {allocation.player_name}'s family is entitled to.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <label className="text-xs font-display tracking-wider uppercase text-muted-foreground">Max adults</label>
+              <Input type="number" min={0} value={adults} onChange={(e) => setAdults(e.target.value)} />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-display tracking-wider uppercase text-muted-foreground">Max children</label>
+              <Input type="number" min={0} value={children} onChange={(e) => setChildren(e.target.value)} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+            <Button onClick={save} disabled={busy}>
+              {busy && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
