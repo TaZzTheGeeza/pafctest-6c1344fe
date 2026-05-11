@@ -752,7 +752,10 @@ function PeoplePanel({
                       {familyTickets.length} ticket(s) · {seatedCount}/{familyTickets.length} seated
                     </p>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Badge variant="outline" className="text-[10px] text-muted-foreground">
+                      Limit {alloc.max_adults}A / {alloc.max_children}C
+                    </Badge>
                     <Badge
                       variant="outline"
                       className={
@@ -763,6 +766,9 @@ function PeoplePanel({
                     >
                       {allSeated ? "Seats allocated" : "Awaiting allocation"}
                     </Badge>
+                    <AddTicketButton allocation={alloc} ticketType="adult" onDone={onRefresh} />
+                    <AddTicketButton allocation={alloc} ticketType="child" onDone={onRefresh} />
+                    <EditAllocationLimitsButton allocation={alloc} onDone={onRefresh} />
                     <NotifyFamilyButton
                       allocation={alloc}
                       familyTickets={familyTickets}
