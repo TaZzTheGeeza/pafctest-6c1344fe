@@ -8,7 +8,6 @@ import { toast } from "sonner";
 import { Award, ArrowLeft, Download, Loader2, Lock, Unlock } from "lucide-react";
 
 const TEAMS = [
-  { slug: "u6s", name: "U6" },
   { slug: "u7s", name: "U7" },
   { slug: "u8s-black", name: "U8 Black" },
   { slug: "u8s-gold", name: "U8 Gold" },
