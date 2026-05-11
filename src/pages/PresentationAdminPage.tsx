@@ -787,46 +787,13 @@ function PeoplePanel({
                     familyTickets.map((t) => {
                       const table = t.table_id ? tableByid.get(t.table_id) : null;
                       return (
-                        <div
+                        <TicketRow
                           key={t.id}
-                          className="flex items-center justify-between gap-3 p-2.5 bg-card/60 border border-border rounded-md"
-                        >
-                          <div className="flex items-center gap-2 min-w-0">
-                            <Badge
-                              variant="outline"
-                              className={`text-[9px] ${t.ticket_type === "adult" ? "text-primary border-primary/40" : ""}`}
-                            >
-                              {t.ticket_type}
-                            </Badge>
-                            <p className="font-medium truncate text-sm">
-                              {t.attendee_name}
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-2 shrink-0">
-                            {table && t.seat_number != null ? (
-                              <Badge
-                                variant="outline"
-                                className="text-primary border-primary/40 text-[10px]"
-                              >
-                                {table.label ?? `T${table.table_number}`} · S{t.seat_number}
-                              </Badge>
-                            ) : (
-                              <Badge
-                                variant="outline"
-                                className="text-destructive border-destructive/40 text-[10px]"
-                              >
-                                Unseated
-                              </Badge>
-                            )}
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => setMoving(t)}
-                            >
-                              <Move className="h-3.5 w-3.5 mr-1" /> Move
-                            </Button>
-                          </div>
-                        </div>
+                          ticket={t}
+                          table={table ?? null}
+                          onMove={() => setMoving(t)}
+                          onChanged={onRefresh}
+                        />
                       );
                     })
                   )}
