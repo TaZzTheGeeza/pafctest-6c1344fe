@@ -65,6 +65,7 @@ interface AdminTicket extends PresentationTicketSeat {
 
 interface AdminAllocation {
   id: string;
+  event_id: string;
   user_id: string;
   player_name: string;
   team_slug: string | null;
