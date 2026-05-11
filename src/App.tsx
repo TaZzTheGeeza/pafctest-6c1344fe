@@ -55,6 +55,7 @@ import WildcatsPage from "./pages/WildcatsPage.tsx";
 import PresentationPage from "./pages/PresentationPage.tsx";
 import PresentationAdminPage from "./pages/PresentationAdminPage.tsx";
 import PlayerRegistrationAdminPage from "./pages/PlayerRegistrationAdminPage.tsx";
+import PresentationAwardsAdminPage from "./pages/PresentationAwardsAdminPage.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
