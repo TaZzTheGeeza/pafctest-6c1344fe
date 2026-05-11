@@ -41,6 +41,50 @@ export default function PresentationAwardsAdminPage() {
     },
   });
 
+  const { data: allSettings } = useQuery({
+    queryKey: ["paw-settings-all"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("presentation_award_settings")
+        .select("*");
+      return data ?? [];
+    },
+  });
+
+  const allOpen = useMemo(() => {
+    if (!allSettings) return false;
+    // Open if every team has both awards open
+    for (const t of TEAMS) {
+      for (const a of AWARDS) {
+        const s = (allSettings as any[]).find((x) => x.team_slug === t.slug && x.award_type === a.type);
+        if (!s?.voting_open) return false;
+      }
+    }
+    return true;
+  }, [allSettings]);
+
+  const toggleAll = useMutation({
+    mutationFn: async (open: boolean) => {
+      const rows: any[] = [];
+      for (const t of TEAMS) {
+        for (const a of AWARDS) {
+          rows.push({ team_slug: t.slug, award_type: a.type, voting_open: open });
+        }
+      }
+      const { error } = await supabase
+        .from("presentation_award_settings")
+        .upsert(rows, { onConflict: "team_slug,award_type" });
+      if (error) throw error;
+    },
+    onSuccess: (_d, open) => {
+      qc.invalidateQueries({ queryKey: ["paw-settings"] });
+      qc.invalidateQueries({ queryKey: ["paw-settings-all"] });
+      qc.invalidateQueries({ queryKey: ["paw-settings", team] });
+      toast.success(open ? "Voting opened for all teams" : "Voting closed for all teams");
+    },
+    onError: (e: any) => toast.error(e?.message || "Failed"),
+  });
+
   const { data: votes, isLoading: votesLoading } = useQuery({
     queryKey: ["paw-votes", team],
     queryFn: async () => {
