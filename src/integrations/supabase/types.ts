@@ -1387,6 +1387,69 @@ export type Database = {
           },
         ]
       }
+      presentation_award_settings: {
+        Row: {
+          award_type: string
+          created_at: string
+          id: string
+          team_slug: string
+          updated_at: string
+          voting_open: boolean
+        }
+        Insert: {
+          award_type: string
+          created_at?: string
+          id?: string
+          team_slug: string
+          updated_at?: string
+          voting_open?: boolean
+        }
+        Update: {
+          award_type?: string
+          created_at?: string
+          id?: string
+          team_slug?: string
+          updated_at?: string
+          voting_open?: boolean
+        }
+        Relationships: []
+      }
+      presentation_award_votes: {
+        Row: {
+          award_type: string
+          created_at: string
+          id: string
+          responding_for: string
+          team_slug: string
+          updated_at: string
+          voted_for_player_id: string | null
+          voted_for_player_name: string
+          voter_user_id: string
+        }
+        Insert: {
+          award_type: string
+          created_at?: string
+          id?: string
+          responding_for: string
+          team_slug: string
+          updated_at?: string
+          voted_for_player_id?: string | null
+          voted_for_player_name: string
+          voter_user_id: string
+        }
+        Update: {
+          award_type?: string
+          created_at?: string
+          id?: string
+          responding_for?: string
+          team_slug?: string
+          updated_at?: string
+          voted_for_player_id?: string | null
+          voted_for_player_name?: string
+          voter_user_id?: string
+        }
+        Relationships: []
+      }
       presentation_events: {
         Row: {
           created_at: string
