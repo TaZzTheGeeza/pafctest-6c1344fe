@@ -1,0 +1,1 @@
+UPDATE presentation_events SET dress_code = 'Smart Casual (no sportswear)';
