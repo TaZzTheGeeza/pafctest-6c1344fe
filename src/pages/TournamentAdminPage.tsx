@@ -24,6 +24,7 @@ const TournamentAdminPage = () => {
   const [expandedTeams, setExpandedTeams] = useState<Set<string>>(new Set());
   const [showCreateTournament, setShowCreateTournament] = useState(false);
   const [showAddAgeGroup, setShowAddAgeGroup] = useState(false);
+  const [editingAgeGroupId, setEditingAgeGroupId] = useState<string | null>(null);
   const [showAddMatch, setShowAddMatch] = useState(false);
   const [showAddTeam, setShowAddTeam] = useState(false);
   const [showAnnouncement, setShowAnnouncement] = useState(false);
@@ -135,19 +136,54 @@ const TournamentAdminPage = () => {
     toast.success(`Tournament ${status}`);
   };
 
-  // ADD AGE GROUP
+  // ADD or UPDATE AGE GROUP
   const addAgeGroup = async () => {
     if (!ageGroupForm.age_group.trim() || !selectedTournament) return;
-    await supabase.from("tournament_age_groups").insert({
-      tournament_id: selectedTournament,
+    const payload = {
       age_group: ageGroupForm.age_group,
       max_teams: ageGroupForm.max_teams ? parseInt(ageGroupForm.max_teams) : null,
       group_count: parseInt(ageGroupForm.group_count) || 2,
-    });
+    };
+    if (editingAgeGroupId) {
+      const { error } = await supabase.from("tournament_age_groups").update(payload).eq("id", editingAgeGroupId);
+      if (error) { toast.error(error.message); return; }
+      toast.success("Age group updated");
+    } else {
+      const { error } = await supabase.from("tournament_age_groups").insert({ tournament_id: selectedTournament, ...payload });
+      if (error) { toast.error(error.message); return; }
+      toast.success("Age group added");
+    }
     setShowAddAgeGroup(false);
+    setEditingAgeGroupId(null);
     setAgeGroupForm({ age_group: "", max_teams: "", group_count: "2" });
     invalidateAll();
-    toast.success("Age group added");
+  };
+
+  const openEditAgeGroup = (ag: any) => {
+    setEditingAgeGroupId(ag.id);
+    setAgeGroupForm({
+      age_group: ag.age_group || "",
+      max_teams: ag.max_teams != null ? String(ag.max_teams) : "",
+      group_count: ag.group_count != null ? String(ag.group_count) : "2",
+    });
+    setShowAddAgeGroup(true);
+  };
+
+  const deleteAgeGroup = async (ag: any) => {
+    const teamCount = teams?.filter(t => t.age_group_id === ag.id).length ?? 0;
+    const matchCount = matches?.filter(m => m.age_group_id === ag.id).length ?? 0;
+    const warning = teamCount > 0 || matchCount > 0
+      ? `This will also delete ${teamCount} team(s) and ${matchCount} match(es) in ${ag.age_group}. Continue?`
+      : `Delete age group ${ag.age_group}?`;
+    if (!confirm(warning)) return;
+    // Cascade: matches -> teams -> groups -> age group
+    await supabase.from("tournament_matches").delete().eq("age_group_id", ag.id);
+    await supabase.from("tournament_teams").delete().eq("age_group_id", ag.id);
+    await supabase.from("tournament_groups").delete().eq("age_group_id", ag.id);
+    const { error } = await supabase.from("tournament_age_groups").delete().eq("id", ag.id);
+    if (error) { toast.error(error.message); return; }
+    invalidateAll();
+    toast.success("Age group deleted");
   };
 
   // GENERATE GROUPS for age group
@@ -385,15 +421,23 @@ const TournamentAdminPage = () => {
 
               {/* AGE GROUPS TAB */}
               <TabsContent value="age-groups" className="space-y-4">
-                <Button size="sm" onClick={() => setShowAddAgeGroup(true)}><Plus className="h-4 w-4 mr-1" />Add Age Group</Button>
+                <Button size="sm" onClick={() => { setEditingAgeGroupId(null); setAgeGroupForm({ age_group: "", max_teams: "", group_count: "2" }); setShowAddAgeGroup(true); }}><Plus className="h-4 w-4 mr-1" />Add Age Group</Button>
                 <div className="grid md:grid-cols-3 gap-4">
                   {ageGroups?.map(ag => {
                     const agGroups = groups?.filter(g => g.age_group_id === ag.id) || [];
                     return (
                       <Card key={ag.id}>
                         <CardHeader className="pb-2">
-                          <CardTitle className="text-base">{ag.age_group}</CardTitle>
-                          <CardDescription>{ag.max_teams ? `Max ${ag.max_teams} teams` : "No limit"} · {ag.group_count} groups</CardDescription>
+                          <div className="flex items-start justify-between gap-2">
+                            <div>
+                              <CardTitle className="text-base">{ag.age_group}</CardTitle>
+                              <CardDescription>{ag.max_teams ? `Max ${ag.max_teams} teams` : "No limit"} · {ag.group_count} groups</CardDescription>
+                            </div>
+                            <div className="flex gap-1">
+                              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => openEditAgeGroup(ag)}><Edit className="h-3.5 w-3.5" /></Button>
+                              <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => deleteAgeGroup(ag)}><Trash2 className="h-3.5 w-3.5" /></Button>
+                            </div>
+                          </div>
                         </CardHeader>
                         <CardContent>
                           {agGroups.length === 0 ? (
@@ -621,14 +665,14 @@ const TournamentAdminPage = () => {
       </Dialog>
 
       {/* ADD AGE GROUP DIALOG */}
-      <Dialog open={showAddAgeGroup} onOpenChange={setShowAddAgeGroup}>
+      <Dialog open={showAddAgeGroup} onOpenChange={(o) => { setShowAddAgeGroup(o); if (!o) { setEditingAgeGroupId(null); setAgeGroupForm({ age_group: "", max_teams: "", group_count: "2" }); } }}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Add Age Group</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{editingAgeGroupId ? "Edit Age Group" : "Add Age Group"}</DialogTitle></DialogHeader>
           <div className="space-y-3">
             <div><Label>Age Group (e.g. U7s, U8s)</Label><Input value={ageGroupForm.age_group} onChange={e => setAgeGroupForm(f => ({ ...f, age_group: e.target.value }))} /></div>
             <div><Label>Max Teams</Label><Input type="number" value={ageGroupForm.max_teams} onChange={e => setAgeGroupForm(f => ({ ...f, max_teams: e.target.value }))} /></div>
             <div><Label>Number of Groups</Label><Input type="number" min={1} max={8} value={ageGroupForm.group_count} onChange={e => setAgeGroupForm(f => ({ ...f, group_count: e.target.value }))} /></div>
-            <Button onClick={addAgeGroup} className="w-full">Add Age Group</Button>
+            <Button onClick={addAgeGroup} className="w-full">{editingAgeGroupId ? "Save Changes" : "Add Age Group"}</Button>
           </div>
         </DialogContent>
       </Dialog>
