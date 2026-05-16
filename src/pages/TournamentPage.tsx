@@ -706,7 +706,10 @@ const TournamentPage = () => {
               <TabsContent value="register">
                 {ageGroups && ageGroups.length > 0 ? (
                   <TournamentEntryForm
-                    ageGroups={ageGroups}
+                    ageGroups={ageGroups.map(ag => ({
+                      ...ag,
+                      entered_count: teams?.filter(t => t.age_group_id === ag.id).length ?? 0,
+                    }))}
                     onSuccess={() => {
                       refetchTeams();
                     }}
