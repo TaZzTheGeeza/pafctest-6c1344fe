@@ -81,6 +81,9 @@ export function TournamentEntryForm({ ageGroups, onSuccess }: TournamentEntryFor
     }
     if (s === 1) {
       if (!ageGroupId) return "Please select an age group";
+      const ag = ageGroups.find(a => a.id === ageGroupId);
+      const max = ag?.max_teams ?? 12;
+      if ((ag?.entered_count ?? 0) >= max) return `${ag?.age_group} is full (${max} teams). Please choose another age group.`;
       if (!teamName.trim()) return "Team name is required";
       if (!managerName.trim()) return "Manager name is required";
       if (!managerEmail.trim()) return "Manager email is required";
