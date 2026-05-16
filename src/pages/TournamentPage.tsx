@@ -221,7 +221,7 @@ const TournamentPage = () => {
               </span>
               <span className="flex items-center gap-1.5">
                 <PoundSterling className="h-4 w-4 text-primary" />
-                £40 per team
+                £20 per team (half price!)
               </span>
             </div>
             {activeTournament?.description && (
@@ -363,7 +363,7 @@ const TournamentPage = () => {
                       </div>
                       <div className="flex items-start gap-2">
                         <PoundSterling className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                        <p><strong>Entry Fee:</strong> £40 per team</p>
+                        <p><strong>Entry Fee:</strong> £20 per team (half price!)</p>
                       </div>
                     </CardContent>
                   </Card>
