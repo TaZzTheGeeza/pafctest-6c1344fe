@@ -24,6 +24,7 @@ const TournamentAdminPage = () => {
   const [expandedTeams, setExpandedTeams] = useState<Set<string>>(new Set());
   const [showCreateTournament, setShowCreateTournament] = useState(false);
   const [showAddAgeGroup, setShowAddAgeGroup] = useState(false);
+  const [editingAgeGroupId, setEditingAgeGroupId] = useState<string | null>(null);
   const [showAddMatch, setShowAddMatch] = useState(false);
   const [showAddTeam, setShowAddTeam] = useState(false);
   const [showAnnouncement, setShowAnnouncement] = useState(false);
