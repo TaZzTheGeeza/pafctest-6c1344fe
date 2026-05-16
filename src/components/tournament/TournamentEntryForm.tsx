@@ -15,6 +15,8 @@ import { z } from "zod";
 interface AgeGroup {
   id: string;
   age_group: string;
+  max_teams?: number | null;
+  entered_count?: number;
 }
 
 interface TournamentEntryFormProps {
@@ -79,6 +81,9 @@ export function TournamentEntryForm({ ageGroups, onSuccess }: TournamentEntryFor
     }
     if (s === 1) {
       if (!ageGroupId) return "Please select an age group";
+      const ag = ageGroups.find(a => a.id === ageGroupId);
+      const max = ag?.max_teams ?? 12;
+      if ((ag?.entered_count ?? 0) >= max) return `${ag?.age_group} is full (${max} teams). Please choose another age group.`;
       if (!teamName.trim()) return "Team name is required";
       if (!managerName.trim()) return "Manager name is required";
       if (!managerEmail.trim()) return "Manager email is required";
@@ -262,7 +267,15 @@ export function TournamentEntryForm({ ageGroups, onSuccess }: TournamentEntryFor
                 <Select value={ageGroupId} onValueChange={setAgeGroupId}>
                   <SelectTrigger><SelectValue placeholder="Select age group" /></SelectTrigger>
                   <SelectContent>
-                    {ageGroups.map(ag => <SelectItem key={ag.id} value={ag.id}>{ag.age_group}</SelectItem>)}
+                    {ageGroups.map(ag => {
+                      const max = ag.max_teams ?? 12;
+                      const isFull = (ag.entered_count ?? 0) >= max;
+                      return (
+                        <SelectItem key={ag.id} value={ag.id} disabled={isFull}>
+                          {ag.age_group} {isFull ? "— FULL" : `(${ag.entered_count ?? 0}/${max})`}
+                        </SelectItem>
+                      );
+                    })}
                   </SelectContent>
                 </Select>
               </div>
