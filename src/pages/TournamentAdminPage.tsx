@@ -136,19 +136,54 @@ const TournamentAdminPage = () => {
     toast.success(`Tournament ${status}`);
   };
 
-  // ADD AGE GROUP
+  // ADD or UPDATE AGE GROUP
   const addAgeGroup = async () => {
     if (!ageGroupForm.age_group.trim() || !selectedTournament) return;
-    await supabase.from("tournament_age_groups").insert({
-      tournament_id: selectedTournament,
+    const payload = {
       age_group: ageGroupForm.age_group,
       max_teams: ageGroupForm.max_teams ? parseInt(ageGroupForm.max_teams) : null,
       group_count: parseInt(ageGroupForm.group_count) || 2,
-    });
+    };
+    if (editingAgeGroupId) {
+      const { error } = await supabase.from("tournament_age_groups").update(payload).eq("id", editingAgeGroupId);
+      if (error) { toast.error(error.message); return; }
+      toast.success("Age group updated");
+    } else {
+      const { error } = await supabase.from("tournament_age_groups").insert({ tournament_id: selectedTournament, ...payload });
+      if (error) { toast.error(error.message); return; }
+      toast.success("Age group added");
+    }
     setShowAddAgeGroup(false);
+    setEditingAgeGroupId(null);
     setAgeGroupForm({ age_group: "", max_teams: "", group_count: "2" });
     invalidateAll();
-    toast.success("Age group added");
+  };
+
+  const openEditAgeGroup = (ag: any) => {
+    setEditingAgeGroupId(ag.id);
+    setAgeGroupForm({
+      age_group: ag.age_group || "",
+      max_teams: ag.max_teams != null ? String(ag.max_teams) : "",
+      group_count: ag.group_count != null ? String(ag.group_count) : "2",
+    });
+    setShowAddAgeGroup(true);
+  };
+
+  const deleteAgeGroup = async (ag: any) => {
+    const teamCount = teams?.filter(t => t.age_group_id === ag.id).length ?? 0;
+    const matchCount = matches?.filter(m => m.age_group_id === ag.id).length ?? 0;
+    const warning = teamCount > 0 || matchCount > 0
+      ? `This will also delete ${teamCount} team(s) and ${matchCount} match(es) in ${ag.age_group}. Continue?`
+      : `Delete age group ${ag.age_group}?`;
+    if (!confirm(warning)) return;
+    // Cascade: matches -> teams -> groups -> age group
+    await supabase.from("tournament_matches").delete().eq("age_group_id", ag.id);
+    await supabase.from("tournament_teams").delete().eq("age_group_id", ag.id);
+    await supabase.from("tournament_groups").delete().eq("age_group_id", ag.id);
+    const { error } = await supabase.from("tournament_age_groups").delete().eq("id", ag.id);
+    if (error) { toast.error(error.message); return; }
+    invalidateAll();
+    toast.success("Age group deleted");
   };
 
   // GENERATE GROUPS for age group
