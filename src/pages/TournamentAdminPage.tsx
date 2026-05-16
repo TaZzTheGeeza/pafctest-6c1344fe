@@ -421,15 +421,23 @@ const TournamentAdminPage = () => {
 
               {/* AGE GROUPS TAB */}
               <TabsContent value="age-groups" className="space-y-4">
-                <Button size="sm" onClick={() => setShowAddAgeGroup(true)}><Plus className="h-4 w-4 mr-1" />Add Age Group</Button>
+                <Button size="sm" onClick={() => { setEditingAgeGroupId(null); setAgeGroupForm({ age_group: "", max_teams: "", group_count: "2" }); setShowAddAgeGroup(true); }}><Plus className="h-4 w-4 mr-1" />Add Age Group</Button>
                 <div className="grid md:grid-cols-3 gap-4">
                   {ageGroups?.map(ag => {
                     const agGroups = groups?.filter(g => g.age_group_id === ag.id) || [];
                     return (
                       <Card key={ag.id}>
                         <CardHeader className="pb-2">
-                          <CardTitle className="text-base">{ag.age_group}</CardTitle>
-                          <CardDescription>{ag.max_teams ? `Max ${ag.max_teams} teams` : "No limit"} · {ag.group_count} groups</CardDescription>
+                          <div className="flex items-start justify-between gap-2">
+                            <div>
+                              <CardTitle className="text-base">{ag.age_group}</CardTitle>
+                              <CardDescription>{ag.max_teams ? `Max ${ag.max_teams} teams` : "No limit"} · {ag.group_count} groups</CardDescription>
+                            </div>
+                            <div className="flex gap-1">
+                              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => openEditAgeGroup(ag)}><Edit className="h-3.5 w-3.5" /></Button>
+                              <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => deleteAgeGroup(ag)}><Trash2 className="h-3.5 w-3.5" /></Button>
+                            </div>
+                          </div>
                         </CardHeader>
                         <CardContent>
                           {agGroups.length === 0 ? (
