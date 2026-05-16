@@ -665,14 +665,14 @@ const TournamentAdminPage = () => {
       </Dialog>
 
       {/* ADD AGE GROUP DIALOG */}
-      <Dialog open={showAddAgeGroup} onOpenChange={setShowAddAgeGroup}>
+      <Dialog open={showAddAgeGroup} onOpenChange={(o) => { setShowAddAgeGroup(o); if (!o) { setEditingAgeGroupId(null); setAgeGroupForm({ age_group: "", max_teams: "", group_count: "2" }); } }}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Add Age Group</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{editingAgeGroupId ? "Edit Age Group" : "Add Age Group"}</DialogTitle></DialogHeader>
           <div className="space-y-3">
             <div><Label>Age Group (e.g. U7s, U8s)</Label><Input value={ageGroupForm.age_group} onChange={e => setAgeGroupForm(f => ({ ...f, age_group: e.target.value }))} /></div>
             <div><Label>Max Teams</Label><Input type="number" value={ageGroupForm.max_teams} onChange={e => setAgeGroupForm(f => ({ ...f, max_teams: e.target.value }))} /></div>
             <div><Label>Number of Groups</Label><Input type="number" min={1} max={8} value={ageGroupForm.group_count} onChange={e => setAgeGroupForm(f => ({ ...f, group_count: e.target.value }))} /></div>
-            <Button onClick={addAgeGroup} className="w-full">Add Age Group</Button>
+            <Button onClick={addAgeGroup} className="w-full">{editingAgeGroupId ? "Save Changes" : "Add Age Group"}</Button>
           </div>
         </DialogContent>
       </Dialog>
