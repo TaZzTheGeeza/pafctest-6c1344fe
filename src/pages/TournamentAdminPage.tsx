@@ -74,8 +74,6 @@ const TournamentAdminPage = () => {
         const numB = parseInt(String(b.age_group).replace(/\D/g, "")) || 9999;
         return numA - numB;
       });
-      if (error) throw error;
-      return data;
     },
     enabled: !!selectedTournament,
   });
