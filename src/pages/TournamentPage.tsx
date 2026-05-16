@@ -326,6 +326,9 @@ const TournamentPage = () => {
                     <div className="grid sm:grid-cols-2 gap-3">
                       {ageGroups?.map(ag => {
                         const details = ageGroupDetails[ag.age_group];
+                        const entered = teams?.filter(t => t.age_group_id === ag.id).length ?? 0;
+                        const max = ag.max_teams ?? 12;
+                        const isFull = entered >= max;
                         return (
                           <div key={ag.id} className="flex items-center justify-between rounded-lg border border-border p-3">
                             <div>
@@ -334,9 +337,9 @@ const TournamentPage = () => {
                                 <p className="text-xs text-muted-foreground">{details.date} · {details.format}</p>
                               )}
                             </div>
-                            {ag.max_teams && (
-                              <Badge variant="secondary" className="text-xs">Max {ag.max_teams}</Badge>
-                            )}
+                            <Badge variant={isFull ? "destructive" : "secondary"} className="text-xs">
+                              {isFull ? "FULL" : `${entered}/${max}`}
+                            </Badge>
                           </div>
                         );
                       })}
