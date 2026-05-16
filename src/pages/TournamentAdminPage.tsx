@@ -67,7 +67,13 @@ const TournamentAdminPage = () => {
     queryKey: ["admin-age-groups", selectedTournament],
     queryFn: async () => {
       if (!selectedTournament) return [];
-      const { data, error } = await supabase.from("tournament_age_groups").select("*").eq("tournament_id", selectedTournament).order("age_group");
+      const { data, error } = await supabase.from("tournament_age_groups").select("*").eq("tournament_id", selectedTournament);
+      if (error) throw error;
+      return (data || []).sort((a, b) => {
+        const numA = parseInt(String(a.age_group).replace(/\D/g, "")) || 9999;
+        const numB = parseInt(String(b.age_group).replace(/\D/g, "")) || 9999;
+        return numA - numB;
+      });
       if (error) throw error;
       return data;
     },
