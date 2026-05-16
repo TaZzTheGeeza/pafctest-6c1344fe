@@ -15,6 +15,8 @@ import { z } from "zod";
 interface AgeGroup {
   id: string;
   age_group: string;
+  max_teams?: number | null;
+  entered_count?: number;
 }
 
 interface TournamentEntryFormProps {
