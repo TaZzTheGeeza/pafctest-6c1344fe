@@ -267,7 +267,15 @@ export function TournamentEntryForm({ ageGroups, onSuccess }: TournamentEntryFor
                 <Select value={ageGroupId} onValueChange={setAgeGroupId}>
                   <SelectTrigger><SelectValue placeholder="Select age group" /></SelectTrigger>
                   <SelectContent>
-                    {ageGroups.map(ag => <SelectItem key={ag.id} value={ag.id}>{ag.age_group}</SelectItem>)}
+                    {ageGroups.map(ag => {
+                      const max = ag.max_teams ?? 12;
+                      const isFull = (ag.entered_count ?? 0) >= max;
+                      return (
+                        <SelectItem key={ag.id} value={ag.id} disabled={isFull}>
+                          {ag.age_group} {isFull ? "— FULL" : `(${ag.entered_count ?? 0}/${max})`}
+                        </SelectItem>
+                      );
+                    })}
                   </SelectContent>
                 </Select>
               </div>
