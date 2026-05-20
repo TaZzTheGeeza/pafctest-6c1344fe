@@ -286,6 +286,75 @@ export default function PresentationAwardsAdminPage() {
             </div>
           </div>
 
+          {/* All-teams winners summary */}
+          <section className="mb-10">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="font-display text-xl font-bold flex items-center gap-2">
+                  <Trophy className="h-5 w-5 text-primary" /> Winners Summary — All Teams
+                </h2>
+                <p className="text-xs text-muted-foreground mt-1">Top vote-getter per award. Ties are flagged in amber.</p>
+              </div>
+            </div>
+
+            {allVotesLoading ? (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Loading winners...</div>
+            ) : (
+              <div className="overflow-x-auto bg-card border border-border rounded-xl">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left border-b border-border text-xs font-display tracking-wider uppercase text-muted-foreground bg-secondary/40">
+                      <th className="py-3 px-4">Team</th>
+                      {AWARDS.map((a) => (
+                        <th key={a.type} className="py-3 px-4">{a.label}</th>
+                      ))}
+                      <th className="py-3 px-4 text-right">Total Votes</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {TEAMS.map((t) => {
+                      let teamTotal = 0;
+                      return (
+                        <tr key={t.slug} className="border-b border-border/50 hover:bg-secondary/20 transition-colors">
+                          <td className="py-3 px-4 font-display font-semibold">{t.name}</td>
+                          {AWARDS.map((a) => {
+                            const list = winnersByTeamAward.get(`${t.slug}::${a.type}`) || [];
+                            const total = list.reduce((s, [, c]) => s + c, 0);
+                            teamTotal += total;
+                            const [first, second] = [list[0], list[1]];
+                            const tie = first && second && first[1] === second[1];
+                            if (!first) {
+                              return <td key={a.type} className="py-3 px-4 text-muted-foreground italic text-xs">No votes</td>;
+                            }
+                            const pct = total > 0 ? Math.round((first[1] / total) * 100) : 0;
+                            return (
+                              <td key={a.type} className="py-3 px-4">
+                                <div className="flex items-center gap-2">
+                                  <Medal className={`h-4 w-4 shrink-0 ${tie ? "text-amber-400" : "text-primary"}`} />
+                                  <div className="min-w-0">
+                                    <div className={`font-display font-semibold truncate ${tie ? "text-amber-400" : "text-foreground"}`}>
+                                      {first[0]}
+                                      {tie && <span className="ml-1 text-[10px] uppercase tracking-wider">(tie)</span>}
+                                    </div>
+                                    <div className="text-[11px] text-muted-foreground">
+                                      {first[1]} vote{first[1] === 1 ? "" : "s"} • {pct}%
+                                      {second && ` • Runner-up: ${second[0]} (${second[1]})`}
+                                    </div>
+                                  </div>
+                                </div>
+                              </td>
+                            );
+                          })}
+                          <td className="py-3 px-4 text-right text-muted-foreground text-xs">{teamTotal}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </section>
+
           {/* Team filter */}
           <div className="flex flex-wrap gap-2 mb-8">
             {TEAMS.map((t) => (
