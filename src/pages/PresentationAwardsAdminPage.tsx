@@ -5,7 +5,7 @@ import { Footer } from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Award, ArrowLeft, Download, Loader2, Lock, Unlock } from "lucide-react";
+import { Award, ArrowLeft, Download, Loader2, Lock, Unlock, Trophy, Medal } from "lucide-react";
 
 const TEAMS = [
   { slug: "u7s", name: "U7" },
