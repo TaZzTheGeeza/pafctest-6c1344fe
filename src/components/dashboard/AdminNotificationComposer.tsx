@@ -34,12 +34,25 @@ const TEAM_LABELS: Record<string, string> = {
   "u14s": "U14",
 };
 
+const SYSTEM_ROLES = [
+  { name: "admin", label: "Admins" },
+  { name: "coach", label: "Coaches" },
+  { name: "player", label: "Players" },
+  { name: "treasurer", label: "Treasurers" },
+  { name: "welfare_officer", label: "Welfare Officers" },
+  { name: "news_editor", label: "News Editors" },
+  { name: "photographer", label: "Photographers" },
+  { name: "parent", label: "Parents" },
+];
+
 export function AdminNotificationComposer() {
   const { user } = useAuth();
   const [title, setTitle] = useState("");
   const [message, setMessage] = useState("");
-  const [audience, setAudience] = useState<"all" | "team" | "member">("all");
+  const [audience, setAudience] = useState<"all" | "team" | "member" | "role">("all");
   const [selectedTeams, setSelectedTeams] = useState<string[]>([]);
+  const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
+  const [customRoles, setCustomRoles] = useState<{ name: string; label: string }[]>([]);
   const [selectedMembers, setSelectedMembers] = useState<{ id: string; full_name: string | null; email: string | null }[]>([]);
   const [memberSearch, setMemberSearch] = useState("");
   const [memberResults, setMemberResults] = useState<{ id: string; full_name: string | null; email: string | null }[]>([]);
@@ -52,6 +65,10 @@ export function AdminNotificationComposer() {
 
   useEffect(() => {
     loadHistory();
+    supabase.from("custom_roles").select("name, label").order("label").then(({ data }) => {
+      const systemNames = new Set(SYSTEM_ROLES.map((r) => r.name));
+      setCustomRoles((data ?? []).filter((r: any) => !systemNames.has(r.name) && r.name !== "user"));
+    });
   }, []);
 
   async function loadHistory() {
