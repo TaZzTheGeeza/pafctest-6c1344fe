@@ -34,9 +34,10 @@ export function Footer() {
             <p className="text-muted-foreground text-xs leading-relaxed mb-3">
               Proudly FA Accredited. Grassroots football for all, powered by community.
             </p>
-            <p className="text-xs text-primary font-display tracking-wider">
+            <p className="text-xs text-primary font-display tracking-wider mb-4">
               Join Us. Train with Us. Develop with Us.
             </p>
+            <DonationButton size="sm" className="w-full sm:w-auto" label="Donate to PAFC" />
           </div>
 
           <div>
