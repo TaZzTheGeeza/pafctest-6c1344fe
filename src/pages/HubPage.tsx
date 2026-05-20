@@ -7,7 +7,8 @@ import { TeamChat } from "@/components/hub/TeamChat";
 import { PaymentCenter } from "@/components/hub/PaymentCenter";
 import { NotificationCenter } from "@/components/hub/NotificationCenter";
 import { TeamMemberManager } from "@/components/hub/TeamMemberManager";
-import { MessageSquare, CreditCard, Bell, CalendarCheck, Users, Shield, ChevronDown, Car, TrendingUp, UserPlus, User, FileText, ChevronRight, Video, Sparkles, Award } from "lucide-react";
+import { MessageSquare, CreditCard, Bell, CalendarCheck, Users, Shield, ChevronDown, Car, TrendingUp, UserPlus, User, FileText, ChevronRight, Video, Sparkles, Award, ClipboardList } from "lucide-react";
+import { PlayerRosterManager } from "@/components/hub/PlayerRosterManager";
 import { AwardsVoting } from "@/components/hub/AwardsVoting";
 import { FixtureAvailability } from "@/components/hub/FixtureAvailability";
 import { CarpoolBoard } from "@/components/hub/CarpoolBoard";
@@ -178,9 +179,10 @@ export default function HubPage() {
 
   const activeTeamName = TEAMS.find((t) => t.slug === activeTeam)?.name || activeTeam;
 
-  const allTabs = [
+    const allTabs = [
     ...tabs,
     ...((isAdmin || isCoach) ? [{ id: "members", label: "Members", icon: Users }] : []),
+    ...(isAdmin ? [{ id: "roster", label: "Roster", icon: ClipboardList }] : []),
   ].filter((t) => !(t.id === "awards" && activeTeam === "u6s"));
 
   const renderContent = () => (
@@ -193,6 +195,7 @@ export default function HubPage() {
       {activeTab === "attendance" && activeTeam && (isCoach || isAdmin) && <AttendanceStats teamSlug={activeTeam} />}
       {activeTab === "guardian" && activeTeam && <GuardianManager teamSlug={activeTeam} teamName={activeTeamName || ""} />}
       {activeTab === "members" && activeTeam && (isAdmin || isCoach) && <TeamMemberManager teamSlug={activeTeam} teamName={activeTeamName || ""} />}
+      {activeTab === "roster" && activeTeam && isAdmin && <PlayerRosterManager teamSlug={activeTeam} teamName={activeTeamName || ""} />}
       {activeTab === "meetings" && <HubMeetingsEmbed />}
       {activeTab === "awards" && activeTeam && activeTeam !== "u6s" && <AwardsVoting teamSlug={activeTeam} teamName={activeTeamName || ""} />}
       {activeTab === "player" && (
