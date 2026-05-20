@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import clubLogo from "@/assets/club-logo.jpg";
+import { DonationButton } from "@/components/DonationButton";
 
 const quickLinks = [
   { label: "Home", path: "/" },
