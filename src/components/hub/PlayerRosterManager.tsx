@@ -268,47 +268,108 @@ export function PlayerRosterManager({ teamSlug, teamName }: { teamSlug: string; 
           </div>
         ) : (
           <ul className="divide-y divide-border">
-            {players.map((p) => (
-              <li key={p.id} className="flex items-center gap-3 px-4 py-3 hover:bg-secondary/30 transition-colors">
-                <div className="w-10 h-10 rounded-full bg-secondary border border-border flex items-center justify-center overflow-hidden shrink-0">
-                  {p.photo_url ? (
-                    <img src={p.photo_url} alt={p.first_name} className="w-full h-full object-cover" />
-                  ) : (
-                    <User className="h-5 w-5 text-muted-foreground" />
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-display text-sm font-bold text-foreground truncate">{p.first_name}</span>
-                    {p.shirt_number != null && (
-                      <span className="inline-flex items-center gap-0.5 text-[10px] font-display font-bold bg-primary/15 text-primary border border-primary/30 px-1.5 py-0.5 rounded">
-                        <Hash className="h-2.5 w-2.5" />{p.shirt_number}
-                      </span>
-                    )}
-                    {p.position && (
-                      <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-display">{p.position}</span>
-                    )}
+            {players.map((p) => {
+              const links = guardiansForPlayer(p.first_name);
+              const isLinking = linkingFor === p.id;
+              return (
+                <li key={p.id} className="px-4 py-3 hover:bg-secondary/30 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-secondary border border-border flex items-center justify-center overflow-hidden shrink-0">
+                      {p.photo_url ? (
+                        <img src={p.photo_url} alt={p.first_name} className="w-full h-full object-cover" />
+                      ) : (
+                        <User className="h-5 w-5 text-muted-foreground" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-display text-sm font-bold text-foreground truncate">{p.first_name}</span>
+                        {p.shirt_number != null && (
+                          <span className="inline-flex items-center gap-0.5 text-[10px] font-display font-bold bg-primary/15 text-primary border border-primary/30 px-1.5 py-0.5 rounded">
+                            <Hash className="h-2.5 w-2.5" />{p.shirt_number}
+                          </span>
+                        )}
+                        {p.position && (
+                          <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-display">{p.position}</span>
+                        )}
+                        {links.length > 0 && (
+                          <span className="text-[10px] text-green-500 font-display">
+                            • {links.length} parent{links.length > 1 ? "s" : ""} linked
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        onClick={() => { setLinkingFor(isLinking ? null : p.id); setParentSearch(""); setParentResults([]); }}
+                        className="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-secondary transition-colors"
+                        title="Link parent"
+                      >
+                        <Link2 className="h-4 w-4" />
+                      </button>
+                      <button onClick={() => startEdit(p)} className="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-secondary transition-colors" title="Edit">
+                        <Pencil className="h-4 w-4" />
+                      </button>
+                      <button onClick={() => remove(p)} className="p-2 rounded-lg text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors" title="Remove">
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-1 shrink-0">
-                  <button
-                    onClick={() => startEdit(p)}
-                    className="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-secondary transition-colors"
-                    title="Edit"
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </button>
-                  <button
-                    onClick={() => remove(p)}
-                    className="p-2 rounded-lg text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors"
-                    title="Remove"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
-              </li>
-            ))}
+
+                  {/* Existing parent links */}
+                  {links.length > 0 && (
+                    <div className="mt-2 ml-13 flex flex-wrap gap-1.5">
+                      {links.map((g) => (
+                        <span key={g.id} className="inline-flex items-center gap-1.5 text-[11px] bg-secondary/70 border border-border rounded-full pl-2 pr-1 py-0.5 font-display">
+                          <UserPlus className="h-3 w-3 text-primary" />
+                          <span className="text-foreground">{g.parent_name || g.parent_email || "Unknown parent"}</span>
+                          <button onClick={() => unlinkGuardian(g.id)} className="text-muted-foreground hover:text-red-400 rounded-full p-0.5">
+                            <X className="h-3 w-3" />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Link parent search */}
+                  {isLinking && (
+                    <div className="mt-3 bg-background border border-primary/30 rounded-lg p-3 space-y-2">
+                      <label className="text-[10px] uppercase tracking-wider text-muted-foreground font-display flex items-center gap-1.5">
+                        <Search className="h-3 w-3" /> Search parent by name or email
+                      </label>
+                      <input
+                        value={parentSearch}
+                        onChange={(e) => searchParents(e.target.value)}
+                        placeholder="e.g. Jane Smith or jane@…"
+                        className="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-sm text-foreground"
+                        autoFocus
+                      />
+                      {searching && <div className="text-xs text-muted-foreground">Searching…</div>}
+                      {parentResults.length > 0 && (
+                        <ul className="divide-y divide-border bg-card border border-border rounded-lg max-h-48 overflow-auto">
+                          {parentResults.map((pr) => (
+                            <li key={pr.id}>
+                              <button
+                                onClick={() => linkParent(p, pr)}
+                                className="w-full text-left px-3 py-2 hover:bg-secondary/60 transition-colors flex flex-col"
+                              >
+                                <span className="text-sm font-display text-foreground">{pr.full_name || "(no name)"}</span>
+                                <span className="text-[11px] text-muted-foreground">{pr.email}</span>
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                      {parentSearch.length >= 2 && !searching && parentResults.length === 0 && (
+                        <div className="text-xs text-muted-foreground">No matches. Parent must have an account first.</div>
+                      )}
+                    </div>
+                  )}
+                </li>
+              );
+            })}
           </ul>
+
         )}
       </div>
     </div>
