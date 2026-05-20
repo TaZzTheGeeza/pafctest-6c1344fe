@@ -5,7 +5,7 @@ import { Footer } from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Award, ArrowLeft, Download, Loader2, Lock, Unlock } from "lucide-react";
+import { Award, ArrowLeft, Download, Loader2, Lock, Unlock, Trophy, Medal } from "lucide-react";
 
 const TEAMS = [
   { slug: "u7s", name: "U7" },
@@ -96,7 +96,67 @@ export default function PresentationAwardsAdminPage() {
     },
   });
 
+  const { data: allVotes, isLoading: allVotesLoading } = useQuery({
+    queryKey: ["paw-votes-all"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("presentation_award_votes")
+        .select("team_slug, award_type, voted_for_player_name");
+      return data ?? [];
+    },
+  });
+
+  // Winners summary: per team per award -> sorted [name, count][]
+  const winnersByTeamAward = useMemo(() => {
+    const map = new Map<string, [string, number][]>();
+    for (const t of TEAMS) {
+      for (const a of AWARDS) {
+        const filtered = (allVotes ?? []).filter(
+          (v: any) => v.team_slug === t.slug && v.award_type === a.type,
+        );
+        const counts = new Map<string, number>();
+        filtered.forEach((v: any) => {
+          const n = v.voted_for_player_name;
+          counts.set(n, (counts.get(n) || 0) + 1);
+        });
+        map.set(`${t.slug}::${a.type}`, [...counts.entries()].sort((x, y) => y[1] - x[1]));
+      }
+    }
+    return map;
+  }, [allVotes]);
+
+  const exportAllWinnersCsv = () => {
+    const rows: string[][] = [["Team", "Award", "Winner", "Votes", "Runner-Up", "Runner-Up Votes", "Total Votes", "Tie?"]];
+    for (const t of TEAMS) {
+      for (const a of AWARDS) {
+        const list = winnersByTeamAward.get(`${t.slug}::${a.type}`) || [];
+        const total = list.reduce((s, [, c]) => s + c, 0);
+        const [first, second] = [list[0], list[1]];
+        const tie = first && second && first[1] === second[1] ? "Yes" : "";
+        rows.push([
+          t.name,
+          a.label,
+          first?.[0] || "—",
+          String(first?.[1] ?? 0),
+          second?.[0] || "—",
+          String(second?.[1] ?? 0),
+          String(total),
+          tie,
+        ]);
+      }
+    }
+    const csv = rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `presentation-award-winners-all-teams.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const voterIds = useMemo(() => [...new Set((votes ?? []).map((v: any) => v.voter_user_id))], [votes]);
+
 
   const { data: voterProfiles } = useQuery({
     queryKey: ["paw-voter-profiles", voterIds],
@@ -210,14 +270,90 @@ export default function PresentationAwardsAdminPage() {
                 {allOpen ? "Close Voting (All Teams)" : "Open Voting (All Teams)"}
               </button>
               <button
+                onClick={exportAllWinnersCsv}
+                disabled={!allVotes || allVotes.length === 0}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-primary/40 text-xs font-display tracking-wider text-primary hover:bg-primary/10 transition-colors disabled:opacity-50"
+              >
+                <Trophy className="h-3.5 w-3.5" /> Export All Winners
+              </button>
+              <button
                 onClick={exportCsv}
                 disabled={!votes || votes.length === 0}
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border text-xs font-display tracking-wider hover:border-primary/50 hover:text-primary transition-colors disabled:opacity-50"
               >
-                <Download className="h-3.5 w-3.5" /> Export CSV
+                <Download className="h-3.5 w-3.5" /> Export Team CSV
               </button>
             </div>
           </div>
+
+          {/* All-teams winners summary */}
+          <section className="mb-10">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="font-display text-xl font-bold flex items-center gap-2">
+                  <Trophy className="h-5 w-5 text-primary" /> Winners Summary — All Teams
+                </h2>
+                <p className="text-xs text-muted-foreground mt-1">Top vote-getter per award. Ties are flagged in amber.</p>
+              </div>
+            </div>
+
+            {allVotesLoading ? (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Loading winners...</div>
+            ) : (
+              <div className="overflow-x-auto bg-card border border-border rounded-xl">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left border-b border-border text-xs font-display tracking-wider uppercase text-muted-foreground bg-secondary/40">
+                      <th className="py-3 px-4">Team</th>
+                      {AWARDS.map((a) => (
+                        <th key={a.type} className="py-3 px-4">{a.label}</th>
+                      ))}
+                      <th className="py-3 px-4 text-right">Total Votes</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {TEAMS.map((t) => {
+                      let teamTotal = 0;
+                      return (
+                        <tr key={t.slug} className="border-b border-border/50 hover:bg-secondary/20 transition-colors">
+                          <td className="py-3 px-4 font-display font-semibold">{t.name}</td>
+                          {AWARDS.map((a) => {
+                            const list = winnersByTeamAward.get(`${t.slug}::${a.type}`) || [];
+                            const total = list.reduce((s, [, c]) => s + c, 0);
+                            teamTotal += total;
+                            const [first, second] = [list[0], list[1]];
+                            const tie = first && second && first[1] === second[1];
+                            if (!first) {
+                              return <td key={a.type} className="py-3 px-4 text-muted-foreground italic text-xs">No votes</td>;
+                            }
+                            const pct = total > 0 ? Math.round((first[1] / total) * 100) : 0;
+                            return (
+                              <td key={a.type} className="py-3 px-4">
+                                <div className="flex items-center gap-2">
+                                  <Medal className={`h-4 w-4 shrink-0 ${tie ? "text-amber-400" : "text-primary"}`} />
+                                  <div className="min-w-0">
+                                    <div className={`font-display font-semibold truncate ${tie ? "text-amber-400" : "text-foreground"}`}>
+                                      {first[0]}
+                                      {tie && <span className="ml-1 text-[10px] uppercase tracking-wider">(tie)</span>}
+                                    </div>
+                                    <div className="text-[11px] text-muted-foreground">
+                                      {first[1]} vote{first[1] === 1 ? "" : "s"} • {pct}%
+                                      {second && ` • Runner-up: ${second[0]} (${second[1]})`}
+                                    </div>
+                                  </div>
+                                </div>
+                              </td>
+                            );
+                          })}
+                          <td className="py-3 px-4 text-right text-muted-foreground text-xs">{teamTotal}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </section>
 
           {/* Team filter */}
           <div className="flex flex-wrap gap-2 mb-8">
