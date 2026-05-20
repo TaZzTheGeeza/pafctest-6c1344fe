@@ -155,6 +155,8 @@ export default function PresentationAwardsAdminPage() {
     URL.revokeObjectURL(url);
   };
 
+  const voterIds = useMemo(() => [...new Set((votes ?? []).map((v: any) => v.voter_user_id))], [votes]);
+
 
   const { data: voterProfiles } = useQuery({
     queryKey: ["paw-voter-profiles", voterIds],
