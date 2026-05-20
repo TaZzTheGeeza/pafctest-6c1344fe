@@ -96,7 +96,65 @@ export default function PresentationAwardsAdminPage() {
     },
   });
 
-  const voterIds = useMemo(() => [...new Set((votes ?? []).map((v: any) => v.voter_user_id))], [votes]);
+  const { data: allVotes, isLoading: allVotesLoading } = useQuery({
+    queryKey: ["paw-votes-all"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("presentation_award_votes")
+        .select("team_slug, award_type, voted_for_player_name");
+      return data ?? [];
+    },
+  });
+
+  // Winners summary: per team per award -> sorted [name, count][]
+  const winnersByTeamAward = useMemo(() => {
+    const map = new Map<string, [string, number][]>();
+    for (const t of TEAMS) {
+      for (const a of AWARDS) {
+        const filtered = (allVotes ?? []).filter(
+          (v: any) => v.team_slug === t.slug && v.award_type === a.type,
+        );
+        const counts = new Map<string, number>();
+        filtered.forEach((v: any) => {
+          const n = v.voted_for_player_name;
+          counts.set(n, (counts.get(n) || 0) + 1);
+        });
+        map.set(`${t.slug}::${a.type}`, [...counts.entries()].sort((x, y) => y[1] - x[1]));
+      }
+    }
+    return map;
+  }, [allVotes]);
+
+  const exportAllWinnersCsv = () => {
+    const rows: string[][] = [["Team", "Award", "Winner", "Votes", "Runner-Up", "Runner-Up Votes", "Total Votes", "Tie?"]];
+    for (const t of TEAMS) {
+      for (const a of AWARDS) {
+        const list = winnersByTeamAward.get(`${t.slug}::${a.type}`) || [];
+        const total = list.reduce((s, [, c]) => s + c, 0);
+        const [first, second] = [list[0], list[1]];
+        const tie = first && second && first[1] === second[1] ? "Yes" : "";
+        rows.push([
+          t.name,
+          a.label,
+          first?.[0] || "—",
+          String(first?.[1] ?? 0),
+          second?.[0] || "—",
+          String(second?.[1] ?? 0),
+          String(total),
+          tie,
+        ]);
+      }
+    }
+    const csv = rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `presentation-award-winners-all-teams.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
 
   const { data: voterProfiles } = useQuery({
     queryKey: ["paw-voter-profiles", voterIds],
