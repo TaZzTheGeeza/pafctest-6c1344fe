@@ -270,11 +270,18 @@ export default function PresentationAwardsAdminPage() {
                 {allOpen ? "Close Voting (All Teams)" : "Open Voting (All Teams)"}
               </button>
               <button
+                onClick={exportAllWinnersCsv}
+                disabled={!allVotes || allVotes.length === 0}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-primary/40 text-xs font-display tracking-wider text-primary hover:bg-primary/10 transition-colors disabled:opacity-50"
+              >
+                <Trophy className="h-3.5 w-3.5" /> Export All Winners
+              </button>
+              <button
                 onClick={exportCsv}
                 disabled={!votes || votes.length === 0}
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border text-xs font-display tracking-wider hover:border-primary/50 hover:text-primary transition-colors disabled:opacity-50"
               >
-                <Download className="h-3.5 w-3.5" /> Export CSV
+                <Download className="h-3.5 w-3.5" /> Export Team CSV
               </button>
             </div>
           </div>
