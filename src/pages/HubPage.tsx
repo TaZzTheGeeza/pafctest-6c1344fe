@@ -195,6 +195,7 @@ export default function HubPage() {
       {activeTab === "attendance" && activeTeam && (isCoach || isAdmin) && <AttendanceStats teamSlug={activeTeam} />}
       {activeTab === "guardian" && activeTeam && <GuardianManager teamSlug={activeTeam} teamName={activeTeamName || ""} />}
       {activeTab === "members" && activeTeam && (isAdmin || isCoach) && <TeamMemberManager teamSlug={activeTeam} teamName={activeTeamName || ""} />}
+      {activeTab === "roster" && activeTeam && isAdmin && <PlayerRosterManager teamSlug={activeTeam} teamName={activeTeamName || ""} />}
       {activeTab === "meetings" && <HubMeetingsEmbed />}
       {activeTab === "awards" && activeTeam && activeTeam !== "u6s" && <AwardsVoting teamSlug={activeTeam} teamName={activeTeamName || ""} />}
       {activeTab === "player" && (
