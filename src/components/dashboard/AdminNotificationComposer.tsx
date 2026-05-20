@@ -302,7 +302,7 @@ export function AdminNotificationComposer() {
               <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground mb-1.5 block">
                 Audience
               </Label>
-              <Select value={audience} onValueChange={(v) => { setAudience(v as "all" | "team" | "member"); setSelectedMembers([]); setMemberSearch(""); setMemberResults([]); setSelectedTeams([]); }}>
+              <Select value={audience} onValueChange={(v) => { setAudience(v as "all" | "team" | "member" | "role"); setSelectedMembers([]); setMemberSearch(""); setMemberResults([]); setSelectedTeams([]); setSelectedRoles([]); }}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -315,6 +315,11 @@ export function AdminNotificationComposer() {
                   <SelectItem value="team">
                     <span className="flex items-center gap-2">
                       <Users className="h-3.5 w-3.5" /> Specific Team
+                    </span>
+                  </SelectItem>
+                  <SelectItem value="role">
+                    <span className="flex items-center gap-2">
+                      <Users className="h-3.5 w-3.5" /> By Role
                     </span>
                   </SelectItem>
                   <SelectItem value="member">
@@ -342,6 +347,29 @@ export function AdminNotificationComposer() {
                         className={`px-3 py-1.5 rounded-full text-xs font-display border transition-colors ${isSelected ? "bg-primary text-primary-foreground border-primary" : "bg-secondary/50 text-muted-foreground border-border hover:border-primary/50"}`}
                       >
                         {TEAM_LABELS[slug] || slug}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {audience === "role" && (
+              <div className="sm:col-span-2">
+                <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground mb-1.5 block">
+                  Roles
+                </Label>
+                <div className="flex flex-wrap gap-2">
+                  {[...SYSTEM_ROLES, ...customRoles].map((role) => {
+                    const isSelected = selectedRoles.includes(role.name);
+                    return (
+                      <button
+                        key={role.name}
+                        type="button"
+                        onClick={() => setSelectedRoles((prev) => isSelected ? prev.filter((r) => r !== role.name) : [...prev, role.name])}
+                        className={`px-3 py-1.5 rounded-full text-xs font-display border transition-colors ${isSelected ? "bg-primary text-primary-foreground border-primary" : "bg-secondary/50 text-muted-foreground border-border hover:border-primary/50"}`}
+                      >
+                        {role.label}
                       </button>
                     );
                   })}
