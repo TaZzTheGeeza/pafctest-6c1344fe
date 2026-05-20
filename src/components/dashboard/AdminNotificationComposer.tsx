@@ -34,12 +34,25 @@ const TEAM_LABELS: Record<string, string> = {
   "u14s": "U14",
 };
 
+const SYSTEM_ROLES = [
+  { name: "admin", label: "Admins" },
+  { name: "coach", label: "Coaches" },
+  { name: "player", label: "Players" },
+  { name: "treasurer", label: "Treasurers" },
+  { name: "welfare_officer", label: "Welfare Officers" },
+  { name: "news_editor", label: "News Editors" },
+  { name: "photographer", label: "Photographers" },
+  { name: "parent", label: "Parents" },
+];
+
 export function AdminNotificationComposer() {
   const { user } = useAuth();
   const [title, setTitle] = useState("");
   const [message, setMessage] = useState("");
-  const [audience, setAudience] = useState<"all" | "team" | "member">("all");
+  const [audience, setAudience] = useState<"all" | "team" | "member" | "role">("all");
   const [selectedTeams, setSelectedTeams] = useState<string[]>([]);
+  const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
+  const [customRoles, setCustomRoles] = useState<{ name: string; label: string }[]>([]);
   const [selectedMembers, setSelectedMembers] = useState<{ id: string; full_name: string | null; email: string | null }[]>([]);
   const [memberSearch, setMemberSearch] = useState("");
   const [memberResults, setMemberResults] = useState<{ id: string; full_name: string | null; email: string | null }[]>([]);
@@ -52,6 +65,10 @@ export function AdminNotificationComposer() {
 
   useEffect(() => {
     loadHistory();
+    supabase.from("custom_roles").select("name, label").order("label").then(({ data }) => {
+      const systemNames = new Set(SYSTEM_ROLES.map((r) => r.name));
+      setCustomRoles((data ?? []).filter((r: any) => !systemNames.has(r.name) && r.name !== "user"));
+    });
   }, []);
 
   async function loadHistory() {
@@ -90,6 +107,10 @@ export function AdminNotificationComposer() {
       toast.error("Select at least one team");
       return;
     }
+    if (audience === "role" && selectedRoles.length === 0) {
+      toast.error("Select at least one role");
+      return;
+    }
     if (audience === "member" && selectedMembers.length === 0) {
       toast.error("Select at least one member");
       return;
@@ -116,6 +137,12 @@ export function AdminNotificationComposer() {
           if (members) allMembers.push(...members.map((m) => m.user_id));
         }
         targetUserIds = [...new Set(allMembers)];
+      } else if (audience === "role") {
+        const { data: roleRows } = await supabase
+          .from("user_roles")
+          .select("user_id")
+          .in("role", selectedRoles);
+        targetUserIds = [...new Set((roleRows ?? []).map((r: any) => r.user_id))];
       } else {
         // All players: get all unique user_ids from team_members
         const { data: members } = await supabase
@@ -275,7 +302,7 @@ export function AdminNotificationComposer() {
               <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground mb-1.5 block">
                 Audience
               </Label>
-              <Select value={audience} onValueChange={(v) => { setAudience(v as "all" | "team" | "member"); setSelectedMembers([]); setMemberSearch(""); setMemberResults([]); setSelectedTeams([]); }}>
+              <Select value={audience} onValueChange={(v) => { setAudience(v as "all" | "team" | "member" | "role"); setSelectedMembers([]); setMemberSearch(""); setMemberResults([]); setSelectedTeams([]); setSelectedRoles([]); }}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -288,6 +315,11 @@ export function AdminNotificationComposer() {
                   <SelectItem value="team">
                     <span className="flex items-center gap-2">
                       <Users className="h-3.5 w-3.5" /> Specific Team
+                    </span>
+                  </SelectItem>
+                  <SelectItem value="role">
+                    <span className="flex items-center gap-2">
+                      <Users className="h-3.5 w-3.5" /> By Role
                     </span>
                   </SelectItem>
                   <SelectItem value="member">
@@ -315,6 +347,29 @@ export function AdminNotificationComposer() {
                         className={`px-3 py-1.5 rounded-full text-xs font-display border transition-colors ${isSelected ? "bg-primary text-primary-foreground border-primary" : "bg-secondary/50 text-muted-foreground border-border hover:border-primary/50"}`}
                       >
                         {TEAM_LABELS[slug] || slug}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {audience === "role" && (
+              <div className="sm:col-span-2">
+                <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground mb-1.5 block">
+                  Roles
+                </Label>
+                <div className="flex flex-wrap gap-2">
+                  {[...SYSTEM_ROLES, ...customRoles].map((role) => {
+                    const isSelected = selectedRoles.includes(role.name);
+                    return (
+                      <button
+                        key={role.name}
+                        type="button"
+                        onClick={() => setSelectedRoles((prev) => isSelected ? prev.filter((r) => r !== role.name) : [...prev, role.name])}
+                        className={`px-3 py-1.5 rounded-full text-xs font-display border transition-colors ${isSelected ? "bg-primary text-primary-foreground border-primary" : "bg-secondary/50 text-muted-foreground border-border hover:border-primary/50"}`}
+                      >
+                        {role.label}
                       </button>
                     );
                   })}
