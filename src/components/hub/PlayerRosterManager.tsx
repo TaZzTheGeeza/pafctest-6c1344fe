@@ -86,8 +86,25 @@ export function PlayerRosterManager({ teamSlug, teamName }: { teamSlug: string; 
   }
 
   function guardiansForPlayer(name: string) {
-    const lc = name.trim().toLowerCase();
-    return guardians.filter((g) => g.player_name.trim().toLowerCase() === lc);
+    const tokens = name.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    if (tokens.length === 0) return [];
+    const [first, ...rest] = tokens;
+    return guardians.filter((g) => {
+      const gTokens = g.player_name.trim().toLowerCase().split(/\s+/).filter(Boolean);
+      if (gTokens.length === 0) return false;
+      // exact match
+      if (g.player_name.trim().toLowerCase() === name.trim().toLowerCase()) return true;
+      // first names must match
+      if (gTokens[0] !== first) return false;
+      // if roster has additional tokens (e.g. surname initial "M"), require guardian's
+      // matching token to start with that letter/string
+      for (let i = 0; i < rest.length; i++) {
+        const r = rest[i];
+        const g2 = gTokens[i + 1];
+        if (!g2 || !g2.startsWith(r)) return false;
+      }
+      return true;
+    });
   }
 
   async function searchParents(q: string) {
