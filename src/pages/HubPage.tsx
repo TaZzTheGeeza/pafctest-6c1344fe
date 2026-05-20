@@ -179,9 +179,10 @@ export default function HubPage() {
 
   const activeTeamName = TEAMS.find((t) => t.slug === activeTeam)?.name || activeTeam;
 
-  const allTabs = [
+    const allTabs = [
     ...tabs,
     ...((isAdmin || isCoach) ? [{ id: "members", label: "Members", icon: Users }] : []),
+    ...(isAdmin ? [{ id: "roster", label: "Roster", icon: ClipboardList }] : []),
   ].filter((t) => !(t.id === "awards" && activeTeam === "u6s"));
 
   const renderContent = () => (
