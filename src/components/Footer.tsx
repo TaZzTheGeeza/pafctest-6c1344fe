@@ -22,6 +22,15 @@ export function Footer() {
   return (
     <footer className="bg-card border-t border-border py-12">
       <div className="container mx-auto px-4">
+        <div className="mb-10 rounded-lg border border-primary/40 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="text-center sm:text-left">
+            <h3 className="font-display text-lg font-bold text-gold-gradient tracking-wide">Support The Lions</h3>
+            <p className="text-xs text-muted-foreground mt-1">
+              Every donation helps fund kits, pitches & player development. One-off or monthly — straight to PAFC.
+            </p>
+          </div>
+          <DonationButton size="lg" label="Donate Now" className="shadow-lg shadow-primary/20 animate-pulse-slow" />
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           <div>
             <div className="flex items-center gap-3 mb-4">
