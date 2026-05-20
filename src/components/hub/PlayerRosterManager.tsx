@@ -1,0 +1,240 @@
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { getAgeGroup } from "@/hooks/useTeamRoster";
+import { Plus, Pencil, Trash2, Loader2, Save, X, User, Hash } from "lucide-react";
+import { toast } from "sonner";
+
+interface Player {
+  id: string;
+  first_name: string;
+  shirt_number: number | null;
+  position: string | null;
+  age_group: string;
+  team_name: string;
+  photo_url: string | null;
+}
+
+const POSITIONS = ["Goalkeeper", "Defender", "Midfielder", "Forward"];
+
+const defaultTeamName = (ageGroup: string) => `Peterborough Athletic ${ageGroup}s`.replace(/s+s$/, "s");
+
+export function PlayerRosterManager({ teamSlug, teamName }: { teamSlug: string; teamName: string }) {
+  const ageGroup = getAgeGroup(teamSlug);
+  const [players, setPlayers] = useState<Player[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [showAdd, setShowAdd] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const emptyDraft = {
+    first_name: "",
+    shirt_number: "" as string | number,
+    position: "",
+  };
+  const [draft, setDraft] = useState<typeof emptyDraft>(emptyDraft);
+
+  useEffect(() => {
+    load();
+  }, [teamSlug]);
+
+  async function load() {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("player_stats")
+      .select("id, first_name, shirt_number, position, age_group, team_name, photo_url")
+      .eq("age_group", ageGroup)
+      .order("shirt_number", { ascending: true, nullsFirst: false });
+    if (error) toast.error(error.message);
+    setPlayers(data || []);
+    setLoading(false);
+  }
+
+  function startEdit(p: Player) {
+    setEditingId(p.id);
+    setShowAdd(false);
+    setDraft({
+      first_name: p.first_name,
+      shirt_number: p.shirt_number ?? "",
+      position: p.position ?? "",
+    });
+  }
+
+  function cancel() {
+    setEditingId(null);
+    setShowAdd(false);
+    setDraft(emptyDraft);
+  }
+
+  async function save() {
+    if (!draft.first_name.trim()) {
+      toast.error("Player name required");
+      return;
+    }
+    setSaving(true);
+    const payload = {
+      first_name: draft.first_name.trim(),
+      shirt_number: draft.shirt_number === "" ? null : Number(draft.shirt_number),
+      position: draft.position || null,
+      age_group: ageGroup,
+      team_name: defaultTeamName(ageGroup),
+    };
+
+    let error;
+    if (editingId) {
+      ({ error } = await supabase.from("player_stats").update(payload).eq("id", editingId));
+    } else {
+      ({ error } = await supabase.from("player_stats").insert(payload));
+    }
+    setSaving(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success(editingId ? "Player updated" : "Player added");
+    cancel();
+    load();
+  }
+
+  async function remove(p: Player) {
+    if (!confirm(`Remove ${p.first_name} from ${ageGroup}? This will also delete their match stats history.`)) return;
+    const { error } = await supabase.from("player_stats").delete().eq("id", p.id);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Player removed");
+    load();
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between gap-3 bg-card border border-border rounded-xl p-4">
+        <div>
+          <h2 className="font-display text-lg font-bold text-foreground">Player Roster — {teamName}</h2>
+          <p className="text-xs text-muted-foreground mt-1">Add, edit, or remove players in this age group.</p>
+        </div>
+        {!showAdd && !editingId && (
+          <button
+            onClick={() => { setShowAdd(true); setDraft(emptyDraft); }}
+            className="flex items-center gap-2 bg-primary text-primary-foreground rounded-lg px-4 py-2 text-sm font-display tracking-wider hover:bg-primary/90 transition-colors"
+          >
+            <Plus className="h-4 w-4" /> Add Player
+          </button>
+        )}
+      </div>
+
+      {(showAdd || editingId) && (
+        <div className="bg-card border border-primary/30 rounded-xl p-4 space-y-3">
+          <h3 className="font-display text-sm font-bold text-primary tracking-wider uppercase">
+            {editingId ? "Edit Player" : "New Player"}
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div>
+              <label className="text-[10px] uppercase tracking-wider text-muted-foreground font-display">First Name</label>
+              <input
+                value={draft.first_name}
+                onChange={(e) => setDraft({ ...draft, first_name: e.target.value })}
+                placeholder="e.g. Jamie"
+                className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground mt-1"
+                autoFocus
+              />
+            </div>
+            <div>
+              <label className="text-[10px] uppercase tracking-wider text-muted-foreground font-display">Shirt #</label>
+              <input
+                type="number"
+                value={draft.shirt_number}
+                onChange={(e) => setDraft({ ...draft, shirt_number: e.target.value })}
+                placeholder="—"
+                className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground mt-1"
+              />
+            </div>
+            <div>
+              <label className="text-[10px] uppercase tracking-wider text-muted-foreground font-display">Position</label>
+              <select
+                value={draft.position}
+                onChange={(e) => setDraft({ ...draft, position: e.target.value })}
+                className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground mt-1"
+              >
+                <option value="">—</option>
+                {POSITIONS.map((p) => <option key={p} value={p}>{p}</option>)}
+              </select>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 pt-2">
+            <button
+              onClick={save}
+              disabled={saving}
+              className="flex items-center gap-2 bg-primary text-primary-foreground rounded-lg px-4 py-2 text-sm font-display tracking-wider hover:bg-primary/90 transition-colors disabled:opacity-50"
+            >
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+              {editingId ? "Save Changes" : "Add Player"}
+            </button>
+            <button
+              onClick={cancel}
+              className="flex items-center gap-2 bg-secondary text-foreground rounded-lg px-4 py-2 text-sm font-display tracking-wider hover:bg-secondary/80 transition-colors"
+            >
+              <X className="h-4 w-4" /> Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div className="bg-card border border-border rounded-xl overflow-hidden">
+        {loading ? (
+          <div className="p-8 text-center text-muted-foreground text-sm">
+            <Loader2 className="h-5 w-5 animate-spin mx-auto mb-2" />
+            Loading roster...
+          </div>
+        ) : players.length === 0 ? (
+          <div className="p-8 text-center text-muted-foreground text-sm">
+            No players yet. Click <span className="text-primary font-display">Add Player</span> to get started.
+          </div>
+        ) : (
+          <ul className="divide-y divide-border">
+            {players.map((p) => (
+              <li key={p.id} className="flex items-center gap-3 px-4 py-3 hover:bg-secondary/30 transition-colors">
+                <div className="w-10 h-10 rounded-full bg-secondary border border-border flex items-center justify-center overflow-hidden shrink-0">
+                  {p.photo_url ? (
+                    <img src={p.photo_url} alt={p.first_name} className="w-full h-full object-cover" />
+                  ) : (
+                    <User className="h-5 w-5 text-muted-foreground" />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-display text-sm font-bold text-foreground truncate">{p.first_name}</span>
+                    {p.shirt_number != null && (
+                      <span className="inline-flex items-center gap-0.5 text-[10px] font-display font-bold bg-primary/15 text-primary border border-primary/30 px-1.5 py-0.5 rounded">
+                        <Hash className="h-2.5 w-2.5" />{p.shirt_number}
+                      </span>
+                    )}
+                    {p.position && (
+                      <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-display">{p.position}</span>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center gap-1 shrink-0">
+                  <button
+                    onClick={() => startEdit(p)}
+                    className="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-secondary transition-colors"
+                    title="Edit"
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={() => remove(p)}
+                    className="p-2 rounded-lg text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                    title="Remove"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
+  );
+}
