@@ -1,8 +1,20 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getAgeGroup } from "@/hooks/useTeamRoster";
-import { Plus, Pencil, Trash2, Loader2, Save, X, User, Hash } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, Save, X, User, Hash, Link2, Search, UserPlus } from "lucide-react";
 import { toast } from "sonner";
+
+interface GuardianLink {
+  id: string;
+  parent_user_id: string;
+  player_name: string;
+  team_slug: string;
+  status: string;
+  parent_name?: string | null;
+  parent_email?: string | null;
+}
+
+interface ProfileLite { id: string; full_name: string | null; email: string | null; }
 
 interface Player {
   id: string;
