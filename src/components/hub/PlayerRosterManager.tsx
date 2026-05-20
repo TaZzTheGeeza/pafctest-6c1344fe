@@ -33,10 +33,15 @@ const defaultTeamName = (ageGroup: string) => `Peterborough Athletic ${ageGroup}
 export function PlayerRosterManager({ teamSlug, teamName }: { teamSlug: string; teamName: string }) {
   const ageGroup = getAgeGroup(teamSlug);
   const [players, setPlayers] = useState<Player[]>([]);
+  const [guardians, setGuardians] = useState<GuardianLink[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showAdd, setShowAdd] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [linkingFor, setLinkingFor] = useState<string | null>(null);
+  const [parentSearch, setParentSearch] = useState("");
+  const [parentResults, setParentResults] = useState<ProfileLite[]>([]);
+  const [searching, setSearching] = useState(false);
 
   const emptyDraft = {
     first_name: "",
@@ -51,15 +56,74 @@ export function PlayerRosterManager({ teamSlug, teamName }: { teamSlug: string; 
 
   async function load() {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("player_stats")
-      .select("id, first_name, shirt_number, position, age_group, team_name, photo_url")
-      .eq("age_group", ageGroup)
-      .order("shirt_number", { ascending: true, nullsFirst: false });
-    if (error) toast.error(error.message);
-    setPlayers(data || []);
+    const [{ data: pData, error: pErr }, { data: gData }] = await Promise.all([
+      supabase
+        .from("player_stats")
+        .select("id, first_name, shirt_number, position, age_group, team_name, photo_url")
+        .eq("age_group", ageGroup)
+        .order("shirt_number", { ascending: true, nullsFirst: false }),
+      supabase
+        .from("guardians")
+        .select("id, parent_user_id, player_name, team_slug, status")
+        .eq("team_slug", teamSlug),
+    ]);
+    if (pErr) toast.error(pErr.message);
+    setPlayers(pData || []);
+
+    const ids = [...new Set((gData || []).map((g) => g.parent_user_id))];
+    let profiles: ProfileLite[] = [];
+    if (ids.length) {
+      const { data: profData } = await supabase.from("profiles").select("id, full_name, email").in("id", ids);
+      profiles = profData || [];
+    }
+    setGuardians(
+      (gData || []).map((g) => {
+        const p = profiles.find((pr) => pr.id === g.parent_user_id);
+        return { ...g, parent_name: p?.full_name, parent_email: p?.email };
+      })
+    );
     setLoading(false);
   }
+
+  function guardiansForPlayer(name: string) {
+    const lc = name.trim().toLowerCase();
+    return guardians.filter((g) => g.player_name.trim().toLowerCase() === lc);
+  }
+
+  async function searchParents(q: string) {
+    setParentSearch(q);
+    if (q.trim().length < 2) { setParentResults([]); return; }
+    setSearching(true);
+    const { data } = await supabase
+      .from("profiles")
+      .select("id, full_name, email")
+      .or(`full_name.ilike.%${q}%,email.ilike.%${q}%`)
+      .limit(8);
+    setParentResults(data || []);
+    setSearching(false);
+  }
+
+  async function linkParent(player: Player, parent: ProfileLite) {
+    const { error } = await supabase.from("guardians").insert({
+      parent_user_id: parent.id,
+      player_name: player.first_name,
+      team_slug: teamSlug,
+      status: "active",
+    });
+    if (error) { toast.error(error.message); return; }
+    toast.success(`Linked ${parent.full_name || parent.email} to ${player.first_name}`);
+    setLinkingFor(null); setParentSearch(""); setParentResults([]);
+    load();
+  }
+
+  async function unlinkGuardian(id: string) {
+    if (!confirm("Remove this parent link?")) return;
+    const { error } = await supabase.from("guardians").delete().eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Parent unlinked");
+    load();
+  }
+
 
   function startEdit(p: Player) {
     setEditingId(p.id);
