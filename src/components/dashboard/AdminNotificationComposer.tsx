@@ -107,6 +107,10 @@ export function AdminNotificationComposer() {
       toast.error("Select at least one team");
       return;
     }
+    if (audience === "role" && selectedRoles.length === 0) {
+      toast.error("Select at least one role");
+      return;
+    }
     if (audience === "member" && selectedMembers.length === 0) {
       toast.error("Select at least one member");
       return;
