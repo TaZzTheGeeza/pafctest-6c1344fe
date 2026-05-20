@@ -137,6 +137,12 @@ export function AdminNotificationComposer() {
           if (members) allMembers.push(...members.map((m) => m.user_id));
         }
         targetUserIds = [...new Set(allMembers)];
+      } else if (audience === "role") {
+        const { data: roleRows } = await supabase
+          .from("user_roles")
+          .select("user_id")
+          .in("role", selectedRoles);
+        targetUserIds = [...new Set((roleRows ?? []).map((r: any) => r.user_id))];
       } else {
         // All players: get all unique user_ids from team_members
         const { data: members } = await supabase
