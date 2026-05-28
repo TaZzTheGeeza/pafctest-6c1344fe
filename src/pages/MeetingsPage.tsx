@@ -402,15 +402,17 @@ export default function MeetingsPage() {
                   </select>
                 </div>
 
-                {/* Invite Selector */}
-                <MeetingInviteSelector
-                  inviteType={inviteType}
-                  setInviteType={setInviteType}
-                  selectedRoles={selectedRoles}
-                  setSelectedRoles={setSelectedRoles}
-                  selectedUsers={selectedUsers}
-                  setSelectedUsers={setSelectedUsers}
-                />
+                {/* Invite Selector - only on create */}
+                {!editingMeeting && (
+                  <MeetingInviteSelector
+                    inviteType={inviteType}
+                    setInviteType={setInviteType}
+                    selectedRoles={selectedRoles}
+                    setSelectedRoles={setSelectedRoles}
+                    selectedUsers={selectedUsers}
+                    setSelectedUsers={setSelectedUsers}
+                  />
+                )}
 
                 <div className="flex justify-end gap-2 pt-2">
                   <button
@@ -425,7 +427,7 @@ export default function MeetingsPage() {
                     disabled={saving || !title || !scheduledDate}
                     className="px-4 py-2 rounded-lg text-xs font-display tracking-wider bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
                   >
-                    {saving ? "Scheduling…" : "Schedule Meeting"}
+                    {saving ? "Saving…" : editingMeeting ? "Save Changes" : "Schedule Meeting"}
                   </button>
                 </div>
               </form>
