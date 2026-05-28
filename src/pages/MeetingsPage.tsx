@@ -325,13 +325,13 @@ export default function MeetingsPage() {
             <div className="bg-card border border-border rounded-xl w-full max-w-md shadow-xl max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between p-4 border-b border-border sticky top-0 bg-card z-10 rounded-t-xl">
                 <h3 className="font-display text-sm font-bold text-foreground tracking-wider uppercase">
-                  Schedule Meeting
+                  {editingMeeting ? "Edit Meeting" : "Schedule Meeting"}
                 </h3>
                 <button onClick={resetForm} className="text-muted-foreground hover:text-foreground">
                   <X className="h-4 w-4" />
                 </button>
               </div>
-              <form onSubmit={handleCreate} className="p-4 space-y-4">
+              <form onSubmit={editingMeeting ? handleUpdate : handleCreate} className="p-4 space-y-4">
                 <div>
                   <label className="block text-xs font-display text-muted-foreground mb-1 tracking-wider uppercase">
                     Meeting Title *
