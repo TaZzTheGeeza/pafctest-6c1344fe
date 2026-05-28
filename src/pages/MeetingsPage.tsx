@@ -466,6 +466,7 @@ export default function MeetingsPage() {
                       inviteeCount={inviteeCounts[meeting.id]}
                       onJoin={() => handleStartMeeting(meeting)}
                       onDelete={() => handleDelete(meeting.id)}
+                      onEdit={() => openEdit(meeting)}
                     />
                   ))}
                 </div>
