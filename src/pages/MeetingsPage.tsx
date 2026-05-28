@@ -15,6 +15,7 @@ export default function MeetingsPage() {
   const { user, isAdmin } = useAuth();
   const queryClient = useQueryClient();
   const [showCreate, setShowCreate] = useState(false);
+  const [editingMeeting, setEditingMeeting] = useState<Meeting | null>(null);
   const [activeRoom, setActiveRoom] = useState<Meeting | null>(null);
   const [saving, setSaving] = useState(false);
 
