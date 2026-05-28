@@ -6,7 +6,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Video, Plus, ArrowLeft, Loader2, X } from "lucide-react";
+import { Video, Plus, ArrowLeft, Loader2, X, Pencil } from "lucide-react";
 import { format } from "date-fns";
 import { MeetingCard, type Meeting } from "@/components/meetings/MeetingCard";
 import { MeetingInviteSelector, type InviteType } from "@/components/meetings/MeetingInviteSelector";
