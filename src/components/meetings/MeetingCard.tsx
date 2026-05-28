@@ -1,4 +1,4 @@
-import { Video, Calendar, Clock, Users, X } from "lucide-react";
+import { Video, Calendar, Clock, Users, X, Pencil } from "lucide-react";
 import { format } from "date-fns";
 import { MeetingRSVP } from "./MeetingRSVP";
 
@@ -21,9 +21,10 @@ interface MeetingCardProps {
   inviteeCount?: number;
   onJoin: () => void;
   onDelete: () => void;
+  onEdit?: () => void;
 }
 
-export function MeetingCard({ meeting, isAdmin, inviteeCount, onJoin, onDelete }: MeetingCardProps) {
+export function MeetingCard({ meeting, isAdmin, inviteeCount, onJoin, onDelete, onEdit }: MeetingCardProps) {
   const isLive = meeting.status === "live";
   const scheduledDate = new Date(meeting.scheduled_at);
   const isStartingSoon = scheduledDate.getTime() - Date.now() < 15 * 60 * 1000;
@@ -87,6 +88,15 @@ export function MeetingCard({ meeting, isAdmin, inviteeCount, onJoin, onDelete }
             >
               <Video className="h-3.5 w-3.5" />
               {isLive ? "Join Now" : isAdmin ? "Start" : "Join"}
+            </button>
+          )}
+          {isAdmin && !isLive && onEdit && (
+            <button
+              onClick={onEdit}
+              className="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+              title="Edit meeting"
+            >
+              <Pencil className="h-3.5 w-3.5" />
             </button>
           )}
           {isAdmin && !isLive && (

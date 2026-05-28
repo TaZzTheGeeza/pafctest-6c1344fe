@@ -6,7 +6,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Video, Plus, ArrowLeft, Loader2, X } from "lucide-react";
+import { Video, Plus, ArrowLeft, Loader2, X, Pencil } from "lucide-react";
 import { format } from "date-fns";
 import { MeetingCard, type Meeting } from "@/components/meetings/MeetingCard";
 import { MeetingInviteSelector, type InviteType } from "@/components/meetings/MeetingInviteSelector";
@@ -15,6 +15,7 @@ export default function MeetingsPage() {
   const { user, isAdmin } = useAuth();
   const queryClient = useQueryClient();
   const [showCreate, setShowCreate] = useState(false);
+  const [editingMeeting, setEditingMeeting] = useState<Meeting | null>(null);
   const [activeRoom, setActiveRoom] = useState<Meeting | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -93,6 +94,44 @@ export default function MeetingsPage() {
     setSelectedRoles([]);
     setSelectedUsers([]);
     setShowCreate(false);
+    setEditingMeeting(null);
+  };
+
+  const openEdit = (meeting: Meeting) => {
+    const dt = new Date(meeting.scheduled_at);
+    const pad = (n: number) => String(n).padStart(2, "0");
+    setTitle(meeting.title);
+    setDescription(meeting.description || "");
+    setScheduledDate(`${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}`);
+    setScheduledTime(`${pad(dt.getHours())}:${pad(dt.getMinutes())}`);
+    setDuration(meeting.duration_minutes);
+    setInviteType(meeting.invite_type as InviteType);
+    setEditingMeeting(meeting);
+    setShowCreate(true);
+  };
+
+  const handleUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingMeeting || !title || !scheduledDate) return;
+    setSaving(true);
+    const scheduledAt = new Date(`${scheduledDate}T${scheduledTime}`).toISOString();
+    const { error } = await supabase
+      .from("club_meetings")
+      .update({
+        title,
+        description: description || null,
+        scheduled_at: scheduledAt,
+        duration_minutes: duration,
+      } as any)
+      .eq("id", editingMeeting.id);
+    setSaving(false);
+    if (error) {
+      toast.error("Failed to update meeting");
+      return;
+    }
+    toast.success("Meeting updated");
+    queryClient.invalidateQueries({ queryKey: ["club-meetings"] });
+    resetForm();
   };
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -286,13 +325,13 @@ export default function MeetingsPage() {
             <div className="bg-card border border-border rounded-xl w-full max-w-md shadow-xl max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between p-4 border-b border-border sticky top-0 bg-card z-10 rounded-t-xl">
                 <h3 className="font-display text-sm font-bold text-foreground tracking-wider uppercase">
-                  Schedule Meeting
+                  {editingMeeting ? "Edit Meeting" : "Schedule Meeting"}
                 </h3>
                 <button onClick={resetForm} className="text-muted-foreground hover:text-foreground">
                   <X className="h-4 w-4" />
                 </button>
               </div>
-              <form onSubmit={handleCreate} className="p-4 space-y-4">
+              <form onSubmit={editingMeeting ? handleUpdate : handleCreate} className="p-4 space-y-4">
                 <div>
                   <label className="block text-xs font-display text-muted-foreground mb-1 tracking-wider uppercase">
                     Meeting Title *
@@ -363,15 +402,17 @@ export default function MeetingsPage() {
                   </select>
                 </div>
 
-                {/* Invite Selector */}
-                <MeetingInviteSelector
-                  inviteType={inviteType}
-                  setInviteType={setInviteType}
-                  selectedRoles={selectedRoles}
-                  setSelectedRoles={setSelectedRoles}
-                  selectedUsers={selectedUsers}
-                  setSelectedUsers={setSelectedUsers}
-                />
+                {/* Invite Selector - only on create */}
+                {!editingMeeting && (
+                  <MeetingInviteSelector
+                    inviteType={inviteType}
+                    setInviteType={setInviteType}
+                    selectedRoles={selectedRoles}
+                    setSelectedRoles={setSelectedRoles}
+                    selectedUsers={selectedUsers}
+                    setSelectedUsers={setSelectedUsers}
+                  />
+                )}
 
                 <div className="flex justify-end gap-2 pt-2">
                   <button
@@ -386,7 +427,7 @@ export default function MeetingsPage() {
                     disabled={saving || !title || !scheduledDate}
                     className="px-4 py-2 rounded-lg text-xs font-display tracking-wider bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
                   >
-                    {saving ? "Scheduling…" : "Schedule Meeting"}
+                    {saving ? "Saving…" : editingMeeting ? "Save Changes" : "Schedule Meeting"}
                   </button>
                 </div>
               </form>
@@ -425,6 +466,7 @@ export default function MeetingsPage() {
                       inviteeCount={inviteeCounts[meeting.id]}
                       onJoin={() => handleStartMeeting(meeting)}
                       onDelete={() => handleDelete(meeting.id)}
+                      onEdit={() => openEdit(meeting)}
                     />
                   ))}
                 </div>
