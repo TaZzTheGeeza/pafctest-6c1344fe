@@ -94,6 +94,44 @@ export default function MeetingsPage() {
     setSelectedRoles([]);
     setSelectedUsers([]);
     setShowCreate(false);
+    setEditingMeeting(null);
+  };
+
+  const openEdit = (meeting: Meeting) => {
+    const dt = new Date(meeting.scheduled_at);
+    const pad = (n: number) => String(n).padStart(2, "0");
+    setTitle(meeting.title);
+    setDescription(meeting.description || "");
+    setScheduledDate(`${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}`);
+    setScheduledTime(`${pad(dt.getHours())}:${pad(dt.getMinutes())}`);
+    setDuration(meeting.duration_minutes);
+    setInviteType(meeting.invite_type as InviteType);
+    setEditingMeeting(meeting);
+    setShowCreate(true);
+  };
+
+  const handleUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingMeeting || !title || !scheduledDate) return;
+    setSaving(true);
+    const scheduledAt = new Date(`${scheduledDate}T${scheduledTime}`).toISOString();
+    const { error } = await supabase
+      .from("club_meetings")
+      .update({
+        title,
+        description: description || null,
+        scheduled_at: scheduledAt,
+        duration_minutes: duration,
+      } as any)
+      .eq("id", editingMeeting.id);
+    setSaving(false);
+    if (error) {
+      toast.error("Failed to update meeting");
+      return;
+    }
+    toast.success("Meeting updated");
+    queryClient.invalidateQueries({ queryKey: ["club-meetings"] });
+    resetForm();
   };
 
   const handleCreate = async (e: React.FormEvent) => {
