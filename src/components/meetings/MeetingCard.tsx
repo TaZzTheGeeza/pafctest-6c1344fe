@@ -90,6 +90,15 @@ export function MeetingCard({ meeting, isAdmin, inviteeCount, onJoin, onDelete, 
               {isLive ? "Join Now" : isAdmin ? "Start" : "Join"}
             </button>
           )}
+          {isAdmin && !isLive && onEdit && (
+            <button
+              onClick={onEdit}
+              className="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+              title="Edit meeting"
+            >
+              <Pencil className="h-3.5 w-3.5" />
+            </button>
+          )}
           {isAdmin && !isLive && (
             <button
               onClick={onDelete}
