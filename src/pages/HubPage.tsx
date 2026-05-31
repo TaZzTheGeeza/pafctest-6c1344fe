@@ -285,10 +285,10 @@ export default function HubPage() {
                       className="w-full flex items-center gap-2 px-3 md:px-4 py-3 hover:bg-secondary/50 transition-colors"
                     >
                       <Users className="h-5 w-5 text-primary shrink-0" />
-                      <span className="hidden md:block font-display text-sm font-bold text-foreground truncate flex-1 text-left">
+                      <span className="block font-display text-xs md:text-sm font-bold text-foreground truncate flex-1 text-left">
                         {activeTeamName}
                       </span>
-                      <ChevronDown className={`hidden md:block h-4 w-4 text-muted-foreground transition-transform ${showTeamPicker ? "rotate-180" : ""}`} />
+                      <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${showTeamPicker ? "rotate-180" : ""}`} />
                     </button>
                     {showTeamPicker && (
                       <>
