@@ -488,15 +488,15 @@ export function FixtureAvailability({ teamSlug }: Props) {
                 )}
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 {(isCoach || isAdmin) && (
                   <button
                     onClick={(e) => { e.stopPropagation(); setReminderItem(item); }}
                     title="Preview & remind non-responders"
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors text-xs font-semibold shadow-md"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors text-xs font-semibold shadow-md whitespace-nowrap"
                   >
                     <Send className="h-3.5 w-3.5" />
-                    <span className="hidden sm:inline">Remind</span>
+                    <span>Remind</span>
                   </button>
                 )}
                 {item.isCustom && (isCoach || isAdmin) && (
