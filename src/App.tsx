@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes, Navigate, useLocation } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
+import { UpdateGate } from "@/components/UpdateGate";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useCartSync } from "@/hooks/useCartSync";
 import { usePresence } from "@/hooks/usePresence";
@@ -153,6 +154,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <AppContent />
+        <UpdateGate />
       </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
