@@ -154,6 +154,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <AppContent />
+        <UpdateGate />
       </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
