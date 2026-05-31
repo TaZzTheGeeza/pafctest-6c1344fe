@@ -334,14 +334,11 @@ export default function HubPage() {
                           }`}
                         >
                           <Icon className={`h-4 w-4 shrink-0 ${isActive || isAwards ? "text-primary" : ""}`} />
-                          <span className="hidden md:block truncate">{tab.label}</span>
+                          <span className="block truncate text-xs md:text-sm">{tab.label}</span>
                           {isAwards && (
-                            <>
-                              <span className="hidden md:inline-block ml-auto text-[9px] font-display font-bold tracking-wider px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground">
-                                VOTE
-                              </span>
-                              <span className="md:hidden absolute top-1 right-1 h-2 w-2 rounded-full bg-primary animate-pulse" />
-                            </>
+                            <span className="ml-auto text-[9px] font-display font-bold tracking-wider px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground">
+                              VOTE
+                            </span>
                           )}
                         </button>
                       );
