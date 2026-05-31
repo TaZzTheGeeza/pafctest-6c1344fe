@@ -277,7 +277,7 @@ export default function HubPage() {
             <div className="flex gap-0 md:gap-6">
               {/* Sidebar */}
               <TooltipProvider delayDuration={100}>
-                <aside className="shrink-0 w-14 md:w-56 bg-card border border-border rounded-xl overflow-visible md:overflow-hidden">
+                <aside className="shrink-0 w-40 md:w-56 bg-card border border-border rounded-xl overflow-visible md:overflow-hidden">
                   {/* Team Picker */}
                   <div className="relative border-b border-border">
                     <button
@@ -285,10 +285,10 @@ export default function HubPage() {
                       className="w-full flex items-center gap-2 px-3 md:px-4 py-3 hover:bg-secondary/50 transition-colors"
                     >
                       <Users className="h-5 w-5 text-primary shrink-0" />
-                      <span className="hidden md:block font-display text-sm font-bold text-foreground truncate flex-1 text-left">
+                      <span className="block font-display text-xs md:text-sm font-bold text-foreground truncate flex-1 text-left">
                         {activeTeamName}
                       </span>
-                      <ChevronDown className={`hidden md:block h-4 w-4 text-muted-foreground transition-transform ${showTeamPicker ? "rotate-180" : ""}`} />
+                      <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${showTeamPicker ? "rotate-180" : ""}`} />
                     </button>
                     {showTeamPicker && (
                       <>
@@ -334,14 +334,11 @@ export default function HubPage() {
                           }`}
                         >
                           <Icon className={`h-4 w-4 shrink-0 ${isActive || isAwards ? "text-primary" : ""}`} />
-                          <span className="hidden md:block truncate">{tab.label}</span>
+                          <span className="block truncate text-xs md:text-sm">{tab.label}</span>
                           {isAwards && (
-                            <>
-                              <span className="hidden md:inline-block ml-auto text-[9px] font-display font-bold tracking-wider px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground">
-                                VOTE
-                              </span>
-                              <span className="md:hidden absolute top-1 right-1 h-2 w-2 rounded-full bg-primary animate-pulse" />
-                            </>
+                            <span className="ml-auto text-[9px] font-display font-bold tracking-wider px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground">
+                              VOTE
+                            </span>
                           )}
                         </button>
                       );
