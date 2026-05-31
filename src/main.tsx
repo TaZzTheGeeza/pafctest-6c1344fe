@@ -67,7 +67,7 @@ if (typeof window !== "undefined" && "serviceWorker" in navigator) {
         });
       },
       onNeedRefresh() {
-        updateSW(true);
+        window.dispatchEvent(new CustomEvent("pafc:force-update"));
       },
       onOfflineReady() {
         updateSW(true);
