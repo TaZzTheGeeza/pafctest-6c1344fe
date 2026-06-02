@@ -215,6 +215,7 @@ export function UpdateGate() {
               localStorage.setItem(FP_KEY, newFpRef.current);
             } catch {}
           }
+          setDismissed(true);
           doRefresh();
         }}
       >
