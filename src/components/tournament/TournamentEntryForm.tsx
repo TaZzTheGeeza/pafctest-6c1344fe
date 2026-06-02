@@ -116,54 +116,45 @@ export function TournamentEntryForm({ ageGroups, onSuccess }: TournamentEntryFor
     setSubmitting(true);
 
     try {
-      // Insert team with all details
-      const { data: newTeam, error: teamError } = await supabase
-        .from("tournament_teams")
-        .insert({
-          age_group_id: ageGroupId,
-          team_name: teamName.trim(),
-          manager_name: managerName.trim(),
-          manager_email: managerEmail.trim(),
-          manager_phone: managerPhone.trim() || null,
-          player_count: filledPlayers.length,
-          status: "pending",
-          club_name: clubName.trim(),
-          county: county.trim(),
-          club_org_id: clubOrgId.trim() || null,
-          secretary_name: secretaryName.trim() || null,
-          secretary_email: secretaryEmail.trim() || null,
-          secretary_phone: secretaryPhone.trim() || null,
-          league_division: leagueDivision.trim() || null,
-          team_category: teamCategory,
-          whatsapp_contacts: [
-            ...(whatsappName1 ? [{ name: whatsappName1.trim(), number: whatsappNumber1.trim() }] : []),
-            ...(whatsappName2 ? [{ name: whatsappName2.trim(), number: whatsappNumber2.trim() }] : []),
-          ],
-          consent_rules: consentRules,
-          consent_photography: consentPhotography,
-        } as any)
-        .select()
-        .single();
+      // Register team & players via secure backend endpoint
+      const { data: regData, error: regError } = await supabase.functions.invoke(
+        "register-tournament-team",
+        {
+          body: {
+            age_group_id: ageGroupId,
+            team_name: teamName.trim(),
+            manager_name: managerName.trim(),
+            manager_email: managerEmail.trim(),
+            manager_phone: managerPhone.trim() || null,
+            club_name: clubName.trim(),
+            county: county.trim(),
+            club_org_id: clubOrgId.trim() || null,
+            secretary_name: secretaryName.trim() || null,
+            secretary_email: secretaryEmail.trim() || null,
+            secretary_phone: secretaryPhone.trim() || null,
+            league_division: leagueDivision.trim() || null,
+            team_category: teamCategory,
+            whatsapp_contacts: [
+              ...(whatsappName1 ? [{ name: whatsappName1.trim(), number: whatsappNumber1.trim() }] : []),
+              ...(whatsappName2 ? [{ name: whatsappName2.trim(), number: whatsappNumber2.trim() }] : []),
+            ],
+            consent_rules: consentRules,
+            consent_photography: consentPhotography,
+            players: filledPlayers.map(p => ({
+              player_name: p.player_name.trim(),
+              date_of_birth: p.date_of_birth,
+            })),
+          },
+        }
+      );
 
-      if (teamError || !newTeam) throw new Error(teamError?.message || "Failed to register team");
-
-      // Insert players
-      const playerInserts = filledPlayers.map(p => ({
-        team_id: newTeam.id,
-        player_name: p.player_name.trim(),
-        date_of_birth: p.date_of_birth,
-      }));
-
-      if (playerInserts.length > 0) {
-        const { error: playersError } = await supabase
-          .from("tournament_team_players" as any)
-          .insert(playerInserts);
-        if (playersError) console.error("Failed to insert players:", playersError);
+      if (regError || !regData?.success || !regData?.team_id) {
+        throw new Error(regData?.error || regError?.message || "Failed to register team");
       }
 
-      // Create Stripe checkout
+      // Create checkout
       const { data, error: fnError } = await supabase.functions.invoke("create-tournament-checkout", {
-        body: { team_id: newTeam.id },
+        body: { team_id: regData.team_id },
       });
 
       if (fnError) throw fnError;
@@ -177,6 +168,7 @@ export function TournamentEntryForm({ ageGroups, onSuccess }: TournamentEntryFor
       setSubmitting(false);
     }
   };
+
 
   return (
     <Card className="max-w-2xl mx-auto">

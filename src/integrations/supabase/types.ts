@@ -2762,11 +2762,25 @@ export type Database = {
           ticket_number: number
         }[]
       }
+      get_tournament_team_contacts: {
+        Args: { _team_id: string }
+        Returns: {
+          id: string
+          manager_email: string
+          manager_name: string
+          manager_phone: string
+          secretary_email: string
+          secretary_name: string
+          secretary_phone: string
+          whatsapp_contacts: Json
+        }[]
+      }
       has_role: { Args: { _role: string; _user_id: string }; Returns: boolean }
       is_team_member: {
         Args: { _team_slug: string; _user_id: string }
         Returns: boolean
       }
+      lookup_invite_team_slug: { Args: { _token: string }; Returns: string }
       move_to_dlq: {
         Args: {
           dlq_name: string
