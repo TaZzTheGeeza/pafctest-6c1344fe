@@ -147,7 +147,7 @@ export function SeatingPlan({
     "u14s-gold":   { h: 265, s: 80, l: 70 },
     "u14s-black":  { h: 290, s: 75, l: 50 },
     "u15s":        { h: 320, s: 90, l: 60 },
-    "u15s":        { h: 345, s: 95, l: 70 },
+    
     "u16s":        { h: 10,  s: 65, l: 45 },
     "u17s":        { h: 30,  s: 50, l: 40 },
     "u18s":        { h: 120, s: 30, l: 75 },
@@ -507,7 +507,7 @@ function TheatreSeatBlock({
     "u14s-gold":  { bg1: "hsl(265 65% 50%)", bg2: "hsl(265 60% 25%)", border: "hsl(265 80% 70%)", text: "hsl(265 90% 90%)" },   // lavender
     "u14s-black": { bg1: "hsl(290 70% 30%)", bg2: "hsl(290 65% 15%)", border: "hsl(290 75% 50%)", text: "hsl(290 85% 82%)" },   // violet
     "u15s":       { bg1: "hsl(320 75% 38%)", bg2: "hsl(320 70% 18%)", border: "hsl(320 90% 60%)", text: "hsl(320 95% 88%)" },   // magenta
-    "u15s":       { bg1: "hsl(345 85% 50%)", bg2: "hsl(345 80% 25%)", border: "hsl(345 95% 70%)", text: "hsl(345 100% 90%)" },  // hot pink
+    
     "u16s":       { bg1: "hsl(10 60% 25%)",  bg2: "hsl(10 55% 12%)",  border: "hsl(10 65% 45%)",  text: "hsl(10 70% 78%)" },    // brick
     "u17s":       { bg1: "hsl(30 45% 20%)",  bg2: "hsl(30 40% 10%)",  border: "hsl(30 50% 40%)",  text: "hsl(30 60% 75%)" },    // brown
     "u18s":       { bg1: "hsl(120 25% 55%)", bg2: "hsl(120 20% 28%)", border: "hsl(120 30% 75%)", text: "hsl(120 40% 92%)" },   // sage
