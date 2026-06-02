@@ -78,11 +78,35 @@ interface RosterPlayer {
 
 const normaliseName = (s: string) => s.trim().toLowerCase().replace(/\s+/g, " ");
 
+// Map team_slug (e.g. "u9s-gold") to the human age group used in registrations (e.g. "U9 Gold")
+function teamSlugToAgeGroup(slug: string): string {
+  const s = (slug || "").toLowerCase().trim();
+  const m = s.match(/^u(\d+)s?(?:-(black|gold))?$/);
+  if (!m) return slug;
+  const num = m[1];
+  const suffix = m[2] ? ` ${m[2][0].toUpperCase()}${m[2].slice(1)}` : "";
+  return `U${num}${suffix}`;
+}
+
+interface HubPlayer {
+  guardian_id: string;
+  parent_user_id: string;
+  parent_name: string;
+  parent_email: string | null;
+  player_name: string;
+  team_slug: string;
+  age_group: string; // derived
+  registered: boolean;
+}
+
 export default function PlayerRegistrationAdminPage() {
-  const [tab, setTab] = useState<"paid" | "outstanding">("paid");
+  const [tab, setTab] = useState<"paid" | "outstanding" | "hub">("hub");
   const [search, setSearch] = useState("");
   const [ageGroupFilter, setAgeGroupFilter] = useState<string>("all");
   const [selected, setSelected] = useState<Registration | null>(null);
+  const [selectedParents, setSelectedParents] = useState<Set<string>>(new Set());
+  const [sending, setSending] = useState(false);
+
 
   const { data: registrations = [], isLoading } = useQuery({
     queryKey: ["player-registrations"],
