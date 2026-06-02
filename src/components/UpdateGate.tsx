@@ -1,36 +1,38 @@
-import { useEffect, useState } from "react";
-import { Loader2, CheckCircle2, RefreshCw } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { RefreshCw, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 /**
  * UpdateGate
  * -----------
- * Every time the app opens (or comes back to the foreground), we check the
- * server for a newer build of index.html. The check is intentionally passive:
- * it must never hard-refresh users automatically, because CDN/proxy validators
- * can vary and would otherwise trap people in an update loop.
- *
- * The check fingerprints index.html (HEAD request, falls back to GET) and
- * compares against the last-seen fingerprint in localStorage. The very first
- * load just stores the fingerprint so we don't spuriously reload.
+ * Hybrid update strategy:
+ *  - Background poll fingerprints index.html and detects new builds.
+ *  - When a new build is detected, show a dismissible "Update available" banner
+ *    so users can refresh on their terms.
+ *  - Additionally, auto-refresh ONCE per new version, but only when it's safe:
+ *      * the tab is hidden OR has been idle (no input) for >30s
+ *      * no dialog/modal is open
+ *      * no form input is focused / has unsaved text
+ *      * not already auto-refreshed for this version (tracked in localStorage)
+ *  - If the same mismatch persists after an auto-refresh, we never auto-refresh
+ *    that fingerprint again — preventing the previous loop.
  */
 
 const FP_KEY = "pafc-index-fingerprint";
-
-type Phase = "checking" | "up-to-date" | "updating" | "idle";
+const AUTO_REFRESHED_KEY = "pafc-auto-refreshed-fp";
+const SESSION_AUTO_KEY = "pafc-auto-refreshed-this-session";
+const CHECK_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+const IDLE_THRESHOLD_MS = 30 * 1000; // 30 seconds
 
 async function getIndexFingerprint(): Promise<string | null> {
   try {
-    // Bust any browser/proxy cache on this request so we see the real server build
     const url = `/?_fp=${Date.now()}`;
     let res = await fetch(url, { method: "HEAD", cache: "no-store" });
-    // Prefer ETag, then Last-Modified, then content hash
     const etag = res.headers.get("etag") || res.headers.get("last-modified");
     if (etag) return etag;
 
-    // Fallback: fetch body and hash a stable slice
     res = await fetch(url, { method: "GET", cache: "no-store" });
     const text = await res.text();
-    // Hash the first 4KB — script tags with hashed asset names live here
     const slice = text.slice(0, 4096);
     let hash = 0;
     for (let i = 0; i < slice.length; i++) {
@@ -42,11 +44,40 @@ async function getIndexFingerprint(): Promise<string | null> {
   }
 }
 
+function isUserBusy(): boolean {
+  // Open dialog / modal
+  if (document.querySelector('[role="dialog"], [data-state="open"][role="alertdialog"]')) {
+    return true;
+  }
+  // Focused input with text
+  const el = document.activeElement as HTMLElement | null;
+  if (el) {
+    const tag = el.tagName;
+    if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || el.isContentEditable) {
+      const value = (el as HTMLInputElement).value;
+      if (value && value.length > 0) return true;
+      // Even empty but focused — treat as busy
+      return true;
+    }
+  }
+  return false;
+}
+
+function doRefresh() {
+  try {
+    sessionStorage.setItem(SESSION_AUTO_KEY, "1");
+  } catch {}
+  window.location.replace(window.location.pathname + "?_v=" + Date.now());
+}
+
 export function UpdateGate() {
-  const [phase, setPhase] = useState<Phase>("checking");
+  const [updateAvailable, setUpdateAvailable] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
+  const lastActivityRef = useRef<number>(Date.now());
+  const newFpRef = useRef<string | null>(null);
 
   useEffect(() => {
-    // Skip inside Lovable preview iframes — we don't want the modal flashing while building
+    // Skip inside Lovable preview iframes
     const isInIframe = (() => {
       try {
         return window.self !== window.top;
@@ -59,92 +90,128 @@ export function UpdateGate() {
       window.location.hostname.includes("lovableproject.com") ||
       window.location.hostname.includes("localhost");
 
-    if (isInIframe || isPreviewHost) {
-      setPhase("idle");
-      return;
-    }
+    if (isInIframe || isPreviewHost) return;
 
     let cancelled = false;
 
-    const runCheck = async (isInitial: boolean) => {
-      if (!isInitial) setPhase("checking");
-      const fp = await getIndexFingerprint();
-      if (cancelled) return;
+    // Track user activity for idle detection
+    const markActive = () => {
+      lastActivityRef.current = Date.now();
+    };
+    ["mousemove", "keydown", "touchstart", "scroll", "click"].forEach((e) =>
+      window.addEventListener(e, markActive, { passive: true })
+    );
 
-      if (!fp) {
-        // Network failed — don't block the app
-        setPhase("idle");
-        return;
+    const tryAutoRefresh = (fp: string) => {
+      // Already auto-refreshed once this session — never again
+      try {
+        if (sessionStorage.getItem(SESSION_AUTO_KEY) === "1") return;
+      } catch {}
+      // Already auto-refreshed for this fingerprint previously — never again (loop guard)
+      try {
+        if (localStorage.getItem(AUTO_REFRESHED_KEY) === fp) return;
+      } catch {}
+
+      const tabHidden = document.visibilityState === "hidden";
+      const idleMs = Date.now() - lastActivityRef.current;
+      const safeToRefresh = (tabHidden || idleMs > IDLE_THRESHOLD_MS) && !isUserBusy();
+
+      if (safeToRefresh) {
+        try {
+          localStorage.setItem(AUTO_REFRESHED_KEY, fp);
+          localStorage.setItem(FP_KEY, fp);
+        } catch {}
+        doRefresh();
       }
+    };
+
+    const runCheck = async (isInitial: boolean) => {
+      const fp = await getIndexFingerprint();
+      if (cancelled || !fp) return;
 
       const previous = localStorage.getItem(FP_KEY);
 
       if (!previous) {
-        // First ever check on this device — just remember and move on
+        // First check on this device — remember and move on
         localStorage.setItem(FP_KEY, fp);
-        setPhase("up-to-date");
-        setTimeout(() => !cancelled && setPhase("idle"), 800);
         return;
       }
 
       if (previous === fp) {
-        setPhase("up-to-date");
-        setTimeout(() => !cancelled && setPhase("idle"), 800);
+        // Nothing new
         return;
       }
 
-      // New build detected — remember it, but do not auto-refresh.
-      // Users can still use the manual "Check for updates" button if needed.
-      localStorage.setItem(FP_KEY, fp);
-      setPhase("idle");
+      // New build detected
+      newFpRef.current = fp;
+      setUpdateAvailable(true);
+
+      // Try a one-shot safe auto-refresh
+      if (!isInitial) {
+        tryAutoRefresh(fp);
+      } else {
+        // On initial load, give the user a moment before considering auto-refresh
+        setTimeout(() => !cancelled && tryAutoRefresh(fp), 5000);
+      }
     };
 
-    // Initial check on app open
     runCheck(true);
 
-    // Re-check when the app returns to foreground (PWA users who background it)
+    const interval = window.setInterval(() => runCheck(false), CHECK_INTERVAL_MS);
     const onVisible = () => {
-      if (document.visibilityState === "visible") runCheck(false);
+      if (document.visibilityState === "visible") {
+        markActive();
+        runCheck(false);
+      } else if (newFpRef.current) {
+        // Tab being hidden with pending update — perfect moment to swap in
+        tryAutoRefresh(newFpRef.current);
+      }
     };
     document.addEventListener("visibilitychange", onVisible);
 
     return () => {
       cancelled = true;
+      window.clearInterval(interval);
       document.removeEventListener("visibilitychange", onVisible);
+      ["mousemove", "keydown", "touchstart", "scroll", "click"].forEach((e) =>
+        window.removeEventListener(e, markActive)
+      );
     };
   }, []);
 
-  if (phase === "idle") return null;
+  if (!updateAvailable || dismissed) return null;
 
   return (
-    <div className="fixed inset-0 z-[9999] bg-background/95 backdrop-blur-md flex items-center justify-center px-6">
-      <div className="max-w-sm w-full text-center space-y-5">
-        <div className="flex justify-center">
-          {phase === "updating" ? (
-            <RefreshCw className="h-12 w-12 text-primary animate-spin" />
-          ) : phase === "up-to-date" ? (
-            <CheckCircle2 className="h-12 w-12 text-primary" />
-          ) : (
-            <Loader2 className="h-12 w-12 text-primary animate-spin" />
-          )}
-        </div>
-        <div>
-          <p className="font-display text-xl tracking-wider uppercase text-foreground">
-            {phase === "updating"
-              ? "Updating PAFC"
-              : phase === "up-to-date"
-                ? "You're up to date"
-                : "Checking for updates"}
-          </p>
-          <p className="text-xs text-muted-foreground mt-2">
-            {phase === "updating"
-              ? "Loading the latest version… the app will refresh in a moment."
-              : phase === "up-to-date"
-                ? "Showing the latest news, fixtures and notifications."
-                : "Making sure you have the latest news and fixtures…"}
-          </p>
-        </div>
+    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[9999] max-w-sm w-[calc(100%-2rem)] bg-card border border-border rounded-lg shadow-lg p-3 flex items-center gap-3 animate-in slide-in-from-bottom-4">
+      <RefreshCw className="h-5 w-5 text-primary shrink-0" />
+      <div className="flex-1 min-w-0">
+        <p className="font-display text-sm uppercase tracking-wider text-foreground">
+          Update available
+        </p>
+        <p className="text-xs text-muted-foreground">
+          A new version of PAFC is ready.
+        </p>
       </div>
+      <Button
+        size="sm"
+        onClick={() => {
+          if (newFpRef.current) {
+            try {
+              localStorage.setItem(FP_KEY, newFpRef.current);
+            } catch {}
+          }
+          doRefresh();
+        }}
+      >
+        Refresh
+      </Button>
+      <button
+        onClick={() => setDismissed(true)}
+        className="p-1 text-muted-foreground hover:text-foreground"
+        aria-label="Dismiss"
+      >
+        <X className="h-4 w-4" />
+      </button>
     </div>
   );
 }
