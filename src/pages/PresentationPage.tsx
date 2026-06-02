@@ -277,12 +277,11 @@ export default function PresentationPage() {
                 <Ticket className="h-4 w-4 mr-2" />
                 My Tickets
               </TabsTrigger>
-              {isAdmin && (
-                <TabsTrigger value="seating">
-                  <Users className="h-4 w-4 mr-2" />
-                  Seating Plan
-                </TabsTrigger>
-              )}
+              <TabsTrigger value="seating">
+                <Users className="h-4 w-4 mr-2" />
+                Seating Plan
+              </TabsTrigger>
+
             </TabsList>
 
             <TabsContent value="tickets">
