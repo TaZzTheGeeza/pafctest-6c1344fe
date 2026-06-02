@@ -42,22 +42,24 @@ export function TeamStatsTable({ ageGroup }: { ageGroup: string }) {
   useEffect(() => {
     const fetch = async () => {
       setLoading(true);
+      let rows: any[] = [];
       if (season === CURRENT_SEASON) {
         const { data } = await supabase
           .from("player_stats")
-          .select("id, first_name, shirt_number, goals, assists, appearances, potm_awards")
+          .select("id, first_name, shirt_number, goals, assists, appearances, potm_awards, position")
           .eq("age_group", ageGroup)
           .order("goals", { ascending: false });
-        setPlayers(data || []);
+        rows = data || [];
       } else {
         const { data } = await supabase
           .from("player_stats_history")
-          .select("id, first_name, shirt_number, goals, assists, appearances, potm_awards")
+          .select("id, first_name, shirt_number, goals, assists, appearances, potm_awards, position")
           .eq("age_group", ageGroup)
           .eq("season", season)
           .order("goals", { ascending: false });
-        setPlayers(data || []);
+        rows = data || [];
       }
+      setPlayers(rows.filter((p) => !(p.position && /coach/i.test(p.position))));
       setLoading(false);
     };
     fetch();
