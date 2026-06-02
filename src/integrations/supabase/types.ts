@@ -1062,6 +1062,57 @@ export type Database = {
         }
         Relationships: []
       }
+      match_reports_history: {
+        Row: {
+          age_group: string
+          archived_at: string
+          assists: string | null
+          away_score: number
+          created_at: string
+          goal_scorers: string | null
+          home_score: number
+          id: string
+          match_date: string
+          notes: string | null
+          opponent: string
+          original_match_report_id: string | null
+          season: string
+          team_name: string
+        }
+        Insert: {
+          age_group: string
+          archived_at?: string
+          assists?: string | null
+          away_score?: number
+          created_at?: string
+          goal_scorers?: string | null
+          home_score?: number
+          id?: string
+          match_date: string
+          notes?: string | null
+          opponent: string
+          original_match_report_id?: string | null
+          season: string
+          team_name: string
+        }
+        Update: {
+          age_group?: string
+          archived_at?: string
+          assists?: string | null
+          away_score?: number
+          created_at?: string
+          goal_scorers?: string | null
+          home_score?: number
+          id?: string
+          match_date?: string
+          notes?: string | null
+          opponent?: string
+          original_match_report_id?: string | null
+          season?: string
+          team_name?: string
+        }
+        Relationships: []
+      }
       meeting_invitees: {
         Row: {
           created_at: string
