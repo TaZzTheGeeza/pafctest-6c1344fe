@@ -221,6 +221,7 @@ export function UpdateGate() {
           if (newFpRef.current) {
             try {
               localStorage.setItem(FP_KEY, newFpRef.current);
+              localStorage.removeItem(DISMISSED_FP_KEY);
             } catch {}
           }
           setDismissed(true);
