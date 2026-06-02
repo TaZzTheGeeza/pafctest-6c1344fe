@@ -53,8 +53,9 @@ interface POTMAward {
 const ResultsPage = () => {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [filterTeam, setFilterTeam] = useState<string>("all");
+  const [season, setSeason] = useState<string>(CURRENT_SEASON);
   const { isCoach, isAdmin } = useAuth();
-  const canEdit = isCoach || isAdmin;
+  const canEdit = (isCoach || isAdmin) && season === CURRENT_SEASON;
   const queryClient = useQueryClient();
 
   const [editing, setEditing] = useState<MatchReport | null>(null);
