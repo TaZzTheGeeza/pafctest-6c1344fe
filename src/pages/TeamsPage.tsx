@@ -47,16 +47,18 @@ interface TeamData {
 
 const allTeams: TeamData[] = [
   { slug: "u6s", name: "U6", ageGroup: "Under 6", training: "TBC", nextFixture: { opponent: "TBC", venue: "Home", date: "TBC", kickoff: "TBC" } },
-  { slug: "u7s", name: "U7", ageGroup: "Under 7", training: "Tues & Thurs 5:30pm", nextFixture: { opponent: "Thurlby Tigers U7 Yellow", venue: "Home", date: "Sat 28 March", kickoff: "09:30" } },
-  { slug: "u8s-black", name: "U8 Black", ageGroup: "Under 8", training: "Mon & Wed 5:30pm", nextFixture: { opponent: "One Touch Football U8 Red", venue: "Home", date: "Sat 28 March", kickoff: "10:30" } },
-  { slug: "u8s-gold", name: "U8 Gold", ageGroup: "Under 8", training: "Tues & Thurs 5:30pm", nextFixture: { opponent: "Whittlesey Jnr U8 Blue", venue: "Home", date: "Sat 28 March", kickoff: "09:30" } },
-  { slug: "u9s", name: "U9", ageGroup: "Under 9", training: "Mon & Wed 6:00pm", nextFixture: { opponent: "Deeping Rangers U9 Claret", venue: "Home", date: "Sat 28 March", kickoff: "09:30" } },
-  { slug: "u10s", name: "U10", ageGroup: "Under 10", training: "Tues & Thurs 6:00pm", nextFixture: { opponent: "Netherton Utd U10 Red", venue: "Home", date: "Sat 28 March", kickoff: "10:30" } },
-  { slug: "u11s-black", name: "U11 Black", ageGroup: "Under 11", training: "Mon & Wed 6:00pm", nextFixture: { opponent: "Gladstone Knights U11", venue: "Away", date: "Sun 29 March", kickoff: "12:00" } },
-  { slug: "u11s-gold", name: "U11 Gold", ageGroup: "Under 11", training: "Tues & Thurs 6:00pm", nextFixture: { opponent: "Yaxley FC U11 Blues", venue: "Home", date: "Sun 29 March", kickoff: "10:00" } },
-  { slug: "u13s-black", name: "U13 Black", ageGroup: "Under 13", training: "Mon & Wed 6:30pm", nextFixture: { opponent: "Nene Valley U13", venue: "Home", date: "Sun 29 March", kickoff: "12:00" } },
-  { slug: "u13s-gold", name: "U13 Gold", ageGroup: "Under 13", training: "Tues & Thurs 6:30pm", nextFixture: { opponent: "Moulton Chapel U13", venue: "Home", date: "Sun 03 May", kickoff: "10:00" } },
-  { slug: "u14s", name: "U14", ageGroup: "Under 14", training: "Mon & Wed 7:00pm", nextFixture: { opponent: "Park Farm Pumas U14 Black", venue: "Home", date: "Sun 12 April", kickoff: "14:00" } },
+  { slug: "u7s", name: "U7", ageGroup: "Under 7", training: "TBC", nextFixture: { opponent: "TBC", venue: "Home", date: "TBC", kickoff: "TBC" } },
+  { slug: "u8s", name: "U8", ageGroup: "Under 8", training: "TBC", nextFixture: { opponent: "TBC", venue: "Home", date: "TBC", kickoff: "TBC" } },
+  { slug: "u9s-black", name: "U9 Black", ageGroup: "Under 9", training: "TBC", nextFixture: { opponent: "TBC", venue: "Home", date: "TBC", kickoff: "TBC" } },
+  { slug: "u9s-gold", name: "U9 Gold", ageGroup: "Under 9", training: "TBC", nextFixture: { opponent: "TBC", venue: "Home", date: "TBC", kickoff: "TBC" } },
+  { slug: "u10s", name: "U10", ageGroup: "Under 10", training: "TBC", nextFixture: { opponent: "TBC", venue: "Home", date: "TBC", kickoff: "TBC" } },
+  { slug: "u11s", name: "U11", ageGroup: "Under 11", training: "TBC", nextFixture: { opponent: "TBC", venue: "Home", date: "TBC", kickoff: "TBC" } },
+  { slug: "u12s-black", name: "U12 Black", ageGroup: "Under 12", training: "TBC", nextFixture: { opponent: "TBC", venue: "Home", date: "TBC", kickoff: "TBC" } },
+  { slug: "u12s-gold", name: "U12 Gold", ageGroup: "Under 12", training: "TBC", nextFixture: { opponent: "TBC", venue: "Home", date: "TBC", kickoff: "TBC" } },
+  { slug: "u13s", name: "U13", ageGroup: "Under 13", training: "TBC", nextFixture: { opponent: "TBC", venue: "Home", date: "TBC", kickoff: "TBC" } },
+  { slug: "u14s-black", name: "U14 Black", ageGroup: "Under 14", training: "TBC", nextFixture: { opponent: "TBC", venue: "Home", date: "TBC", kickoff: "TBC" } },
+  { slug: "u14s-gold", name: "U14 Gold", ageGroup: "Under 14", training: "TBC", nextFixture: { opponent: "TBC", venue: "Home", date: "TBC", kickoff: "TBC" } },
+  { slug: "u15s", name: "U15", ageGroup: "Under 15", training: "TBC", nextFixture: { opponent: "TBC", venue: "Home", date: "TBC", kickoff: "TBC" } },
 ];
 
 function formatFADate(dateStr: string): string {
@@ -419,7 +421,7 @@ export default function TeamsPage() {
           >
             <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-4 py-1.5 mb-4">
               <Trophy className="h-4 w-4 text-primary" />
-              <span className="text-xs font-display tracking-[0.2em] text-primary font-semibold">2025/26 SEASON</span>
+              <span className="text-xs font-display tracking-[0.2em] text-primary font-semibold">2026/27 SEASON</span>
             </div>
             <h1 className="text-5xl md:text-6xl font-bold font-display tracking-tight mb-3">
               OUR <span className="text-gold-gradient">TEAMS</span>
