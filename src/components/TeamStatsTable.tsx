@@ -42,22 +42,18 @@ export function TeamStatsTable({ ageGroup }: { ageGroup: string }) {
   useEffect(() => {
     const fetch = async () => {
       setLoading(true);
-      if (season === CURRENT_SEASON) {
-        const { data } = await supabase
-          .from("player_stats")
-          .select("id, first_name, shirt_number, goals, assists, appearances, potm_awards")
-          .eq("age_group", ageGroup)
-          .order("goals", { ascending: false });
-        setPlayers(data || []);
-      } else {
-        const { data } = await supabase
-          .from("player_stats_history")
-          .select("id, first_name, shirt_number, goals, assists, appearances, potm_awards")
-          .eq("age_group", ageGroup)
-          .eq("season", season)
-          .order("goals", { ascending: false });
-        setPlayers(data || []);
-      }
+      const table = season === CURRENT_SEASON ? "player_stats" : "player_stats_history";
+      let query = supabase
+        .from(table)
+        .select("id, first_name, shirt_number, goals, assists, appearances, potm_awards, position")
+        .eq("age_group", ageGroup)
+        .order("goals", { ascending: false });
+      if (season !== CURRENT_SEASON) query = query.eq("season", season);
+      const { data } = await query;
+      const rows = (data || []).filter(
+        (p: any) => !(p.position && /coach/i.test(p.position))
+      );
+      setPlayers(rows);
       setLoading(false);
     };
     fetch();
