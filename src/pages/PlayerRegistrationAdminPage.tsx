@@ -7,8 +7,11 @@ import { Link } from "react-router-dom";
 import {
   ArrowLeft, CheckCircle2, AlertCircle, Search, Download, Loader2,
   User as UserIcon, Mail, Phone, MapPin, Calendar, Heart, ShieldAlert, X,
+  Bell, Send, Users,
 } from "lucide-react";
 import { format } from "date-fns";
+import { toast } from "sonner";
+
 
 // Resolves a signed URL for a photo stored in the private `registration-photos` bucket.
 // Accepts either a raw storage path (e.g. "userId/123.jpg") or a full https URL (legacy).
