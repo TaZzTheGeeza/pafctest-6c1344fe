@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { BarChart3, Trophy, Target, Users, Award, Loader2 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface PlayerStat {
   id: string;
@@ -14,24 +15,53 @@ interface PlayerStat {
 
 type SortKey = "goals" | "assists" | "appearances" | "potm_awards";
 
+const CURRENT_SEASON = "2026/27";
+
 export function TeamStatsTable({ ageGroup }: { ageGroup: string }) {
   const [players, setPlayers] = useState<PlayerStat[]>([]);
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState<SortKey>("goals");
+  const [season, setSeason] = useState<string>(CURRENT_SEASON);
+  const [seasons, setSeasons] = useState<string[]>([CURRENT_SEASON]);
+
+  // Load list of available archived seasons for this age group
+  useEffect(() => {
+    const loadSeasons = async () => {
+      const { data } = await supabase
+        .from("player_stats_history")
+        .select("season")
+        .eq("age_group", ageGroup);
+      const past = Array.from(new Set((data || []).map((d: any) => d.season as string)))
+        .sort()
+        .reverse();
+      setSeasons([CURRENT_SEASON, ...past.filter((s) => s !== CURRENT_SEASON)]);
+    };
+    loadSeasons();
+  }, [ageGroup]);
 
   useEffect(() => {
     const fetch = async () => {
       setLoading(true);
-      const { data } = await supabase
-        .from("player_stats")
-        .select("id, first_name, shirt_number, goals, assists, appearances, potm_awards")
-        .eq("age_group", ageGroup)
-        .order("goals", { ascending: false });
-      setPlayers(data || []);
+      if (season === CURRENT_SEASON) {
+        const { data } = await supabase
+          .from("player_stats")
+          .select("id, first_name, shirt_number, goals, assists, appearances, potm_awards")
+          .eq("age_group", ageGroup)
+          .order("goals", { ascending: false });
+        setPlayers(data || []);
+      } else {
+        const { data } = await supabase
+          .from("player_stats_history")
+          .select("id, first_name, shirt_number, goals, assists, appearances, potm_awards")
+          .eq("age_group", ageGroup)
+          .eq("season", season)
+          .order("goals", { ascending: false });
+        setPlayers(data || []);
+      }
       setLoading(false);
     };
     fetch();
-  }, [ageGroup]);
+  }, [ageGroup, season]);
 
   const sorted = [...players].sort((a, b) => b[sortBy] - a[sortBy]);
 
@@ -42,20 +72,47 @@ export function TeamStatsTable({ ageGroup }: { ageGroup: string }) {
     { key: "potm_awards", label: "POTM", icon: Award },
   ];
 
+  const seasonSelector = (
+    <div className="flex items-center justify-end">
+      <Select value={season} onValueChange={setSeason}>
+        <SelectTrigger className="w-[180px] h-9 text-xs font-display tracking-wider">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {seasons.map((s) => (
+            <SelectItem key={s} value={s} className="text-xs font-display tracking-wider">
+              {s === CURRENT_SEASON ? `${s} (Current)` : s}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-8">
-        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      <div className="space-y-4">
+        {seasonSelector}
+        <div className="flex items-center justify-center py-8">
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        </div>
       </div>
     );
   }
 
   if (players.length === 0) {
     return (
-      <div className="bg-card border border-border rounded-xl p-8 text-center">
-        <BarChart3 className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-        <h3 className="font-display text-sm font-bold mb-1">No Stats Yet</h3>
-        <p className="text-xs text-muted-foreground">Player stats will appear here once they've been added by the coaching team.</p>
+      <div className="space-y-4">
+        {seasonSelector}
+        <div className="bg-card border border-border rounded-xl p-8 text-center">
+          <BarChart3 className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+          <h3 className="font-display text-sm font-bold mb-1">No Stats Yet</h3>
+          <p className="text-xs text-muted-foreground">
+            {season === CURRENT_SEASON
+              ? "Player stats will appear here once they've been added by the coaching team."
+              : `No archived stats for the ${season} season.`}
+          </p>
+        </div>
       </div>
     );
   }
@@ -64,6 +121,8 @@ export function TeamStatsTable({ ageGroup }: { ageGroup: string }) {
 
   return (
     <div className="space-y-4">
+      {seasonSelector}
+
       {/* Top player highlight */}
       {topPlayer && (
         <div className="bg-gradient-to-r from-primary/10 to-transparent border border-primary/20 rounded-xl p-4 flex items-center gap-4">
