@@ -421,7 +421,7 @@ export default function TeamsPage() {
           >
             <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-4 py-1.5 mb-4">
               <Trophy className="h-4 w-4 text-primary" />
-              <span className="text-xs font-display tracking-[0.2em] text-primary font-semibold">2025/26 SEASON</span>
+              <span className="text-xs font-display tracking-[0.2em] text-primary font-semibold">2026/27 SEASON</span>
             </div>
             <h1 className="text-5xl md:text-6xl font-bold font-display tracking-tight mb-3">
               OUR <span className="text-gold-gradient">TEAMS</span>
