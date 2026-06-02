@@ -36,6 +36,8 @@ interface MatchReport {
   notes: string | null;
 }
 
+const CURRENT_SEASON = "2026/27";
+
 interface POTMAward {
   id: string;
   player_name: string;
