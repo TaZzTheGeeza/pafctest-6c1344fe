@@ -83,7 +83,7 @@ const TournamentAdminPage = () => {
     queryFn: async () => {
       if (!ageGroups?.length) return [];
       const ids = ageGroups.map(ag => ag.id);
-      const { data, error } = await supabase.from("tournament_teams").select("*").in("age_group_id", ids).order("created_at");
+      const { data, error } = await supabase.from("tournament_teams").select("id, age_group_id, team_name, player_count, status, club_name, county, club_org_id, league_division, team_category, consent_rules, consent_photography, created_at, group_id").in("age_group_id", ids).order("created_at");
       if (error) throw error;
       return data;
     },
@@ -269,10 +269,14 @@ const TournamentAdminPage = () => {
     toast.success(`"${teamName}" deleted`);
   };
 
-  // OPEN EDIT TEAM
-  const openEditTeam = (team: any) => {
-    const whatsapp = Array.isArray(team.whatsapp_contacts) && team.whatsapp_contacts.length > 0
-      ? team.whatsapp_contacts.map((c: any) => ({ name: c.name || "", number: c.number || "" }))
+  // OPEN EDIT TEAM (contact fields fetched separately via secure RPC)
+  const openEditTeam = async (team: any) => {
+    const { data: contactRows } = await supabase
+      .rpc("get_tournament_team_contacts", { _team_id: team.id });
+    const contact: any = Array.isArray(contactRows) && contactRows[0] ? contactRows[0] : {};
+    const whatsappSource = Array.isArray(contact.whatsapp_contacts) ? contact.whatsapp_contacts : [];
+    const whatsapp = whatsappSource.length > 0
+      ? whatsappSource.map((c: any) => ({ name: c.name || "", number: c.number || "" }))
       : [{ name: "", number: "" }];
     setEditTeamForm({
       team_name: team.team_name || "",
@@ -281,12 +285,12 @@ const TournamentAdminPage = () => {
       club_org_id: team.club_org_id || "",
       league_division: team.league_division || "",
       team_category: team.team_category || "",
-      manager_name: team.manager_name || "",
-      manager_email: team.manager_email || "",
-      manager_phone: team.manager_phone || "",
-      secretary_name: team.secretary_name || "",
-      secretary_email: team.secretary_email || "",
-      secretary_phone: team.secretary_phone || "",
+      manager_name: contact.manager_name || "",
+      manager_email: contact.manager_email || "",
+      manager_phone: contact.manager_phone || "",
+      secretary_name: contact.secretary_name || "",
+      secretary_email: contact.secretary_email || "",
+      secretary_phone: contact.secretary_phone || "",
       player_count: team.player_count?.toString() || "",
       whatsapp_contacts: whatsapp,
       consent_rules: team.consent_rules ?? true,
@@ -294,6 +298,7 @@ const TournamentAdminPage = () => {
     });
     setEditingTeam(team);
   };
+
 
   // SAVE EDIT TEAM
   const saveEditTeam = async () => {
