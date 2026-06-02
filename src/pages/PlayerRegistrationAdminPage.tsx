@@ -7,8 +7,11 @@ import { Link } from "react-router-dom";
 import {
   ArrowLeft, CheckCircle2, AlertCircle, Search, Download, Loader2,
   User as UserIcon, Mail, Phone, MapPin, Calendar, Heart, ShieldAlert, X,
+  Bell, Send, Users,
 } from "lucide-react";
 import { format } from "date-fns";
+import { toast } from "sonner";
+
 
 // Resolves a signed URL for a photo stored in the private `registration-photos` bucket.
 // Accepts either a raw storage path (e.g. "userId/123.jpg") or a full https URL (legacy).
@@ -75,11 +78,35 @@ interface RosterPlayer {
 
 const normaliseName = (s: string) => s.trim().toLowerCase().replace(/\s+/g, " ");
 
+// Map team_slug (e.g. "u9s-gold") to the human age group used in registrations (e.g. "U9 Gold")
+function teamSlugToAgeGroup(slug: string): string {
+  const s = (slug || "").toLowerCase().trim();
+  const m = s.match(/^u(\d+)s?(?:-(black|gold))?$/);
+  if (!m) return slug;
+  const num = m[1];
+  const suffix = m[2] ? ` ${m[2][0].toUpperCase()}${m[2].slice(1)}` : "";
+  return `U${num}${suffix}`;
+}
+
+interface HubPlayer {
+  guardian_id: string;
+  parent_user_id: string;
+  parent_name: string;
+  parent_email: string | null;
+  player_name: string;
+  team_slug: string;
+  age_group: string; // derived
+  registered: boolean;
+}
+
 export default function PlayerRegistrationAdminPage() {
-  const [tab, setTab] = useState<"paid" | "outstanding">("paid");
+  const [tab, setTab] = useState<"paid" | "outstanding" | "hub">("hub");
   const [search, setSearch] = useState("");
   const [ageGroupFilter, setAgeGroupFilter] = useState<string>("all");
   const [selected, setSelected] = useState<Registration | null>(null);
+  const [selectedParents, setSelectedParents] = useState<Set<string>>(new Set());
+  const [sending, setSending] = useState(false);
+
 
   const { data: registrations = [], isLoading } = useQuery({
     queryKey: ["player-registrations"],
@@ -103,6 +130,34 @@ export default function PlayerRegistrationAdminPage() {
       return data as RosterPlayer[];
     },
   });
+
+  // Hub data: guardians (parent ↔ player ↔ team) with parent profile
+  const { data: guardians = [] } = useQuery({
+    queryKey: ["hub-guardians"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("guardians")
+        .select("id, parent_user_id, player_name, team_slug, status")
+        .eq("status", "active");
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  const { data: parentProfiles = [] } = useQuery({
+    queryKey: ["hub-parent-profiles", guardians.map((g) => g.parent_user_id).sort().join(",")],
+    enabled: guardians.length > 0,
+    queryFn: async () => {
+      const ids = Array.from(new Set(guardians.map((g) => g.parent_user_id)));
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id, full_name, email")
+        .in("id", ids);
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
 
   // A registration only counts as "complete" once payment_status === 'paid'.
   const paidRegistrations = useMemo(
@@ -163,7 +218,151 @@ export default function PlayerRegistrationAdminPage() {
     });
   }, [outstanding, search, ageGroupFilter]);
 
+  // Build hub player list with registration cross-reference (by parent email OR child name + age group)
+  const paidEmails = useMemo(
+    () => new Set(paidRegistrations.map((r) => r.email.toLowerCase().trim())),
+    [paidRegistrations],
+  );
+
+  const hubPlayers: HubPlayer[] = useMemo(() => {
+    return guardians
+      .filter((g) => g.player_name && g.player_name.trim().length > 0)
+      .map((g) => {
+        const profile = parentProfiles.find((p) => p.id === g.parent_user_id);
+        const ageGroup = teamSlugToAgeGroup(g.team_slug);
+        const firstName = g.player_name.split(" ")[0] || g.player_name;
+        const nameMatch = registeredKeys.has(`${normaliseName(firstName)}::${ageGroup}`)
+          || registeredKeys.has(`${normaliseName(g.player_name)}::${ageGroup}`);
+        const emailMatch = profile?.email ? paidEmails.has(profile.email.toLowerCase().trim()) : false;
+        return {
+          guardian_id: g.id,
+          parent_user_id: g.parent_user_id,
+          parent_name: profile?.full_name || "Unknown parent",
+          parent_email: profile?.email || null,
+          player_name: g.player_name,
+          team_slug: g.team_slug,
+          age_group: ageGroup,
+          registered: nameMatch || emailMatch,
+        };
+      })
+      .sort((a, b) => a.age_group.localeCompare(b.age_group) || a.player_name.localeCompare(b.player_name));
+  }, [guardians, parentProfiles, registeredKeys, paidEmails]);
+
+  const hubRegisteredCount = hubPlayers.filter((h) => h.registered).length;
+  const hubOutstandingCount = hubPlayers.length - hubRegisteredCount;
+
+  const filteredHub = useMemo(() => {
+    return hubPlayers.filter((h) => {
+      if (ageGroupFilter !== "all" && h.age_group !== ageGroupFilter) return false;
+      if (!search.trim()) return true;
+      const q = search.toLowerCase();
+      return (
+        h.player_name.toLowerCase().includes(q) ||
+        h.parent_name.toLowerCase().includes(q) ||
+        (h.parent_email || "").toLowerCase().includes(q) ||
+        h.team_slug.toLowerCase().includes(q)
+      );
+    });
+  }, [hubPlayers, search, ageGroupFilter]);
+
+  const toggleParent = (userId: string) => {
+    setSelectedParents((prev) => {
+      const next = new Set(prev);
+      if (next.has(userId)) next.delete(userId);
+      else next.add(userId);
+      return next;
+    });
+  };
+
+  const selectAllOutstanding = () => {
+    const ids = filteredHub.filter((h) => !h.registered).map((h) => h.parent_user_id);
+    setSelectedParents(new Set(ids));
+  };
+
+  const clearSelection = () => setSelectedParents(new Set());
+
+  const sendRegistrationReminders = async () => {
+    const targets = hubPlayers.filter((h) => selectedParents.has(h.parent_user_id) && !h.registered);
+    // De-duplicate parents (one parent may have multiple children)
+    const byParent = new Map<string, HubPlayer[]>();
+    targets.forEach((t) => {
+      const arr = byParent.get(t.parent_user_id) || [];
+      arr.push(t);
+      byParent.set(t.parent_user_id, arr);
+    });
+
+    if (byParent.size === 0) {
+      toast.info("Select at least one outstanding parent to remind");
+      return;
+    }
+
+    setSending(true);
+    try {
+      const title = "Action Required: Player Registration 2026/27";
+      const link = "/player-registration";
+
+      // 1. In-app notifications
+      const notifications = Array.from(byParent.entries()).map(([uid, players]) => ({
+        user_id: uid,
+        title,
+        message: `Please complete the 2026/27 registration & payment for ${players.map((p) => p.player_name).join(", ")}.`,
+        type: "info",
+        link,
+      }));
+      await supabase.from("hub_notifications").insert(notifications);
+
+      // 2. Email (admin-broadcast template) — one per parent with email
+      const ts = Date.now();
+      for (const [uid, players] of byParent.entries()) {
+        const player = players[0];
+        if (!player.parent_email) continue;
+        const childList = players.map((p) => `• ${p.player_name} (${p.age_group})`).join("\n");
+        supabase.functions
+          .invoke("send-transactional-email", {
+            body: {
+              templateName: "admin-broadcast",
+              recipientEmail: player.parent_email,
+              idempotencyKey: `reg-reminder-${uid}-${ts}`,
+              templateData: {
+                title: "Player Registration Reminder — 2026/27 Season",
+                message:
+                  `Hi ${player.parent_name},\n\n` +
+                  `Our records show that the 2026/27 registration & payment is still outstanding for:\n\n${childList}\n\n` +
+                  `Please complete it as soon as possible so your child is fully registered to play this season.\n\n` +
+                  `Register here: https://www.pa-fc.uk/player-registration\n\n` +
+                  `If you've already completed this and believe you're seeing this in error, please reply to this email and we'll get it sorted.`,
+              },
+            },
+          })
+          .catch((err) => console.error("Reminder email failed:", err));
+      }
+
+      // 3. Push
+      const userIds = Array.from(byParent.keys());
+      supabase.functions
+        .invoke("send-push-notification", {
+          body: {
+            userIds,
+            title,
+            message: "Complete your 2026/27 player registration & payment.",
+            link,
+            tag: "registration-reminder",
+          },
+        })
+        .catch((err) => console.error("Reminder push failed:", err));
+
+      toast.success(`Reminders sent to ${byParent.size} parent${byParent.size !== 1 ? "s" : ""}`);
+      clearSelection();
+    } catch (err) {
+      console.error("Send reminders failed:", err);
+      toast.error("Failed to send reminders");
+    } finally {
+      setSending(false);
+    }
+  };
+
   const visibleRegistrations = tab === "paid" ? filteredPaid : [];
+
 
   const exportCsv = () => {
     const rows = [
@@ -219,21 +418,23 @@ export default function PlayerRegistrationAdminPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-8">
           <StatCard label="Registered & Paid" value={paidRegistrations.length} icon={CheckCircle2} color="text-green-500" />
-          <StatCard label="Outstanding" value={outstanding.length} icon={AlertCircle} color="text-amber-500" />
-          <StatCard label="Total Roster" value={roster.length} icon={UserIcon} color="text-primary" />
+          <StatCard label="Hub Outstanding" value={hubOutstandingCount} icon={AlertCircle} color="text-amber-500" />
+          <StatCard label="Roster Outstanding" value={outstanding.length} icon={AlertCircle} color="text-orange-500" />
+          <StatCard label="Hub Players" value={hubPlayers.length} icon={Users} color="text-primary" />
         </div>
 
         {/* Tabs */}
         <div className="flex gap-2 mb-4 border-b border-border overflow-x-auto">
           {([
+            { key: "hub", label: `Hub Players (${hubPlayers.length})` },
             { key: "paid", label: `Registered (${paidRegistrations.length})` },
-            { key: "outstanding", label: `Outstanding (${outstanding.length})` },
+            { key: "outstanding", label: `Roster Outstanding (${outstanding.length})` },
           ] as const).map((t) => (
             <button
               key={t.key}
-              onClick={() => setTab(t.key)}
+              onClick={() => { setTab(t.key); clearSelection(); }}
               className={`px-4 py-2 text-sm font-display font-bold tracking-wider border-b-2 transition-colors whitespace-nowrap ${
                 tab === t.key
                   ? "border-primary text-primary"
@@ -268,16 +469,55 @@ export default function PlayerRegistrationAdminPage() {
           </select>
         </div>
 
+        {/* Hub bulk action bar */}
+        {tab === "hub" && (
+          <div className="flex flex-wrap items-center gap-2 mb-4 p-3 bg-card border border-border rounded-lg">
+            <span className="text-xs text-muted-foreground font-display tracking-wider">
+              {selectedParents.size} parent{selectedParents.size !== 1 ? "s" : ""} selected
+            </span>
+            <div className="flex-1" />
+            <button
+              onClick={selectAllOutstanding}
+              className="text-xs px-3 py-1.5 rounded-md border border-border text-muted-foreground hover:text-foreground hover:bg-secondary font-display tracking-wider"
+            >
+              Select all outstanding
+            </button>
+            {selectedParents.size > 0 && (
+              <button
+                onClick={clearSelection}
+                className="text-xs px-3 py-1.5 rounded-md border border-border text-muted-foreground hover:text-foreground hover:bg-secondary font-display tracking-wider"
+              >
+                Clear
+              </button>
+            )}
+            <button
+              onClick={sendRegistrationReminders}
+              disabled={sending || selectedParents.size === 0}
+              className="inline-flex items-center gap-2 px-4 py-1.5 bg-primary text-primary-foreground rounded-md text-xs font-display font-bold tracking-wider disabled:opacity-50 hover:bg-primary/90"
+            >
+              {sending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
+              {sending ? "Sending…" : `Send reminder (in-app + email + push)`}
+            </button>
+          </div>
+        )}
+
         {isLoading ? (
           <div className="flex items-center justify-center py-20 text-muted-foreground">
             <Loader2 className="h-5 w-5 animate-spin mr-2" /> Loading…
           </div>
+        ) : tab === "hub" ? (
+          <HubPlayerList
+            items={filteredHub}
+            selected={selectedParents}
+            onToggle={toggleParent}
+          />
         ) : tab === "outstanding" ? (
           <OutstandingList items={filteredOutstanding} />
         ) : (
           <RegisteredList items={visibleRegistrations} onSelect={setSelected} showUnpaid={false} />
         )}
       </main>
+
 
       {selected && <RegistrationDetail registration={selected} onClose={() => setSelected(null)} />}
 
@@ -508,6 +748,81 @@ function ConsentRow({ label, granted }: { label: string; granted: boolean }) {
           <X className="h-3 w-3" /> NOT GRANTED
         </span>
       )}
+    </div>
+  );
+}
+
+function HubPlayerList({
+  items,
+  selected,
+  onToggle,
+}: {
+  items: HubPlayer[];
+  selected: Set<string>;
+  onToggle: (userId: string) => void;
+}) {
+  if (!items.length) {
+    return (
+      <div className="text-center py-16 text-muted-foreground bg-card border border-border rounded-xl">
+        No hub players match your filters.
+      </div>
+    );
+  }
+  return (
+    <div className="bg-card border border-border rounded-xl overflow-hidden">
+      <div className="px-4 py-3 bg-primary/5 border-b border-border text-xs text-muted-foreground font-display tracking-wider">
+        Hub players are linked to a parent account via the PAFC Hub. Tick outstanding parents to send a registration reminder (in-app + email + push).
+      </div>
+      <div className="divide-y divide-border">
+        {items.map((h) => {
+          const isSel = selected.has(h.parent_user_id);
+          const disabled = h.registered;
+          return (
+            <label
+              key={h.guardian_id}
+              className={`flex items-center gap-3 px-4 py-3 transition-colors ${
+                disabled ? "opacity-70" : "cursor-pointer hover:bg-secondary/40"
+              } ${isSel ? "bg-primary/5" : ""}`}
+            >
+              <input
+                type="checkbox"
+                checked={isSel}
+                disabled={disabled}
+                onChange={() => onToggle(h.parent_user_id)}
+                className="h-4 w-4 rounded border-border text-primary focus:ring-primary/30 disabled:opacity-30"
+              />
+              <div
+                className={`h-10 w-10 rounded-full flex items-center justify-center font-display font-bold shrink-0 ${
+                  h.registered
+                    ? "bg-green-500/20 text-green-500"
+                    : "bg-amber-500/20 text-amber-500"
+                }`}
+              >
+                {h.player_name[0]?.toUpperCase()}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-display font-bold text-foreground text-sm truncate">
+                  {h.player_name}{" "}
+                  <span className="text-muted-foreground font-normal">· {h.age_group}</span>
+                </p>
+                <p className="text-xs text-muted-foreground truncate">
+                  Parent: {h.parent_name}
+                  {h.parent_email ? ` · ${h.parent_email}` : " · (no email)"}
+                </p>
+              </div>
+              {h.registered ? (
+                <span className="text-[10px] px-2 py-1 rounded-full bg-green-500/20 text-green-500 font-display tracking-wider shrink-0">
+                  REGISTERED
+                </span>
+              ) : (
+                <span className="text-[10px] px-2 py-1 rounded-full bg-amber-500/20 text-amber-500 font-display tracking-wider shrink-0 flex items-center gap-1">
+                  <Bell className="h-3 w-3" /> OUTSTANDING
+                </span>
+              )}
+            </label>
+          );
+        })}
+      </div>
     </div>
   );
 }
