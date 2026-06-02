@@ -63,11 +63,26 @@ function isUserBusy(): boolean {
   return false;
 }
 
-function doRefresh() {
+async function doRefresh() {
   try {
     sessionStorage.setItem(SESSION_AUTO_KEY, "1");
   } catch {}
-  window.location.replace(window.location.pathname + "?_v=" + Date.now());
+  // Best-effort cache + SW wipe so the new build actually loads
+  try {
+    if ("serviceWorker" in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map((r) => r.unregister().catch(() => {})));
+    }
+  } catch {}
+  try {
+    if ("caches" in window) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map((k) => caches.delete(k)));
+    }
+  } catch {}
+  const url = window.location.pathname + window.location.search;
+  const sep = url.includes("?") ? "&" : "?";
+  window.location.replace(url + sep + "_v=" + Date.now());
 }
 
 export function UpdateGate() {
@@ -200,6 +215,7 @@ export function UpdateGate() {
               localStorage.setItem(FP_KEY, newFpRef.current);
             } catch {}
           }
+          setDismissed(true);
           doRefresh();
         }}
       >
