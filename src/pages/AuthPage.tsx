@@ -41,23 +41,21 @@ export default function AuthPage() {
   const inviteProcessed = useRef(false);
   const [inviteTeamName, setInviteTeamName] = useState<string | null>(fallbackInviteTeamName);
 
-  // Look up invite details to show team name
+  // Look up invite details to show team name (via secure RPC, no PII exposure)
   useEffect(() => {
     if (!inviteToken) return;
     supabase
-      .from("team_invites" as any)
-      .select("team_slug")
-      .eq("invite_token", inviteToken)
-      .single()
+      .rpc("lookup_invite_team_slug", { _token: inviteToken })
       .then(({ data }) => {
-        if (data) {
-          const slug = (data as any).team_slug;
+        const slug = (data as string | null) ?? null;
+        if (slug) {
           const friendlyName = TEAM_NAMES[slug] || slug;
           setInviteTeamSlug((current) => current ?? slug);
           setInviteTeamName((current) => current ?? friendlyName);
         }
       });
   }, [inviteToken]);
+
 
   // Process invite token when user is authenticated
   useEffect(() => {
