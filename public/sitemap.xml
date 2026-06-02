@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://www.pa-fc.uk/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://www.pa-fc.uk/shop</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.pa-fc.uk/teams</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.pa-fc.uk/whats-on</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.pa-fc.uk/news</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://www.pa-fc.uk/events</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.pa-fc.uk/gallery</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://www.pa-fc.uk/sponsors</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://www.pa-fc.uk/club-info</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://www.pa-fc.uk/contact</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://www.pa-fc.uk/safeguarding</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://www.pa-fc.uk/register</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.pa-fc.uk/raffle</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.pa-fc.uk/pafc-tv</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://www.pa-fc.uk/tournament</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.pa-fc.uk/player-of-the-match</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://www.pa-fc.uk/results</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.pa-fc.uk/install</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://www.pa-fc.uk/wildcats</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+</urlset>
