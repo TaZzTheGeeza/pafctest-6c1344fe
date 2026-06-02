@@ -166,6 +166,12 @@ export const faTeamConfigs: FAFixtureConfig[] = [
     }),
   },
   {
+    team: "U13",
+    slug: "u13s",
+    fixtureUrl: "",
+    resultUrl: "",
+  },
+  {
     team: "U14",
     slug: "u14s",
     fixtureUrl: buildUrl("fixtures", {

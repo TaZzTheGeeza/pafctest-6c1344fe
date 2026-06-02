@@ -32,6 +32,7 @@ const TEAMS = [
   { slug: "u11s", name: "U11" },
   { slug: "u12s-black", name: "U12 Black" },
   { slug: "u12s-gold", name: "U12 Gold" },
+  { slug: "u13s", name: "U13" },
   { slug: "u14s-black", name: "U14 Black" },
   { slug: "u14s-gold", name: "U14 Gold" },
   { slug: "u15s", name: "U15" },
@@ -158,6 +159,7 @@ export default function HubPage() {
       "u9-black": "u9s-black", "u9-gold": "u9s-gold",
       "u10": "u10s", "u11": "u11s",
       "u12-black": "u12s-black", "u12-gold": "u12s-gold",
+      "u13": "u13s",
       "u14-black": "u14s-black", "u14-gold": "u14s-gold",
       "u15": "u15s",
     };

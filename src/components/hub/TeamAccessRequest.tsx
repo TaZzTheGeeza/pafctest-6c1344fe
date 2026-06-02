@@ -15,6 +15,7 @@ const TEAMS = [
   { slug: "u11s", label: "U11" },
   { slug: "u12s-black", label: "U12 Black" },
   { slug: "u12s-gold", label: "U12 Gold" },
+  { slug: "u13s", label: "U13" },
   { slug: "u14s-black", label: "U14 Black" },
   { slug: "u14s-gold", label: "U14 Gold" },
   { slug: "u15s", label: "U15" },

@@ -14,6 +14,7 @@ const TEAM_NAMES: Record<string, string> = {
   "u9s-black": "U9 Black", "u9s-gold": "U9 Gold",
   u10s: "U10", u11s: "U11",
   "u12s-black": "U12 Black", "u12s-gold": "U12 Gold",
+  u13s: "U13",
   "u14s-black": "U14 Black", "u14s-gold": "U14 Gold", u15s: "U15",
 };
 
