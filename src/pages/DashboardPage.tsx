@@ -745,13 +745,13 @@ export default function DashboardPage() {
 }
 
 const TEAM_SLUGS = [
-  "u6", "u7", "u8-black", "u8-gold", "u9", "u10",
-  "u11-black", "u11-gold", "u13-black", "u13-gold", "u14",
+  "u6s", "u7s", "u8s", "u9s-black", "u9s-gold", "u10s", "u11s",
+  "u12s-black", "u12s-gold", "u13s", "u14s-black", "u14s-gold", "u15s",
 ];
 
 const TEAM_LABELS: Record<string, string> = {
-  "u6": "U6", "u7": "U7", "u8": "U8", "u9-black": "U9 Black", "u9-gold": "U9 Gold", "u10": "U10", "u11": "U11",
-  "u12-black": "U12 Black", "u12-gold": "U12 Gold", "u13": "U13", "u14-black": "U14 Black", "u14-gold": "U14 Gold", "u15": "U15",
+  "u6s": "U6", "u7s": "U7", "u8s": "U8", "u9s-black": "U9 Black", "u9s-gold": "U9 Gold", "u10s": "U10", "u11s": "U11",
+  "u12s-black": "U12 Black", "u12s-gold": "U12 Gold", "u13s": "U13", "u14s-black": "U14 Black", "u14s-gold": "U14 Gold", "u15s": "U15",
 };
 
 const TEAM_ROLES = ["coach", "player", "parent", "member"] as const;
