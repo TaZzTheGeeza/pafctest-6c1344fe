@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 
 const FP_KEY = "pafc-index-fingerprint";
 const AUTO_REFRESHED_KEY = "pafc-auto-refreshed-fp";
+const DISMISSED_FP_KEY = "pafc-dismissed-update-fp";
 const SESSION_AUTO_KEY = "pafc-auto-refreshed-this-session";
 const CHECK_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
 const IDLE_THRESHOLD_MS = 30 * 1000; // 30 seconds
@@ -27,13 +28,18 @@ const IDLE_THRESHOLD_MS = 30 * 1000; // 30 seconds
 async function getIndexFingerprint(): Promise<string | null> {
   try {
     const url = `/?_fp=${Date.now()}`;
-    let res = await fetch(url, { method: "HEAD", cache: "no-store" });
-    const etag = res.headers.get("etag") || res.headers.get("last-modified");
-    if (etag) return etag;
-
-    res = await fetch(url, { method: "GET", cache: "no-store" });
+    const res = await fetch(url, { method: "GET", cache: "no-store" });
     const text = await res.text();
-    const slice = text.slice(0, 4096);
+    const buildAssets = Array.from(
+      text.matchAll(/(?:src|href)=["']([^"']*\/assets\/[^"']+\.(?:js|css))["']/g),
+      (match) => match[1]
+    )
+      .sort()
+      .join("|");
+
+    if (buildAssets) return buildAssets;
+
+    const slice = text.replace(/_fp=\d+/g, "").slice(0, 4096);
     let hash = 0;
     for (let i = 0; i < slice.length; i++) {
       hash = (hash * 31 + slice.charCodeAt(i)) | 0;
@@ -159,7 +165,9 @@ export function UpdateGate() {
 
       // New build detected
       newFpRef.current = fp;
-      setUpdateAvailable(true);
+      const dismissedFp = localStorage.getItem(DISMISSED_FP_KEY);
+      setUpdateAvailable(dismissedFp !== fp);
+      setDismissed(dismissedFp === fp);
 
       // Try a one-shot safe auto-refresh
       if (!isInitial) {
@@ -213,6 +221,7 @@ export function UpdateGate() {
           if (newFpRef.current) {
             try {
               localStorage.setItem(FP_KEY, newFpRef.current);
+              localStorage.removeItem(DISMISSED_FP_KEY);
             } catch {}
           }
           setDismissed(true);
@@ -222,7 +231,14 @@ export function UpdateGate() {
         Refresh
       </Button>
       <button
-        onClick={() => setDismissed(true)}
+        onClick={() => {
+          if (newFpRef.current) {
+            try {
+              localStorage.setItem(DISMISSED_FP_KEY, newFpRef.current);
+            } catch {}
+          }
+          setDismissed(true);
+        }}
         className="p-1 text-muted-foreground hover:text-foreground"
         aria-label="Dismiss"
       >
