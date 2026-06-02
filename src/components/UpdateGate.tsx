@@ -24,7 +24,7 @@ async function getIndexFingerprint(): Promise<string | null> {
     const url = `/?_fp=${Date.now()}`;
     let res = await fetch(url, { method: "HEAD", cache: "no-store" });
     // Prefer ETag, then Last-Modified, then content hash
-    let etag = res.headers.get("etag") || res.headers.get("last-modified");
+    const etag = res.headers.get("etag") || res.headers.get("last-modified");
     if (etag) return etag;
 
     // Fallback: fetch body and hash a stable slice
@@ -40,29 +40,6 @@ async function getIndexFingerprint(): Promise<string | null> {
   } catch {
     return null;
   }
-}
-
-async function nukeAndReload() {
-  try {
-    localStorage.removeItem("pafc-app-build-version");
-    sessionStorage.removeItem("pafc-app-build-refreshing");
-  } catch {}
-  try {
-    if ("serviceWorker" in navigator) {
-      const regs = await navigator.serviceWorker.getRegistrations();
-      await Promise.all(regs.map((r) => r.unregister().catch(() => false)));
-    }
-  } catch {}
-  try {
-    if ("caches" in window) {
-      const keys = await caches.keys();
-      await Promise.all(keys.map((k) => caches.delete(k).catch(() => false)));
-    }
-  } catch {}
-  // Hard reload bypassing http cache
-  setTimeout(() => {
-    window.location.replace(window.location.pathname + "?_v=" + Date.now());
-  }, 600);
 }
 
 export function UpdateGate() {
