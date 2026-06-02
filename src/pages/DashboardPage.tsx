@@ -33,7 +33,7 @@ type AppRole = string;
 
 const ALL_AGE_GROUPS = [
   "U6", "U7", "U8", "U9 Black", "U9 Gold", "U10", "U11",
-  "U12 Black", "U12 Gold", "U14 Black", "U14 Gold", "U15",
+  "U12 Black", "U12 Gold", "U13", "U14 Black", "U14 Gold", "U15",
 ];
 
 interface UserWithRoles {
@@ -751,7 +751,7 @@ const TEAM_SLUGS = [
 
 const TEAM_LABELS: Record<string, string> = {
   "u6": "U6", "u7": "U7", "u8": "U8", "u9-black": "U9 Black", "u9-gold": "U9 Gold", "u10": "U10", "u11": "U11",
-  "u12-black": "U12 Black", "u12-gold": "U12 Gold", "u14-black": "U14 Black", "u14-gold": "U14 Gold", "u15": "U15",
+  "u12-black": "U12 Black", "u12-gold": "U12 Gold", "u13": "U13", "u14-black": "U14 Black", "u14-gold": "U14 Gold", "u15": "U15",
 };
 
 const TEAM_ROLES = ["coach", "player", "parent", "member"] as const;
