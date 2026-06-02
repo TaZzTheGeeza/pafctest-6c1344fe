@@ -164,10 +164,21 @@ const ResultsPage = () => {
           <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-2">
             <span className="text-gold-gradient">Match</span> Results
           </h1>
-          <p className="text-muted-foreground mb-8">Season 2025/26</p>
+          <p className="text-muted-foreground mb-8">Season {season}</p>
 
-          {/* Team filter */}
-          <div className="mb-6">
+          {/* Filters */}
+          <div className="mb-6 flex flex-wrap gap-3">
+            <Select value={season} onValueChange={setSeason}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Season" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={CURRENT_SEASON}>{CURRENT_SEASON} (Current)</SelectItem>
+                {archivedSeasons?.map((s) => (
+                  <SelectItem key={s} value={s}>{s}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <Select value={filterTeam} onValueChange={setFilterTeam}>
               <SelectTrigger className="w-[240px]">
                 <SelectValue placeholder="Team" />
@@ -184,7 +195,11 @@ const ResultsPage = () => {
           {isLoading ? (
             <p className="text-muted-foreground text-center py-12">Loading results...</p>
           ) : !filtered?.length ? (
-            <p className="text-muted-foreground text-center py-12">No results submitted yet.</p>
+            <p className="text-muted-foreground text-center py-12">
+              {season === CURRENT_SEASON
+                ? "No results submitted yet for this season."
+                : `No results archived for ${season}.`}
+            </p>
           ) : (
             <div className="space-y-3">
               {filtered.map((report) => {
