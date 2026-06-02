@@ -137,15 +137,16 @@ export function SeatingPlan({
   const AGE_GROUP_PALETTE: Record<string, { h: number; s: number; l: number }> = {
     "u6s":         { h: 0,   s: 90, l: 60 },
     "u7s":         { h: 28,  s: 100, l: 55 },
-    "u8s-black":   { h: 55,  s: 100, l: 65 },
-    "u8s-gold":    { h: 95,  s: 70, l: 50 },
-    "u9s":         { h: 145, s: 80, l: 45 },
+    "u8s":         { h: 55,  s: 100, l: 65 },
+    "u9s-black":   { h: 95,  s: 70, l: 50 },
+    "u9s-gold":    { h: 145, s: 80, l: 45 },
     "u10s":        { h: 175, s: 85, l: 55 },
-    "u11s-gold":   { h: 205, s: 95, l: 55 },
-    "u11s-black":  { h: 235, s: 75, l: 65 },
-    "u13s-gold":   { h: 265, s: 80, l: 70 },
-    "u13s-black":  { h: 290, s: 75, l: 50 },
-    "u14s":        { h: 320, s: 90, l: 60 },
+    "u11s":        { h: 195, s: 90, l: 50 },
+    "u12s-gold":   { h: 205, s: 95, l: 55 },
+    "u12s-black":  { h: 235, s: 75, l: 65 },
+    "u14s-gold":   { h: 265, s: 80, l: 70 },
+    "u14s-black":  { h: 290, s: 75, l: 50 },
+    "u15s":        { h: 320, s: 90, l: 60 },
     "u15s":        { h: 345, s: 95, l: 70 },
     "u16s":        { h: 10,  s: 65, l: 45 },
     "u17s":        { h: 30,  s: 50, l: 40 },
@@ -496,15 +497,16 @@ function TheatreSeatBlock({
   const THEATRE_CHAIR_COLORS: Record<string, ChairColors> = {
     "u6s":        { bg1: "hsl(0 75% 35%)",   bg2: "hsl(0 70% 18%)",   border: "hsl(0 90% 60%)",   text: "hsl(0 90% 90%)" },     // red
     "u7s":        { bg1: "hsl(28 95% 42%)",  bg2: "hsl(28 90% 22%)",  border: "hsl(28 100% 60%)", text: "hsl(28 100% 88%)" },   // orange
-    "u8s-black":  { bg1: "hsl(55 90% 45%)",  bg2: "hsl(55 85% 22%)",  border: "hsl(55 100% 65%)", text: "hsl(55 100% 88%)" },   // yellow
-    "u8s-gold":   { bg1: "hsl(95 65% 28%)",  bg2: "hsl(95 60% 14%)",  border: "hsl(95 70% 50%)",  text: "hsl(95 80% 80%)" },    // olive
-    "u9s":        { bg1: "hsl(145 80% 25%)", bg2: "hsl(145 75% 12%)", border: "hsl(145 80% 45%)", text: "hsl(145 80% 80%)" },   // emerald
+    "u8s":        { bg1: "hsl(55 90% 45%)",  bg2: "hsl(55 85% 22%)",  border: "hsl(55 100% 65%)", text: "hsl(55 100% 88%)" },   // yellow
+    "u9s-black":  { bg1: "hsl(95 65% 28%)",  bg2: "hsl(95 60% 14%)",  border: "hsl(95 70% 50%)",  text: "hsl(95 80% 80%)" },    // olive
+    "u9s-gold":   { bg1: "hsl(145 80% 25%)", bg2: "hsl(145 75% 12%)", border: "hsl(145 80% 45%)", text: "hsl(145 80% 80%)" },   // emerald
     "u10s":       { bg1: "hsl(175 75% 32%)", bg2: "hsl(175 70% 16%)", border: "hsl(175 85% 55%)", text: "hsl(175 90% 85%)" },   // turquoise
-    "u11s-gold":  { bg1: "hsl(205 90% 35%)", bg2: "hsl(205 85% 18%)", border: "hsl(205 95% 55%)", text: "hsl(205 95% 85%)" },   // azure
-    "u11s-black": { bg1: "hsl(235 60% 45%)", bg2: "hsl(235 55% 22%)", border: "hsl(235 75% 65%)", text: "hsl(235 85% 88%)" },   // royal blue
-    "u13s-gold":  { bg1: "hsl(265 65% 50%)", bg2: "hsl(265 60% 25%)", border: "hsl(265 80% 70%)", text: "hsl(265 90% 90%)" },   // lavender
-    "u13s-black": { bg1: "hsl(290 70% 30%)", bg2: "hsl(290 65% 15%)", border: "hsl(290 75% 50%)", text: "hsl(290 85% 82%)" },   // violet
-    "u14s":       { bg1: "hsl(320 75% 38%)", bg2: "hsl(320 70% 18%)", border: "hsl(320 90% 60%)", text: "hsl(320 95% 88%)" },   // magenta
+    "u11s":       { bg1: "hsl(195 90% 38%)", bg2: "hsl(195 85% 20%)", border: "hsl(195 95% 55%)", text: "hsl(195 95% 88%)" },   // sky
+    "u12s-gold":  { bg1: "hsl(205 90% 35%)", bg2: "hsl(205 85% 18%)", border: "hsl(205 95% 55%)", text: "hsl(205 95% 85%)" },   // azure
+    "u12s-black": { bg1: "hsl(235 60% 45%)", bg2: "hsl(235 55% 22%)", border: "hsl(235 75% 65%)", text: "hsl(235 85% 88%)" },   // royal blue
+    "u14s-gold":  { bg1: "hsl(265 65% 50%)", bg2: "hsl(265 60% 25%)", border: "hsl(265 80% 70%)", text: "hsl(265 90% 90%)" },   // lavender
+    "u14s-black": { bg1: "hsl(290 70% 30%)", bg2: "hsl(290 65% 15%)", border: "hsl(290 75% 50%)", text: "hsl(290 85% 82%)" },   // violet
+    "u15s":       { bg1: "hsl(320 75% 38%)", bg2: "hsl(320 70% 18%)", border: "hsl(320 90% 60%)", text: "hsl(320 95% 88%)" },   // magenta
     "u15s":       { bg1: "hsl(345 85% 50%)", bg2: "hsl(345 80% 25%)", border: "hsl(345 95% 70%)", text: "hsl(345 100% 90%)" },  // hot pink
     "u16s":       { bg1: "hsl(10 60% 25%)",  bg2: "hsl(10 55% 12%)",  border: "hsl(10 65% 45%)",  text: "hsl(10 70% 78%)" },    // brick
     "u17s":       { bg1: "hsl(30 45% 20%)",  bg2: "hsl(30 40% 10%)",  border: "hsl(30 50% 40%)",  text: "hsl(30 60% 75%)" },    // brown

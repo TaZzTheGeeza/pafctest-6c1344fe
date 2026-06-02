@@ -11,12 +11,12 @@ interface Props {
 }
 
 const SLUG_TO_AGE: Record<string, string> = {
-  "u6s": "U6", "u7s": "U7",
-  "u8s-black": "U8 Black", "u8s-gold": "U8 Gold",
-  "u9s": "U9", "u10s": "U10",
-  "u11s-black": "U11 Black", "u11s-gold": "U11 Gold",
-  "u13s-black": "U13 Black", "u13s-gold": "U13 Gold",
-  "u14s": "U14",
+  "u6s": "U6", "u7s": "U7", "u8s": "U8",
+  "u9s-black": "U9 Black", "u9s-gold": "U9 Gold",
+  "u10s": "U10", "u11s": "U11",
+  "u12s-black": "U12 Black", "u12s-gold": "U12 Gold",
+  "u14s-black": "U14 Black", "u14s-gold": "U14 Gold",
+  "u15s": "U15",
 };
 
 const AWARDS: { type: "players_player" | "parents_player"; label: string; desc: string }[] = [

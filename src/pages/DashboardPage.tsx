@@ -32,8 +32,8 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 type AppRole = string;
 
 const ALL_AGE_GROUPS = [
-  "U6", "U7", "U8 Black", "U8 Gold", "U9", "U10",
-  "U11 Black", "U11 Gold", "U13 Black", "U13 Gold", "U14",
+  "U6", "U7", "U8", "U9 Black", "U9 Gold", "U10", "U11",
+  "U12 Black", "U12 Gold", "U14 Black", "U14 Gold", "U15",
 ];
 
 interface UserWithRoles {
@@ -207,8 +207,8 @@ export default function DashboardPage() {
   }
 
   const AGE_GROUP_TO_TEAM_SLUG: Record<string, string> = {
-    "U6": "u6s", "U7": "u7s", "U8 Black": "u8s-black", "U8 Gold": "u8s-gold", "U9": "u9s", "U10": "u10s",
-    "U11 Black": "u11s-black", "U11 Gold": "u11s-gold", "U13 Black": "u13s-black", "U13 Gold": "u13s-gold", "U14": "u14s",
+    "U6": "u6s", "U7": "u7s", "U8": "u8s", "U9 Black": "u9s-black", "U9 Gold": "u9s-gold", "U10": "u10s", "U11": "u11s",
+    "U12 Black": "u12s-black", "U12 Gold": "u12s-gold", "U14 Black": "u14s-black", "U14 Gold": "u14s-gold", "U15": "u15s",
   };
 
   async function addRole(userId: string, role: AppRole) {
@@ -750,8 +750,8 @@ const TEAM_SLUGS = [
 ];
 
 const TEAM_LABELS: Record<string, string> = {
-  "u6": "U6", "u7": "U7", "u8-black": "U8 Black", "u8-gold": "U8 Gold", "u9": "U9", "u10": "U10",
-  "u11-black": "U11 Black", "u11-gold": "U11 Gold", "u13-black": "U13 Black", "u13-gold": "U13 Gold", "u14": "U14",
+  "u6": "U6", "u7": "U7", "u8": "U8", "u9-black": "U9 Black", "u9-gold": "U9 Gold", "u10": "U10", "u11": "U11",
+  "u12-black": "U12 Black", "u12-gold": "U12 Gold", "u14-black": "U14 Black", "u14-gold": "U14 Gold", "u15": "U15",
 };
 
 const TEAM_ROLES = ["coach", "player", "parent", "member"] as const;

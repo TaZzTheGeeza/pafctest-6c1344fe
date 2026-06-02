@@ -4,8 +4,8 @@ import { Users, Plus, Trash2, Save, Loader2, BarChart3, Camera, X } from "lucide
 import { toast } from "sonner";
 
 const ageGroups = [
-  "U6", "U7", "U8 Black", "U8 Gold", "U9", "U10",
-  "U11 Black", "U11 Gold", "U13 Black", "U13 Gold", "U14",
+  "U6", "U7", "U8", "U9 Black", "U9 Gold", "U10", "U11",
+  "U12 Black", "U12 Gold", "U14 Black", "U14 Gold", "U15",
 ];
 
 const POSITIONS = ["Goalkeeper", "Defender", "Midfielder", "Forward"];

@@ -25,15 +25,16 @@ import { registerPushSubscription, isPushSupported, isPushEnabled } from "@/lib/
 const TEAMS = [
   { slug: "u6s", name: "U6" },
   { slug: "u7s", name: "U7" },
-  { slug: "u8s-black", name: "U8 Black" },
-  { slug: "u8s-gold", name: "U8 Gold" },
-  { slug: "u9s", name: "U9" },
+  { slug: "u8s", name: "U8" },
+  { slug: "u9s-black", name: "U9 Black" },
+  { slug: "u9s-gold", name: "U9 Gold" },
   { slug: "u10s", name: "U10" },
-  { slug: "u11s-black", name: "U11 Black" },
-  { slug: "u11s-gold", name: "U11 Gold" },
-  { slug: "u13s-black", name: "U13 Black" },
-  { slug: "u13s-gold", name: "U13 Gold" },
-  { slug: "u14s", name: "U14" },
+  { slug: "u11s", name: "U11" },
+  { slug: "u12s-black", name: "U12 Black" },
+  { slug: "u12s-gold", name: "U12 Gold" },
+  { slug: "u14s-black", name: "U14 Black" },
+  { slug: "u14s-gold", name: "U14 Gold" },
+  { slug: "u15s", name: "U15" },
 ];
 
 const tabs = [
@@ -153,10 +154,12 @@ export default function HubPage() {
     const rawSlugs = data?.map((d) => d.team_slug) || [];
     // Normalize non-canonical slugs to canonical ones
     const canonicalMap: Record<string, string> = {
-      "u6": "u6s", "u7": "u7s", "u8-black": "u8s-black", "u8-gold": "u8s-gold",
-      "u9": "u9s", "u10": "u10s", "u11-black": "u11s-black",
-      "u11-gold": "u11s-gold", "u13-black": "u13s-black", "u13-gold": "u13s-gold",
-      "u14": "u14s",
+      "u6": "u6s", "u7": "u7s", "u8": "u8s",
+      "u9-black": "u9s-black", "u9-gold": "u9s-gold",
+      "u10": "u10s", "u11": "u11s",
+      "u12-black": "u12s-black", "u12-gold": "u12s-gold",
+      "u14-black": "u14s-black", "u14-gold": "u14s-gold",
+      "u15": "u15s",
     };
     const normalized = [...new Set(rawSlugs.map((s) => canonicalMap[s] || s))];
     const teamOrder = TEAMS.map((t) => t.slug);
