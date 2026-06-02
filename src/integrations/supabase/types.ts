@@ -967,6 +967,59 @@ export type Database = {
           },
         ]
       }
+      match_player_stats_history: {
+        Row: {
+          appeared: boolean
+          archived_at: string
+          assists: number
+          goals: number
+          history_player_stat_id: string | null
+          id: string
+          match_date: string
+          opponent: string
+          original_player_stat_id: string | null
+          potm: boolean
+          season: string
+          team_slug: string
+        }
+        Insert: {
+          appeared?: boolean
+          archived_at?: string
+          assists?: number
+          goals?: number
+          history_player_stat_id?: string | null
+          id?: string
+          match_date: string
+          opponent: string
+          original_player_stat_id?: string | null
+          potm?: boolean
+          season: string
+          team_slug: string
+        }
+        Update: {
+          appeared?: boolean
+          archived_at?: string
+          assists?: number
+          goals?: number
+          history_player_stat_id?: string | null
+          id?: string
+          match_date?: string
+          opponent?: string
+          original_player_stat_id?: string | null
+          potm?: boolean
+          season?: string
+          team_slug?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_player_stats_history_history_player_stat_id_fkey"
+            columns: ["history_player_stat_id"]
+            isOneToOne: false
+            referencedRelation: "player_stats_history"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       match_reports: {
         Row: {
           age_group: string
@@ -1334,6 +1387,57 @@ export type Database = {
           shirt_number?: number | null
           team_name?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      player_stats_history: {
+        Row: {
+          age_group: string
+          appearances: number
+          archived_at: string
+          assists: number
+          first_name: string
+          goals: number
+          id: string
+          original_player_stat_id: string | null
+          photo_url: string | null
+          position: string | null
+          potm_awards: number
+          season: string
+          shirt_number: number | null
+          team_name: string
+        }
+        Insert: {
+          age_group: string
+          appearances?: number
+          archived_at?: string
+          assists?: number
+          first_name: string
+          goals?: number
+          id?: string
+          original_player_stat_id?: string | null
+          photo_url?: string | null
+          position?: string | null
+          potm_awards?: number
+          season: string
+          shirt_number?: number | null
+          team_name: string
+        }
+        Update: {
+          age_group?: string
+          appearances?: number
+          archived_at?: string
+          assists?: number
+          first_name?: string
+          goals?: number
+          id?: string
+          original_player_stat_id?: string | null
+          photo_url?: string | null
+          position?: string | null
+          potm_awards?: number
+          season?: string
+          shirt_number?: number | null
+          team_name?: string
         }
         Relationships: []
       }
