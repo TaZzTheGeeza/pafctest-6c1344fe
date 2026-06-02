@@ -751,3 +751,78 @@ function ConsentRow({ label, granted }: { label: string; granted: boolean }) {
     </div>
   );
 }
+
+function HubPlayerList({
+  items,
+  selected,
+  onToggle,
+}: {
+  items: HubPlayer[];
+  selected: Set<string>;
+  onToggle: (userId: string) => void;
+}) {
+  if (!items.length) {
+    return (
+      <div className="text-center py-16 text-muted-foreground bg-card border border-border rounded-xl">
+        No hub players match your filters.
+      </div>
+    );
+  }
+  return (
+    <div className="bg-card border border-border rounded-xl overflow-hidden">
+      <div className="px-4 py-3 bg-primary/5 border-b border-border text-xs text-muted-foreground font-display tracking-wider">
+        Hub players are linked to a parent account via the PAFC Hub. Tick outstanding parents to send a registration reminder (in-app + email + push).
+      </div>
+      <div className="divide-y divide-border">
+        {items.map((h) => {
+          const isSel = selected.has(h.parent_user_id);
+          const disabled = h.registered;
+          return (
+            <label
+              key={h.guardian_id}
+              className={`flex items-center gap-3 px-4 py-3 transition-colors ${
+                disabled ? "opacity-70" : "cursor-pointer hover:bg-secondary/40"
+              } ${isSel ? "bg-primary/5" : ""}`}
+            >
+              <input
+                type="checkbox"
+                checked={isSel}
+                disabled={disabled}
+                onChange={() => onToggle(h.parent_user_id)}
+                className="h-4 w-4 rounded border-border text-primary focus:ring-primary/30 disabled:opacity-30"
+              />
+              <div
+                className={`h-10 w-10 rounded-full flex items-center justify-center font-display font-bold shrink-0 ${
+                  h.registered
+                    ? "bg-green-500/20 text-green-500"
+                    : "bg-amber-500/20 text-amber-500"
+                }`}
+              >
+                {h.player_name[0]?.toUpperCase()}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-display font-bold text-foreground text-sm truncate">
+                  {h.player_name}{" "}
+                  <span className="text-muted-foreground font-normal">· {h.age_group}</span>
+                </p>
+                <p className="text-xs text-muted-foreground truncate">
+                  Parent: {h.parent_name}
+                  {h.parent_email ? ` · ${h.parent_email}` : " · (no email)"}
+                </p>
+              </div>
+              {h.registered ? (
+                <span className="text-[10px] px-2 py-1 rounded-full bg-green-500/20 text-green-500 font-display tracking-wider shrink-0">
+                  REGISTERED
+                </span>
+              ) : (
+                <span className="text-[10px] px-2 py-1 rounded-full bg-amber-500/20 text-amber-500 font-display tracking-wider shrink-0 flex items-center gap-1">
+                  <Bell className="h-3 w-3" /> OUTSTANDING
+                </span>
+              )}
+            </label>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
