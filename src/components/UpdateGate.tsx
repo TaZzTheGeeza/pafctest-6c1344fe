@@ -5,9 +5,9 @@ import { Loader2, CheckCircle2, RefreshCw } from "lucide-react";
  * UpdateGate
  * -----------
  * Every time the app opens (or comes back to the foreground), we check the
- * server for a newer build of index.html. If one is found, we show a blocking
- * full-screen modal that clears every cache + service worker and hard-reloads
- * to the latest version. Parents cannot continue on a stale shell.
+ * server for a newer build of index.html. The check is intentionally passive:
+ * it must never hard-refresh users automatically, because CDN/proxy validators
+ * can vary and would otherwise trap people in an update loop.
  *
  * The check fingerprints index.html (HEAD request, falls back to GET) and
  * compares against the last-seen fingerprint in localStorage. The very first
@@ -24,7 +24,7 @@ async function getIndexFingerprint(): Promise<string | null> {
     const url = `/?_fp=${Date.now()}`;
     let res = await fetch(url, { method: "HEAD", cache: "no-store" });
     // Prefer ETag, then Last-Modified, then content hash
-    let etag = res.headers.get("etag") || res.headers.get("last-modified");
+    const etag = res.headers.get("etag") || res.headers.get("last-modified");
     if (etag) return etag;
 
     // Fallback: fetch body and hash a stable slice
@@ -40,29 +40,6 @@ async function getIndexFingerprint(): Promise<string | null> {
   } catch {
     return null;
   }
-}
-
-async function nukeAndReload() {
-  try {
-    localStorage.removeItem("pafc-app-build-version");
-    sessionStorage.removeItem("pafc-app-build-refreshing");
-  } catch {}
-  try {
-    if ("serviceWorker" in navigator) {
-      const regs = await navigator.serviceWorker.getRegistrations();
-      await Promise.all(regs.map((r) => r.unregister().catch(() => false)));
-    }
-  } catch {}
-  try {
-    if ("caches" in window) {
-      const keys = await caches.keys();
-      await Promise.all(keys.map((k) => caches.delete(k).catch(() => false)));
-    }
-  } catch {}
-  // Hard reload bypassing http cache
-  setTimeout(() => {
-    window.location.replace(window.location.pathname + "?_v=" + Date.now());
-  }, 600);
 }
 
 export function UpdateGate() {
@@ -116,10 +93,10 @@ export function UpdateGate() {
         return;
       }
 
-      // New build detected — store new fp then nuke + reload
+      // New build detected — remember it, but do not auto-refresh.
+      // Users can still use the manual "Check for updates" button if needed.
       localStorage.setItem(FP_KEY, fp);
-      setPhase("updating");
-      await nukeAndReload();
+      setPhase("idle");
     };
 
     // Initial check on app open
@@ -131,17 +108,9 @@ export function UpdateGate() {
     };
     document.addEventListener("visibilitychange", onVisible);
 
-    // Also listen for a manual trigger from the SW pipeline
-    const onForce = () => {
-      setPhase("updating");
-      nukeAndReload();
-    };
-    window.addEventListener("pafc:force-update", onForce);
-
     return () => {
       cancelled = true;
       document.removeEventListener("visibilitychange", onVisible);
-      window.removeEventListener("pafc:force-update", onForce);
     };
   }, []);
 
