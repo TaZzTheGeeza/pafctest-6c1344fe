@@ -5,9 +5,9 @@ import { Loader2, CheckCircle2, RefreshCw } from "lucide-react";
  * UpdateGate
  * -----------
  * Every time the app opens (or comes back to the foreground), we check the
- * server for a newer build of index.html. If one is found, we show a blocking
- * full-screen modal that clears every cache + service worker and hard-reloads
- * to the latest version. Parents cannot continue on a stale shell.
+ * server for a newer build of index.html. The check is intentionally passive:
+ * it must never hard-refresh users automatically, because CDN/proxy validators
+ * can vary and would otherwise trap people in an update loop.
  *
  * The check fingerprints index.html (HEAD request, falls back to GET) and
  * compares against the last-seen fingerprint in localStorage. The very first
@@ -116,10 +116,10 @@ export function UpdateGate() {
         return;
       }
 
-      // New build detected — store new fp then nuke + reload
+      // New build detected — remember it, but do not auto-refresh.
+      // Users can still use the manual "Check for updates" button if needed.
       localStorage.setItem(FP_KEY, fp);
-      setPhase("updating");
-      await nukeAndReload();
+      setPhase("idle");
     };
 
     // Initial check on app open
@@ -131,17 +131,9 @@ export function UpdateGate() {
     };
     document.addEventListener("visibilitychange", onVisible);
 
-    // Also listen for a manual trigger from the SW pipeline
-    const onForce = () => {
-      setPhase("updating");
-      nukeAndReload();
-    };
-    window.addEventListener("pafc:force-update", onForce);
-
     return () => {
       cancelled = true;
       document.removeEventListener("visibilitychange", onVisible);
-      window.removeEventListener("pafc:force-update", onForce);
     };
   }, []);
 
