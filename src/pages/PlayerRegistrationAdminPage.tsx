@@ -131,6 +131,34 @@ export default function PlayerRegistrationAdminPage() {
     },
   });
 
+  // Hub data: guardians (parent ↔ player ↔ team) with parent profile
+  const { data: guardians = [] } = useQuery({
+    queryKey: ["hub-guardians"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("guardians")
+        .select("id, parent_user_id, player_name, team_slug, status")
+        .eq("status", "active");
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  const { data: parentProfiles = [] } = useQuery({
+    queryKey: ["hub-parent-profiles", guardians.map((g) => g.parent_user_id).sort().join(",")],
+    enabled: guardians.length > 0,
+    queryFn: async () => {
+      const ids = Array.from(new Set(guardians.map((g) => g.parent_user_id)));
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id, full_name, email")
+        .in("id", ids);
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+
   // A registration only counts as "complete" once payment_status === 'paid'.
   const paidRegistrations = useMemo(
     () => registrations.filter((r) => r.payment_status === "paid"),
