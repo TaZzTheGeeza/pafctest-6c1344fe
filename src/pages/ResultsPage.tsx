@@ -101,14 +101,35 @@ const ResultsPage = () => {
   };
 
   const { data: reports, isLoading } = useQuery({
-    queryKey: ["match-reports-public"],
+    queryKey: ["match-reports-public", season],
     queryFn: async () => {
+      if (season === CURRENT_SEASON) {
+        const { data, error } = await supabase
+          .from("match_reports")
+          .select("*")
+          .order("match_date", { ascending: false });
+        if (error) throw error;
+        return data as MatchReport[];
+      }
       const { data, error } = await supabase
-        .from("match_reports")
+        .from("match_reports_history")
         .select("*")
+        .eq("season", season)
         .order("match_date", { ascending: false });
       if (error) throw error;
       return data as MatchReport[];
+    },
+  });
+
+  const { data: archivedSeasons } = useQuery({
+    queryKey: ["match-reports-seasons"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("match_reports_history")
+        .select("season");
+      if (error) throw error;
+      const unique = [...new Set((data || []).map((r: any) => r.season as string))];
+      return unique.sort().reverse();
     },
   });
 
