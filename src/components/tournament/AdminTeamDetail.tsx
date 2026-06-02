@@ -12,16 +12,9 @@ interface AdminTeamDetailProps {
     club_name: string | null;
     county: string | null;
     club_org_id: string | null;
-    secretary_name: string | null;
-    secretary_email: string | null;
-    secretary_phone: string | null;
     league_division: string | null;
-    manager_name: string;
-    manager_email: string;
-    manager_phone: string | null;
     team_category: string | null;
     player_count: number | null;
-    whatsapp_contacts: any;
     consent_rules: boolean | null;
     consent_photography: boolean | null;
     status: string;
@@ -43,7 +36,25 @@ export function AdminTeamDetail({ teamId, team }: AdminTeamDetailProps) {
     },
   });
 
-  const whatsappContacts = Array.isArray(team.whatsapp_contacts) ? team.whatsapp_contacts : [];
+  const { data: contact } = useQuery({
+    queryKey: ["admin-team-contact", teamId],
+    queryFn: async () => {
+      const { data } = await supabase.rpc("get_tournament_team_contacts", { _team_id: teamId });
+      const row: any = Array.isArray(data) && data[0] ? data[0] : {};
+      return row as {
+        manager_name?: string | null;
+        manager_email?: string | null;
+        manager_phone?: string | null;
+        secretary_name?: string | null;
+        secretary_email?: string | null;
+        secretary_phone?: string | null;
+        whatsapp_contacts?: any;
+      };
+    },
+  });
+
+  const whatsappContacts = Array.isArray(contact?.whatsapp_contacts) ? contact!.whatsapp_contacts : [];
+
 
   return (
     <div className="space-y-4 p-4 bg-muted/30 rounded-lg border border-border">
@@ -76,17 +87,18 @@ export function AdminTeamDetail({ teamId, team }: AdminTeamDetailProps) {
             <div className="flex items-center gap-1.5 text-xs font-display font-bold uppercase tracking-wider text-muted-foreground mb-2">
               <Mail className="h-3.5 w-3.5" /> Manager & Secretary
             </div>
-            <Detail label="Manager" value={team.manager_name} />
-            <Detail label="Email" value={team.manager_email} icon={<Mail className="h-3 w-3" />} />
-            <Detail label="Phone" value={team.manager_phone} icon={<Phone className="h-3 w-3" />} />
-            {team.secretary_name && (
+            <Detail label="Manager" value={contact?.manager_name ?? null} />
+            <Detail label="Email" value={contact?.manager_email ?? null} icon={<Mail className="h-3 w-3" />} />
+            <Detail label="Phone" value={contact?.manager_phone ?? null} icon={<Phone className="h-3 w-3" />} />
+            {contact?.secretary_name && (
               <>
                 <div className="border-t border-border pt-2 mt-2" />
-                <Detail label="Secretary" value={team.secretary_name} />
-                <Detail label="Email" value={team.secretary_email} icon={<Mail className="h-3 w-3" />} />
-                <Detail label="Phone" value={team.secretary_phone} icon={<Phone className="h-3 w-3" />} />
+                <Detail label="Secretary" value={contact.secretary_name} />
+                <Detail label="Email" value={contact.secretary_email ?? null} icon={<Mail className="h-3 w-3" />} />
+                <Detail label="Phone" value={contact.secretary_phone ?? null} icon={<Phone className="h-3 w-3" />} />
               </>
             )}
+
           </CardContent>
         </Card>
 
