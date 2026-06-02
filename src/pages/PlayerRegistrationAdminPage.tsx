@@ -418,21 +418,23 @@ export default function PlayerRegistrationAdminPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-8">
           <StatCard label="Registered & Paid" value={paidRegistrations.length} icon={CheckCircle2} color="text-green-500" />
-          <StatCard label="Outstanding" value={outstanding.length} icon={AlertCircle} color="text-amber-500" />
-          <StatCard label="Total Roster" value={roster.length} icon={UserIcon} color="text-primary" />
+          <StatCard label="Hub Outstanding" value={hubOutstandingCount} icon={AlertCircle} color="text-amber-500" />
+          <StatCard label="Roster Outstanding" value={outstanding.length} icon={AlertCircle} color="text-orange-500" />
+          <StatCard label="Hub Players" value={hubPlayers.length} icon={Users} color="text-primary" />
         </div>
 
         {/* Tabs */}
         <div className="flex gap-2 mb-4 border-b border-border overflow-x-auto">
           {([
+            { key: "hub", label: `Hub Players (${hubPlayers.length})` },
             { key: "paid", label: `Registered (${paidRegistrations.length})` },
-            { key: "outstanding", label: `Outstanding (${outstanding.length})` },
+            { key: "outstanding", label: `Roster Outstanding (${outstanding.length})` },
           ] as const).map((t) => (
             <button
               key={t.key}
-              onClick={() => setTab(t.key)}
+              onClick={() => { setTab(t.key); clearSelection(); }}
               className={`px-4 py-2 text-sm font-display font-bold tracking-wider border-b-2 transition-colors whitespace-nowrap ${
                 tab === t.key
                   ? "border-primary text-primary"
@@ -467,16 +469,55 @@ export default function PlayerRegistrationAdminPage() {
           </select>
         </div>
 
+        {/* Hub bulk action bar */}
+        {tab === "hub" && (
+          <div className="flex flex-wrap items-center gap-2 mb-4 p-3 bg-card border border-border rounded-lg">
+            <span className="text-xs text-muted-foreground font-display tracking-wider">
+              {selectedParents.size} parent{selectedParents.size !== 1 ? "s" : ""} selected
+            </span>
+            <div className="flex-1" />
+            <button
+              onClick={selectAllOutstanding}
+              className="text-xs px-3 py-1.5 rounded-md border border-border text-muted-foreground hover:text-foreground hover:bg-secondary font-display tracking-wider"
+            >
+              Select all outstanding
+            </button>
+            {selectedParents.size > 0 && (
+              <button
+                onClick={clearSelection}
+                className="text-xs px-3 py-1.5 rounded-md border border-border text-muted-foreground hover:text-foreground hover:bg-secondary font-display tracking-wider"
+              >
+                Clear
+              </button>
+            )}
+            <button
+              onClick={sendRegistrationReminders}
+              disabled={sending || selectedParents.size === 0}
+              className="inline-flex items-center gap-2 px-4 py-1.5 bg-primary text-primary-foreground rounded-md text-xs font-display font-bold tracking-wider disabled:opacity-50 hover:bg-primary/90"
+            >
+              {sending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
+              {sending ? "Sending…" : `Send reminder (in-app + email + push)`}
+            </button>
+          </div>
+        )}
+
         {isLoading ? (
           <div className="flex items-center justify-center py-20 text-muted-foreground">
             <Loader2 className="h-5 w-5 animate-spin mr-2" /> Loading…
           </div>
+        ) : tab === "hub" ? (
+          <HubPlayerList
+            items={filteredHub}
+            selected={selectedParents}
+            onToggle={toggleParent}
+          />
         ) : tab === "outstanding" ? (
           <OutstandingList items={filteredOutstanding} />
         ) : (
           <RegisteredList items={visibleRegistrations} onSelect={setSelected} showUnpaid={false} />
         )}
       </main>
+
 
       {selected && <RegistrationDetail registration={selected} onClose={() => setSelected(null)} />}
 
