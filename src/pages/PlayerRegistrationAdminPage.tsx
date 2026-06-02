@@ -218,7 +218,151 @@ export default function PlayerRegistrationAdminPage() {
     });
   }, [outstanding, search, ageGroupFilter]);
 
+  // Build hub player list with registration cross-reference (by parent email OR child name + age group)
+  const paidEmails = useMemo(
+    () => new Set(paidRegistrations.map((r) => r.email.toLowerCase().trim())),
+    [paidRegistrations],
+  );
+
+  const hubPlayers: HubPlayer[] = useMemo(() => {
+    return guardians
+      .filter((g) => g.player_name && g.player_name.trim().length > 0)
+      .map((g) => {
+        const profile = parentProfiles.find((p) => p.id === g.parent_user_id);
+        const ageGroup = teamSlugToAgeGroup(g.team_slug);
+        const firstName = g.player_name.split(" ")[0] || g.player_name;
+        const nameMatch = registeredKeys.has(`${normaliseName(firstName)}::${ageGroup}`)
+          || registeredKeys.has(`${normaliseName(g.player_name)}::${ageGroup}`);
+        const emailMatch = profile?.email ? paidEmails.has(profile.email.toLowerCase().trim()) : false;
+        return {
+          guardian_id: g.id,
+          parent_user_id: g.parent_user_id,
+          parent_name: profile?.full_name || "Unknown parent",
+          parent_email: profile?.email || null,
+          player_name: g.player_name,
+          team_slug: g.team_slug,
+          age_group: ageGroup,
+          registered: nameMatch || emailMatch,
+        };
+      })
+      .sort((a, b) => a.age_group.localeCompare(b.age_group) || a.player_name.localeCompare(b.player_name));
+  }, [guardians, parentProfiles, registeredKeys, paidEmails]);
+
+  const hubRegisteredCount = hubPlayers.filter((h) => h.registered).length;
+  const hubOutstandingCount = hubPlayers.length - hubRegisteredCount;
+
+  const filteredHub = useMemo(() => {
+    return hubPlayers.filter((h) => {
+      if (ageGroupFilter !== "all" && h.age_group !== ageGroupFilter) return false;
+      if (!search.trim()) return true;
+      const q = search.toLowerCase();
+      return (
+        h.player_name.toLowerCase().includes(q) ||
+        h.parent_name.toLowerCase().includes(q) ||
+        (h.parent_email || "").toLowerCase().includes(q) ||
+        h.team_slug.toLowerCase().includes(q)
+      );
+    });
+  }, [hubPlayers, search, ageGroupFilter]);
+
+  const toggleParent = (userId: string) => {
+    setSelectedParents((prev) => {
+      const next = new Set(prev);
+      if (next.has(userId)) next.delete(userId);
+      else next.add(userId);
+      return next;
+    });
+  };
+
+  const selectAllOutstanding = () => {
+    const ids = filteredHub.filter((h) => !h.registered).map((h) => h.parent_user_id);
+    setSelectedParents(new Set(ids));
+  };
+
+  const clearSelection = () => setSelectedParents(new Set());
+
+  const sendRegistrationReminders = async () => {
+    const targets = hubPlayers.filter((h) => selectedParents.has(h.parent_user_id) && !h.registered);
+    // De-duplicate parents (one parent may have multiple children)
+    const byParent = new Map<string, HubPlayer[]>();
+    targets.forEach((t) => {
+      const arr = byParent.get(t.parent_user_id) || [];
+      arr.push(t);
+      byParent.set(t.parent_user_id, arr);
+    });
+
+    if (byParent.size === 0) {
+      toast.info("Select at least one outstanding parent to remind");
+      return;
+    }
+
+    setSending(true);
+    try {
+      const title = "Action Required: Player Registration 2026/27";
+      const link = "/player-registration";
+
+      // 1. In-app notifications
+      const notifications = Array.from(byParent.entries()).map(([uid, players]) => ({
+        user_id: uid,
+        title,
+        message: `Please complete the 2026/27 registration & payment for ${players.map((p) => p.player_name).join(", ")}.`,
+        type: "info",
+        link,
+      }));
+      await supabase.from("hub_notifications").insert(notifications);
+
+      // 2. Email (admin-broadcast template) — one per parent with email
+      const ts = Date.now();
+      for (const [uid, players] of byParent.entries()) {
+        const player = players[0];
+        if (!player.parent_email) continue;
+        const childList = players.map((p) => `• ${p.player_name} (${p.age_group})`).join("\n");
+        supabase.functions
+          .invoke("send-transactional-email", {
+            body: {
+              templateName: "admin-broadcast",
+              recipientEmail: player.parent_email,
+              idempotencyKey: `reg-reminder-${uid}-${ts}`,
+              templateData: {
+                title: "Player Registration Reminder — 2026/27 Season",
+                message:
+                  `Hi ${player.parent_name},\n\n` +
+                  `Our records show that the 2026/27 registration & payment is still outstanding for:\n\n${childList}\n\n` +
+                  `Please complete it as soon as possible so your child is fully registered to play this season.\n\n` +
+                  `Register here: https://www.pa-fc.uk/player-registration\n\n` +
+                  `If you've already completed this and believe you're seeing this in error, please reply to this email and we'll get it sorted.`,
+              },
+            },
+          })
+          .catch((err) => console.error("Reminder email failed:", err));
+      }
+
+      // 3. Push
+      const userIds = Array.from(byParent.keys());
+      supabase.functions
+        .invoke("send-push-notification", {
+          body: {
+            userIds,
+            title,
+            message: "Complete your 2026/27 player registration & payment.",
+            link,
+            tag: "registration-reminder",
+          },
+        })
+        .catch((err) => console.error("Reminder push failed:", err));
+
+      toast.success(`Reminders sent to ${byParent.size} parent${byParent.size !== 1 ? "s" : ""}`);
+      clearSelection();
+    } catch (err) {
+      console.error("Send reminders failed:", err);
+      toast.error("Failed to send reminders");
+    } finally {
+      setSending(false);
+    }
+  };
+
   const visibleRegistrations = tab === "paid" ? filteredPaid : [];
+
 
   const exportCsv = () => {
     const rows = [
