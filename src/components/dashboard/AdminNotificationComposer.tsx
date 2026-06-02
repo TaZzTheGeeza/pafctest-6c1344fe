@@ -18,7 +18,7 @@ import { Bell, Mail, Smartphone, Send, Loader2, Users, Megaphone, User } from "l
 
 const TEAM_SLUGS = [
   "u6s", "u7s", "u8s", "u9s-black", "u9s-gold", "u10s", "u11s",
-  "u12s-black", "u12s-gold", "u14s-black", "u14s-gold", "u15s",
+  "u12s-black", "u12s-gold", "u13s", "u14s-black", "u14s-gold", "u15s",
 ];
 
 const TEAM_LABELS: Record<string, string> = {
@@ -29,6 +29,7 @@ const TEAM_LABELS: Record<string, string> = {
   "u10s": "U10",
   "u11s-black": "U11 Black",
   "u11s-gold": "U11 Gold",
+  "u13s": "U13",
   "u13s-black": "U13 Black",
   "u13s-gold": "U13 Gold",
   "u14s": "U14",
