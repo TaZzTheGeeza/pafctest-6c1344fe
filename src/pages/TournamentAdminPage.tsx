@@ -514,7 +514,7 @@ const TournamentAdminPage = () => {
                                     </TableCell>
                                     <TableCell className="font-medium">{team.team_name}</TableCell>
                                     <TableCell className="text-xs">{team.club_name || "—"}</TableCell>
-                                    <TableCell className="text-xs">{team.manager_name}</TableCell>
+                                    <TableCell className="text-xs text-muted-foreground">expand →</TableCell>
                                     <TableCell className="text-xs">{team.player_count || "—"}</TableCell>
                                     <TableCell>
                                       <Badge variant={team.status === "confirmed" ? "default" : team.status === "rejected" ? "destructive" : "secondary"}>{team.status}</Badge>
