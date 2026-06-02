@@ -752,7 +752,22 @@ const TEAM_SLUGS = [
 const TEAM_LABELS: Record<string, string> = {
   "u6s": "U6", "u7s": "U7", "u8s": "U8", "u9s-black": "U9 Black", "u9s-gold": "U9 Gold", "u10s": "U10", "u11s": "U11",
   "u12s-black": "U12 Black", "u12s-gold": "U12 Gold", "u13s": "U13", "u14s-black": "U14 Black", "u14s-gold": "U14 Gold", "u15s": "U15",
+  "u6": "U6", "u7": "U7", "u8": "U8", "u9": "U9", "u9-black": "U9 Black", "u9-gold": "U9 Gold", "u10": "U10", "u11": "U11",
+  "u11-black": "U11 Black", "u11-gold": "U11 Gold", "u12-black": "U12 Black", "u12-gold": "U12 Gold", "u13": "U13", "u13-black": "U13 Black", "u13-gold": "U13 Gold",
+  "u13s-black": "U13 Black", "u13s-gold": "U13 Gold", "u14": "U14", "u14-black": "U14 Black", "u14-gold": "U14 Gold", "u15": "U15",
 };
+
+const CANONICAL_TEAM_SLUGS: Record<string, string> = {
+  "u6": "u6s", "u6s": "u6s", "u7": "u7s", "u7s": "u7s", "u8": "u8s", "u8s": "u8s",
+  "u9": "u9s", "u9s": "u9s", "u9-black": "u9s-black", "u9s-black": "u9s-black", "u9-gold": "u9s-gold", "u9s-gold": "u9s-gold",
+  "u10": "u10s", "u10s": "u10s", "u11": "u11s", "u11s": "u11s", "u11-black": "u11s-black", "u11s-black": "u11s-black", "u11-gold": "u11s-gold", "u11s-gold": "u11s-gold",
+  "u12-black": "u12s-black", "u12s-black": "u12s-black", "u12-gold": "u12s-gold", "u12s-gold": "u12s-gold",
+  "u13": "u13s", "u13s": "u13s", "u13-black": "u13s-black", "u13s-black": "u13s-black", "u13-gold": "u13s-gold", "u13s-gold": "u13s-gold",
+  "u14": "u14s", "u14s": "u14s", "u14-black": "u14s-black", "u14s-black": "u14s-black", "u14-gold": "u14s-gold", "u14s-gold": "u14s-gold", "u15": "u15s", "u15s": "u15s",
+};
+
+const getTeamLabel = (teamSlug: string) => TEAM_LABELS[teamSlug] || TEAM_LABELS[CANONICAL_TEAM_SLUGS[teamSlug]] || teamSlug;
+const normalizeTeamSlug = (teamSlug: string) => CANONICAL_TEAM_SLUGS[teamSlug] || teamSlug;
 
 const TEAM_ROLES = ["coach", "player", "parent", "member"] as const;
 
@@ -892,7 +907,7 @@ function UserRow({
       if (error.code === "23505") toast.info("Already a member of this team");
       else toast.error("Failed to add to team");
     } else {
-      toast.success(`Added to ${TEAM_LABELS[teamSlug] || teamSlug} as ${selectedRole}`);
+      toast.success(`Added to ${getTeamLabel(teamSlug)} as ${selectedRole}`);
       setTeamMemberships((prev) => [...prev, { team_slug: teamSlug, role: selectedRole }]);
     }
     setAddingTeamSlug(null);
@@ -907,7 +922,7 @@ function UserRow({
     if (error) {
       toast.error("Failed to remove from team");
     } else {
-      toast.success(`Removed from ${TEAM_LABELS[teamSlug] || teamSlug}`);
+      toast.success(`Removed from ${getTeamLabel(teamSlug)}`);
       setTeamMemberships((prev) => prev.filter((m) => m.team_slug !== teamSlug));
     }
   }
@@ -1168,7 +1183,7 @@ function UserRow({
                         key={m.team_slug}
                         className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-display border bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
                       >
-                        {TEAM_LABELS[m.team_slug] || m.team_slug}
+                        {getTeamLabel(m.team_slug)}
                         <span className="text-emerald-600 text-[9px]">({m.role})</span>
                         <button
                           onClick={() => removeFromTeam(m.team_slug)}
@@ -1182,7 +1197,7 @@ function UserRow({
                 )}
                 {/* Available teams */}
                 <div className="flex flex-wrap gap-1.5">
-                  {TEAM_SLUGS.filter((slug) => !teamMemberships.some((m) => m.team_slug === slug)).map((slug) => (
+                  {TEAM_SLUGS.filter((slug) => !teamMemberships.some((m) => normalizeTeamSlug(m.team_slug) === slug)).map((slug) => (
                     <button
                       key={slug}
                       onClick={() => addToTeam(slug)}
@@ -1194,7 +1209,7 @@ function UserRow({
                       ) : (
                         <Plus className="h-3 w-3" />
                       )}
-                      {TEAM_LABELS[slug]}
+                      {getTeamLabel(slug)}
                     </button>
                   ))}
                 </div>
