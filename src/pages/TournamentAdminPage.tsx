@@ -224,9 +224,10 @@ const TournamentAdminPage = () => {
       match_time: matchForm.match_time || null,
       pitch: matchForm.pitch || null,
       stage: matchForm.stage,
+      referee: matchForm.referee.trim() || null,
     });
     setShowAddMatch(false);
-    setMatchForm({ age_group_id: "", group_id: "", home_team_id: "", away_team_id: "", match_time: "", pitch: "", stage: "group" });
+    setMatchForm({ age_group_id: "", group_id: "", home_team_id: "", away_team_id: "", match_time: "", pitch: "", stage: "group", referee: "" });
     invalidateAll();
     toast.success("Match added");
   };
