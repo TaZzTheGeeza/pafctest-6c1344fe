@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePresentationEnabled } from "@/hooks/usePresentationEnabled";
 import {
   UserPlus,
   FileText,
@@ -68,6 +69,10 @@ const hubItems = [
 
 export default function PlayerHubPage() {
   const { isPlayer } = useAuth();
+  const { enabled: presentationEnabled } = usePresentationEnabled();
+  const visibleHubItems = hubItems.filter(
+    (i) => presentationEnabled || i.title !== "Presentation Evening"
+  );
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -92,7 +97,7 @@ export default function PlayerHubPage() {
           </motion.div>
 
           <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {hubItems.map((item, i) => (
+            {visibleHubItems.map((item, i) => (
               <motion.div
                 key={item.title}
                 initial={{ opacity: 0, y: 20 }}

@@ -20,6 +20,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { usePresentationEnabled } from "@/hooks/usePresentationEnabled";
 import { registerPushSubscription, isPushSupported, isPushEnabled } from "@/lib/pushNotifications";
 
 const TEAMS = [
@@ -112,6 +113,7 @@ export default function HubPage() {
   const [showTeamPicker, setShowTeamPicker] = useState(false);
   const { user, isAdmin, isCoach, rolesLoading } = useAuth();
   const isMobile = useIsMobile();
+  const { enabled: presentationEnabled } = usePresentationEnabled();
 
   useEffect(() => {
     const tab = searchParams.get("tab");
@@ -205,8 +207,8 @@ export default function HubPage() {
       {activeTab === "awards" && activeTeam && activeTeam !== "u6s" && <AwardsVoting teamSlug={activeTeam} teamName={activeTeamName || ""} />}
       {activeTab === "player" && (
         <div className="space-y-4">
-          {/* Featured: Presentation Evening — always rendered prominently at top */}
-          {playerHubItems
+          {/* Featured: Presentation Evening — toggled via site_settings (admin dashboard) */}
+          {presentationEnabled && playerHubItems
             .filter((i) => i.featured)
             .map((item) => (
               <Link
