@@ -736,6 +736,7 @@ const TournamentAdminPage = () => {
             </div>
             <div><Label>Time</Label><Input type="datetime-local" value={matchForm.match_time} onChange={e => setMatchForm(f => ({ ...f, match_time: e.target.value }))} /></div>
             <div><Label>Pitch</Label><Input value={matchForm.pitch} onChange={e => setMatchForm(f => ({ ...f, pitch: e.target.value }))} placeholder="e.g. Pitch 1" /></div>
+            <div><Label>Referee</Label><Input value={matchForm.referee} onChange={e => setMatchForm(f => ({ ...f, referee: e.target.value }))} placeholder="e.g. John Smith" /></div>
             <Button onClick={addMatch} className="w-full">Add Match</Button>
           </div>
         </DialogContent>
