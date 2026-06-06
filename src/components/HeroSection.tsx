@@ -3,8 +3,10 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ShoppingBag, Trophy, ChevronRight, Smartphone, Sparkles } from "lucide-react";
 import heroBg from "@/assets/hero-bg.jpg";
+import { usePresentationEnabled } from "@/hooks/usePresentationEnabled";
 
 export function HeroSection() {
+  const { enabled: presentationEnabled } = usePresentationEnabled();
   return (
     <section className="relative min-h-[90vh] flex items-end justify-center overflow-hidden">
       <div
@@ -37,16 +39,18 @@ export function HeroSection() {
                 Tournament
               </Link>
             </Button>
-            <Button
-              size="lg"
-              className="bg-gold-gradient text-primary-foreground font-display tracking-wider hover:opacity-90 transition-opacity"
-              asChild
-            >
-              <Link to="/presentation">
-                <Sparkles className="w-5 h-5 mr-2" />
-                Presentation Evening
-              </Link>
-            </Button>
+            {presentationEnabled && (
+              <Button
+                size="lg"
+                className="bg-gold-gradient text-primary-foreground font-display tracking-wider hover:opacity-90 transition-opacity"
+                asChild
+              >
+                <Link to="/presentation">
+                  <Sparkles className="w-5 h-5 mr-2" />
+                  Presentation Evening
+                </Link>
+              </Button>
+            )}
             <Button
               variant="outline"
               size="lg"

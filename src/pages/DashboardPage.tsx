@@ -21,7 +21,7 @@ import { useUserAgeGroups } from "@/hooks/useUserAgeGroups";
 import { faTeamConfigs } from "@/lib/faFixtureConfig";
 import { POTMForm } from "@/pages/CoachPanelPage";
 import { MatchReportForm } from "@/pages/CoachPanelPage";
-import { Upload, CheckCircle, AlertTriangle, UserPlus as UserPlusIcon, Award } from "lucide-react";
+import { Upload, CheckCircle, AlertTriangle, UserPlus as UserPlusIcon, Award, Sparkles } from "lucide-react";
 import { TeamRequestsManager } from "@/components/dashboard/TeamRequestsManager";
 import { AdminNotificationComposer } from "@/components/dashboard/AdminNotificationComposer";
 import { OrdersTab } from "@/components/dashboard/OrdersTab";
@@ -88,6 +88,8 @@ export default function DashboardPage() {
   const [togglingReg, setTogglingReg] = useState(false);
   const [shopOpen, setShopOpen] = useState(true);
   const [togglingShop, setTogglingShop] = useState(false);
+  const [presentationOpen, setPresentationOpen] = useState(false);
+  const [togglingPresentation, setTogglingPresentation] = useState(false);
   const [activeSection, setActiveSection] = useState<DashboardSection>("overview");
   const [searchParams] = useSearchParams();
 
@@ -106,11 +108,36 @@ export default function DashboardPage() {
     if (isAdmin) {
       loadRegistrationSetting();
       loadShopSetting();
+      loadPresentationSetting();
       loadUsers();
     } else {
       setLoading(false);
     }
   }, [isAdmin]);
+
+  async function loadPresentationSetting() {
+    const { data } = await supabase
+      .from("site_settings" as any)
+      .select("value")
+      .eq("key", "presentation_evening_enabled")
+      .maybeSingle();
+    if (data) setPresentationOpen((data as any).value === "true");
+  }
+
+  async function togglePresentation() {
+    setTogglingPresentation(true);
+    const newVal = !presentationOpen;
+    const { error } = await supabase
+      .from("site_settings" as any)
+      .upsert({ key: "presentation_evening_enabled", value: newVal ? "true" : "false", updated_at: new Date().toISOString() } as any);
+    if (error) {
+      toast.error("Failed to update Presentation Evening setting");
+    } else {
+      setPresentationOpen(newVal);
+      toast.success(`Presentation Evening ${newVal ? "enabled" : "hidden"} site-wide`);
+    }
+    setTogglingPresentation(false);
+  }
 
   async function loadRegistrationSetting() {
     const { data } = await supabase
@@ -494,7 +521,7 @@ export default function DashboardPage() {
 
               {/* Site Toggles — admin only */}
               {isAdmin && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                   <div className="bg-card border border-border rounded-xl p-5 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="p-2 rounded-lg bg-primary/10">
@@ -533,6 +560,26 @@ export default function DashboardPage() {
                       className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${shopOpen ? "bg-primary" : "bg-muted"}`}
                     >
                       <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${shopOpen ? "translate-x-6" : "translate-x-1"}`} />
+                    </button>
+                  </div>
+                  <div className="bg-card border border-border rounded-xl p-5 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-primary/10">
+                        <Sparkles className="h-4 w-4 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-display font-semibold text-foreground">Presentation Evening</p>
+                        <p className="text-[10px] text-muted-foreground">
+                          {presentationOpen ? "Visible on homepage & Player Zone" : "Hidden — turn on when ready for next year"}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={togglePresentation}
+                      disabled={togglingPresentation}
+                      className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${presentationOpen ? "bg-primary" : "bg-muted"}`}
+                    >
+                      <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${presentationOpen ? "translate-x-6" : "translate-x-1"}`} />
                     </button>
                   </div>
                 </div>
