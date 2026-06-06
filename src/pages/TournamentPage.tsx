@@ -762,6 +762,43 @@ const TournamentPage = () => {
         </div>
       </main>
       <Footer />
+
+      <Dialog open={!!refereeView} onOpenChange={(o) => !o && setRefereeView(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Matches refereed by {refereeView}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2 max-h-[60vh] overflow-y-auto">
+            {(() => {
+              const now = Date.now();
+              const refMatches = (matches || [])
+                .filter(m => m.referee && refereeView && m.referee.toLowerCase() === refereeView.toLowerCase())
+                .filter(m => m.status !== "completed" && (!m.match_time || new Date(m.match_time).getTime() >= now - 1000 * 60 * 60))
+                .sort((a, b) => (a.match_time || "").localeCompare(b.match_time || ""));
+              if (refMatches.length === 0) {
+                return <p className="text-sm text-muted-foreground">No upcoming matches scheduled for this referee.</p>;
+              }
+              return refMatches.map(m => {
+                const ag = ageGroups?.find(a => a.id === m.age_group_id);
+                return (
+                  <Card key={m.id} className="p-3">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="font-medium flex-1 text-right">{getTeamName(m.home_team_id)}</span>
+                      <span className="mx-3 text-muted-foreground text-xs">vs</span>
+                      <span className="font-medium flex-1">{getTeamName(m.away_team_id)}</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground text-center mt-1">
+                      {ag?.age_group && <>{ag.age_group} · </>}
+                      {m.match_time ? new Date(m.match_time).toLocaleString("en-GB", { weekday: "short", day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : "TBC"}
+                      {m.pitch && <> · {m.pitch}</>}
+                    </p>
+                  </Card>
+                );
+              });
+            })()}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
