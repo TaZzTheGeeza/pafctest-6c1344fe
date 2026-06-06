@@ -56,7 +56,7 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
     queryKey: ["tournament-photos", tournamentId, filterAgeGroup],
     queryFn: async () => {
       let query = supabase
-        .from("tournament_photos" as any)
+        .from("tournament_photos_public" as any)
         .select("*")
         .eq("tournament_id", tournamentId)
         .order("created_at", { ascending: false });
