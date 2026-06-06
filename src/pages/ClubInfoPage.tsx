@@ -3,6 +3,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Shield, Heart, Award, Users, Star, CheckCircle } from "lucide-react";
 import clubLogo from "@/assets/club-logo.jpg";
+import { SEO } from "@/components/SEO";
 
 const values = [
   { icon: Shield, title: "FA Accredited", text: "All coaches and staff are FA-qualified, first aid trained, and DBS-checked, ensuring the highest standards of safety and professionalism." },
