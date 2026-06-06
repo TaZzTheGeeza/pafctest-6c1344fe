@@ -27,6 +27,7 @@ const TournamentPage = () => {
   const [verifying, setVerifying] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [activeSection, setActiveSection] = useState("overview");
+  const [refereeView, setRefereeView] = useState<string | null>(null);
 
   const { data: tournaments } = useQuery({
     queryKey: ["tournaments"],
