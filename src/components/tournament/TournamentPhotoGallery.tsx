@@ -56,7 +56,7 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
     queryKey: ["tournament-photos", tournamentId, filterAgeGroup],
     queryFn: async () => {
       let query = supabase
-        .from("tournament_photos" as any)
+        .from("tournament_photos_public" as any)
         .select("*")
         .eq("tournament_id", tournamentId)
         .order("created_at", { ascending: false });
@@ -153,8 +153,16 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
     if (!confirm("Delete this photo? This cannot be undone.")) return;
     setDeletingPhotoId(photo.id);
     try {
-      // Delete from storage buckets
-      await supabase.storage.from("tournament-photos").remove([photo.storage_path]);
+      // Fetch storage_path from the underlying table (admin only)
+      const { data: full } = await supabase
+        .from("tournament_photos" as any)
+        .select("storage_path")
+        .eq("id", photo.id)
+        .maybeSingle();
+      const storagePath = (full as any)?.storage_path;
+      if (storagePath) {
+        await supabase.storage.from("tournament-photos").remove([storagePath]);
+      }
       // Extract preview path from URL
       const previewUrl = new URL(photo.preview_url);
       const previewPath = previewUrl.pathname.split("/gallery-photos/")[1];

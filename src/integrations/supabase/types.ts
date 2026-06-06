@@ -2513,6 +2513,13 @@ export type Database = {
             referencedRelation: "tournament_photos"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "tournament_photo_purchases_photo_id_fkey"
+            columns: ["photo_id"]
+            isOneToOne: false
+            referencedRelation: "tournament_photos_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       tournament_photos: {
@@ -2828,6 +2835,44 @@ export type Database = {
       }
     }
     Views: {
+      tournament_photos_public: {
+        Row: {
+          age_group: string | null
+          caption: string | null
+          created_at: string | null
+          id: string | null
+          preview_url: string | null
+          price_cents: number | null
+          tournament_id: string | null
+        }
+        Insert: {
+          age_group?: string | null
+          caption?: string | null
+          created_at?: string | null
+          id?: string | null
+          preview_url?: string | null
+          price_cents?: number | null
+          tournament_id?: string | null
+        }
+        Update: {
+          age_group?: string | null
+          caption?: string | null
+          created_at?: string | null
+          id?: string | null
+          preview_url?: string | null
+          price_cents?: number | null
+          tournament_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_photos_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tournament_teams_public: {
         Row: {
           age_group_id: string | null
