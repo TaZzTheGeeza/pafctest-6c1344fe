@@ -30,7 +30,7 @@ const TournamentAdminPage = () => {
   const [showAnnouncement, setShowAnnouncement] = useState(false);
   const [tournamentForm, setTournamentForm] = useState({ name: "", description: "", venue: "", tournament_date: "", entry_fee: "", rules: "" });
   const [ageGroupForm, setAgeGroupForm] = useState({ age_group: "", max_teams: "", group_count: "2" });
-  const [matchForm, setMatchForm] = useState({ age_group_id: "", group_id: "", home_team_id: "", away_team_id: "", match_time: "", pitch: "", stage: "group" });
+  const [matchForm, setMatchForm] = useState({ age_group_id: "", group_id: "", home_team_id: "", away_team_id: "", match_time: "", pitch: "", stage: "group", referee: "" });
   const [teamForm, setTeamForm] = useState({ team_name: "", club_name: "", manager_name: "", manager_email: "", manager_phone: "", age_group_id: "", player_count: "", whatsapp_name: "", whatsapp_number: "", consent_rules: true, consent_photography: true });
   const [announcementText, setAnnouncementText] = useState("");
   const [editingGroup, setEditingGroup] = useState<{ id: string; name: string } | null>(null);
@@ -224,9 +224,10 @@ const TournamentAdminPage = () => {
       match_time: matchForm.match_time || null,
       pitch: matchForm.pitch || null,
       stage: matchForm.stage,
+      referee: matchForm.referee.trim() || null,
     });
     setShowAddMatch(false);
-    setMatchForm({ age_group_id: "", group_id: "", home_team_id: "", away_team_id: "", match_time: "", pitch: "", stage: "group" });
+    setMatchForm({ age_group_id: "", group_id: "", home_team_id: "", away_team_id: "", match_time: "", pitch: "", stage: "group", referee: "" });
     invalidateAll();
     toast.success("Match added");
   };
@@ -638,6 +639,7 @@ const TournamentAdminPage = () => {
                         <TableHead>Away</TableHead>
                         <TableHead>Time</TableHead>
                         <TableHead>Pitch</TableHead>
+                        <TableHead>Referee</TableHead>
                         <TableHead>Actions</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -735,6 +737,7 @@ const TournamentAdminPage = () => {
             </div>
             <div><Label>Time</Label><Input type="datetime-local" value={matchForm.match_time} onChange={e => setMatchForm(f => ({ ...f, match_time: e.target.value }))} /></div>
             <div><Label>Pitch</Label><Input value={matchForm.pitch} onChange={e => setMatchForm(f => ({ ...f, pitch: e.target.value }))} placeholder="e.g. Pitch 1" /></div>
+            <div><Label>Referee</Label><Input value={matchForm.referee} onChange={e => setMatchForm(f => ({ ...f, referee: e.target.value }))} placeholder="e.g. John Smith" /></div>
             <Button onClick={addMatch} className="w-full">Add Match</Button>
           </div>
         </DialogContent>
@@ -949,6 +952,7 @@ function MatchRow({ match, getTeamName, getAgeGroupName, onUpdateScore, onDelete
       <TableCell className="text-xs font-medium">{getTeamName(match.away_team_id)}</TableCell>
       <TableCell className="text-xs">{match.match_time ? new Date(match.match_time).toLocaleString("en-GB", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) : "—"}</TableCell>
       <TableCell className="text-xs">{match.pitch || "—"}</TableCell>
+      <TableCell className="text-xs">{match.referee || "—"}</TableCell>
       <TableCell>
         <div className="flex gap-1">
           <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setEditing(!editing)}><Edit className="h-3 w-3" /></Button>
