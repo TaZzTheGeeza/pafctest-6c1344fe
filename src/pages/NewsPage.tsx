@@ -11,6 +11,7 @@ import { Newspaper, Plus, ChevronLeft, ChevronRight, CalendarDays } from "lucide
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { NewsFlipbook } from "@/components/news/NewsFlipbook";
+import { SEO } from "@/components/SEO";
 
 interface NewsArticle {
   id: string;

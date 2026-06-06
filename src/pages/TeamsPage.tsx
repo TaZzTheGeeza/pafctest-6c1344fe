@@ -13,6 +13,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { CoachFixturePanel } from "@/components/CoachFixturePanel";
 import { MatchDetailPanel } from "@/components/MatchDetailPanel";
 import clubLogo from "@/assets/club-logo.jpg";
+import { SEO } from "@/components/SEO";
 
 const leagueTableConfig: Record<string, { divisionSeason?: string; tableUrl?: string; faUrl: string; highlightTeams: string[] }> = {
   "u13s-black": {

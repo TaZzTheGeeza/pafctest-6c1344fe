@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import clubLogo from "@/assets/club-logo.jpg";
 import { DateInput } from "@/components/ui/date-input";
+import { SEO } from "@/components/SEO";
 
 const ageGroups = [
   "U6", "U7", "U8", "U9 Black", "U9 Gold", "U10", "U11",

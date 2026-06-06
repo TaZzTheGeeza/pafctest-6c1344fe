@@ -22,6 +22,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { SEO } from "@/components/SEO";
 
 interface MatchReport {
   id: string;

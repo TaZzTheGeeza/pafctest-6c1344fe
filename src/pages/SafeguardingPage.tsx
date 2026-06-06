@@ -5,6 +5,7 @@ import { Shield, Phone, Mail, AlertTriangle, CheckCircle, Users, FileText, Exter
 import { SafeguardingReportForm } from "@/components/SafeguardingReportForm";
 import { Button } from "@/components/ui/button";
 import clubLogo from "@/assets/club-logo.jpg";
+import { SEO } from "@/components/SEO";
 
 const policies = [
   {

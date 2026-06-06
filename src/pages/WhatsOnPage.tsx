@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Calendar } from "lucide-react";
+import { SEO } from "@/components/SEO";
 
 export default function WhatsOnPage() {
   return (

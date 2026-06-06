@@ -20,6 +20,7 @@ import { Textarea } from "@/components/ui/textarea";
 import PitchLayoutSVG from "@/components/tournament/PitchLayoutSVG";
 import { TournamentBracket } from "@/components/TournamentBracket";
 import { toast } from "sonner";
+import { SEO } from "@/components/SEO";
 
 const TournamentPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
