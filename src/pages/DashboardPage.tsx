@@ -521,7 +521,7 @@ export default function DashboardPage() {
 
               {/* Site Toggles — admin only */}
               {isAdmin && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                   <div className="bg-card border border-border rounded-xl p-5 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="p-2 rounded-lg bg-primary/10">
@@ -560,6 +560,26 @@ export default function DashboardPage() {
                       className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${shopOpen ? "bg-primary" : "bg-muted"}`}
                     >
                       <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${shopOpen ? "translate-x-6" : "translate-x-1"}`} />
+                    </button>
+                  </div>
+                  <div className="bg-card border border-border rounded-xl p-5 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-primary/10">
+                        <Sparkles className="h-4 w-4 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-display font-semibold text-foreground">Presentation Evening</p>
+                        <p className="text-[10px] text-muted-foreground">
+                          {presentationOpen ? "Visible on homepage & Player Zone" : "Hidden — turn on when ready for next year"}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={togglePresentation}
+                      disabled={togglingPresentation}
+                      className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${presentationOpen ? "bg-primary" : "bg-muted"}`}
+                    >
+                      <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${presentationOpen ? "translate-x-6" : "translate-x-1"}`} />
                     </button>
                   </div>
                 </div>
