@@ -2404,6 +2404,7 @@ export type Database = {
           id: string
           match_time: string | null
           pitch: string | null
+          referee: string | null
           stage: string
           status: string
         }
@@ -2418,6 +2419,7 @@ export type Database = {
           id?: string
           match_time?: string | null
           pitch?: string | null
+          referee?: string | null
           stage?: string
           status?: string
         }
@@ -2432,6 +2434,7 @@ export type Database = {
           id?: string
           match_time?: string | null
           pitch?: string | null
+          referee?: string | null
           stage?: string
           status?: string
         }
