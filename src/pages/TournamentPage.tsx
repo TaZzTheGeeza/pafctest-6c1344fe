@@ -674,7 +674,23 @@ const TournamentPage = () => {
                               </div>
                               <span className="font-medium flex-1"><TeamLink id={m.away_team_id} /></span>
                             </div>
-                            {m.pitch && <p className="text-xs text-muted-foreground text-center mt-1">Pitch: {m.pitch}</p>}
+                            {(m.pitch || m.referee) && (
+                              <p className="text-xs text-muted-foreground text-center mt-1">
+                                {m.pitch && <>Pitch: {m.pitch}</>}
+                                {m.pitch && m.referee && <> · </>}
+                                {m.referee && (
+                                  <>Referee:{" "}
+                                    <button
+                                      type="button"
+                                      onClick={() => setRefereeView(m.referee!)}
+                                      className="text-primary hover:underline font-medium"
+                                    >
+                                      {m.referee}
+                                    </button>
+                                  </>
+                                )}
+                              </p>
+                            )}
                           </Card>
                         ))}
                       </div>
