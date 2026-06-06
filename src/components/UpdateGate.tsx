@@ -21,9 +21,12 @@ import { Button } from "@/components/ui/button";
 const FP_KEY = "pafc-index-fingerprint";
 const AUTO_REFRESHED_KEY = "pafc-auto-refreshed-fp";
 const DISMISSED_FP_KEY = "pafc-dismissed-update-fp";
+const MANUAL_REFRESHED_FP_KEY = "pafc-manual-refreshed-fp";
+const MANUAL_REFRESHED_AT_KEY = "pafc-manual-refreshed-at";
 const SESSION_AUTO_KEY = "pafc-auto-refreshed-this-session";
 const CHECK_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
 const IDLE_THRESHOLD_MS = 30 * 1000; // 30 seconds
+const MANUAL_REFRESH_COOLDOWN_MS = 30 * 60 * 1000; // 30 minutes
 
 async function getIndexFingerprint(): Promise<string | null> {
   try {
@@ -124,6 +127,10 @@ export function UpdateGate() {
     );
 
     const tryAutoRefresh = (fp: string) => {
+      // If the user has already clicked refresh for this version, stop nudging.
+      try {
+        if (localStorage.getItem(MANUAL_REFRESHED_FP_KEY) === fp) return;
+      } catch {}
       // Already auto-refreshed once this session — never again
       try {
         if (sessionStorage.getItem(SESSION_AUTO_KEY) === "1") return;
@@ -166,11 +173,20 @@ export function UpdateGate() {
       // New build detected
       newFpRef.current = fp;
       const dismissedFp = localStorage.getItem(DISMISSED_FP_KEY);
-      setUpdateAvailable(dismissedFp !== fp);
-      setDismissed(dismissedFp === fp);
+      const manualRefreshedFp = localStorage.getItem(MANUAL_REFRESHED_FP_KEY);
+      const manualRefreshedAt = Number(localStorage.getItem(MANUAL_REFRESHED_AT_KEY) || 0);
+      const manualRefreshCoolingDown =
+        manualRefreshedAt > 0 && Date.now() - manualRefreshedAt < MANUAL_REFRESH_COOLDOWN_MS;
+      const shouldSuppress =
+        dismissedFp === fp || manualRefreshedFp === fp || manualRefreshCoolingDown;
+
+      setUpdateAvailable(!shouldSuppress);
+      setDismissed(shouldSuppress);
 
       // Try a one-shot safe auto-refresh
-      if (!isInitial) {
+      if (shouldSuppress) {
+        return;
+      } else if (!isInitial) {
         tryAutoRefresh(fp);
       } else {
         // On initial load, give the user a moment before considering auto-refresh
@@ -221,7 +237,9 @@ export function UpdateGate() {
           if (newFpRef.current) {
             try {
               localStorage.setItem(FP_KEY, newFpRef.current);
-              localStorage.removeItem(DISMISSED_FP_KEY);
+              localStorage.setItem(DISMISSED_FP_KEY, newFpRef.current);
+              localStorage.setItem(MANUAL_REFRESHED_FP_KEY, newFpRef.current);
+              localStorage.setItem(MANUAL_REFRESHED_AT_KEY, String(Date.now()));
             } catch {}
           }
           setDismissed(true);
