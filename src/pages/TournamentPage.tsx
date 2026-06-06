@@ -21,6 +21,7 @@ import PitchLayoutSVG from "@/components/tournament/PitchLayoutSVG";
 import { TournamentBracket } from "@/components/TournamentBracket";
 import { toast } from "sonner";
 import { SEO } from "@/components/SEO";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const TournamentPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
