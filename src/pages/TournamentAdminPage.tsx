@@ -952,6 +952,7 @@ function MatchRow({ match, getTeamName, getAgeGroupName, onUpdateScore, onDelete
       <TableCell className="text-xs font-medium">{getTeamName(match.away_team_id)}</TableCell>
       <TableCell className="text-xs">{match.match_time ? new Date(match.match_time).toLocaleString("en-GB", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) : "—"}</TableCell>
       <TableCell className="text-xs">{match.pitch || "—"}</TableCell>
+      <TableCell className="text-xs">{match.referee || "—"}</TableCell>
       <TableCell>
         <div className="flex gap-1">
           <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setEditing(!editing)}><Edit className="h-3 w-3" /></Button>
