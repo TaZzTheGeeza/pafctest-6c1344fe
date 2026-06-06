@@ -6,6 +6,7 @@ import { Calendar } from "lucide-react";
 export default function WhatsOnPage() {
   return (
     <div className="min-h-screen flex flex-col">
+      <SEO title="What's On | Peterborough Athletic FC Events" description="Upcoming events, fixtures, tournaments and fundraisers at Peterborough Athletic FC. Find out what's happening at your local Peterborough football club." keywords="Peterborough football events, PAFC events, what's on Peterborough football, junior football fixtures Peterborough, Peterborough football tournament" path="/whats-on" />
       <Navbar />
       <main className="flex-1 pt-28 pb-16">
         <div className="container mx-auto px-4">

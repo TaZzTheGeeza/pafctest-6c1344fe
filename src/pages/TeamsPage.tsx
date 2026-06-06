@@ -110,6 +110,7 @@ function TeamDetail({ team }: { team: TeamData }) {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <SEO title="Our Teams | Peterborough Athletic FC — U6 to U16" description="Meet the PAFC teams. Junior and youth football squads from U6 to U16 — fixtures, league tables, squad lists and stats." keywords="Peterborough Athletic FC teams, PAFC squads, U7 football Peterborough, U10 football Peterborough, U13 football Peterborough, junior football teams Peterborough, youth football Cambridgeshire" path="/teams" />
       <Navbar />
       <main className="flex-1 pt-28 pb-16">
         <div className="container mx-auto px-4">

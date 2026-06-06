@@ -44,6 +44,7 @@ const faResources = [
 export default function SafeguardingPage() {
   return (
     <div className="min-h-screen flex flex-col">
+      <SEO title="Safeguarding | Peterborough Athletic FC" description="Safeguarding policies and welfare at Peterborough Athletic FC — DBS-checked coaches, FA standards, anonymous reporting. Player welfare is our top priority." keywords="safeguarding Peterborough football, PAFC safeguarding, junior football welfare Peterborough, DBS checked coaches Peterborough" path="/safeguarding" />
       <Navbar />
       <main className="flex-1 pt-32 pb-16">
         <div className="container mx-auto px-4">

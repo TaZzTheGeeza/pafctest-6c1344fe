@@ -88,6 +88,7 @@ export default function NewsPage() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <SEO title="News & Matchday Programmes | Peterborough Athletic FC" description="Latest news, match reports and matchday programmes from Peterborough Athletic FC — junior and youth football in Peterborough." keywords="Peterborough Athletic FC news, PAFC news, Peterborough football news, junior football match reports, matchday programme Peterborough" path="/news" />
       <Navbar />
       <main className="flex-1 pt-28 pb-16">
         <div className="container mx-auto px-4">

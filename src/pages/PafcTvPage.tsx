@@ -109,6 +109,7 @@ const PafcTvPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <SEO title="PAFC TV | Peterborough Athletic FC Match Videos" description="Watch match highlights, goals and player features on PAFC TV — Peterborough Athletic FC's official video channel." keywords="PAFC TV, Peterborough Athletic FC videos, Peterborough football highlights, junior football goals Peterborough" path="/pafc-tv" />
       <Navbar />
       <main className="flex-1 pt-20">
 

@@ -72,6 +72,7 @@ export default function ShopPage() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <SEO title="Club Shop | Peterborough Athletic FC Kit & Merch" description="Official Peterborough Athletic FC shop — kit, training wear, hoodies and merchandise. Support your local junior football club." keywords="Peterborough Athletic FC shop, PAFC kit, Peterborough football kit, junior football merchandise Peterborough, PAFC hoodies" path="/shop" />
       <Navbar />
       <main className="flex-1 pt-28 pb-16">
         <div className="container mx-auto px-4">

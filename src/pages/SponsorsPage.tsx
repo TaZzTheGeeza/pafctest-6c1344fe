@@ -22,6 +22,7 @@ const mainSponsors: Sponsor[] = [
 export default function SponsorsPage() {
   return (
     <div className="min-h-screen flex flex-col">
+      <SEO title="Sponsors | Peterborough Athletic FC" description="Meet the businesses sponsoring Peterborough Athletic FC. Local Peterborough sponsors supporting grassroots junior and youth football." keywords="Peterborough football sponsors, sponsor Peterborough football club, local business Peterborough, PAFC sponsors" path="/sponsors" />
       <Navbar />
       <main className="flex-1 pt-28 pb-16">
         <div className="container mx-auto px-4">
