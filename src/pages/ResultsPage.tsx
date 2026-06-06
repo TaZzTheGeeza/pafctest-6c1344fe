@@ -22,6 +22,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { SEO } from "@/components/SEO";
 
 interface MatchReport {
   id: string;
@@ -158,6 +159,7 @@ const ResultsPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <SEO title="Results & Match Reports | Peterborough Athletic FC" description="Latest match results, reports and Player of the Match awards from Peterborough Athletic FC teams U6–U16." keywords="Peterborough Athletic FC results, PAFC match reports, Peterborough junior football results, player of the match Peterborough" path="/results" />
       <Navbar />
       <main className="flex-1 pt-28 pb-12">
         <div className="container mx-auto px-4 max-w-3xl">

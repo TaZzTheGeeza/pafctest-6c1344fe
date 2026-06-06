@@ -5,6 +5,7 @@ import { Footer } from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { Image, X, ChevronLeft, ChevronRight, Camera } from "lucide-react";
 import { format } from "date-fns";
+import { SEO } from "@/components/SEO";
 
 interface Album {
   id: string;
@@ -103,6 +104,7 @@ export default function GalleryPage() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <SEO title="Photo Gallery | Peterborough Athletic FC" description="Match day photos, team galleries and tournament action shots from Peterborough Athletic FC — junior football in Peterborough." keywords="Peterborough Athletic FC photos, PAFC gallery, junior football photos Peterborough, Peterborough football photography" path="/gallery" />
       <Navbar />
       <main className="flex-1 pt-28 pb-16">
         <div className="container mx-auto px-4">

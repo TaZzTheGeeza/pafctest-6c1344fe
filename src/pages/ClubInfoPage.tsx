@@ -3,6 +3,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Shield, Heart, Award, Users, Star, CheckCircle } from "lucide-react";
 import clubLogo from "@/assets/club-logo.jpg";
+import { SEO } from "@/components/SEO";
 
 const values = [
   { icon: Shield, title: "FA Accredited", text: "All coaches and staff are FA-qualified, first aid trained, and DBS-checked, ensuring the highest standards of safety and professionalism." },
@@ -16,6 +17,7 @@ const values = [
 export default function ClubInfoPage() {
   return (
     <div className="min-h-screen flex flex-col">
+      <SEO title="About Us | Peterborough Athletic FC — The Lions" description="Peterborough Athletic FC (PAFC) — FA Accredited grassroots junior football club in Peterborough. Our values, safeguarding, FA-qualified coaches and how we develop young footballers." keywords="about Peterborough Athletic FC, PAFC Peterborough, FA accredited football club Peterborough, junior football coaching Peterborough, grassroots football Cambridgeshire" path="/club-info" />
       <Navbar />
       <main className="flex-1 pt-28 pb-16">
         <div className="container mx-auto px-4">

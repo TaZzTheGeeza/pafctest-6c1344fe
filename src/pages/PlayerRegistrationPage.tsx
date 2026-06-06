@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import clubLogo from "@/assets/club-logo.jpg";
 import { DateInput } from "@/components/ui/date-input";
+import { SEO } from "@/components/SEO";
 
 const ageGroups = [
   "U6", "U7", "U8", "U9 Black", "U9 Gold", "U10", "U11",
@@ -236,6 +237,7 @@ export default function PlayerRegistrationPage() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <SEO title="Join PAFC — Player Registration | Peterborough Athletic FC" description="Sign up to play for Peterborough Athletic FC. Junior and youth football registration for boys' and girls' teams U6–U16 in Peterborough." keywords="join Peterborough football club, register Peterborough Athletic FC, sign up junior football Peterborough, kids football trials Peterborough, U7 U8 U9 U10 football Peterborough" path="/register" />
       <Navbar />
       <main className="flex-1 pt-32 pb-16">
         <div className="container mx-auto px-4">

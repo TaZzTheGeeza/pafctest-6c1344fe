@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "react-router-dom";
+import { SEO } from "@/components/SEO";
 
 export default function ContactPage() {
   const { user } = useAuth();
@@ -41,6 +42,7 @@ export default function ContactPage() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <SEO title="Contact Us | Peterborough Athletic FC" description="Get in touch with Peterborough Athletic FC — enquire about joining a team, sponsorship, or general questions about junior football in Peterborough." keywords="contact Peterborough Athletic FC, join Peterborough football club, PAFC contact, junior football enquiries Peterborough" path="/contact" />
       <Navbar />
       <main className="flex-1 pt-28 pb-16">
         <div className="container mx-auto px-4">
