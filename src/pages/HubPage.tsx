@@ -190,7 +190,7 @@ export default function HubPage() {
     ...tabs,
     ...((isAdmin || isCoach) ? [{ id: "members", label: "Members", icon: Users }] : []),
     ...(isAdmin ? [{ id: "roster", label: "Roster", icon: ClipboardList }] : []),
-  ].filter((t) => !(t.id === "awards" && activeTeam === "u6s"));
+  ].filter((t) => !(t.id === "awards" && (activeTeam === "u6s" || !presentationEnabled)));
 
   const renderContent = () => (
     <>
