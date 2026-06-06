@@ -639,6 +639,7 @@ const TournamentAdminPage = () => {
                         <TableHead>Away</TableHead>
                         <TableHead>Time</TableHead>
                         <TableHead>Pitch</TableHead>
+                        <TableHead>Referee</TableHead>
                         <TableHead>Actions</TableHead>
                       </TableRow>
                     </TableHeader>
