@@ -197,6 +197,16 @@ export default function PlayerRegistrationPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!user) {
+      toast.error("Please sign in to register a player.");
+      return;
+    }
+
+    if (!selectedChildId) {
+      toast.error("Please select your linked child.");
+      return;
+    }
+
     if (!form.hasMedicalConditions) {
       toast.error("Please indicate whether the player has any medical conditions.");
       return;
@@ -220,6 +230,8 @@ export default function PlayerRegistrationPage() {
     setIsSubmitting(true);
     try {
       const insertData: Record<string, unknown> = {
+        user_id: user.id,
+        guardian_id: selectedChildId,
         child_name: form.childName,
         child_dob: form.childDob,
         address: form.address || null,
@@ -242,6 +254,7 @@ export default function PlayerRegistrationPage() {
         consent_photography: form.consentPhotography,
         declaration_confirmed: form.declarationConfirmed,
       };
+
 
       // Upload photo first
       const fileExt = photoFile.name.split(".").pop();
