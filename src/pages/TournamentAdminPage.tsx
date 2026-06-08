@@ -949,43 +949,143 @@ const TournamentAdminPage = () => {
   );
 };
 
-// Match row component with inline score editing
-function MatchRow({ match, getTeamName, getAgeGroupName, onUpdateScore, onDelete }: {
-  match: any; getTeamName: (id: string) => string; getAgeGroupName: (id: string) => string;
-  onUpdateScore: (id: string, h: number, a: number) => void; onDelete: (id: string) => void;
+// Match row component with full inline editing
+function MatchRow({ match, teams, groups, getTeamName, getAgeGroupName, onUpdateScore, onClearScore, onUpdateMatch, onDelete }: {
+  match: any;
+  teams: any[];
+  groups: any[];
+  getTeamName: (id: string) => string;
+  getAgeGroupName: (id: string) => string;
+  onUpdateScore: (id: string, h: number, a: number) => void;
+  onClearScore: (id: string) => void;
+  onUpdateMatch: (id: string, fields: Record<string, any>) => void;
+  onDelete: (id: string) => void;
 }) {
   const [editing, setEditing] = useState(false);
   const [h, setH] = useState(match.home_score?.toString() || "0");
   const [a, setA] = useState(match.away_score?.toString() || "0");
+  const [referee, setReferee] = useState(match.referee || "");
+  const [pitch, setPitch] = useState(match.pitch || "");
+  const [matchTime, setMatchTime] = useState(
+    match.match_time ? new Date(new Date(match.match_time).getTime() - new Date(match.match_time).getTimezoneOffset() * 60000).toISOString().slice(0, 16) : ""
+  );
+  const [homeTeamId, setHomeTeamId] = useState(match.home_team_id || "");
+  const [awayTeamId, setAwayTeamId] = useState(match.away_team_id || "");
+  const [stage, setStage] = useState(match.stage || "group");
+
+  const ageTeams = teams.filter(t => t.age_group_id === match.age_group_id && t.status === "confirmed");
+
+  const saveAll = () => {
+    const fields: Record<string, any> = {
+      referee: referee.trim() || null,
+      pitch: pitch.trim() || null,
+      match_time: matchTime ? new Date(matchTime).toISOString() : null,
+      home_team_id: homeTeamId || null,
+      away_team_id: awayTeamId || null,
+      stage,
+    };
+    const hNum = h === "" ? null : parseInt(h);
+    const aNum = a === "" ? null : parseInt(a);
+    if (hNum !== null && aNum !== null && !Number.isNaN(hNum) && !Number.isNaN(aNum)) {
+      fields.home_score = hNum;
+      fields.away_score = aNum;
+      fields.status = "completed";
+    }
+    onUpdateMatch(match.id, fields);
+    setEditing(false);
+  };
 
   return (
-    <TableRow>
-      <TableCell className="text-xs">{getAgeGroupName(match.age_group_id)}</TableCell>
-      <TableCell><Badge variant="outline" className="text-xs capitalize">{match.stage}</Badge></TableCell>
-      <TableCell className="text-xs font-medium">{getTeamName(match.home_team_id)}</TableCell>
-      <TableCell className="text-center">
-        {editing ? (
+    <>
+      <TableRow>
+        <TableCell className="text-xs">{getAgeGroupName(match.age_group_id)}</TableCell>
+        <TableCell><Badge variant="outline" className="text-xs capitalize">{match.stage}</Badge></TableCell>
+        <TableCell className="text-xs font-medium">{getTeamName(match.home_team_id)}</TableCell>
+        <TableCell className="text-center">
           <div className="flex items-center gap-1 justify-center">
-            <Input type="number" min={0} className="w-12 h-7 text-center text-xs" value={h} onChange={e => setH(e.target.value)} />
-            <span>-</span>
-            <Input type="number" min={0} className="w-12 h-7 text-center text-xs" value={a} onChange={e => setA(e.target.value)} />
-            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { onUpdateScore(match.id, parseInt(h), parseInt(a)); setEditing(false); }}><Check className="h-3 w-3" /></Button>
+            <span className="text-xs">{match.status === "completed" ? `${match.home_score} - ${match.away_score}` : "vs"}</span>
+            {match.status === "completed" && (
+              <Button size="icon" variant="ghost" className="h-6 w-6" title="Clear score" onClick={() => onClearScore(match.id)}>
+                <X className="h-3 w-3 text-destructive" />
+              </Button>
+            )}
           </div>
-        ) : (
-          <span className="text-xs">{match.status === "completed" ? `${match.home_score} - ${match.away_score}` : "vs"}</span>
-        )}
-      </TableCell>
-      <TableCell className="text-xs font-medium">{getTeamName(match.away_team_id)}</TableCell>
-      <TableCell className="text-xs">{match.match_time ? new Date(match.match_time).toLocaleString("en-GB", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) : "—"}</TableCell>
-      <TableCell className="text-xs">{match.pitch || "—"}</TableCell>
-      <TableCell className="text-xs">{match.referee || "—"}</TableCell>
-      <TableCell>
-        <div className="flex gap-1">
-          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setEditing(!editing)}><Edit className="h-3 w-3" /></Button>
-          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => onDelete(match.id)}><Trash2 className="h-3 w-3 text-red-500" /></Button>
-        </div>
-      </TableCell>
-    </TableRow>
+        </TableCell>
+        <TableCell className="text-xs font-medium">{getTeamName(match.away_team_id)}</TableCell>
+        <TableCell className="text-xs">{match.match_time ? new Date(match.match_time).toLocaleString("en-GB", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) : "—"}</TableCell>
+        <TableCell className="text-xs">{match.pitch || "—"}</TableCell>
+        <TableCell className="text-xs">{match.referee || "—"}</TableCell>
+        <TableCell>
+          <div className="flex gap-1">
+            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setEditing(!editing)}><Edit className="h-3 w-3" /></Button>
+            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => onDelete(match.id)}><Trash2 className="h-3 w-3 text-red-500" /></Button>
+          </div>
+        </TableCell>
+      </TableRow>
+      {editing && (
+        <TableRow>
+          <TableCell colSpan={9} className="bg-muted/30">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-2">
+              <div>
+                <Label className="text-[10px] text-muted-foreground">Stage</Label>
+                <Select value={stage} onValueChange={setStage}>
+                  <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="group">Group</SelectItem>
+                    <SelectItem value="semi">Semi Final</SelectItem>
+                    <SelectItem value="final">Final</SelectItem>
+                    <SelectItem value="3rd-place">3rd Place</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-[10px] text-muted-foreground">Home Team</Label>
+                <Select value={homeTeamId} onValueChange={setHomeTeamId}>
+                  <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {ageTeams.map(t => <SelectItem key={t.id} value={t.id}>{t.team_name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-[10px] text-muted-foreground">Away Team</Label>
+                <Select value={awayTeamId} onValueChange={setAwayTeamId}>
+                  <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {ageTeams.filter(t => t.id !== homeTeamId).map(t => <SelectItem key={t.id} value={t.id}>{t.team_name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-[10px] text-muted-foreground">Time</Label>
+                <Input type="datetime-local" className="h-8 text-xs" value={matchTime} onChange={e => setMatchTime(e.target.value)} />
+              </div>
+              <div>
+                <Label className="text-[10px] text-muted-foreground">Pitch</Label>
+                <Input className="h-8 text-xs" value={pitch} onChange={e => setPitch(e.target.value)} placeholder="e.g. 1" />
+              </div>
+              <div>
+                <Label className="text-[10px] text-muted-foreground">Referee</Label>
+                <Input className="h-8 text-xs" value={referee} onChange={e => setReferee(e.target.value)} placeholder="Referee name" />
+              </div>
+              <div>
+                <Label className="text-[10px] text-muted-foreground">Score</Label>
+                <div className="flex items-center gap-1">
+                  <Input type="number" min={0} className="h-8 text-xs w-14" value={h} onChange={e => setH(e.target.value)} />
+                  <span className="text-xs">-</span>
+                  <Input type="number" min={0} className="h-8 text-xs w-14" value={a} onChange={e => setA(e.target.value)} />
+                </div>
+              </div>
+              <div className="flex items-end gap-2">
+                <Button size="sm" className="h-8" onClick={saveAll}>Save</Button>
+                <Button size="sm" variant="outline" className="h-8" onClick={() => { onClearScore(match.id); setH("0"); setA("0"); }}>Clear Score</Button>
+                <Button size="sm" variant="ghost" className="h-8" onClick={() => setEditing(false)}>Cancel</Button>
+              </div>
+            </div>
+          </TableCell>
+        </TableRow>
+      )}
+    </>
   );
 }
 
