@@ -3024,6 +3024,10 @@ export type Database = {
           read_ct: number
         }[]
       }
+      shares_team_with: {
+        Args: { _target: string; _viewer: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role:
