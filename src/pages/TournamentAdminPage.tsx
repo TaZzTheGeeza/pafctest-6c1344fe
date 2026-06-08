@@ -435,7 +435,7 @@ const TournamentAdminPage = () => {
     }
 
     const tournamentName = tournament?.name || "Tournament";
-    const link = `${window.location.origin}/tournament`;
+    const link = `https://www.pa-fc.uk/tournament`;
     const title = `${tournamentName} – Fixtures Now Available`;
     const message =
       `Great news — your fixtures for ${tournamentName} are now published and ready to view.\n\n` +
