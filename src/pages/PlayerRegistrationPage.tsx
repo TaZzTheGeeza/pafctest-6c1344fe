@@ -150,6 +150,7 @@ export default function PlayerRegistrationPage() {
     address: "",
     preferredAgeGroup: "",
     faFanNumber: "",
+    hasFaFanNumber: "" as "" | "yes" | "no",
     parentName: "",
     relationshipToChild: "",
     email: "",
