@@ -86,6 +86,7 @@ export default function DashboardPage() {
   const [addingRole, setAddingRole] = useState<string | null>(null);
   const [registrationOpen, setRegistrationOpen] = useState(false);
   const [togglingReg, setTogglingReg] = useState(false);
+  const [announcingReg, setAnnouncingReg] = useState(false);
   const [shopOpen, setShopOpen] = useState(true);
   const [togglingShop, setTogglingShop] = useState(false);
   const [presentationOpen, setPresentationOpen] = useState(false);
@@ -187,6 +188,21 @@ export default function DashboardPage() {
       toast.success(`Player registration ${newVal ? "opened" : "closed"}`);
     }
     setTogglingReg(false);
+  }
+
+  async function announceRegistration() {
+    setAnnouncingReg(true);
+    const message =
+      "🎉 Player Registration for the 2026/27 season is now OPEN! Secure your child's place at /register";
+    const { error } = await supabase
+      .from("announcements" as any)
+      .insert({ message, type: "success", is_active: true } as any);
+    if (error) {
+      toast.error("Failed to post announcement");
+    } else {
+      toast.success("Site-wide banner posted. For push & email, use Notifications tab.");
+    }
+    setAnnouncingReg(false);
   }
 
   async function loadUsers() {
@@ -522,25 +538,44 @@ export default function DashboardPage() {
               {/* Site Toggles — admin only */}
               {isAdmin && (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                  <div className="bg-card border border-border rounded-xl p-5 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-primary/10">
-                        <Users className="h-4 w-4 text-primary" />
+                  <div className="bg-card border border-border rounded-xl p-5 flex flex-col gap-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-primary/10">
+                          <Users className="h-4 w-4 text-primary" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-display font-semibold text-foreground">Player Registration</p>
+                          <p className="text-[10px] text-muted-foreground">
+                            {registrationOpen ? "Registration is currently OPEN" : "Registration is currently CLOSED"}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-sm font-display font-semibold text-foreground">Player Registration</p>
-                        <p className="text-[10px] text-muted-foreground">
-                          {registrationOpen ? "Registration is currently OPEN" : "Registration is currently CLOSED"}
-                        </p>
-                      </div>
+                      <button
+                        onClick={toggleRegistration}
+                        disabled={togglingReg}
+                        className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${registrationOpen ? "bg-primary" : "bg-muted"}`}
+                      >
+                        <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${registrationOpen ? "translate-x-6" : "translate-x-1"}`} />
+                      </button>
                     </div>
-                    <button
-                      onClick={toggleRegistration}
-                      disabled={togglingReg}
-                      className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${registrationOpen ? "bg-primary" : "bg-muted"}`}
-                    >
-                      <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${registrationOpen ? "translate-x-6" : "translate-x-1"}`} />
-                    </button>
+                    <div className="flex flex-wrap gap-2">
+                      <Link
+                        to="/admin/player-registrations"
+                        className="text-[11px] font-display tracking-wider uppercase px-3 py-1.5 rounded-md border border-border hover:border-primary hover:text-primary transition-colors"
+                      >
+                        View Tracker
+                      </Link>
+                      <button
+                        onClick={announceRegistration}
+                        disabled={!registrationOpen || announcingReg}
+                        className="text-[11px] font-display tracking-wider uppercase px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity inline-flex items-center gap-1"
+                        title={registrationOpen ? "Post a site-wide banner announcing registration is open" : "Open registration first to announce it"}
+                      >
+                        <Megaphone className="h-3 w-3" />
+                        {announcingReg ? "Posting..." : "Announce Now"}
+                      </button>
+                    </div>
                   </div>
                   <div className="bg-card border border-border rounded-xl p-5 flex items-center justify-between">
                     <div className="flex items-center gap-3">
