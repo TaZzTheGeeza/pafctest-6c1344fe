@@ -407,6 +407,56 @@ const TournamentAdminPage = () => {
     invalidateAll();
   };
 
+  // NOTIFY: FIXTURES READY — emails all team coaches + secretaries with link to tournament page
+  const notifyFixturesReady = async () => {
+    if (!selectedTournament) return;
+    const ageGroupIds = (ageGroups || []).map(ag => ag.id);
+    if (!ageGroupIds.length) { toast.error("No teams to notify"); return; }
+    if (!confirm("Email all team coaches & secretaries that fixtures are ready?")) return;
+
+    const { data: contactTeams, error } = await supabase
+      .from("tournament_teams")
+      .select("team_name, manager_name, manager_email, secretary_name, secretary_email")
+      .in("age_group_id", ageGroupIds);
+    if (error) { toast.error("Failed to load team contacts"); return; }
+
+    const tournamentName = tournament?.name || "Tournament";
+    const link = `${window.location.origin}/tournament`;
+    const title = `${tournamentName} – Fixtures Now Available`;
+    const message =
+      `Great news — your fixtures for ${tournamentName} are now published and ready to view.\n\n` +
+      `View the full schedule, group standings and match times here:\n${link}\n\n` +
+      `Please check kick-off times carefully and arrive in good time. See you on the day!`;
+
+    const recipients = new Set<string>();
+    for (const t of (contactTeams || []) as any[]) {
+      if (t.manager_email) recipients.add(String(t.manager_email).toLowerCase());
+      if (t.secretary_email) recipients.add(String(t.secretary_email).toLowerCase());
+    }
+
+    if (!recipients.size) { toast.error("No coach/secretary emails on file"); return; }
+
+    toast.info(`Sending to ${recipients.size} contact${recipients.size === 1 ? "" : "s"}...`);
+    let sent = 0, failed = 0;
+    await Promise.all(Array.from(recipients).map(async (email) => {
+      try {
+        await supabase.functions.invoke("send-transactional-email", {
+          body: {
+            templateName: "admin-broadcast",
+            recipientEmail: email,
+            idempotencyKey: `tournament-fixtures-ready-${selectedTournament}-${email}`,
+            templateData: { title, message },
+          },
+        });
+        sent++;
+      } catch (e) {
+        console.error("Fixtures-ready email failed", email, e);
+        failed++;
+      }
+    }));
+    toast.success(`Fixtures notification sent • ${sent} delivered${failed ? `, ${failed} failed` : ""}`);
+  };
+
   // DELETE MATCH
   const deleteMatch = async (matchId: string) => {
     await supabase.from("tournament_matches").delete().eq("id", matchId);
