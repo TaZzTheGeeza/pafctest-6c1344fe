@@ -1,12 +1,14 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ShoppingBag, Trophy, ChevronRight, Smartphone, Sparkles } from "lucide-react";
+import { ShoppingBag, Trophy, ChevronRight, Smartphone, Sparkles, UserPlus } from "lucide-react";
 import heroBg from "@/assets/hero-bg.jpg";
 import { usePresentationEnabled } from "@/hooks/usePresentationEnabled";
+import { useRegistrationOpen } from "@/hooks/useRegistrationOpen";
 
 export function HeroSection() {
   const { enabled: presentationEnabled } = usePresentationEnabled();
+  const { open: registrationOpen } = useRegistrationOpen();
   return (
     <section className="relative min-h-[90vh] flex items-end justify-center overflow-hidden">
       <div
