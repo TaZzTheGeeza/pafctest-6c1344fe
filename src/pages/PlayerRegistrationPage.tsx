@@ -524,7 +524,7 @@ export default function PlayerRegistrationPage() {
                     <p className="text-[10px] text-muted-foreground mt-1">
                       Don't have an FA number yet?{" "}
                       <a
-                        href="https://wholegame.thefa.com/"
+                        href="https://login.thefa.com/b2cthefa.onmicrosoft.com/b2c_1a_signup_signinactsoc/oauth2/v2.0/authorize?client_id=b56cfcf8-856a-45e3-9a25-3fe21463338c&scope=b56cfcf8-856a-45e3-9a25-3fe21463338c%20openid%20profile%20offline_access&redirect_uri=https%3A%2F%2Fmyaccount.thefa.com%2F&response_mode=fragment&response_type=code"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-primary underline hover:opacity-80"
