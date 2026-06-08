@@ -660,7 +660,18 @@ const TournamentAdminPage = () => {
                     </TableHeader>
                     <TableBody>
                       {matches.map(m => (
-                        <MatchRow key={m.id} match={m} getTeamName={getTeamName} getAgeGroupName={getAgeGroupName} onUpdateScore={updateScore} onDelete={deleteMatch} />
+                        <MatchRow
+                          key={m.id}
+                          match={m}
+                          teams={teams || []}
+                          groups={groups || []}
+                          getTeamName={getTeamName}
+                          getAgeGroupName={getAgeGroupName}
+                          onUpdateScore={updateScore}
+                          onClearScore={clearScore}
+                          onUpdateMatch={updateMatch}
+                          onDelete={deleteMatch}
+                        />
                       ))}
                     </TableBody>
                   </Table>
