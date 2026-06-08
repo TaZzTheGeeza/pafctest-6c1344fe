@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -7,17 +7,30 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { UserPlus, Clock, Send, CheckCircle, AlertCircle, Camera, X } from "lucide-react";
+import { UserPlus, Clock, Send, CheckCircle, AlertCircle, Camera, X, LogIn, Users } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import clubLogo from "@/assets/club-logo.jpg";
 import { DateInput } from "@/components/ui/date-input";
 import { SEO } from "@/components/SEO";
 
-const ageGroups = [
-  "U6", "U7", "U8", "U9 Black", "U9 Gold", "U10", "U11",
-  "U12 Black", "U12 Gold", "U13", "U14 Black", "U14 Gold", "U15",
-];
+// Map canonical team slug -> registration display label
+const teamSlugToLabel: Record<string, string> = {
+  "u6s": "U6", "u7s": "U7", "u8s": "U8",
+  "u9s": "U9", "u9s-black": "U9 Black", "u9s-gold": "U9 Gold",
+  "u10s": "U10", "u11s": "U11", "u11s-black": "U11 Black", "u11s-gold": "U11 Gold",
+  "u12s-black": "U12 Black", "u12s-gold": "U12 Gold",
+  "u13s": "U13", "u13s-black": "U13 Black", "u13s-gold": "U13 Gold",
+  "u14s": "U14", "u14s-black": "U14 Black", "u14s-gold": "U14 Gold",
+  "u15s": "U15",
+};
+
+interface LinkedChild {
+  id: string;
+  player_name: string;
+  team_slug: string;
+}
 
 export default function PlayerRegistrationPage() {
   const [searchParams] = useSearchParams();
