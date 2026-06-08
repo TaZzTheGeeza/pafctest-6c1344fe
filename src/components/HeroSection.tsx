@@ -30,7 +30,19 @@ export function HeroSection() {
             <span className="text-foreground">Athletic FC</span>
           </h1>
           <p className="text-xs md:text-sm font-display text-primary tracking-[0.3em] mb-6">The Lions · Est. 2020</p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 flex-wrap">
+            {registrationOpen && (
+              <Button
+                size="lg"
+                className="bg-gold-gradient text-primary-foreground font-display tracking-wider hover:opacity-90 transition-opacity shadow-[0_0_24px_hsl(var(--primary)/0.5)] animate-pulse hover:animate-none"
+                asChild
+              >
+                <Link to="/register">
+                  <UserPlus className="w-5 h-5 mr-2" />
+                  Register for 2026/27
+                </Link>
+              </Button>
+            )}
             <Button
               size="lg"
               className="bg-gold-gradient text-primary-foreground font-display tracking-wider hover:opacity-90 transition-opacity"
