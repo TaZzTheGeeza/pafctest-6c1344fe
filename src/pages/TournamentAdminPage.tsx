@@ -239,6 +239,21 @@ const TournamentAdminPage = () => {
     toast.success("Score updated");
   };
 
+  // CLEAR SCORE
+  const clearScore = async (matchId: string) => {
+    await supabase.from("tournament_matches").update({ home_score: null, away_score: null, status: "scheduled" }).eq("id", matchId);
+    invalidateAll();
+    toast.success("Score cleared");
+  };
+
+  // UPDATE MATCH FIELDS (referee / pitch / time / teams / stage / group)
+  const updateMatch = async (matchId: string, fields: Record<string, any>) => {
+    const { error } = await supabase.from("tournament_matches").update(fields).eq("id", matchId);
+    if (error) { toast.error(error.message); return; }
+    invalidateAll();
+    toast.success("Match updated");
+  };
+
   // POST ANNOUNCEMENT
   const postAnnouncement = async () => {
     if (!announcementText.trim() || !selectedTournament) return;
