@@ -33,6 +33,11 @@ const TournamentAdminPage = () => {
   const [matchForm, setMatchForm] = useState({ age_group_id: "", group_id: "", home_team_id: "", away_team_id: "", match_time: "", pitch: "", stage: "group", referee: "" });
   const [teamForm, setTeamForm] = useState({ team_name: "", club_name: "", manager_name: "", manager_email: "", manager_phone: "", age_group_id: "", player_count: "", whatsapp_name: "", whatsapp_number: "", consent_rules: true, consent_photography: true });
   const [announcementText, setAnnouncementText] = useState("");
+  const [matchFilterAge, setMatchFilterAge] = useState<string>("all");
+  const [matchFilterPitch, setMatchFilterPitch] = useState<string>("all");
+  const [matchFilterDay, setMatchFilterDay] = useState<string>("all");
+  const [matchFilterStage, setMatchFilterStage] = useState<string>("all");
+  const [matchFilterStatus, setMatchFilterStatus] = useState<string>("all");
   const [editingGroup, setEditingGroup] = useState<{ id: string; name: string } | null>(null);
   const [editingTeam, setEditingTeam] = useState<any | null>(null);
   const [editTeamForm, setEditTeamForm] = useState({ team_name: "", club_name: "", county: "", club_org_id: "", league_division: "", team_category: "", manager_name: "", manager_email: "", manager_phone: "", secretary_name: "", secretary_email: "", secretary_phone: "", player_count: "", whatsapp_contacts: [{ name: "", number: "" }] as { name: string; number: string }[], consent_rules: true, consent_photography: true });
@@ -667,42 +672,109 @@ const TournamentAdminPage = () => {
 
               {/* MATCHES TAB */}
               <TabsContent value="matches" className="space-y-4">
-                <Button size="sm" onClick={() => setShowAddMatch(true)}><Plus className="h-4 w-4 mr-1" />Add Match</Button>
-                {matches && matches.length > 0 ? (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Age Group</TableHead>
-                        <TableHead>Stage</TableHead>
-                        <TableHead>Home</TableHead>
-                        <TableHead className="text-center">Score</TableHead>
-                        <TableHead>Away</TableHead>
-                        <TableHead>Time</TableHead>
-                        <TableHead>Pitch</TableHead>
-                        <TableHead>Referee</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {matches.map(m => (
-                        <MatchRow
-                          key={m.id}
-                          match={m}
-                          teams={teams || []}
-                          groups={groups || []}
-                          getTeamName={getTeamName}
-                          getAgeGroupName={getAgeGroupName}
-                          onUpdateScore={updateScore}
-                          onClearScore={clearScore}
-                          onUpdateMatch={updateMatch}
-                          onDelete={deleteMatch}
-                        />
-                      ))}
-                    </TableBody>
-                  </Table>
-                ) : (
-                  <Card><CardContent className="pt-6 text-center text-muted-foreground">No matches created yet</CardContent></Card>
-                )}
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button size="sm" onClick={() => setShowAddMatch(true)}><Plus className="h-4 w-4 mr-1" />Add Match</Button>
+                </div>
+                {(() => {
+                  const pitches = Array.from(new Set((matches || []).map(m => m.pitch).filter(Boolean))) as string[];
+                  const days = Array.from(new Set((matches || []).map(m => m.match_time ? new Date(m.match_time).toISOString().slice(0, 10) : null).filter(Boolean))) as string[];
+                  const stages = Array.from(new Set((matches || []).map(m => m.stage).filter(Boolean))) as string[];
+                  const filtered = (matches || []).filter(m => {
+                    if (matchFilterAge !== "all" && m.age_group_id !== matchFilterAge) return false;
+                    if (matchFilterPitch !== "all" && (m.pitch || "") !== matchFilterPitch) return false;
+                    if (matchFilterDay !== "all") {
+                      const d = m.match_time ? new Date(m.match_time).toISOString().slice(0, 10) : "";
+                      if (d !== matchFilterDay) return false;
+                    }
+                    if (matchFilterStage !== "all" && (m.stage || "") !== matchFilterStage) return false;
+                    if (matchFilterStatus !== "all" && (m.status || "scheduled") !== matchFilterStatus) return false;
+                    return true;
+                  });
+                  const hasFilter = matchFilterAge !== "all" || matchFilterPitch !== "all" || matchFilterDay !== "all" || matchFilterStage !== "all" || matchFilterStatus !== "all";
+                  return (
+                    <>
+                      <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                        <Select value={matchFilterAge} onValueChange={setMatchFilterAge}>
+                          <SelectTrigger><SelectValue placeholder="Age group" /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All age groups</SelectItem>
+                            {ageGroups?.map(ag => <SelectItem key={ag.id} value={ag.id}>{ag.age_group}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                        <Select value={matchFilterPitch} onValueChange={setMatchFilterPitch}>
+                          <SelectTrigger><SelectValue placeholder="Pitch" /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All pitches</SelectItem>
+                            {pitches.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                        <Select value={matchFilterDay} onValueChange={setMatchFilterDay}>
+                          <SelectTrigger><SelectValue placeholder="Day" /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All days</SelectItem>
+                            {days.sort().map(d => <SelectItem key={d} value={d}>{new Date(d).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" })}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                        <Select value={matchFilterStage} onValueChange={setMatchFilterStage}>
+                          <SelectTrigger><SelectValue placeholder="Stage" /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All stages</SelectItem>
+                            {stages.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                        <Select value={matchFilterStatus} onValueChange={setMatchFilterStatus}>
+                          <SelectTrigger><SelectValue placeholder="Status" /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All statuses</SelectItem>
+                            <SelectItem value="scheduled">Scheduled</SelectItem>
+                            <SelectItem value="completed">Completed</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      {hasFilter && (
+                        <div className="flex items-center justify-between text-sm text-muted-foreground">
+                          <span>Showing {filtered.length} of {matches?.length ?? 0} matches</span>
+                          <Button size="sm" variant="ghost" onClick={() => { setMatchFilterAge("all"); setMatchFilterPitch("all"); setMatchFilterDay("all"); setMatchFilterStage("all"); setMatchFilterStatus("all"); }}>Clear filters</Button>
+                        </div>
+                      )}
+                      {filtered.length > 0 ? (
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Age Group</TableHead>
+                              <TableHead>Stage</TableHead>
+                              <TableHead>Home</TableHead>
+                              <TableHead className="text-center">Score</TableHead>
+                              <TableHead>Away</TableHead>
+                              <TableHead>Time</TableHead>
+                              <TableHead>Pitch</TableHead>
+                              <TableHead>Referee</TableHead>
+                              <TableHead>Actions</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {filtered.map(m => (
+                              <MatchRow
+                                key={m.id}
+                                match={m}
+                                teams={teams || []}
+                                groups={groups || []}
+                                getTeamName={getTeamName}
+                                getAgeGroupName={getAgeGroupName}
+                                onUpdateScore={updateScore}
+                                onClearScore={clearScore}
+                                onUpdateMatch={updateMatch}
+                                onDelete={deleteMatch}
+                              />
+                            ))}
+                          </TableBody>
+                        </Table>
+                      ) : (
+                        <Card><CardContent className="pt-6 text-center text-muted-foreground">{hasFilter ? "No matches match the selected filters" : "No matches created yet"}</CardContent></Card>
+                      )}
+                    </>
+                  );
+                })()}
               </TabsContent>
             </Tabs>
           )}
