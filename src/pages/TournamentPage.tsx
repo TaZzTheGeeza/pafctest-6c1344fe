@@ -658,14 +658,77 @@ const TournamentPage = () => {
 
               {/* FIXTURES */}
               <TabsContent value="fixtures" className="space-y-4">
-                {ageGroups?.map(ag => {
-                  const agMatches = groupMatches.filter(m => m.age_group_id === ag.id);
-                  if (agMatches.length === 0) return null;
-                  return (
+                {/* Filters */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                  <Select value={filterAgeGroup} onValueChange={setFilterAgeGroup}>
+                    <SelectTrigger><SelectValue placeholder="Age Group" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Age Groups</SelectItem>
+                      {ageGroups?.map(ag => (
+                        <SelectItem key={ag.id} value={ag.id}>{ag.age_group}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select value={filterPitch} onValueChange={setFilterPitch}>
+                    <SelectTrigger><SelectValue placeholder="Pitch" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Pitches</SelectItem>
+                      {Array.from(new Set((matches || []).map(m => m.pitch).filter(Boolean))).sort().map(p => (
+                        <SelectItem key={p as string} value={p as string}>Pitch {p}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select value={filterDay} onValueChange={setFilterDay}>
+                    <SelectTrigger><SelectValue placeholder="Day" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Days</SelectItem>
+                      {Array.from(new Set((matches || []).map(m => m.match_time ? new Date(m.match_time).toISOString().slice(0, 10) : null).filter(Boolean))).sort().map(d => (
+                        <SelectItem key={d as string} value={d as string}>
+                          {new Date(d as string).toLocaleDateString("en-GB", { weekday: "short", day: "2-digit", month: "short" })}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select value={filterStage} onValueChange={setFilterStage}>
+                    <SelectTrigger><SelectValue placeholder="Stage" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Stages</SelectItem>
+                      <SelectItem value="group">Group</SelectItem>
+                      <SelectItem value="semi">Semi-final</SelectItem>
+                      <SelectItem value="final">Final</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                {(filterAgeGroup !== "all" || filterPitch !== "all" || filterDay !== "all" || filterStage !== "all") && (
+                  <Button variant="ghost" size="sm" onClick={() => { setFilterAgeGroup("all"); setFilterPitch("all"); setFilterDay("all"); setFilterStage("all"); }}>
+                    Clear filters
+                  </Button>
+                )}
+
+                {(() => {
+                  const filtered = (matches || []).filter(m => {
+                    if (filterAgeGroup !== "all" && m.age_group_id !== filterAgeGroup) return false;
+                    if (filterPitch !== "all" && m.pitch !== filterPitch) return false;
+                    if (filterDay !== "all") {
+                      const d = m.match_time ? new Date(m.match_time).toISOString().slice(0, 10) : null;
+                      if (d !== filterDay) return false;
+                    }
+                    if (filterStage !== "all") {
+                      if (filterStage === "group" && m.stage !== "group") return false;
+                      if (filterStage === "semi" && !(m.stage || "").toLowerCase().includes("semi")) return false;
+                      if (filterStage === "final" && !(m.stage || "").toLowerCase().includes("final")) return false;
+                    }
+                    return true;
+                  });
+                  const groups = ageGroups?.map(ag => ({ ag, list: filtered.filter(m => m.age_group_id === ag.id) })).filter(g => g.list.length > 0) || [];
+                  if (groups.length === 0) {
+                    return <Card><CardContent className="pt-6 text-center text-muted-foreground">No fixtures match the selected filters</CardContent></Card>;
+                  }
+                  return groups.map(({ ag, list }) => (
                     <div key={ag.id} className="space-y-3">
                       <h3 className="font-display text-xl font-bold text-primary">{ag.age_group}</h3>
                       <div className="space-y-2">
-                        {agMatches.map(m => (
+                        {list.map(m => (
                           <Card key={m.id} className="p-3">
                             <div className="flex items-center justify-between text-sm">
                               <span className="font-medium flex-1 text-right"><TeamLink id={m.home_team_id} /></span>
@@ -678,8 +741,9 @@ const TournamentPage = () => {
                               </div>
                               <span className="font-medium flex-1"><TeamLink id={m.away_team_id} /></span>
                             </div>
-                            {(m.pitch || m.referee) && (
+                            {(m.pitch || m.referee || m.stage !== "group") && (
                               <p className="text-xs text-muted-foreground text-center mt-1">
+                                {m.stage !== "group" && <><span className="uppercase">{m.stage}</span>{(m.pitch || m.referee) && <> · </>}</>}
                                 {m.pitch && <>Pitch: {m.pitch}</>}
                                 {m.pitch && m.referee && <> · </>}
                                 {m.referee && (
@@ -699,12 +763,10 @@ const TournamentPage = () => {
                         ))}
                       </div>
                     </div>
-                  );
-                })}
-                {groupMatches.length === 0 && (
-                  <Card><CardContent className="pt-6 text-center text-muted-foreground">Fixtures not yet published</CardContent></Card>
-                )}
+                  ));
+                })()}
               </TabsContent>
+
 
               {/* KNOCKOUT */}
               <TabsContent value="knockout" className="space-y-6">
