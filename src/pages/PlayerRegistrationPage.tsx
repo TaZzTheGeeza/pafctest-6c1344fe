@@ -33,6 +33,7 @@ interface LinkedChild {
 }
 
 export default function PlayerRegistrationPage() {
+  const { user, loading: authLoading } = useAuth();
   const [searchParams] = useSearchParams();
   const paymentStatus = searchParams.get("status");
   const returnedRegistrationId = searchParams.get("rid");
@@ -41,6 +42,43 @@ export default function PlayerRegistrationPage() {
   const [paymentCancelled] = useState(paymentStatus === "cancelled");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [registrationOpen, setRegistrationOpen] = useState<boolean | null>(null);
+  const [linkedChildren, setLinkedChildren] = useState<LinkedChild[] | null>(null);
+  const [selectedChildId, setSelectedChildId] = useState<string>("");
+
+  useEffect(() => {
+    async function checkRegistration() {
+      const { data } = await supabase
+        .from("site_settings" as any)
+        .select("value")
+        .eq("key", "registration_open")
+        .single();
+      setRegistrationOpen(data ? (data as any).value === "true" : false);
+    }
+    checkRegistration();
+  }, []);
+
+  // Load the signed-in user's linked children from the Hub
+  useEffect(() => {
+    if (!user) {
+      setLinkedChildren(null);
+      return;
+    }
+    (async () => {
+      const { data, error } = await supabase
+        .from("guardians")
+        .select("id, player_name, team_slug")
+        .eq("parent_user_id", user.id)
+        .eq("status", "active")
+        .order("player_name");
+      if (error) {
+        console.error("Failed to load linked children", error);
+        setLinkedChildren([]);
+        return;
+      }
+      setLinkedChildren((data || []).filter((g) => g.player_name?.trim()));
+    })();
+  }, [user]);
+
 
   useEffect(() => {
     async function checkRegistration() {
