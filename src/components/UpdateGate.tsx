@@ -174,24 +174,30 @@ export function UpdateGate() {
       newFpRef.current = fp;
       const dismissedFp = localStorage.getItem(DISMISSED_FP_KEY);
       const manualRefreshedFp = localStorage.getItem(MANUAL_REFRESHED_FP_KEY);
-      const manualRefreshedAt = Number(localStorage.getItem(MANUAL_REFRESHED_AT_KEY) || 0);
-      const manualRefreshCoolingDown =
-        manualRefreshedAt > 0 && Date.now() - manualRefreshedAt < MANUAL_REFRESH_COOLDOWN_MS;
-      const shouldSuppress =
-        dismissedFp === fp || manualRefreshedFp === fp || manualRefreshCoolingDown;
 
+      // On initial page load: always force-refresh immediately to get the latest version.
+      // The AUTO_REFRESHED_KEY guard prevents infinite loops if the fingerprint persists.
+      if (isInitial) {
+        const alreadyAutoRefreshed = localStorage.getItem(AUTO_REFRESHED_KEY) === fp;
+        const alreadyManualRefreshed = manualRefreshedFp === fp;
+        if (!alreadyAutoRefreshed && !alreadyManualRefreshed) {
+          try {
+            localStorage.setItem(AUTO_REFRESHED_KEY, fp);
+            localStorage.setItem(FP_KEY, fp);
+          } catch {}
+          doRefresh();
+          return;
+        }
+        // Loop-guard tripped — fall through to banner
+        setUpdateAvailable(true);
+        return;
+      }
+
+      // Background poll (not initial): show banner + try safe auto-refresh
+      const shouldSuppress = dismissedFp === fp || manualRefreshedFp === fp;
       setUpdateAvailable(!shouldSuppress);
       setDismissed(shouldSuppress);
-
-      // Try a one-shot safe auto-refresh
-      if (shouldSuppress) {
-        return;
-      } else if (!isInitial) {
-        tryAutoRefresh(fp);
-      } else {
-        // On initial load, give the user a moment before considering auto-refresh
-        setTimeout(() => !cancelled && tryAutoRefresh(fp), 5000);
-      }
+      if (!shouldSuppress) tryAutoRefresh(fp);
     };
 
     runCheck(true);
