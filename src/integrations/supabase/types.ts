@@ -2409,12 +2409,14 @@ export type Database = {
       tournament_matches: {
         Row: {
           age_group_id: string
+          away_placeholder: string | null
           away_score: number | null
-          away_team_id: string
+          away_team_id: string | null
           created_at: string
           group_id: string | null
+          home_placeholder: string | null
           home_score: number | null
-          home_team_id: string
+          home_team_id: string | null
           id: string
           match_time: string | null
           pitch: string | null
@@ -2424,12 +2426,14 @@ export type Database = {
         }
         Insert: {
           age_group_id: string
+          away_placeholder?: string | null
           away_score?: number | null
-          away_team_id: string
+          away_team_id?: string | null
           created_at?: string
           group_id?: string | null
+          home_placeholder?: string | null
           home_score?: number | null
-          home_team_id: string
+          home_team_id?: string | null
           id?: string
           match_time?: string | null
           pitch?: string | null
@@ -2439,12 +2443,14 @@ export type Database = {
         }
         Update: {
           age_group_id?: string
+          away_placeholder?: string | null
           away_score?: number | null
-          away_team_id?: string
+          away_team_id?: string | null
           created_at?: string
           group_id?: string | null
+          home_placeholder?: string | null
           home_score?: number | null
-          home_team_id?: string
+          home_team_id?: string | null
           id?: string
           match_time?: string | null
           pitch?: string | null
