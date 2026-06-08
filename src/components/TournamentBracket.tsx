@@ -44,9 +44,9 @@ const MatchCard = ({ match, getTeamName, isFinal }: { match: Match; getTeamName:
 };
 
 export const TournamentBracket = ({ matches, getTeamName, ageGroupLabel }: TournamentBracketProps) => {
-  const semis = matches.filter(m => m.stage === "semi");
+  const semis = matches.filter(m => m.stage === "semi" || m.stage === "semi-final");
   const final_ = matches.find(m => m.stage === "final");
-  const thirdPlace = matches.find(m => m.stage === "3rd-place");
+  const thirdPlace = matches.find(m => m.stage === "3rd-place" || m.stage === "third-place");
 
   if (semis.length === 0 && !final_) return null;
 
