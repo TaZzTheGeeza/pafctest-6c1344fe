@@ -410,26 +410,64 @@ export default function PlayerRegistrationPage() {
                     <h2 className="font-display text-xl font-bold">Player Registration Form</h2>
                   </div>
 
-                  {/* Child's Details */}
+                  {/* Child's Details — locked to a linked Hub child */}
                   <div>
                     <h3 className="font-display text-sm font-bold text-primary mb-3">Child's Details</h3>
                     <div className="space-y-4">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                          <label className="text-xs text-muted-foreground mb-1 block">Full Name *</label>
-                          <Input name="childName" value={form.childName} onChange={handleChange} required placeholder="Child's full name" maxLength={100} />
-                        </div>
-                        <div>
-                          <label className="text-xs text-muted-foreground mb-1 block">Date of Birth *</label>
-                          <DateInput value={form.childDob} onChange={(val) => setForm(f => ({ ...f, childDob: val }))} placeholder="Select date of birth" required dropdownNav fromYear={2005} toYear={new Date().getFullYear()} />
-                        </div>
-                      </div>
                       <div>
-                        <label className="text-xs text-muted-foreground mb-1 block">Address *</label>
-                        <Textarea name="address" value={form.address} onChange={handleChange} required placeholder="Full address" rows={2} maxLength={500} />
+                        <label className="text-xs text-muted-foreground mb-1 block">Select Your Child *</label>
+                        <select
+                          value={selectedChildId}
+                          required
+                          onChange={(e) => {
+                            const id = e.target.value;
+                            setSelectedChildId(id);
+                            const child = linkedChildren?.find((c) => c.id === id);
+                            if (child) {
+                              setForm((f) => ({
+                                ...f,
+                                childName: child.player_name,
+                                preferredAgeGroup: teamSlugToLabel[child.team_slug] || "",
+                              }));
+                            } else {
+                              setForm((f) => ({ ...f, childName: "", preferredAgeGroup: "" }));
+                            }
+                          }}
+                          className={selectClass}
+                        >
+                          <option value="">Choose your linked child...</option>
+                          {linkedChildren?.map((c) => (
+                            <option key={c.id} value={c.id}>
+                              {c.player_name}{c.team_slug ? ` — ${teamSlugToLabel[c.team_slug] || c.team_slug.toUpperCase()}` : ""}
+                            </option>
+                          ))}
+                        </select>
+                        <p className="text-[10px] text-muted-foreground mt-1">
+                          Only children linked to your Hub account are shown. Need to add another child? <Link to="/hub" className="text-primary underline">Request Hub access</Link>.
+                        </p>
                       </div>
+
+                      {selectedChildId && (
+                        <>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                              <label className="text-xs text-muted-foreground mb-1 block">Full Name *</label>
+                              <Input name="childName" value={form.childName} onChange={handleChange} required placeholder="Child's full name" maxLength={100} />
+                            </div>
+                            <div>
+                              <label className="text-xs text-muted-foreground mb-1 block">Date of Birth *</label>
+                              <DateInput value={form.childDob} onChange={(val) => setForm(f => ({ ...f, childDob: val }))} placeholder="Select date of birth" required dropdownNav fromYear={2005} toYear={new Date().getFullYear()} />
+                            </div>
+                          </div>
+                          <div>
+                            <label className="text-xs text-muted-foreground mb-1 block">Address *</label>
+                            <Textarea name="address" value={form.address} onChange={handleChange} required placeholder="Full address" rows={2} maxLength={500} />
+                          </div>
+                        </>
+                      )}
                     </div>
                   </div>
+
 
                   {/* Player Photo */}
                   <div>
