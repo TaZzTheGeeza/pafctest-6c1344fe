@@ -521,7 +521,18 @@ export default function PlayerRegistrationPage() {
                   <div>
                     <label className="text-xs text-muted-foreground mb-1 block">FA FAN Number *</label>
                     <Input name="faFanNumber" value={form.faFanNumber} onChange={handleChange} required placeholder="Enter FA FAN number" maxLength={50} />
-                    <p className="text-[10px] text-muted-foreground mt-1">If you don't have one, please contact the club for assistance.</p>
+                    <p className="text-[10px] text-muted-foreground mt-1">
+                      Don't have an FA number yet?{" "}
+                      <a
+                        href="https://wholegame.thefa.com/Account/Register"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary underline hover:opacity-80"
+                      >
+                        Register with The FA here
+                      </a>
+                      .
+                    </p>
                   </div>
 
                   {/* Parent / Carer Details */}
