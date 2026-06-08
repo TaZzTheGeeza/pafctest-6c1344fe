@@ -793,7 +793,14 @@ const TournamentPage = () => {
 
               {/* REGISTER */}
               <TabsContent value="register">
-                {ageGroups && ageGroups.length > 0 ? (
+                {activeTournament && (activeTournament as any).entries_open === false ? (
+                  <Card className="max-w-lg mx-auto text-center">
+                    <CardContent className="pt-6 space-y-2">
+                      <h3 className="font-display text-xl uppercase tracking-wider">Entries Closed</h3>
+                      <p className="text-muted-foreground">Tournament entries are now closed. Thanks to all teams who registered — see you on matchday!</p>
+                    </CardContent>
+                  </Card>
+                ) : ageGroups && ageGroups.length > 0 ? (
                   <TournamentEntryForm
                     ageGroups={ageGroups.map(ag => ({
                       ...ag,
