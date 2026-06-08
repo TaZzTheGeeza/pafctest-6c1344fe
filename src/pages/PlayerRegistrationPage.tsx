@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -7,19 +7,33 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { UserPlus, Clock, Send, CheckCircle, AlertCircle, Camera, X } from "lucide-react";
+import { UserPlus, Clock, Send, CheckCircle, AlertCircle, Camera, X, LogIn, Users } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import clubLogo from "@/assets/club-logo.jpg";
 import { DateInput } from "@/components/ui/date-input";
 import { SEO } from "@/components/SEO";
 
-const ageGroups = [
-  "U6", "U7", "U8", "U9 Black", "U9 Gold", "U10", "U11",
-  "U12 Black", "U12 Gold", "U13", "U14 Black", "U14 Gold", "U15",
-];
+// Map canonical team slug -> registration display label
+const teamSlugToLabel: Record<string, string> = {
+  "u6s": "U6", "u7s": "U7", "u8s": "U8",
+  "u9s": "U9", "u9s-black": "U9 Black", "u9s-gold": "U9 Gold",
+  "u10s": "U10", "u11s": "U11", "u11s-black": "U11 Black", "u11s-gold": "U11 Gold",
+  "u12s-black": "U12 Black", "u12s-gold": "U12 Gold",
+  "u13s": "U13", "u13s-black": "U13 Black", "u13s-gold": "U13 Gold",
+  "u14s": "U14", "u14s-black": "U14 Black", "u14s-gold": "U14 Gold",
+  "u15s": "U15",
+};
+
+interface LinkedChild {
+  id: string;
+  player_name: string;
+  team_slug: string;
+}
 
 export default function PlayerRegistrationPage() {
+  const { user, loading: authLoading } = useAuth();
   const [searchParams] = useSearchParams();
   const paymentStatus = searchParams.get("status");
   const returnedRegistrationId = searchParams.get("rid");
@@ -28,6 +42,43 @@ export default function PlayerRegistrationPage() {
   const [paymentCancelled] = useState(paymentStatus === "cancelled");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [registrationOpen, setRegistrationOpen] = useState<boolean | null>(null);
+  const [linkedChildren, setLinkedChildren] = useState<LinkedChild[] | null>(null);
+  const [selectedChildId, setSelectedChildId] = useState<string>("");
+
+  useEffect(() => {
+    async function checkRegistration() {
+      const { data } = await supabase
+        .from("site_settings" as any)
+        .select("value")
+        .eq("key", "registration_open")
+        .single();
+      setRegistrationOpen(data ? (data as any).value === "true" : false);
+    }
+    checkRegistration();
+  }, []);
+
+  // Load the signed-in user's linked children from the Hub
+  useEffect(() => {
+    if (!user) {
+      setLinkedChildren(null);
+      return;
+    }
+    (async () => {
+      const { data, error } = await supabase
+        .from("guardians")
+        .select("id, player_name, team_slug")
+        .eq("parent_user_id", user.id)
+        .eq("status", "active")
+        .order("player_name");
+      if (error) {
+        console.error("Failed to load linked children", error);
+        setLinkedChildren([]);
+        return;
+      }
+      setLinkedChildren((data || []).filter((g) => g.player_name?.trim()));
+    })();
+  }, [user]);
+
 
   useEffect(() => {
     async function checkRegistration() {
@@ -146,6 +197,16 @@ export default function PlayerRegistrationPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!user) {
+      toast.error("Please sign in to register a player.");
+      return;
+    }
+
+    if (!selectedChildId) {
+      toast.error("Please select your linked child.");
+      return;
+    }
+
     if (!form.hasMedicalConditions) {
       toast.error("Please indicate whether the player has any medical conditions.");
       return;
@@ -169,6 +230,8 @@ export default function PlayerRegistrationPage() {
     setIsSubmitting(true);
     try {
       const insertData: Record<string, unknown> = {
+        user_id: user.id,
+        guardian_id: selectedChildId,
         child_name: form.childName,
         child_dob: form.childDob,
         address: form.address || null,
@@ -191,6 +254,7 @@ export default function PlayerRegistrationPage() {
         consent_photography: form.consentPhotography,
         declaration_confirmed: form.declarationConfirmed,
       };
+
 
       // Upload photo first
       const fileExt = photoFile.name.split(".").pop();
@@ -251,7 +315,7 @@ export default function PlayerRegistrationPage() {
             <p className="text-muted-foreground text-center mb-4">Register your interest for the 2026/27 season</p>
           </motion.div>
 
-          {registrationOpen === null ? (
+          {registrationOpen === null || authLoading ? (
             <div className="max-w-2xl mx-auto text-center py-12">
               <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full mx-auto" />
             </div>
@@ -273,7 +337,41 @@ export default function PlayerRegistrationPage() {
                 </p>
               </div>
             </motion.div>
+          ) : !user && !submitted ? (
+            <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="max-w-2xl mx-auto">
+              <div className="bg-card border border-border rounded-lg p-12 text-center">
+                <LogIn className="h-16 w-16 text-primary mx-auto mb-4" />
+                <h2 className="font-display text-2xl font-bold mb-2">Sign In to Register</h2>
+                <p className="text-muted-foreground mb-6">
+                  Player registration is restricted to parents/carers with a linked child in the PAFC Hub. Please sign in to continue.
+                </p>
+                <Link to="/auth">
+                  <Button className="bg-gold-gradient text-primary-foreground font-display tracking-wider">
+                    <LogIn className="w-4 h-4 mr-2" /> Sign In
+                  </Button>
+                </Link>
+              </div>
+            </motion.div>
+          ) : user && linkedChildren !== null && linkedChildren.length === 0 && !submitted ? (
+            <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="max-w-2xl mx-auto">
+              <div className="bg-card border border-border rounded-lg p-12 text-center">
+                <Users className="h-16 w-16 text-primary mx-auto mb-4" />
+                <h2 className="font-display text-2xl font-bold mb-2">No Linked Children Found</h2>
+                <p className="text-muted-foreground mb-2">
+                  We couldn't find any children linked to your account in the PAFC Hub.
+                </p>
+                <p className="text-sm text-muted-foreground mb-6">
+                  Registration is only available for parents/carers with a linked child. Please request Hub access first — once approved, your child will appear here.
+                </p>
+                <Link to="/hub">
+                  <Button className="bg-gold-gradient text-primary-foreground font-display tracking-wider">
+                    <Users className="w-4 h-4 mr-2" /> Request Hub Access
+                  </Button>
+                </Link>
+              </div>
+            </motion.div>
           ) : (
+
           <div className="max-w-2xl mx-auto">
             {verifyingPayment ? (
               <motion.div
@@ -312,26 +410,64 @@ export default function PlayerRegistrationPage() {
                     <h2 className="font-display text-xl font-bold">Player Registration Form</h2>
                   </div>
 
-                  {/* Child's Details */}
+                  {/* Child's Details — locked to a linked Hub child */}
                   <div>
                     <h3 className="font-display text-sm font-bold text-primary mb-3">Child's Details</h3>
                     <div className="space-y-4">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                          <label className="text-xs text-muted-foreground mb-1 block">Full Name *</label>
-                          <Input name="childName" value={form.childName} onChange={handleChange} required placeholder="Child's full name" maxLength={100} />
-                        </div>
-                        <div>
-                          <label className="text-xs text-muted-foreground mb-1 block">Date of Birth *</label>
-                          <DateInput value={form.childDob} onChange={(val) => setForm(f => ({ ...f, childDob: val }))} placeholder="Select date of birth" required dropdownNav fromYear={2005} toYear={new Date().getFullYear()} />
-                        </div>
-                      </div>
                       <div>
-                        <label className="text-xs text-muted-foreground mb-1 block">Address *</label>
-                        <Textarea name="address" value={form.address} onChange={handleChange} required placeholder="Full address" rows={2} maxLength={500} />
+                        <label className="text-xs text-muted-foreground mb-1 block">Select Your Child *</label>
+                        <select
+                          value={selectedChildId}
+                          required
+                          onChange={(e) => {
+                            const id = e.target.value;
+                            setSelectedChildId(id);
+                            const child = linkedChildren?.find((c) => c.id === id);
+                            if (child) {
+                              setForm((f) => ({
+                                ...f,
+                                childName: child.player_name,
+                                preferredAgeGroup: teamSlugToLabel[child.team_slug] || "",
+                              }));
+                            } else {
+                              setForm((f) => ({ ...f, childName: "", preferredAgeGroup: "" }));
+                            }
+                          }}
+                          className={selectClass}
+                        >
+                          <option value="">Choose your linked child...</option>
+                          {linkedChildren?.map((c) => (
+                            <option key={c.id} value={c.id}>
+                              {c.player_name}{c.team_slug ? ` — ${teamSlugToLabel[c.team_slug] || c.team_slug.toUpperCase()}` : ""}
+                            </option>
+                          ))}
+                        </select>
+                        <p className="text-[10px] text-muted-foreground mt-1">
+                          Only children linked to your Hub account are shown. Need to add another child? <Link to="/hub" className="text-primary underline">Request Hub access</Link>.
+                        </p>
                       </div>
+
+                      {selectedChildId && (
+                        <>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                              <label className="text-xs text-muted-foreground mb-1 block">Full Name *</label>
+                              <Input name="childName" value={form.childName} onChange={handleChange} required placeholder="Child's full name" maxLength={100} />
+                            </div>
+                            <div>
+                              <label className="text-xs text-muted-foreground mb-1 block">Date of Birth *</label>
+                              <DateInput value={form.childDob} onChange={(val) => setForm(f => ({ ...f, childDob: val }))} placeholder="Select date of birth" required dropdownNav fromYear={2005} toYear={new Date().getFullYear()} />
+                            </div>
+                          </div>
+                          <div>
+                            <label className="text-xs text-muted-foreground mb-1 block">Address *</label>
+                            <Textarea name="address" value={form.address} onChange={handleChange} required placeholder="Full address" rows={2} maxLength={500} />
+                          </div>
+                        </>
+                      )}
                     </div>
                   </div>
+
 
                   {/* Player Photo */}
                   <div>
@@ -376,13 +512,9 @@ export default function PlayerRegistrationPage() {
                   </div>
 
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">Select Team *</label>
-                    <select name="preferredAgeGroup" value={form.preferredAgeGroup} onChange={handleChange} required className={selectClass}>
-                      <option value="">Select team...</option>
-                      {ageGroups.map((g) => (
-                        <option key={g} value={g}>{g}</option>
-                      ))}
-                    </select>
+                    <label className="text-xs text-muted-foreground mb-1 block">Team</label>
+                    <Input name="preferredAgeGroup" value={form.preferredAgeGroup} readOnly disabled placeholder="Will be set from your linked child" />
+                    <p className="text-[10px] text-muted-foreground mt-1">Team is taken from the Hub link for the selected child.</p>
                   </div>
 
                   {/* FA FAN Number */}
