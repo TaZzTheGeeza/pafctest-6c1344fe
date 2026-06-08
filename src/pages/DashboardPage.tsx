@@ -190,6 +190,21 @@ export default function DashboardPage() {
     setTogglingReg(false);
   }
 
+  async function announceRegistration() {
+    setAnnouncingReg(true);
+    const message =
+      "🎉 Player Registration for the 2026/27 season is now OPEN! Secure your child's place at /register";
+    const { error } = await supabase
+      .from("announcements" as any)
+      .insert({ message, type: "success", is_active: true } as any);
+    if (error) {
+      toast.error("Failed to post announcement");
+    } else {
+      toast.success("Site-wide banner posted. For push & email, use Notifications tab.");
+    }
+    setAnnouncingReg(false);
+  }
+
   async function loadUsers() {
     setLoading(true);
     const [profilesRes, rolesRes, membersRes] = await Promise.all([
