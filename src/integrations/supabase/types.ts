@@ -2719,6 +2719,7 @@ export type Database = {
         Row: {
           created_at: string
           description: string | null
+          entries_open: boolean
           entry_fee_cents: number | null
           id: string
           name: string
@@ -2731,6 +2732,7 @@ export type Database = {
         Insert: {
           created_at?: string
           description?: string | null
+          entries_open?: boolean
           entry_fee_cents?: number | null
           id?: string
           name: string
@@ -2743,6 +2745,7 @@ export type Database = {
         Update: {
           created_at?: string
           description?: string | null
+          entries_open?: boolean
           entry_fee_cents?: number | null
           id?: string
           name?: string
