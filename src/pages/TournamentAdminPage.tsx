@@ -33,6 +33,11 @@ const TournamentAdminPage = () => {
   const [matchForm, setMatchForm] = useState({ age_group_id: "", group_id: "", home_team_id: "", away_team_id: "", match_time: "", pitch: "", stage: "group", referee: "" });
   const [teamForm, setTeamForm] = useState({ team_name: "", club_name: "", manager_name: "", manager_email: "", manager_phone: "", age_group_id: "", player_count: "", whatsapp_name: "", whatsapp_number: "", consent_rules: true, consent_photography: true });
   const [announcementText, setAnnouncementText] = useState("");
+  const [matchFilterAge, setMatchFilterAge] = useState<string>("all");
+  const [matchFilterPitch, setMatchFilterPitch] = useState<string>("all");
+  const [matchFilterDay, setMatchFilterDay] = useState<string>("all");
+  const [matchFilterStage, setMatchFilterStage] = useState<string>("all");
+  const [matchFilterStatus, setMatchFilterStatus] = useState<string>("all");
   const [editingGroup, setEditingGroup] = useState<{ id: string; name: string } | null>(null);
   const [editingTeam, setEditingTeam] = useState<any | null>(null);
   const [editTeamForm, setEditTeamForm] = useState({ team_name: "", club_name: "", county: "", club_org_id: "", league_division: "", team_category: "", manager_name: "", manager_email: "", manager_phone: "", secretary_name: "", secretary_email: "", secretary_phone: "", player_count: "", whatsapp_contacts: [{ name: "", number: "" }] as { name: string; number: string }[], consent_rules: true, consent_photography: true });
