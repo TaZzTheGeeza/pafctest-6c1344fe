@@ -1320,6 +1320,7 @@ export type Database = {
           fa_fan_number: string | null
           foster_care_details: string | null
           gocardless_billing_request_id: string | null
+          guardian_id: string | null
           id: string
           known_to_social_services: boolean | null
           medical_conditions: string | null
@@ -1332,6 +1333,7 @@ export type Database = {
           previous_club: string | null
           relationship_to_child: string | null
           social_services_details: string | null
+          user_id: string | null
         }
         Insert: {
           additional_info?: string | null
@@ -1349,6 +1351,7 @@ export type Database = {
           fa_fan_number?: string | null
           foster_care_details?: string | null
           gocardless_billing_request_id?: string | null
+          guardian_id?: string | null
           id?: string
           known_to_social_services?: boolean | null
           medical_conditions?: string | null
@@ -1361,6 +1364,7 @@ export type Database = {
           previous_club?: string | null
           relationship_to_child?: string | null
           social_services_details?: string | null
+          user_id?: string | null
         }
         Update: {
           additional_info?: string | null
@@ -1378,6 +1382,7 @@ export type Database = {
           fa_fan_number?: string | null
           foster_care_details?: string | null
           gocardless_billing_request_id?: string | null
+          guardian_id?: string | null
           id?: string
           known_to_social_services?: boolean | null
           medical_conditions?: string | null
@@ -1390,8 +1395,17 @@ export type Database = {
           previous_club?: string | null
           relationship_to_child?: string | null
           social_services_details?: string | null
+          user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "player_registrations_guardian_id_fkey"
+            columns: ["guardian_id"]
+            isOneToOne: false
+            referencedRelation: "guardians"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       player_stats: {
         Row: {
