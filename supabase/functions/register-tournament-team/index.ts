@@ -64,12 +64,19 @@ serve(async (req) => {
     // Verify age group exists & tournament is accepting entries
     const { data: ageGroup, error: agErr } = await admin
       .from("tournament_age_groups")
-      .select("id, tournament_id, tournaments(status)")
+      .select("id, tournament_id, tournaments(status, entries_open)")
       .eq("id", data.age_group_id)
       .maybeSingle();
     if (agErr || !ageGroup) {
       return new Response(JSON.stringify({ error: "Invalid age group" }), {
         status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const tournamentRow: any = (ageGroup as any).tournaments;
+    if (tournamentRow && tournamentRow.entries_open === false) {
+      return new Response(JSON.stringify({ error: "Tournament entries are closed" }), {
+        status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
