@@ -272,7 +272,7 @@ const TournamentPage = () => {
             </Card>
           ) : (
             <Tabs value={activeSection} onValueChange={setActiveSection} className="space-y-6">
-              <div className="flex flex-col sm:flex-row items-center gap-3 max-w-lg mx-auto">
+              <div className="flex items-center gap-3 max-w-lg mx-auto">
                 <div className="flex-1 w-full">
                   <Label htmlFor="tournament-section" className="sr-only">Tournament section</Label>
                   <Select value={activeSection} onValueChange={setActiveSection}>
@@ -285,17 +285,9 @@ const TournamentPage = () => {
                         <SelectItem value="fixtures">Fixtures</SelectItem>
                         <SelectItem value="knockout">Knockout</SelectItem>
                         <SelectItem value="photos">Photos</SelectItem>
-                        <SelectItem value="register">ENTER HERE!</SelectItem>
                       </SelectContent>
                   </Select>
                 </div>
-                <Button
-                  onClick={() => setActiveSection("register")}
-                  size="lg"
-                  className="w-full sm:w-auto font-display tracking-wider text-sm animate-pulse hover:animate-none"
-                >
-                  ENTER HERE!
-                </Button>
               </div>
 
               {/* OVERVIEW */}
