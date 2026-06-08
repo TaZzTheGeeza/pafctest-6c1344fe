@@ -242,6 +242,8 @@ const TournamentAdminPage = () => {
     await supabase.from("tournament_matches").update({ home_score: homeScore, away_score: awayScore, status: "completed" }).eq("id", matchId);
     invalidateAll();
     toast.success("Score updated");
+    // Auto-progress knockouts when group/semi results are entered
+    progressKnockouts(true);
   };
 
   // CLEAR SCORE
@@ -249,6 +251,99 @@ const TournamentAdminPage = () => {
     await supabase.from("tournament_matches").update({ home_score: null, away_score: null, status: "scheduled" }).eq("id", matchId);
     invalidateAll();
     toast.success("Score cleared");
+  };
+
+  // ===== AUTO-PROGRESS KNOCKOUTS =====
+  // Resolves placeholders like "U7 Group A 1st", "Winner SF1" into actual team IDs
+  // based on completed group standings and semi-final winners.
+  const progressKnockouts = async (silent = false) => {
+    if (!ageGroups?.length) { if (!silent) toast.info("No age groups"); return; }
+    const ids = ageGroups.map((ag: any) => ag.id);
+    const [{ data: latestMatches }, { data: latestTeams }] = await Promise.all([
+      supabase.from("tournament_matches").select("*").in("age_group_id", ids).order("match_time", { ascending: true }),
+      supabase.from("tournament_teams").select("id, age_group_id, group_id, team_name").in("age_group_id", ids),
+    ]);
+    const allMatches: any[] = latestMatches || [];
+    const allTeams: any[] = latestTeams || [];
+    const allGroups: any[] = groups || [];
+
+    const standingsFor = (groupId: string) => {
+      const gt = allTeams.filter(t => t.group_id === groupId);
+      const gm = allMatches.filter(m => m.group_id === groupId && m.status === "completed");
+      return gt.map(team => {
+        const played = gm.filter(m => m.home_team_id === team.id || m.away_team_id === team.id);
+        let w = 0, d = 0, l = 0, gf = 0, ga = 0;
+        played.forEach(m => {
+          const isHome = m.home_team_id === team.id;
+          const s = isHome ? (m.home_score ?? 0) : (m.away_score ?? 0);
+          const c = isHome ? (m.away_score ?? 0) : (m.home_score ?? 0);
+          gf += s; ga += c;
+          if (s > c) w++; else if (s === c) d++; else l++;
+        });
+        return { team, p: played.length, w, d, l, gf, ga, gd: gf - ga, pts: w * 3 + d };
+      }).sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf);
+    };
+
+    const resolve = (placeholder: string | null | undefined, ageGroupId: string): string | null => {
+      if (!placeholder) return null;
+      const gMatch = placeholder.match(/Group\s+(\w+)\s+(\d+)/i);
+      if (gMatch) {
+        const letter = gMatch[1].toUpperCase();
+        const pos = parseInt(gMatch[2]);
+        const grp = allGroups.find(g => g.age_group_id === ageGroupId && (g.group_name || "").toUpperCase() === letter);
+        if (!grp) return null;
+        const groupMatches = allMatches.filter(m => m.group_id === grp.id);
+        if (groupMatches.length === 0) return null;
+        // Only progress when ALL group matches are completed
+        if (groupMatches.some(m => m.status !== "completed")) return null;
+        const standings = standingsFor(grp.id);
+        return standings[pos - 1]?.team?.id || null;
+      }
+      const sfMatch = placeholder.match(/SF\s*(\d+)/i);
+      if (sfMatch) {
+        const idx = parseInt(sfMatch[1]) - 1;
+        const semis = allMatches
+          .filter(m => m.age_group_id === ageGroupId && (m.stage === "semi-final" || m.stage === "semi"))
+          .sort((a, b) => new Date(a.match_time || 0).getTime() - new Date(b.match_time || 0).getTime());
+        const sem = semis[idx];
+        if (!sem || sem.status !== "completed") return null;
+        return (sem.home_score ?? 0) > (sem.away_score ?? 0) ? sem.home_team_id : sem.away_team_id;
+      }
+      return null;
+    };
+
+    let updated = 0;
+    // Do semis first, then finals, so finals can resolve "Winner SF" placeholders in the same pass
+    const ordered = [...allMatches].sort((a, b) => {
+      const rank = (s: string) => s === "semi-final" || s === "semi" ? 0 : s === "3rd-place" ? 1 : s === "final" ? 2 : -1;
+      return rank(a.stage) - rank(b.stage);
+    });
+    for (const m of ordered) {
+      if (m.stage === "group") continue;
+      const updates: any = {};
+      if (!m.home_team_id && m.home_placeholder) {
+        const id = resolve(m.home_placeholder, m.age_group_id);
+        if (id) updates.home_team_id = id;
+      }
+      if (!m.away_team_id && m.away_placeholder) {
+        const id = resolve(m.away_placeholder, m.age_group_id);
+        if (id) updates.away_team_id = id;
+      }
+      if (Object.keys(updates).length) {
+        const { error } = await supabase.from("tournament_matches").update(updates).eq("id", m.id);
+        if (!error) {
+          updated++;
+          // Reflect change in local copy so later matches in this loop can see it
+          Object.assign(m, updates);
+        }
+      }
+    }
+    if (updated > 0) {
+      invalidateAll();
+      if (!silent) toast.success(`Progressed ${updated} knockout match${updated === 1 ? "" : "es"}`);
+    } else if (!silent) {
+      toast.info("No knockout matches ready to progress");
+    }
   };
 
   // UPDATE MATCH FIELDS (referee / pitch / time / teams / stage / group)
