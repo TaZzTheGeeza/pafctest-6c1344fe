@@ -86,6 +86,7 @@ export default function DashboardPage() {
   const [addingRole, setAddingRole] = useState<string | null>(null);
   const [registrationOpen, setRegistrationOpen] = useState(false);
   const [togglingReg, setTogglingReg] = useState(false);
+  const [announcingReg, setAnnouncingReg] = useState(false);
   const [shopOpen, setShopOpen] = useState(true);
   const [togglingShop, setTogglingShop] = useState(false);
   const [presentationOpen, setPresentationOpen] = useState(false);
