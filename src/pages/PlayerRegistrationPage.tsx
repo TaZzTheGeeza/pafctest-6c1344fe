@@ -150,6 +150,7 @@ export default function PlayerRegistrationPage() {
     address: "",
     preferredAgeGroup: "",
     faFanNumber: "",
+    hasFaFanNumber: "" as "" | "yes" | "no",
     parentName: "",
     relationshipToChild: "",
     email: "",
@@ -519,21 +520,47 @@ export default function PlayerRegistrationPage() {
 
                   {/* FA FAN Number */}
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">FA FAN Number *</label>
-                    <Input name="faFanNumber" value={form.faFanNumber} onChange={handleChange} required placeholder="Enter FA FAN number" maxLength={50} />
-                    <p className="text-[10px] text-muted-foreground mt-1">
-                      Don't have an FA number yet?{" "}
-                      <a
-                        href="https://login.thefa.com/b2cthefa.onmicrosoft.com/b2c_1a_signup_signinactsoc/oauth2/v2.0/authorize?client_id=b56cfcf8-856a-45e3-9a25-3fe21463338c&scope=b56cfcf8-856a-45e3-9a25-3fe21463338c%20openid%20profile%20offline_access&redirect_uri=https%3A%2F%2Fmyaccount.thefa.com%2F&response_mode=fragment&response_type=code"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary underline hover:opacity-80"
-                      >
-                        Register with The FA here
-                      </a>
-                      .
-                    </p>
+                    <label className="text-xs text-muted-foreground mb-2 block">Do you have an FA FAN Number? *</label>
+                    <div className="flex gap-4 mb-2">
+                      <label className="flex items-center gap-2 text-sm cursor-pointer">
+                        <input
+                          type="radio"
+                          name="hasFaFanNumber"
+                          value="yes"
+                          checked={form.hasFaFanNumber === "yes"}
+                          onChange={handleChange}
+                          required
+                        />
+                        Yes
+                      </label>
+                      <label className="flex items-center gap-2 text-sm cursor-pointer">
+                        <input
+                          type="radio"
+                          name="hasFaFanNumber"
+                          value="no"
+                          checked={form.hasFaFanNumber === "no"}
+                          onChange={handleChange}
+                        />
+                        No
+                      </label>
+                    </div>
+                    {form.hasFaFanNumber === "yes" && (
+                      <Input
+                        name="faFanNumber"
+                        value={form.faFanNumber}
+                        onChange={handleChange}
+                        required
+                        placeholder="Enter FA FAN number"
+                        maxLength={50}
+                      />
+                    )}
+                    {form.hasFaFanNumber === "no" && (
+                      <p className="text-[10px] text-muted-foreground mt-1">
+                        No problem — we'll help you register with The FA after sign-up.
+                      </p>
+                    )}
                   </div>
+
 
                   {/* Parent / Carer Details */}
                   <div>
