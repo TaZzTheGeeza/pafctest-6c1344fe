@@ -925,7 +925,7 @@ const TournamentAdminPage = () => {
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="group">Group</SelectItem>
-                  <SelectItem value="semi">Semi Final</SelectItem>
+                  <SelectItem value="semi-final">Semi Final</SelectItem>
                   <SelectItem value="final">Final</SelectItem>
                   <SelectItem value="3rd-place">3rd Place</SelectItem>
                 </SelectContent>
@@ -1225,7 +1225,7 @@ function MatchRow({ match, teams, groups, getTeamName, getAgeGroupName, onUpdate
                   <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="group">Group</SelectItem>
-                    <SelectItem value="semi">Semi Final</SelectItem>
+                    <SelectItem value="semi-final">Semi Final</SelectItem>
                     <SelectItem value="final">Final</SelectItem>
                     <SelectItem value="3rd-place">3rd Place</SelectItem>
                   </SelectContent>
