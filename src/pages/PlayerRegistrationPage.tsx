@@ -315,7 +315,7 @@ export default function PlayerRegistrationPage() {
             <p className="text-muted-foreground text-center mb-4">Register your interest for the 2026/27 season</p>
           </motion.div>
 
-          {registrationOpen === null ? (
+          {registrationOpen === null || authLoading ? (
             <div className="max-w-2xl mx-auto text-center py-12">
               <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full mx-auto" />
             </div>
@@ -337,7 +337,41 @@ export default function PlayerRegistrationPage() {
                 </p>
               </div>
             </motion.div>
+          ) : !user && !submitted ? (
+            <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="max-w-2xl mx-auto">
+              <div className="bg-card border border-border rounded-lg p-12 text-center">
+                <LogIn className="h-16 w-16 text-primary mx-auto mb-4" />
+                <h2 className="font-display text-2xl font-bold mb-2">Sign In to Register</h2>
+                <p className="text-muted-foreground mb-6">
+                  Player registration is restricted to parents/carers with a linked child in the PAFC Hub. Please sign in to continue.
+                </p>
+                <Link to="/auth">
+                  <Button className="bg-gold-gradient text-primary-foreground font-display tracking-wider">
+                    <LogIn className="w-4 h-4 mr-2" /> Sign In
+                  </Button>
+                </Link>
+              </div>
+            </motion.div>
+          ) : user && linkedChildren !== null && linkedChildren.length === 0 && !submitted ? (
+            <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="max-w-2xl mx-auto">
+              <div className="bg-card border border-border rounded-lg p-12 text-center">
+                <Users className="h-16 w-16 text-primary mx-auto mb-4" />
+                <h2 className="font-display text-2xl font-bold mb-2">No Linked Children Found</h2>
+                <p className="text-muted-foreground mb-2">
+                  We couldn't find any children linked to your account in the PAFC Hub.
+                </p>
+                <p className="text-sm text-muted-foreground mb-6">
+                  Registration is only available for parents/carers with a linked child. Please request Hub access first — once approved, your child will appear here.
+                </p>
+                <Link to="/hub">
+                  <Button className="bg-gold-gradient text-primary-foreground font-display tracking-wider">
+                    <Users className="w-4 h-4 mr-2" /> Request Hub Access
+                  </Button>
+                </Link>
+              </div>
+            </motion.div>
           ) : (
+
           <div className="max-w-2xl mx-auto">
             {verifyingPayment ? (
               <motion.div
