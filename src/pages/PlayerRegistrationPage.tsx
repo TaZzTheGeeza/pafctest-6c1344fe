@@ -524,7 +524,7 @@ export default function PlayerRegistrationPage() {
                     <p className="text-[10px] text-muted-foreground mt-1">
                       Don't have an FA number yet?{" "}
                       <a
-                        href="https://wholegame.thefa.com/Account/Register"
+                        href="https://www.thefa.com/account/register"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-primary underline hover:opacity-80"
