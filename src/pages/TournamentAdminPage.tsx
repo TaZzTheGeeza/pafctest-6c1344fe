@@ -362,19 +362,23 @@ const TournamentAdminPage = () => {
 
     // Email coaches & secretaries of every team in this tournament
     try {
-      const ageGroupIds = (ageGroups || []).map(ag => ag.id);
-      if (ageGroupIds.length) {
-        const { data: contactTeams } = await supabase
-          .from("tournament_teams")
-          .select("team_name, manager_name, manager_email, secretary_name, secretary_email")
-          .in("age_group_id", ageGroupIds);
+      const teamIds = (teams || []).map(t => t.id);
+      if (teamIds.length) {
+        const contactResults = await Promise.all(
+          teamIds.map(id => supabase.rpc("get_tournament_team_contacts", { _team_id: id }))
+        );
+        const contactTeams: any[] = [];
+        for (const r of contactResults) {
+          if (r.error) { console.error("contact rpc error", r.error); continue; }
+          if (r.data) contactTeams.push(...(r.data as any[]));
+        }
 
         const tournamentName = tournament?.name || "Tournament";
         const title = `${tournamentName} Announcement`;
         const recipients = new Map<string, string>(); // email -> name
-        for (const t of (contactTeams || []) as any[]) {
-          if (t.manager_email) recipients.set(String(t.manager_email).toLowerCase(), t.manager_name || t.team_name);
-          if (t.secretary_email) recipients.set(String(t.secretary_email).toLowerCase(), t.secretary_name || t.team_name);
+        for (const t of contactTeams) {
+          if (t.manager_email) recipients.set(String(t.manager_email).toLowerCase(), t.manager_name || "");
+          if (t.secretary_email) recipients.set(String(t.secretary_email).toLowerCase(), t.secretary_name || "");
         }
 
         let sent = 0;
@@ -414,11 +418,21 @@ const TournamentAdminPage = () => {
     if (!ageGroupIds.length) { toast.error("No teams to notify"); return; }
     if (!confirm("Email all team coaches & secretaries that fixtures are ready?")) return;
 
-    const { data: contactTeams, error } = await supabase
-      .from("tournament_teams")
-      .select("team_name, manager_name, manager_email, secretary_name, secretary_email")
-      .in("age_group_id", ageGroupIds);
-    if (error) { toast.error("Failed to load team contacts"); return; }
+    // Fetch contacts via SECURITY DEFINER RPC (admin/coach only) per team
+    const teamIds = (teams || []).map(t => t.id);
+    if (!teamIds.length) { toast.error("No teams to notify"); return; }
+
+    const contactResults = await Promise.all(
+      teamIds.map(id => supabase.rpc("get_tournament_team_contacts", { _team_id: id }))
+    );
+    const contactTeams: any[] = [];
+    for (const r of contactResults) {
+      if (r.error) {
+        console.error("contact rpc error", r.error);
+        continue;
+      }
+      if (r.data) contactTeams.push(...(r.data as any[]));
+    }
 
     const tournamentName = tournament?.name || "Tournament";
     const link = `${window.location.origin}/tournament`;
@@ -429,7 +443,7 @@ const TournamentAdminPage = () => {
       `Please check kick-off times carefully and arrive in good time. See you on the day!`;
 
     const recipients = new Set<string>();
-    for (const t of (contactTeams || []) as any[]) {
+    for (const t of contactTeams) {
       if (t.manager_email) recipients.add(String(t.manager_email).toLowerCase());
       if (t.secretary_email) recipients.add(String(t.secretary_email).toLowerCase());
     }
