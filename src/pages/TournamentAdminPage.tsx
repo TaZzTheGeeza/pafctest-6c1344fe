@@ -574,6 +574,7 @@ const TournamentAdminPage = () => {
                 {tournament.status === "draft" && <Button size="sm" onClick={() => setTournamentStatus("active")}>Activate</Button>}
                 {tournament.status === "active" && <Button size="sm" variant="outline" onClick={() => setTournamentStatus("completed")}>Mark Complete</Button>}
                 <Button size="sm" variant="outline" onClick={() => setShowAnnouncement(true)}><Megaphone className="h-4 w-4 mr-1" />Announce</Button>
+                <Button size="sm" variant="outline" onClick={notifyFixturesReady}><Megaphone className="h-4 w-4 mr-1" />Notify: Fixtures Ready</Button>
               </div>
             </div>
           )}
