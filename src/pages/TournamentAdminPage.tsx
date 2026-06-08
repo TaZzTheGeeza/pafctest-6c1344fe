@@ -622,14 +622,39 @@ const TournamentAdminPage = () => {
                                   )}
                                 </div>
                               </CardHeader>
-                              <CardContent>
+                              <CardContent className="space-y-2">
                                 {groupTeams.length === 0 ? (
-                                  <p className="text-xs text-muted-foreground">No teams assigned yet. Assign in Teams tab.</p>
+                                  <p className="text-xs text-muted-foreground">No teams assigned yet.</p>
                                 ) : (
                                   <ul className="space-y-1">
-                                    {groupTeams.map(t => <li key={t.id} className="text-sm">{t.team_name}</li>)}
+                                    {groupTeams.map(t => (
+                                      <li key={t.id} className="flex items-center justify-between text-sm group/item">
+                                        <span>{t.team_name}</span>
+                                        <Button
+                                          size="icon"
+                                          variant="ghost"
+                                          className="h-6 w-6 opacity-0 group-hover/item:opacity-100"
+                                          title="Remove from group"
+                                          onClick={() => assignTeamToGroup(t.id, null)}
+                                        >
+                                          <X className="h-3 w-3 text-destructive" />
+                                        </Button>
+                                      </li>
+                                    ))}
                                   </ul>
                                 )}
+                                {(() => {
+                                  const unassigned = agTeams.filter(t => !t.group_id);
+                                  if (unassigned.length === 0) return null;
+                                  return (
+                                    <Select value="" onValueChange={(v) => assignTeamToGroup(v, g.id)}>
+                                      <SelectTrigger className="h-7 text-xs"><SelectValue placeholder="+ Add team" /></SelectTrigger>
+                                      <SelectContent>
+                                        {unassigned.map(t => <SelectItem key={t.id} value={t.id}>{t.team_name}</SelectItem>)}
+                                      </SelectContent>
+                                    </Select>
+                                  );
+                                })()}
                               </CardContent>
                             </Card>
                           );
