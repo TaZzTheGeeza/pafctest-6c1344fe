@@ -22,6 +22,7 @@ import { TournamentBracket } from "@/components/TournamentBracket";
 import { toast } from "sonner";
 import { SEO } from "@/components/SEO";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { CheckForUpdatesButton } from "@/components/CheckForUpdatesButton";
 
 const TournamentPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -235,6 +236,9 @@ const TournamentPage = () => {
             {activeTournament?.description && (
               <p className="mt-3 text-muted-foreground max-w-2xl mx-auto text-sm">{activeTournament.description}</p>
             )}
+            <div className="mt-6 max-w-xl mx-auto">
+              <CheckForUpdatesButton />
+            </div>
           </div>
 
           {/* Payment verification overlay */}
