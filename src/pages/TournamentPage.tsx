@@ -29,6 +29,10 @@ const TournamentPage = () => {
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [activeSection, setActiveSection] = useState("overview");
   const [refereeView, setRefereeView] = useState<string | null>(null);
+  const [filterAgeGroup, setFilterAgeGroup] = useState<string>("all");
+  const [filterPitch, setFilterPitch] = useState<string>("all");
+  const [filterDay, setFilterDay] = useState<string>("all");
+  const [filterStage, setFilterStage] = useState<string>("all");
 
   const { data: tournaments } = useQuery({
     queryKey: ["tournaments"],
