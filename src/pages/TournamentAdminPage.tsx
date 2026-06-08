@@ -769,6 +769,7 @@ const TournamentAdminPage = () => {
               <TabsContent value="matches" className="space-y-4">
                 <div className="flex flex-wrap items-center gap-2">
                   <Button size="sm" onClick={() => setShowAddMatch(true)}><Plus className="h-4 w-4 mr-1" />Add Match</Button>
+                  <Button size="sm" variant="outline" onClick={() => progressKnockouts(false)}><Trophy className="h-4 w-4 mr-1" />Progress Knockouts</Button>
                 </div>
                 {(() => {
                   const pitches = Array.from(new Set((matches || []).map(m => m.pitch).filter(Boolean))) as string[];
