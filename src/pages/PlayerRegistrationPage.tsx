@@ -512,13 +512,9 @@ export default function PlayerRegistrationPage() {
                   </div>
 
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">Select Team *</label>
-                    <select name="preferredAgeGroup" value={form.preferredAgeGroup} onChange={handleChange} required className={selectClass}>
-                      <option value="">Select team...</option>
-                      {ageGroups.map((g) => (
-                        <option key={g} value={g}>{g}</option>
-                      ))}
-                    </select>
+                    <label className="text-xs text-muted-foreground mb-1 block">Team</label>
+                    <Input name="preferredAgeGroup" value={form.preferredAgeGroup} readOnly disabled placeholder="Will be set from your linked child" />
+                    <p className="text-[10px] text-muted-foreground mt-1">Team is taken from the Hub link for the selected child.</p>
                   </div>
 
                   {/* FA FAN Number */}
