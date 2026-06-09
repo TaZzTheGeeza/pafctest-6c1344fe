@@ -64,6 +64,13 @@ const WorldCupSweepstakePage = () => {
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({ name: "", email: "", phone: "", selectedNumbers: [] as number[] });
   const [purchasing, setPurchasing] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [claimingFree, setClaimingFree] = useState(false);
+
+  useEffect(() => {
+    if (!user) { setIsAdmin(false); return; }
+    supabase.rpc("has_role", { _user_id: user.id, _role: "admin" }).then(({ data }) => setIsAdmin(!!data));
+  }, [user]);
 
   useEffect(() => {
     const brId = searchParams.get("br");
@@ -167,6 +174,37 @@ const WorldCupSweepstakePage = () => {
       toast.error(e.message || "Could not start checkout");
     } finally {
       setPurchasing(false);
+    }
+  };
+
+  const handleClaimFree = async () => {
+    if (!raffle || form.selectedNumbers.length === 0) {
+      toast.error("Pick at least one number to claim");
+      return;
+    }
+    if (!form.name.trim() || !form.email.trim()) {
+      toast.error("Enter a name and email");
+      return;
+    }
+    setClaimingFree(true);
+    try {
+      const rows = form.selectedNumbers.map((n) => ({
+        raffle_id: raffle.id,
+        ticket_number: n,
+        buyer_name: form.name,
+        buyer_email: form.email,
+        buyer_phone: form.phone || null,
+        payment_status: "paid",
+      }));
+      const { error } = await supabase.from("raffle_tickets").insert(rows);
+      if (error) throw error;
+      toast.success(`Claimed ${rows.length} free test ticket${rows.length === 1 ? "" : "s"}!`);
+      setForm({ ...form, selectedNumbers: [] });
+      fetchData();
+    } catch (e: any) {
+      toast.error(e.message || "Could not claim test ticket");
+    } finally {
+      setClaimingFree(false);
     }
   };
 
@@ -359,10 +397,24 @@ const WorldCupSweepstakePage = () => {
                     {form.selectedNumbers.length} ticket{form.selectedNumbers.length === 1 ? "" : "s"} • £
                     {((form.selectedNumbers.length * raffle.ticket_price_cents) / 100).toFixed(2)} total
                   </div>
-                  <Button onClick={handlePurchase} disabled={purchasing || form.selectedNumbers.length === 0} className="bg-gold-gradient text-primary-foreground font-display">
-                    {purchasing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
-                    Pay via Direct Debit
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    {isAdmin && (
+                      <Button
+                        variant="outline"
+                        onClick={handleClaimFree}
+                        disabled={claimingFree || form.selectedNumbers.length === 0}
+                        className="border-primary/40"
+                        title="Admin only — claim ticket without payment to test the flow"
+                      >
+                        {claimingFree ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                        Claim free (test)
+                      </Button>
+                    )}
+                    <Button onClick={handlePurchase} disabled={purchasing || form.selectedNumbers.length === 0} className="bg-gold-gradient text-primary-foreground font-display">
+                      {purchasing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
+                      Pay via Direct Debit
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
