@@ -183,6 +183,16 @@ const App = () => (
               }}
             />
           )}
+        {typeof window !== "undefined" &&
+          new URLSearchParams(window.location.search).get("whatsnew") === "preview" && (
+            <WhatsNewGate
+              onEnter={() => {
+                const u = new URL(window.location.href);
+                u.searchParams.delete("whatsnew");
+                window.location.replace(u.toString());
+              }}
+            />
+          )}
       </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
