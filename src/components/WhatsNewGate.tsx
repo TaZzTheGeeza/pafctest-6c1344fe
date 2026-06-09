@@ -12,10 +12,11 @@ interface Props {
   onEnter: () => void;
 }
 
+// Keep these focused on things parents/players actually care about —
+// new features, events, prize draws. Skip internal/dev changes.
 const HIGHLIGHTS = [
   { title: "World Cup 2026 Sweepstake", desc: "Pick a number, get a team — live now on the homepage." },
   { title: "Tournament Weekend Ready", desc: "Fixtures, groups and live updates locked in for Saturday." },
-  { title: "Faster, Fresher Experience", desc: "Background improvements so you're always on the latest version." },
 ];
 
 export function WhatsNewGate({ onEnter }: Props) {
