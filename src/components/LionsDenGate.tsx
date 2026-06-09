@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Check } from "lucide-react";
 import clubLogo from "@/assets/club-logo.jpg";
+
+interface Bullet {
+  title: string;
+  desc: string;
+}
 
 /**
  * LionsDenGate
@@ -14,9 +19,13 @@ import clubLogo from "@/assets/club-logo.jpg";
 
 interface Props {
   onEnter: () => void;
+  title?: string;
+  bullets?: Bullet[];
 }
 
-export function LionsDenGate({ onEnter }: Props) {
+export function LionsDenGate({ onEnter, title, bullets }: Props) {
+  const items = bullets && bullets.length > 0 ? bullets : [];
+  const headline = title?.trim();
   const [entering, setEntering] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -100,14 +109,50 @@ export function LionsDenGate({ onEnter }: Props) {
 
         {/* Headline */}
         <h1 className="font-display text-4xl font-black uppercase tracking-tight text-foreground sm:text-6xl">
-          Welcome to
-          <br />
-          <span className="text-primary">The Lions' Den</span>
+          {headline ? (
+            headline.split(/\s+/).length > 1 ? (
+              <>
+                {headline.split(/\s+/).slice(0, -1).join(" ")}
+                <br />
+                <span className="text-primary">{headline.split(/\s+/).slice(-1)[0]}</span>
+              </>
+            ) : (
+              <span className="text-primary">{headline}</span>
+            )
+          ) : (
+            <>
+              Welcome to
+              <br />
+              <span className="text-primary">The Lions' Den</span>
+            </>
+          )}
         </h1>
 
         <p className="mt-4 max-w-md text-sm text-muted-foreground sm:text-base">
-          A new matchday version is ready. Tap below to enter the latest experience.
+          {items.length > 0 ? "Here's what's new inside the den." : "A new matchday version is ready. Tap below to enter the latest experience."}
         </p>
+
+        {items.length > 0 && (
+          <ul className="mt-6 w-full max-w-md space-y-3 text-left">
+            {items.map((h, i) => (
+              <li
+                key={h.title + i}
+                className="flex gap-3"
+              >
+                <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/20">
+                  <Check className="h-3 w-3 text-primary" strokeWidth={3} />
+                </div>
+                <div className="min-w-0">
+                  <div className="font-display text-sm font-bold uppercase tracking-wider text-foreground">
+                    {h.title}
+                  </div>
+                  <div className="text-xs text-muted-foreground">{h.desc}</div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+
 
         {/* Enter button */}
         <button

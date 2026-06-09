@@ -3,8 +3,6 @@ import { BrowserRouter, Route, Routes, Navigate, useLocation } from "react-route
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { UpdateGate } from "@/components/UpdateGate";
-import { LionsDenGate } from "@/components/LionsDenGate";
-import { KickOffGate } from "@/components/KickOffGate";
 import { WhatsNewLoader } from "@/components/WhatsNewLoader";
 import WhatsNewAdminPage from "./pages/WhatsNewAdminPage.tsx";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -165,26 +163,6 @@ const App = () => (
         <Sonner />
         <AppContent />
         <UpdateGate />
-        {typeof window !== "undefined" &&
-          new URLSearchParams(window.location.search).get("lionsden") === "preview" && (
-            <LionsDenGate
-              onEnter={() => {
-                const u = new URL(window.location.href);
-                u.searchParams.delete("lionsden");
-                window.location.replace(u.toString());
-              }}
-            />
-          )}
-        {typeof window !== "undefined" &&
-          new URLSearchParams(window.location.search).get("kickoff") === "preview" && (
-            <KickOffGate
-              onEnter={() => {
-                const u = new URL(window.location.href);
-                u.searchParams.delete("kickoff");
-                window.location.replace(u.toString());
-              }}
-            />
-          )}
         <WhatsNewLoader />
       </AuthProvider>
     </TooltipProvider>
