@@ -26,7 +26,12 @@ interface Campaign {
   bullets: Bullet[];
 }
 
+const ENTERED_KEY = "lionsden_entered_v1";
+
 async function clearCachesAndReload() {
+  try {
+    sessionStorage.setItem(ENTERED_KEY, "1");
+  } catch {}
   try {
     if ("serviceWorker" in navigator) {
       const regs = await navigator.serviceWorker.getRegistrations();
