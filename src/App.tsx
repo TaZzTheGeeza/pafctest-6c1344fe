@@ -114,6 +114,9 @@ function AppContent() {
         <Route path="/player-hub" element={<PlayerHubRedirect />} />
         <Route path="/raffle" element={<RafflePage />} />
         <Route path="/raffle-admin" element={<RoleGate requiredRole="admin"><RaffleAdminPage /></RoleGate>} />
+        <Route path="/world-cup-sweepstake" element={<WorldCupSweepstakePage />} />
+        <Route path="/world-cup-sweepstake-admin" element={<RoleGate requiredRole="admin"><WorldCupSweepstakeAdminPage /></RoleGate>} />
+
         <Route path="/pafc-tv" element={<PafcTvPage />} />
         <Route path="/tournament" element={<TournamentPage />} />
         <Route path="/tournament-admin" element={<TournamentAdminPage />} />
