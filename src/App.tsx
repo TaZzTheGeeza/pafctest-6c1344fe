@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { UpdateGate } from "@/components/UpdateGate";
 import { LionsDenGate } from "@/components/LionsDenGate";
 import { KickOffGate } from "@/components/KickOffGate";
+import { WhatsNewGate } from "@/components/WhatsNewGate";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useCartSync } from "@/hooks/useCartSync";
 import { usePresence } from "@/hooks/usePresence";
@@ -178,6 +179,16 @@ const App = () => (
               onEnter={() => {
                 const u = new URL(window.location.href);
                 u.searchParams.delete("kickoff");
+                window.location.replace(u.toString());
+              }}
+            />
+          )}
+        {typeof window !== "undefined" &&
+          new URLSearchParams(window.location.search).get("whatsnew") === "preview" && (
+            <WhatsNewGate
+              onEnter={() => {
+                const u = new URL(window.location.href);
+                u.searchParams.delete("whatsnew");
                 window.location.replace(u.toString());
               }}
             />
