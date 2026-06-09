@@ -72,11 +72,15 @@ const WorldCupSweepstakeAdminPage = () => {
     setRaffle((r as Raffle) || null);
 
     if (r) {
-      const { data: a } = await supabase
-        .from("sweepstake_team_assignments")
-        .select("*")
-        .eq("raffle_id", r.id)
-        .order("ticket_number");
+      const [{ data: a }, { data: t }] = await Promise.all([
+        supabase.from("sweepstake_team_assignments").select("*").eq("raffle_id", r.id).order("ticket_number"),
+        supabase
+          .from("raffle_tickets")
+          .select("ticket_number, buyer_name, buyer_email, buyer_phone, payment_status, created_at")
+          .eq("raffle_id", r.id)
+          .in("payment_status", ["paid", "pending"])
+          .order("ticket_number"),
+      ]);
 
       const existing = new Map((a || []).map((x: any) => [x.ticket_number, x]));
       const range = r.number_range || 48;
@@ -93,6 +97,7 @@ const WorldCupSweepstakeAdminPage = () => {
         return { ticket_number: n, country_name: "", flag_emoji: "", group_letter: "", status: "active" };
       });
       setRows(built);
+      setBuyers((t || []) as BuyerRow[]);
     }
     setLoading(false);
   };
