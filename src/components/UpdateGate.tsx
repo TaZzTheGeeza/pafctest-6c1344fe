@@ -28,6 +28,21 @@ const CHECK_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
 const IDLE_THRESHOLD_MS = 30 * 1000; // 30 seconds
 const MANUAL_REFRESH_COOLDOWN_MS = 30 * 60 * 1000; // 30 minutes
 
+function fingerprintFromAssets(assets: string[]): string {
+  return assets.slice().sort().join("|");
+}
+
+function getCurrentDocumentFingerprint(): string | null {
+  const assets: string[] = [];
+  document.querySelectorAll<HTMLScriptElement>('script[src*="/assets/"]').forEach((s) => {
+    if (s.src) assets.push(new URL(s.src, window.location.origin).pathname);
+  });
+  document.querySelectorAll<HTMLLinkElement>('link[href*="/assets/"]').forEach((l) => {
+    if (l.href) assets.push(new URL(l.href, window.location.origin).pathname);
+  });
+  return assets.length ? fingerprintFromAssets(assets) : null;
+}
+
 async function getIndexFingerprint(): Promise<string | null> {
   try {
     const url = `/?_fp=${Date.now()}`;
@@ -36,11 +51,9 @@ async function getIndexFingerprint(): Promise<string | null> {
     const buildAssets = Array.from(
       text.matchAll(/(?:src|href)=["']([^"']*\/assets\/[^"']+\.(?:js|css))["']/g),
       (match) => match[1]
-    )
-      .sort()
-      .join("|");
+    );
 
-    if (buildAssets) return buildAssets;
+    if (buildAssets.length) return fingerprintFromAssets(buildAssets);
 
     const slice = text.replace(/_fp=\d+/g, "").slice(0, 4096);
     let hash = 0;
