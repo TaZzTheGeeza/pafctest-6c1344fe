@@ -5,7 +5,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { UpdateGate } from "@/components/UpdateGate";
 import { LionsDenGate } from "@/components/LionsDenGate";
 import { KickOffGate } from "@/components/KickOffGate";
-import { WhatsNewGate } from "@/components/WhatsNewGate";
+import { WhatsNewLoader } from "@/components/WhatsNewLoader";
+import WhatsNewAdminPage from "./pages/WhatsNewAdminPage.tsx";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useCartSync } from "@/hooks/useCartSync";
 import { usePresence } from "@/hooks/usePresence";
@@ -148,6 +149,7 @@ function AppContent() {
         <Route path="/presentation-admin" element={<PresentationAdminPage />} />
         <Route path="/admin/player-registrations" element={<RoleGate requiredRole="admin"><PlayerRegistrationAdminPage /></RoleGate>} />
         <Route path="/presentation-awards-admin" element={<RoleGate requiredRole="admin"><PresentationAwardsAdminPage /></RoleGate>} />
+        <Route path="/whats-new-admin" element={<RoleGate requiredRole="admin"><WhatsNewAdminPage /></RoleGate>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
@@ -183,16 +185,7 @@ const App = () => (
               }}
             />
           )}
-        {typeof window !== "undefined" &&
-          new URLSearchParams(window.location.search).get("whatsnew") === "preview" && (
-            <WhatsNewGate
-              onEnter={() => {
-                const u = new URL(window.location.href);
-                u.searchParams.delete("whatsnew");
-                window.location.replace(u.toString());
-              }}
-            />
-          )}
+        <WhatsNewLoader />
       </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>

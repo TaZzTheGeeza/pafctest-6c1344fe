@@ -8,18 +8,25 @@ import { Sparkles, Check } from "lucide-react";
  * is detected. Tapping Continue clears caches and hard-reloads.
  */
 
-interface Props {
-  onEnter: () => void;
+interface Bullet {
+  title: string;
+  desc: string;
 }
 
-// Keep these focused on things parents/players actually care about —
-// new features, events, prize draws. Skip internal/dev changes.
-const HIGHLIGHTS = [
+interface Props {
+  onEnter: () => void;
+  title?: string;
+  bullets?: Bullet[];
+}
+
+const DEFAULT_BULLETS: Bullet[] = [
   { title: "World Cup 2026 Sweepstake", desc: "Pick a number, get a team — live now on the homepage." },
   { title: "Tournament Weekend Ready", desc: "Fixtures, groups and live updates locked in for Saturday." },
 ];
 
-export function WhatsNewGate({ onEnter }: Props) {
+export function WhatsNewGate({ onEnter, title, bullets }: Props) {
+  const items = bullets && bullets.length > 0 ? bullets : DEFAULT_BULLETS;
+  const headline = title?.trim() || "What's New";
   const [entering, setEntering] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -66,7 +73,14 @@ export function WhatsNewGate({ onEnter }: Props) {
 
           {/* Headline */}
           <h2 className="mb-2 font-display text-3xl font-black uppercase tracking-tight text-foreground sm:text-4xl">
-            What's <span className="text-primary">New</span>
+            {headline.split(/\s+/).length > 1 ? (
+              <>
+                {headline.split(/\s+/).slice(0, -1).join(" ")}{" "}
+                <span className="text-primary">{headline.split(/\s+/).slice(-1)[0]}</span>
+              </>
+            ) : (
+              <span className="text-primary">{headline}</span>
+            )}
           </h2>
           <p className="mb-6 text-sm text-muted-foreground">
             A fresh version of PAFC just landed. Here's what's waiting for you.
@@ -74,7 +88,7 @@ export function WhatsNewGate({ onEnter }: Props) {
 
           {/* Highlights */}
           <ul className="mb-7 space-y-4">
-            {HIGHLIGHTS.map((h, i) => (
+            {items.map((h, i) => (
               <li
                 key={h.title}
                 className={`flex gap-3 transition-all duration-500 ${
