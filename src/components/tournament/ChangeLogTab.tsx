@@ -141,18 +141,16 @@ export function ChangeLogTab() {
                   <span className="text-xs text-muted-foreground tabular-nums shrink-0">
                     {new Date(row.created_at).toLocaleString("en-GB", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
                   </span>
-                  {row.operation === "DELETE" && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleRestore(row.id)}
-                      disabled={restoring === row.id}
-                      className="h-7 gap-1"
-                    >
-                      {restoring === row.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Undo2 className="h-3 w-3" />}
-                      Restore
-                    </Button>
-                  )}
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleRestore(row.id, row.operation)}
+                    disabled={restoring === row.id}
+                    className="h-7 gap-1"
+                  >
+                    {restoring === row.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Undo2 className="h-3 w-3" />}
+                    {actionLabel(row.operation)}
+                  </Button>
                 </div>
                 {isOpen && (
                   <div className="px-3 pb-3 pl-10 grid md:grid-cols-2 gap-2">
