@@ -259,7 +259,7 @@ export default function PlayerRegistrationPage() {
 
       // Upload photo first
       const fileExt = photoFile.name.split(".").pop();
-      const filePath = `${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
+      const filePath = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
       const { error: uploadError } = await supabase.storage
         .from("registration-photos")
         .upload(filePath, photoFile);
