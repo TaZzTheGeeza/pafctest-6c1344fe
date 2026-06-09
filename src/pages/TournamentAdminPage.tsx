@@ -14,7 +14,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DateInput } from "@/components/ui/date-input";
-import { Trophy, Plus, Check, X, Edit, Megaphone, Trash2, ChevronDown, ChevronUp } from "lucide-react";
+import { Trophy, Plus, Check, X, Edit, Megaphone, Trash2, ChevronDown, ChevronUp, RotateCcw } from "lucide-react";
 import { AdminTeamDetail } from "@/components/tournament/AdminTeamDetail";
 import { toast } from "sonner";
 
@@ -251,6 +251,21 @@ const TournamentAdminPage = () => {
     await supabase.from("tournament_matches").update({ home_score: null, away_score: null, status: "scheduled" }).eq("id", matchId);
     invalidateAll();
     toast.success("Score cleared");
+  };
+
+  // RESET KNOCKOUT MATCH (clear teams + score so it goes back to TBC vs TBC)
+  const resetMatch = async (matchId: string) => {
+    if (!confirm("Reset this match? Teams will revert to TBC and the score will be cleared.")) return;
+    const { error } = await supabase.from("tournament_matches").update({
+      home_team_id: null,
+      away_team_id: null,
+      home_score: null,
+      away_score: null,
+      status: "scheduled",
+    }).eq("id", matchId);
+    if (error) { toast.error("Failed to reset match"); return; }
+    invalidateAll();
+    toast.success("Match reset — teams cleared to TBC");
   };
 
   // ===== AUTO-PROGRESS KNOCKOUTS =====
@@ -969,6 +984,7 @@ const TournamentAdminPage = () => {
                                 onClearScore={clearScore}
                                 onUpdateMatch={updateMatch}
                                 onDelete={deleteMatch}
+                                onReset={resetMatch}
                               />
                             ))}
                           </TableBody>
@@ -1251,7 +1267,7 @@ const TournamentAdminPage = () => {
 };
 
 // Match row component with full inline editing
-function MatchRow({ match, teams, groups, getTeamName, getAgeGroupName, onUpdateScore, onClearScore, onUpdateMatch, onDelete }: {
+function MatchRow({ match, teams, groups, getTeamName, getAgeGroupName, onUpdateScore, onClearScore, onUpdateMatch, onDelete, onReset }: {
   match: any;
   teams: any[];
   groups: any[];
@@ -1261,6 +1277,7 @@ function MatchRow({ match, teams, groups, getTeamName, getAgeGroupName, onUpdate
   onClearScore: (id: string) => void;
   onUpdateMatch: (id: string, fields: Record<string, any>) => void;
   onDelete: (id: string) => void;
+  onReset: (id: string) => void;
 }) {
   const [editing, setEditing] = useState(false);
   const [h, setH] = useState(match.home_score?.toString() || "0");
@@ -1318,8 +1335,11 @@ function MatchRow({ match, teams, groups, getTeamName, getAgeGroupName, onUpdate
         <TableCell className="text-xs">{match.referee || "—"}</TableCell>
         <TableCell>
           <div className="flex gap-1">
-            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setEditing(!editing)}><Edit className="h-3 w-3" /></Button>
-            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => onDelete(match.id)}><Trash2 className="h-3 w-3 text-red-500" /></Button>
+            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setEditing(!editing)} title="Edit"><Edit className="h-3 w-3" /></Button>
+            {match.stage && match.stage !== "group" && (
+              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => onReset(match.id)} title="Reset teams to TBC"><RotateCcw className="h-3 w-3 text-amber-500" /></Button>
+            )}
+            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => onDelete(match.id)} title="Delete"><Trash2 className="h-3 w-3 text-red-500" /></Button>
           </div>
         </TableCell>
       </TableRow>
