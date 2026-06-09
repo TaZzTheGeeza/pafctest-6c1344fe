@@ -1,0 +1,1 @@
+UPDATE public.raffles SET ticket_price_cents = 1000 WHERE sweepstake_mode = true AND title = 'World Cup 2026 Sweepstake';
