@@ -161,6 +161,16 @@ const App = () => (
         <Sonner />
         <AppContent />
         <UpdateGate />
+        {typeof window !== "undefined" &&
+          new URLSearchParams(window.location.search).get("lionsden") === "preview" && (
+            <LionsDenGate
+              onEnter={() => {
+                const u = new URL(window.location.href);
+                u.searchParams.delete("lionsden");
+                window.location.replace(u.toString());
+              }}
+            />
+          )}
       </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
