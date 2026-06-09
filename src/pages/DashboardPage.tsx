@@ -64,6 +64,7 @@ const ADMIN_LINKS = [
   { label: "Player Registrations", path: "/admin/player-registrations", icon: UserPlusIcon, desc: "View who's registered for 2026/27 & their details" },
   { label: "Tournament Admin", path: "/tournament-admin", icon: Trophy, desc: "Manage tournaments & brackets" },
   { label: "Raffle Admin", path: "/raffle-admin", icon: Ticket, desc: "Create & manage raffles" },
+  { label: "Sweepstake Admin", path: "/world-cup-sweepstake-admin", icon: Trophy, desc: "World Cup sweepstake — teams, prizes & buyers" },
   { label: "PAFC Hub", path: "/hub", icon: MessageSquare, desc: "Team chat, payments, availability" },
   { label: "Club Meetings", path: "/meetings", icon: Video, desc: "Schedule & join video meetings" },
   { label: "Results", path: "/results", icon: BarChart3, desc: "Match results & stats" },
