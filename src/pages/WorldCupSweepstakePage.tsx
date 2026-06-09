@@ -280,7 +280,12 @@ const WorldCupSweepstakePage = () => {
                       <div className="text-xs font-display tracking-widest text-muted-foreground">TICKET #{t.ticket_number}</div>
                       {t.payment_status === "pending" && <Badge variant="outline" className="text-xs">Pending</Badge>}
                     </div>
-                    {raffle.teams_revealed && t.team ? (
+                    {t.payment_status !== "paid" ? (
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Lock className="h-4 w-4" />
+                        <span className="text-sm">Team revealed once payment is confirmed</span>
+                      </div>
+                    ) : raffle.teams_revealed && t.team ? (
                       <>
                         <div className="text-3xl mb-1">{t.team.flag_emoji}</div>
                         <div className="font-display font-bold text-xl">{t.team.country_name}</div>
@@ -323,9 +328,9 @@ const WorldCupSweepstakePage = () => {
                           <span className="text-2xl">{a.flag_emoji}</span>
                           <div className="flex-1 min-w-0">
                             <div className="font-display font-bold truncate">{a.country_name}</div>
-                            <div className="text-xs text-muted-foreground truncate">
-                              #{a.ticket_number} {ticket ? `• ${ticket.buyer_name}` : "• Available"}
-                            </div>
+                              <div className="text-xs text-muted-foreground truncate">
+                                #{a.ticket_number} {ticket && ticket.payment_status === "paid" ? `• ${ticket.buyer_name}` : "• Available"}
+                              </div>
                           </div>
                           <Badge className={cn("text-[10px] shrink-0", meta.color)}>{meta.label.split(" ")[0]}</Badge>
                         </div>
