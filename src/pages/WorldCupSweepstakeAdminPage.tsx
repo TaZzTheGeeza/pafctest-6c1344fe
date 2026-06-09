@@ -95,7 +95,7 @@ const WorldCupSweepstakeAdminPage = () => {
         title: "World Cup 2026 Sweepstake",
         description: "48 teams, 48 tickets. Pick a number, get a country, win a slice of the pot.",
         prize_description: "Cash prizes for Champion, Runner-up, 3rd Place and Golden Boot winners.",
-        ticket_price_cents: 500,
+        ticket_price_cents: 1000,
         currency: "gbp",
         max_tickets: 48,
         number_range: 48,
