@@ -50,7 +50,7 @@ export function WhatsNewLoader() {
 
       if (error || !data) return;
 
-      const bullets = Array.isArray(data.bullets) ? (data.bullets as Bullet[]) : [];
+      const bullets = Array.isArray(data.bullets) ? (data.bullets as unknown as Bullet[]) : [];
       const c: Campaign = { id: data.id as string, title: (data.title as string) || "What's New", bullets };
       setCampaign(c);
 
