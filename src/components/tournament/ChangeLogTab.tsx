@@ -65,21 +65,28 @@ export function ChangeLogTab() {
     },
   });
 
-  const handleRestore = async (logId: string) => {
-    if (!confirm("Restore this deleted record? Related matches deleted at the same time will also be restored where possible.")) return;
+  const handleRestore = async (logId: string, operation: string) => {
+    const prompts: Record<string, string> = {
+      DELETE: "Restore this deleted record? Related matches deleted at the same time will also be restored where possible.",
+      UPDATE: "Revert this record back to its previous values? The current values will be replaced.",
+      INSERT: "Undo this creation? The record will be removed.",
+    };
+    if (!confirm(prompts[operation] ?? "Apply this change?")) return;
     setRestoring(logId);
     try {
       const { error } = await supabase.rpc("restore_tournament_record" as any, { _log_id: logId } as any);
       if (error) throw error;
-      toast.success("Record restored");
+      toast.success(operation === "UPDATE" ? "Reverted to previous values" : operation === "INSERT" ? "Creation undone" : "Record restored");
       await qc.invalidateQueries({ queryKey: ["tournament-audit-log"] });
       await qc.invalidateQueries({ queryKey: ["tournament-admin"] });
     } catch (e: any) {
-      toast.error(e.message || "Failed to restore");
+      toast.error(e.message || "Failed to apply");
     } finally {
       setRestoring(null);
     }
   };
+
+  const actionLabel = (op: string) => (op === "UPDATE" ? "Revert" : op === "INSERT" ? "Undo" : "Restore");
 
   return (
     <div className="space-y-4">
@@ -134,18 +141,16 @@ export function ChangeLogTab() {
                   <span className="text-xs text-muted-foreground tabular-nums shrink-0">
                     {new Date(row.created_at).toLocaleString("en-GB", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
                   </span>
-                  {row.operation === "DELETE" && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleRestore(row.id)}
-                      disabled={restoring === row.id}
-                      className="h-7 gap-1"
-                    >
-                      {restoring === row.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Undo2 className="h-3 w-3" />}
-                      Restore
-                    </Button>
-                  )}
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleRestore(row.id, row.operation)}
+                    disabled={restoring === row.id}
+                    className="h-7 gap-1"
+                  >
+                    {restoring === row.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Undo2 className="h-3 w-3" />}
+                    {actionLabel(row.operation)}
+                  </Button>
                 </div>
                 {isOpen && (
                   <div className="px-3 pb-3 pl-10 grid md:grid-cols-2 gap-2">
