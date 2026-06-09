@@ -177,6 +177,37 @@ const WorldCupSweepstakePage = () => {
     }
   };
 
+  const handleClaimFree = async () => {
+    if (!raffle || form.selectedNumbers.length === 0) {
+      toast.error("Pick at least one number to claim");
+      return;
+    }
+    if (!form.name.trim() || !form.email.trim()) {
+      toast.error("Enter a name and email");
+      return;
+    }
+    setClaimingFree(true);
+    try {
+      const rows = form.selectedNumbers.map((n) => ({
+        raffle_id: raffle.id,
+        ticket_number: n,
+        buyer_name: form.name,
+        buyer_email: form.email,
+        buyer_phone: form.phone || null,
+        payment_status: "paid",
+      }));
+      const { error } = await supabase.from("raffle_tickets").insert(rows);
+      if (error) throw error;
+      toast.success(`Claimed ${rows.length} free test ticket${rows.length === 1 ? "" : "s"}!`);
+      setForm({ ...form, selectedNumbers: [] });
+      fetchData();
+    } catch (e: any) {
+      toast.error(e.message || "Could not claim test ticket");
+    } finally {
+      setClaimingFree(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
