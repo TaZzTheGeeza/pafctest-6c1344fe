@@ -150,14 +150,31 @@ const WorldCupSweepstakeAdminPage = () => {
   };
 
   const shuffle = () => {
-    const teams = [...DEFAULT_WORLD_CUP_2026_TEAMS].sort(() => Math.random() - 0.5);
-    setRows((prev) => prev.map((r, i) => {
-      const t = teams[i];
-      if (!t) return r;
-      return { ...r, country_name: t.country_name, flag_emoji: t.flag_emoji, group_letter: t.group_letter };
-    }));
-    toast.success("Teams shuffled randomly");
+    // Lock any ticket that's already been bought (paid or pending) — those keep their country.
+    const lockedTickets = new Set(buyers.map((b) => b.ticket_number));
+
+    setRows((prev) => {
+      const lockedCountryNames = new Set(
+        prev.filter((r) => lockedTickets.has(r.ticket_number) && r.country_name).map((r) => r.country_name),
+      );
+      // Pool = default teams that aren't already locked to a sold ticket.
+      const pool = DEFAULT_WORLD_CUP_2026_TEAMS
+        .filter((t) => !lockedCountryNames.has(t.country_name))
+        .sort(() => Math.random() - 0.5);
+
+      let p = 0;
+      return prev.map((r) => {
+        if (lockedTickets.has(r.ticket_number)) return r; // sold — untouched
+        const t = pool[p++];
+        if (!t) return { ...r, country_name: "", flag_emoji: "", group_letter: "" };
+        return { ...r, country_name: t.country_name, flag_emoji: t.flag_emoji, group_letter: t.group_letter };
+      });
+    });
+
+    const remaining = (raffle?.number_range || 48) - buyers.length;
+    toast.success(`Reshuffled ${remaining} unsold ticket${remaining === 1 ? "" : "s"} — sold tickets kept their country`);
   };
+
 
   const updateRow = (idx: number, patch: Partial<AssignmentRow>) => {
     setRows((prev) => prev.map((r, i) => (i === idx ? { ...r, ...patch } : r)));
