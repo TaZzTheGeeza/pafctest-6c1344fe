@@ -66,17 +66,7 @@ export function HeroSection() {
               </Button>
             )}
             <Button
-              variant="outline"
-              size="lg"
-              className="border-primary text-primary font-display tracking-wider hover:bg-primary hover:text-primary-foreground transition-colors"
-              asChild
-            >
-              <Link to="/shop">
-                <ShoppingBag className="w-5 h-5 mr-2" />
-                Club Shop
-              </Link>
-            </Button>
-            <Button
+
               size="lg"
               variant="outline"
               className="border-primary text-primary font-display tracking-wider hover:bg-primary hover:text-primary-foreground transition-colors animate-pulse hover:animate-none"
