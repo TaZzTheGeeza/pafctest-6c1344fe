@@ -172,6 +172,16 @@ const App = () => (
               }}
             />
           )}
+        {typeof window !== "undefined" &&
+          new URLSearchParams(window.location.search).get("kickoff") === "preview" && (
+            <KickOffGate
+              onEnter={() => {
+                const u = new URL(window.location.href);
+                u.searchParams.delete("kickoff");
+                window.location.replace(u.toString());
+              }}
+            />
+          )}
       </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
