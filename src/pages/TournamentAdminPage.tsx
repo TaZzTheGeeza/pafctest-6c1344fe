@@ -997,6 +997,11 @@ const TournamentAdminPage = () => {
                   );
                 })()}
               </TabsContent>
+
+              {/* CHANGE LOG TAB */}
+              <TabsContent value="changelog" className="space-y-4">
+                <ChangeLogTab />
+              </TabsContent>
             </Tabs>
           )}
         </div>
