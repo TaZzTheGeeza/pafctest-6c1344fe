@@ -95,7 +95,7 @@ const WorldCupSweepstakeAdminPage = () => {
         title: "World Cup 2026 Sweepstake",
         description: "48 teams, 48 tickets. Pick a number, get a country, win a slice of the pot.",
         prize_description: "Cash prizes for Champion, Runner-up, 3rd Place and Golden Boot winners.",
-        ticket_price_cents: 1000,
+        ticket_price_cents: 2000,
         currency: "gbp",
         max_tickets: 48,
         number_range: 48,
@@ -192,7 +192,7 @@ const WorldCupSweepstakeAdminPage = () => {
               <p className="text-muted-foreground">No sweepstake raffle exists yet. Create one to get started.</p>
               <Button onClick={createRaffle} disabled={saving} className="bg-gold-gradient text-primary-foreground">
                 {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Plus className="h-4 w-4 mr-2" />}
-                Create Sweepstake (48 tickets @ £10)
+                Create Sweepstake (48 tickets @ £20)
               </Button>
             </CardContent>
           </Card>
