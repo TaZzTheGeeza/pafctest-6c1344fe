@@ -3094,6 +3094,7 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      expire_pending_raffle_tickets: { Args: never; Returns: number }
       get_safe_profile: {
         Args: { _user_id: string }
         Returns: {
