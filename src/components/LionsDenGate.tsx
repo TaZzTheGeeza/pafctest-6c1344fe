@@ -19,9 +19,13 @@ interface Bullet {
 
 interface Props {
   onEnter: () => void;
+  title?: string;
+  bullets?: Bullet[];
 }
 
-export function LionsDenGate({ onEnter }: Props) {
+export function LionsDenGate({ onEnter, title, bullets }: Props) {
+  const items = bullets && bullets.length > 0 ? bullets : [];
+  const headline = title?.trim();
   const [entering, setEntering] = useState(false);
   const [mounted, setMounted] = useState(false);
 
