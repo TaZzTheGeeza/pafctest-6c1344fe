@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Check } from "lucide-react";
 import clubLogo from "@/assets/club-logo.jpg";
+
+interface Bullet {
+  title: string;
+  desc: string;
+}
 
 /**
  * LionsDenGate
