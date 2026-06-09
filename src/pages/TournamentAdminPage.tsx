@@ -16,6 +16,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { DateInput } from "@/components/ui/date-input";
 import { Trophy, Plus, Check, X, Edit, Megaphone, Trash2, ChevronDown, ChevronUp, RotateCcw } from "lucide-react";
 import { AdminTeamDetail } from "@/components/tournament/AdminTeamDetail";
+import { ChangeLogTab } from "@/components/tournament/ChangeLogTab";
 import { toast } from "sonner";
 
 const TournamentAdminPage = () => {
@@ -660,11 +661,12 @@ const TournamentAdminPage = () => {
 
           {selectedTournament && (
             <Tabs defaultValue="age-groups" className="space-y-4">
-              <TabsList className="grid w-full grid-cols-4 gap-1">
+              <TabsList className="grid w-full grid-cols-5 gap-1">
                 <TabsTrigger value="age-groups">Age Groups</TabsTrigger>
                 <TabsTrigger value="teams">Teams</TabsTrigger>
                 <TabsTrigger value="groups">Groups</TabsTrigger>
                 <TabsTrigger value="matches">Matches</TabsTrigger>
+                <TabsTrigger value="changelog">Change Log</TabsTrigger>
               </TabsList>
 
               {/* AGE GROUPS TAB */}
@@ -995,6 +997,11 @@ const TournamentAdminPage = () => {
                     </>
                   );
                 })()}
+              </TabsContent>
+
+              {/* CHANGE LOG TAB */}
+              <TabsContent value="changelog" className="space-y-4">
+                <ChangeLogTab />
               </TabsContent>
             </Tabs>
           )}
