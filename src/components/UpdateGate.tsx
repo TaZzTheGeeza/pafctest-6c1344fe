@@ -28,6 +28,21 @@ const CHECK_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
 const IDLE_THRESHOLD_MS = 30 * 1000; // 30 seconds
 const MANUAL_REFRESH_COOLDOWN_MS = 30 * 60 * 1000; // 30 minutes
 
+function fingerprintFromAssets(assets: string[]): string {
+  return assets.slice().sort().join("|");
+}
+
+function getCurrentDocumentFingerprint(): string | null {
+  const assets: string[] = [];
+  document.querySelectorAll<HTMLScriptElement>('script[src*="/assets/"]').forEach((s) => {
+    if (s.src) assets.push(new URL(s.src, window.location.origin).pathname);
+  });
+  document.querySelectorAll<HTMLLinkElement>('link[href*="/assets/"]').forEach((l) => {
+    if (l.href) assets.push(new URL(l.href, window.location.origin).pathname);
+  });
+  return assets.length ? fingerprintFromAssets(assets) : null;
+}
+
 async function getIndexFingerprint(): Promise<string | null> {
   try {
     const url = `/?_fp=${Date.now()}`;
@@ -36,11 +51,9 @@ async function getIndexFingerprint(): Promise<string | null> {
     const buildAssets = Array.from(
       text.matchAll(/(?:src|href)=["']([^"']*\/assets\/[^"']+\.(?:js|css))["']/g),
       (match) => match[1]
-    )
-      .sort()
-      .join("|");
+    );
 
-    if (buildAssets) return buildAssets;
+    if (buildAssets.length) return fingerprintFromAssets(buildAssets);
 
     const slice = text.replace(/_fp=\d+/g, "").slice(0, 4096);
     let hash = 0;
@@ -157,16 +170,18 @@ export function UpdateGate() {
       const fp = await getIndexFingerprint();
       if (cancelled || !fp) return;
 
-      const previous = localStorage.getItem(FP_KEY);
+      // On initial load, compare against the assets THIS document actually loaded.
+      // This catches stale tabs even if localStorage is empty or cross-device.
+      const currentFp = isInitial ? getCurrentDocumentFingerprint() : null;
+      const previous = isInitial && currentFp ? currentFp : localStorage.getItem(FP_KEY);
 
       if (!previous) {
-        // First check on this device — remember and move on
         localStorage.setItem(FP_KEY, fp);
         return;
       }
 
       if (previous === fp) {
-        // Nothing new
+        if (isInitial) localStorage.setItem(FP_KEY, fp);
         return;
       }
 
@@ -175,12 +190,11 @@ export function UpdateGate() {
       const dismissedFp = localStorage.getItem(DISMISSED_FP_KEY);
       const manualRefreshedFp = localStorage.getItem(MANUAL_REFRESHED_FP_KEY);
 
-      // On initial page load: always force-refresh immediately to get the latest version.
-      // The AUTO_REFRESHED_KEY guard prevents infinite loops if the fingerprint persists.
+      // On initial page load: force-refresh immediately to get the latest version.
+      // AUTO_REFRESHED_KEY guard prevents infinite loops if the new build can't actually load.
       if (isInitial) {
         const alreadyAutoRefreshed = localStorage.getItem(AUTO_REFRESHED_KEY) === fp;
-        const alreadyManualRefreshed = manualRefreshedFp === fp;
-        if (!alreadyAutoRefreshed && !alreadyManualRefreshed) {
+        if (!alreadyAutoRefreshed) {
           try {
             localStorage.setItem(AUTO_REFRESHED_KEY, fp);
             localStorage.setItem(FP_KEY, fp);
@@ -208,7 +222,6 @@ export function UpdateGate() {
         markActive();
         runCheck(false);
       } else if (newFpRef.current) {
-        // Tab being hidden with pending update — perfect moment to swap in
         tryAutoRefresh(newFpRef.current);
       }
     };
