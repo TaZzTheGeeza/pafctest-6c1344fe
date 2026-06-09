@@ -26,7 +26,12 @@ interface Campaign {
   bullets: Bullet[];
 }
 
+const ENTERED_KEY = "lionsden_entered_v1";
+
 async function clearCachesAndReload() {
+  try {
+    sessionStorage.setItem(ENTERED_KEY, "1");
+  } catch {}
   try {
     if ("serviceWorker" in navigator) {
       const regs = await navigator.serviceWorker.getRegistrations();
@@ -63,6 +68,19 @@ export function WhatsNewLoader() {
       window.location.hostname.includes("localhost");
 
     if (isInIframe || isPreviewHost) return;
+
+    // Don't re-show after the user already tapped Enter this session
+    let alreadyEntered = false;
+    try {
+      alreadyEntered = sessionStorage.getItem(ENTERED_KEY) === "1";
+    } catch {}
+    const hasVersionParam = new URLSearchParams(window.location.search).has("_v");
+    if (alreadyEntered || hasVersionParam) {
+      // If we arrived via a versioned reload, mark as entered so future
+      // in-app navigations during this session don't re-trigger the gate.
+      try { sessionStorage.setItem(ENTERED_KEY, "1"); } catch {}
+      return;
+    }
 
     setShow(true);
 
