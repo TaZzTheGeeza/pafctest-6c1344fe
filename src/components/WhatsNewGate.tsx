@@ -24,7 +24,9 @@ const DEFAULT_BULLETS: Bullet[] = [
   { title: "Tournament Weekend Ready", desc: "Fixtures, groups and live updates locked in for Saturday." },
 ];
 
-export function WhatsNewGate({ onEnter }: Props) {
+export function WhatsNewGate({ onEnter, title, bullets }: Props) {
+  const items = bullets && bullets.length > 0 ? bullets : DEFAULT_BULLETS;
+  const headline = title?.trim() || "What's New";
   const [entering, setEntering] = useState(false);
   const [mounted, setMounted] = useState(false);
 
