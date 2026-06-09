@@ -71,7 +71,7 @@ export function WhatsNewLoader() {
   if (!show || !campaign) return null;
 
   return (
-    <WhatsNewGate
+    <LionsDenGate
       title={campaign.title}
       bullets={campaign.bullets}
       onEnter={() => {
