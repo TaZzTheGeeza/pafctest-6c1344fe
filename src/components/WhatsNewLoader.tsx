@@ -69,6 +69,19 @@ export function WhatsNewLoader() {
 
     if (isInIframe || isPreviewHost) return;
 
+    // Don't re-show after the user already tapped Enter this session
+    let alreadyEntered = false;
+    try {
+      alreadyEntered = sessionStorage.getItem(ENTERED_KEY) === "1";
+    } catch {}
+    const hasVersionParam = new URLSearchParams(window.location.search).has("_v");
+    if (alreadyEntered || hasVersionParam) {
+      // If we arrived via a versioned reload, mark as entered so future
+      // in-app navigations during this session don't re-trigger the gate.
+      try { sessionStorage.setItem(ENTERED_KEY, "1"); } catch {}
+      return;
+    }
+
     setShow(true);
 
     // Fetch optional active campaign content (non-blocking)
