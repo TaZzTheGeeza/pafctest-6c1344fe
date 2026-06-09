@@ -73,7 +73,14 @@ export function WhatsNewGate({ onEnter, title, bullets }: Props) {
 
           {/* Headline */}
           <h2 className="mb-2 font-display text-3xl font-black uppercase tracking-tight text-foreground sm:text-4xl">
-            What's <span className="text-primary">New</span>
+            {headline.split(/\s+/).length > 1 ? (
+              <>
+                {headline.split(/\s+/).slice(0, -1).join(" ")}{" "}
+                <span className="text-primary">{headline.split(/\s+/).slice(-1)[0]}</span>
+              </>
+            ) : (
+              <span className="text-primary">{headline}</span>
+            )}
           </h2>
           <p className="mb-6 text-sm text-muted-foreground">
             A fresh version of PAFC just landed. Here's what's waiting for you.
@@ -81,7 +88,7 @@ export function WhatsNewGate({ onEnter, title, bullets }: Props) {
 
           {/* Highlights */}
           <ul className="mb-7 space-y-4">
-            {HIGHLIGHTS.map((h, i) => (
+            {items.map((h, i) => (
               <li
                 key={h.title}
                 className={`flex gap-3 transition-all duration-500 ${
