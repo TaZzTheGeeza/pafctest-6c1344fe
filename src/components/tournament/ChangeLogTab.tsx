@@ -65,21 +65,28 @@ export function ChangeLogTab() {
     },
   });
 
-  const handleRestore = async (logId: string) => {
-    if (!confirm("Restore this deleted record? Related matches deleted at the same time will also be restored where possible.")) return;
+  const handleRestore = async (logId: string, operation: string) => {
+    const prompts: Record<string, string> = {
+      DELETE: "Restore this deleted record? Related matches deleted at the same time will also be restored where possible.",
+      UPDATE: "Revert this record back to its previous values? The current values will be replaced.",
+      INSERT: "Undo this creation? The record will be removed.",
+    };
+    if (!confirm(prompts[operation] ?? "Apply this change?")) return;
     setRestoring(logId);
     try {
       const { error } = await supabase.rpc("restore_tournament_record" as any, { _log_id: logId } as any);
       if (error) throw error;
-      toast.success("Record restored");
+      toast.success(operation === "UPDATE" ? "Reverted to previous values" : operation === "INSERT" ? "Creation undone" : "Record restored");
       await qc.invalidateQueries({ queryKey: ["tournament-audit-log"] });
       await qc.invalidateQueries({ queryKey: ["tournament-admin"] });
     } catch (e: any) {
-      toast.error(e.message || "Failed to restore");
+      toast.error(e.message || "Failed to apply");
     } finally {
       setRestoring(null);
     }
   };
+
+  const actionLabel = (op: string) => (op === "UPDATE" ? "Revert" : op === "INSERT" ? "Undo" : "Restore");
 
   return (
     <div className="space-y-4">
