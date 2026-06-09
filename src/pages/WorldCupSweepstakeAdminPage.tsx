@@ -40,11 +40,21 @@ interface AssignmentRow {
   status: SweepstakeStatus;
 }
 
+interface BuyerRow {
+  ticket_number: number;
+  buyer_name: string;
+  buyer_email: string;
+  buyer_phone: string | null;
+  payment_status: string;
+  created_at: string;
+}
+
 const GROUP_LETTERS = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
 
 const WorldCupSweepstakeAdminPage = () => {
   const [raffle, setRaffle] = useState<Raffle | null>(null);
   const [rows, setRows] = useState<AssignmentRow[]>([]);
+  const [buyers, setBuyers] = useState<BuyerRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
