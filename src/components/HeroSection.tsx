@@ -45,6 +45,16 @@ export function HeroSection() {
             )}
             <Button
               size="lg"
+              className="bg-gold-gradient text-primary-foreground font-display tracking-wider hover:opacity-90 transition-opacity shadow-[0_0_24px_hsl(var(--primary)/0.5)] animate-pulse hover:animate-none"
+              asChild
+            >
+              <Link to="/world-cup-sweepstake">
+                <Ticket className="w-5 h-5 mr-2" />
+                World Cup Sweepstake — £375 Pot
+              </Link>
+            </Button>
+            <Button
+              size="lg"
               className="bg-gold-gradient text-primary-foreground font-display tracking-wider hover:opacity-90 transition-opacity"
               asChild
             >
