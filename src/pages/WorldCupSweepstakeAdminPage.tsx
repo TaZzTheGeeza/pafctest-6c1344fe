@@ -192,7 +192,7 @@ const WorldCupSweepstakeAdminPage = () => {
               <p className="text-muted-foreground">No sweepstake raffle exists yet. Create one to get started.</p>
               <Button onClick={createRaffle} disabled={saving} className="bg-gold-gradient text-primary-foreground">
                 {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Plus className="h-4 w-4 mr-2" />}
-                Create Sweepstake (48 tickets @ £5)
+                Create Sweepstake (48 tickets @ £10)
               </Button>
             </CardContent>
           </Card>
