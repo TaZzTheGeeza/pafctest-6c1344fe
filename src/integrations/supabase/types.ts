@@ -2439,6 +2439,39 @@ export type Database = {
           },
         ]
       }
+      tournament_audit_log: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          id: string
+          new_row: Json | null
+          old_row: Json | null
+          operation: string
+          record_id: string | null
+          table_name: string
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          id?: string
+          new_row?: Json | null
+          old_row?: Json | null
+          operation: string
+          record_id?: string | null
+          table_name: string
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          id?: string
+          new_row?: Json | null
+          old_row?: Json | null
+          operation?: string
+          record_id?: string | null
+          table_name?: string
+        }
+        Relationships: []
+      }
       tournament_groups: {
         Row: {
           age_group_id: string
@@ -3105,6 +3138,7 @@ export type Database = {
         }
         Returns: number
       }
+      prune_tournament_audit_log: { Args: never; Returns: number }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
         Returns: {
@@ -3113,6 +3147,7 @@ export type Database = {
           read_ct: number
         }[]
       }
+      restore_tournament_record: { Args: { _log_id: string }; Returns: Json }
       shares_team_with: {
         Args: { _target: string; _viewer: string }
         Returns: boolean
