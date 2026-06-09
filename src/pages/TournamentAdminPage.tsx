@@ -660,11 +660,12 @@ const TournamentAdminPage = () => {
 
           {selectedTournament && (
             <Tabs defaultValue="age-groups" className="space-y-4">
-              <TabsList className="grid w-full grid-cols-4 gap-1">
+              <TabsList className="grid w-full grid-cols-5 gap-1">
                 <TabsTrigger value="age-groups">Age Groups</TabsTrigger>
                 <TabsTrigger value="teams">Teams</TabsTrigger>
                 <TabsTrigger value="groups">Groups</TabsTrigger>
                 <TabsTrigger value="matches">Matches</TabsTrigger>
+                <TabsTrigger value="changelog">Change Log</TabsTrigger>
               </TabsList>
 
               {/* AGE GROUPS TAB */}
