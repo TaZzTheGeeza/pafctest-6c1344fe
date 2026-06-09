@@ -4,12 +4,30 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useQueryClient } from "@tanstack/react-query";
 import { Plus, X } from "lucide-react";
 import { toast } from "sonner";
-import { faTeamConfigs } from "@/lib/faFixtureConfig";
+// faTeamConfigs import removed — using local age-ordered list below
 import { notifyTeamMembers } from "@/lib/notifyTeamMembers";
 
 interface Props {
   teamSlug: string;
 }
+
+// Canonical age-ordered team list for the availability dropdown (U7 → U15).
+const AVAILABILITY_TEAMS: { team: string; slug: string }[] = [
+  { team: "U7", slug: "u7s" },
+  { team: "U8 Black", slug: "u8s-black" },
+  { team: "U8 Gold", slug: "u8s-gold" },
+  { team: "U9", slug: "u9s" },
+  { team: "U10", slug: "u10s" },
+  { team: "U11 Black", slug: "u11s-black" },
+  { team: "U11 Gold", slug: "u11s-gold" },
+  { team: "U12 Black", slug: "u12s-black" },
+  { team: "U12 Gold", slug: "u12s-gold" },
+  { team: "U13", slug: "u13s" },
+  { team: "U13 Black", slug: "u13s-black" },
+  { team: "U13 Gold", slug: "u13s-gold" },
+  { team: "U14", slug: "u14s" },
+  { team: "U15", slug: "u15s" },
+];
 
 export function AddAvailabilityEventDialog({ teamSlug }: Props) {
   const { user, isAdmin } = useAuth();
@@ -126,7 +144,7 @@ export function AddAvailabilityEventDialog({ teamSlug }: Props) {
                     onChange={(e) => setSelectedTeam(e.target.value)}
                     className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
                   >
-                    {faTeamConfigs.map((t) => (
+                    {AVAILABILITY_TEAMS.map((t) => (
                       <option key={t.slug} value={t.slug}>{t.team}</option>
                     ))}
                   </select>
