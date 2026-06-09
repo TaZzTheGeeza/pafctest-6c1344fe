@@ -5,17 +5,16 @@ import { LionsDenGate } from "./LionsDenGate";
 /**
  * WhatsNewLoader
  * ---------------
- * Fetches the active "What's New" campaign from the database and shows the
- * gate exactly once per campaign (tracked in localStorage by campaign id).
+ * Shows the Lions' Den "Enter" gate on EVERY fresh page load. Tapping Enter
+ * wipes caches + service workers and hard-reloads, guaranteeing every visitor
+ * lands on the latest build.
  *
- * Admins can author campaigns at /whats-new-admin. Only one campaign is
- * active at a time (enforced by a unique partial index).
+ * Optional content: if an admin has authored an active campaign at
+ * /whats-new-admin, its title/bullets are displayed inside the gate. Otherwise
+ * the gate falls back to the default Lions' Den copy.
  *
- * Also supports `?whatsnew=preview` to force-show the latest active campaign
- * without consuming the seen flag.
+ * Skipped inside the Lovable preview iframe so editing isn't blocked.
  */
-
-const STORAGE_KEY = "pafc:whatsnew:seen";
 
 interface Bullet {
   title: string;
@@ -23,71 +22,73 @@ interface Bullet {
 }
 
 interface Campaign {
-  id: string;
   title: string;
   bullets: Bullet[];
 }
 
+async function clearCachesAndReload() {
+  try {
+    if ("serviceWorker" in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map((r) => r.unregister().catch(() => {})));
+    }
+  } catch {}
+  try {
+    if ("caches" in window) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map((k) => caches.delete(k)));
+    }
+  } catch {}
+  const url = window.location.pathname + window.location.search;
+  const sep = url.includes("?") ? "&" : "?";
+  window.location.replace(url + sep + "_v=" + Date.now());
+}
+
 export function WhatsNewLoader() {
-  const [campaign, setCampaign] = useState<Campaign | null>(null);
   const [show, setShow] = useState(false);
-  const [preview, setPreview] = useState(false);
+  const [campaign, setCampaign] = useState<Campaign | null>(null);
 
   useEffect(() => {
-    const previewMode =
-      typeof window !== "undefined" &&
-      new URLSearchParams(window.location.search).get("whatsnew") === "preview";
-    setPreview(previewMode);
+    // Skip inside Lovable preview iframes / editor
+    const isInIframe = (() => {
+      try {
+        return window.self !== window.top;
+      } catch {
+        return true;
+      }
+    })();
+    const isPreviewHost =
+      window.location.hostname.includes("id-preview--") ||
+      window.location.hostname.includes("lovableproject.com") ||
+      window.location.hostname.includes("localhost");
 
+    if (isInIframe || isPreviewHost) return;
+
+    setShow(true);
+
+    // Fetch optional active campaign content (non-blocking)
     (async () => {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from("whats_new_campaigns")
-        .select("id, title, bullets")
+        .select("title, bullets")
         .eq("is_active", true)
         .order("updated_at", { ascending: false })
         .limit(1)
         .maybeSingle();
-
-      if (error || !data) return;
-
-      const bullets = Array.isArray(data.bullets) ? (data.bullets as unknown as Bullet[]) : [];
-      const c: Campaign = { id: data.id as string, title: (data.title as string) || "What's New", bullets };
-      setCampaign(c);
-
-      if (previewMode) {
-        setShow(true);
-        return;
-      }
-
-      try {
-        const seen = localStorage.getItem(STORAGE_KEY);
-        if (seen !== c.id) setShow(true);
-      } catch {
-        setShow(true);
+      if (data) {
+        const bullets = Array.isArray(data.bullets) ? (data.bullets as unknown as Bullet[]) : [];
+        setCampaign({ title: (data.title as string) || "", bullets });
       }
     })();
   }, []);
 
-  if (!show || !campaign) return null;
+  if (!show) return null;
 
   return (
     <LionsDenGate
-      title={campaign.title}
-      bullets={campaign.bullets}
-      onEnter={() => {
-        if (preview) {
-          const u = new URL(window.location.href);
-          u.searchParams.delete("whatsnew");
-          window.location.replace(u.toString());
-          return;
-        }
-        try {
-          localStorage.setItem(STORAGE_KEY, campaign.id);
-        } catch {
-          // ignore — user will just see it again next time
-        }
-        setShow(false);
-      }}
+      title={campaign?.title}
+      bullets={campaign?.bullets}
+      onEnter={clearCachesAndReload}
     />
   );
 }
