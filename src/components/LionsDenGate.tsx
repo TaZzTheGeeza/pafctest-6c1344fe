@@ -104,7 +104,7 @@ export function LionsDenGate({ onEnter, title, bullets }: Props) {
 
         {/* Eyebrow */}
         <div className="mb-3 text-[10px] font-display uppercase tracking-[0.4em] text-primary/80 sm:text-xs">
-          Pendle Athletic FC · Est. 2020
+          Peterborough Athletic FC · Est. 2020
         </div>
 
         {/* Headline */}
