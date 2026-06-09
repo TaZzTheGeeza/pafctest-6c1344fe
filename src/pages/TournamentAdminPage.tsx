@@ -16,6 +16,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { DateInput } from "@/components/ui/date-input";
 import { Trophy, Plus, Check, X, Edit, Megaphone, Trash2, ChevronDown, ChevronUp, RotateCcw } from "lucide-react";
 import { AdminTeamDetail } from "@/components/tournament/AdminTeamDetail";
+import { ChangeLogTab } from "@/components/tournament/ChangeLogTab";
 import { toast } from "sonner";
 
 const TournamentAdminPage = () => {
