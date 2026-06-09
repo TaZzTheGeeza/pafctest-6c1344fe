@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ShoppingBag, Trophy, ChevronRight, Smartphone, Sparkles, UserPlus } from "lucide-react";
+import { ShoppingBag, Trophy, ChevronRight, Smartphone, Sparkles, UserPlus, Ticket } from "lucide-react";
 import heroBg from "@/assets/hero-bg.jpg";
 import { usePresentationEnabled } from "@/hooks/usePresentationEnabled";
 import { useRegistrationOpen } from "@/hooks/useRegistrationOpen";
