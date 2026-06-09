@@ -1335,8 +1335,11 @@ function MatchRow({ match, teams, groups, getTeamName, getAgeGroupName, onUpdate
         <TableCell className="text-xs">{match.referee || "—"}</TableCell>
         <TableCell>
           <div className="flex gap-1">
-            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setEditing(!editing)}><Edit className="h-3 w-3" /></Button>
-            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => onDelete(match.id)}><Trash2 className="h-3 w-3 text-red-500" /></Button>
+            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setEditing(!editing)} title="Edit"><Edit className="h-3 w-3" /></Button>
+            {match.stage && match.stage !== "group" && (
+              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => onReset(match.id)} title="Reset teams to TBC"><RotateCcw className="h-3 w-3 text-amber-500" /></Button>
+            )}
+            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => onDelete(match.id)} title="Delete"><Trash2 className="h-3 w-3 text-red-500" /></Button>
           </div>
         </TableCell>
       </TableRow>
