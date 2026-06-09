@@ -2921,6 +2921,33 @@ export type Database = {
         }
         Relationships: []
       }
+      whats_new_campaigns: {
+        Row: {
+          bullets: Json
+          created_at: string
+          id: string
+          is_active: boolean
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          bullets?: Json
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          bullets?: Json
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       tournament_photos_public: {
