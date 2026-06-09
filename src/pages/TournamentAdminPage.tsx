@@ -1267,7 +1267,7 @@ const TournamentAdminPage = () => {
 };
 
 // Match row component with full inline editing
-function MatchRow({ match, teams, groups, getTeamName, getAgeGroupName, onUpdateScore, onClearScore, onUpdateMatch, onDelete }: {
+function MatchRow({ match, teams, groups, getTeamName, getAgeGroupName, onUpdateScore, onClearScore, onUpdateMatch, onDelete, onReset }: {
   match: any;
   teams: any[];
   groups: any[];
@@ -1277,6 +1277,7 @@ function MatchRow({ match, teams, groups, getTeamName, getAgeGroupName, onUpdate
   onClearScore: (id: string) => void;
   onUpdateMatch: (id: string, fields: Record<string, any>) => void;
   onDelete: (id: string) => void;
+  onReset: (id: string) => void;
 }) {
   const [editing, setEditing] = useState(false);
   const [h, setH] = useState(match.home_score?.toString() || "0");
