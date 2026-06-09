@@ -363,7 +363,7 @@ const TournamentPage = () => {
                       </div>
                       <div className="flex items-start gap-2">
                         <Calendar className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                        <p><strong>First Match:</strong> 9:30 AM</p>
+                        <p><strong>First Match:</strong> 9 AM</p>
                       </div>
                       <div className="flex items-start gap-2">
                         <PoundSterling className="h-4 w-4 text-primary mt-0.5 shrink-0" />
