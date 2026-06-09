@@ -984,6 +984,7 @@ const TournamentAdminPage = () => {
                                 onClearScore={clearScore}
                                 onUpdateMatch={updateMatch}
                                 onDelete={deleteMatch}
+                                onReset={resetMatch}
                               />
                             ))}
                           </TableBody>
