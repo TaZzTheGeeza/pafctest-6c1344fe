@@ -64,6 +64,13 @@ const WorldCupSweepstakePage = () => {
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({ name: "", email: "", phone: "", selectedNumbers: [] as number[] });
   const [purchasing, setPurchasing] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [claimingFree, setClaimingFree] = useState(false);
+
+  useEffect(() => {
+    if (!user) { setIsAdmin(false); return; }
+    supabase.rpc("has_role", { _user_id: user.id, _role: "admin" }).then(({ data }) => setIsAdmin(!!data));
+  }, [user]);
 
   useEffect(() => {
     const brId = searchParams.get("br");
