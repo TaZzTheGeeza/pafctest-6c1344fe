@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useQueryClient } from "@tanstack/react-query";
 import { Plus, X } from "lucide-react";
 import { toast } from "sonner";
-import { faTeamConfigs } from "@/lib/faFixtureConfig";
+// faTeamConfigs import removed — using local age-ordered list below
 import { notifyTeamMembers } from "@/lib/notifyTeamMembers";
 
 interface Props {
