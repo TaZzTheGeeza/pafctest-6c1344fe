@@ -328,9 +328,9 @@ const WorldCupSweepstakePage = () => {
                           <span className="text-2xl">{a.flag_emoji}</span>
                           <div className="flex-1 min-w-0">
                             <div className="font-display font-bold truncate">{a.country_name}</div>
-                            <div className="text-xs text-muted-foreground truncate">
-                              #{a.ticket_number} {ticket ? `• ${ticket.buyer_name}` : "• Available"}
-                            </div>
+                              <div className="text-xs text-muted-foreground truncate">
+                                #{a.ticket_number} {ticket && ticket.payment_status === "paid" ? `• ${ticket.buyer_name}` : "• Available"}
+                              </div>
                           </div>
                           <Badge className={cn("text-[10px] shrink-0", meta.color)}>{meta.label.split(" ")[0]}</Badge>
                         </div>
