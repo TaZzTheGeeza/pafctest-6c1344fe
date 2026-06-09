@@ -228,6 +228,72 @@ const WorldCupSweepstakeAdminPage = () => {
           <p className="text-muted-foreground mt-1">{raffle.title} • Status: <Badge variant="outline">{raffle.status}</Badge></p>
         </div>
 
+        {/* Buyers panel */}
+        <Card>
+          <CardContent className="p-6 space-y-4">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div>
+                <h2 className="font-display text-xl font-bold">Buyers</h2>
+                <p className="text-xs text-muted-foreground">
+                  {buyers.filter(b => b.payment_status === "paid").length} paid •{" "}
+                  {buyers.filter(b => b.payment_status === "pending").length} pending • £
+                  {((buyers.filter(b => b.payment_status === "paid").length * raffle.ticket_price_cents) / 100).toFixed(2)} raised
+                </p>
+              </div>
+            </div>
+            {buyers.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-6 text-center">No tickets sold yet.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="text-xs text-muted-foreground uppercase">
+                    <tr>
+                      <th className="text-left p-2 w-12">#</th>
+                      <th className="text-left p-2">Team</th>
+                      <th className="text-left p-2">Buyer</th>
+                      <th className="text-left p-2">Email</th>
+                      <th className="text-left p-2">Phone</th>
+                      <th className="text-left p-2 w-24">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {buyers.map((b) => {
+                      const team = rows.find((r) => r.ticket_number === b.ticket_number);
+                      return (
+                        <tr key={b.ticket_number} className="border-t border-border/40">
+                          <td className="p-2 font-display font-bold text-primary">{b.ticket_number}</td>
+                          <td className="p-2">
+                            {team?.country_name ? (
+                              <span className="flex items-center gap-2">
+                                <span className="text-lg">{team.flag_emoji}</span>
+                                <span>{team.country_name}</span>
+                                {team.group_letter && (
+                                  <span className="text-xs text-muted-foreground">Grp {team.group_letter}</span>
+                                )}
+                              </span>
+                            ) : (
+                              <span className="text-muted-foreground italic">Not assigned</span>
+                            )}
+                          </td>
+                          <td className="p-2">{b.buyer_name}</td>
+                          <td className="p-2 text-muted-foreground">{b.buyer_email}</td>
+                          <td className="p-2 text-muted-foreground">{b.buyer_phone || "—"}</td>
+                          <td className="p-2">
+                            <Badge variant={b.payment_status === "paid" ? "default" : "outline"} className="text-xs">
+                              {b.payment_status}
+                            </Badge>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+
         {/* Prize settings */}
         <Card>
           <CardContent className="p-6 space-y-4">
