@@ -1,84 +1,85 @@
-# End-of-Season Promotion: 25/26 → 26/27
+# World Cup 2026 Sweepstake — Full Build (Option B)
 
-This renames every age group +1 year across the entire system (data + code). Player rosters stay intact — only labels change.
+Builds on the existing raffle system. Adds team mapping, tournament progress tracking, prize tiers, and a "My Team" view. No changes to GoCardless flow or core raffle tables.
 
-## Promotion mapping
+## What the user gets
 
-Per your answers:
+- A dedicated sweepstake raffle (48 tickets, £5 each) using the existing raffle engine + GoCardless checkout.
+- Public **Sweepstake page** at `/world-cup-sweepstake`:
+  - Visual 48-cell grid. Each cell shows the number, and (once assigned) the country flag + name.
+  - Before team assignment: "Mystery Team" placeholders to drive early sales.
+  - Live group-stage table view once the admin assigns teams to groups.
+  - Tournament progress: teams visually marked as Advanced / Eliminated / Champion / Runner-up / 3rd / Golden Boot.
+  - Prize tier panel ("Winner £X, Runner-up £Y, 3rd £Z, Golden Boot £W").
+- **"My Team" view** — logged-in buyers see their assigned country, current status, and potential prize.
+- **Admin panel** (extends `RaffleAdminPage`) with a new "Sweepstake" tab:
+  - Bulk-assign 48 teams to ticket numbers (manual or "shuffle randomly" button).
+  - Set group letter (A–L), flag emoji, country name per ticket.
+  - Mark teams as advanced / eliminated / champion / runner-up / third / golden_boot_winner.
+  - Set prize amounts per tier.
+  - Email blast button: "Reveal teams to buyers" (uses existing transactional email infra).
 
-| Old | → | New |
-|---|---|---|
-| U6 | → | U7 |
-| U7 | → | U8 |
-| U8 Black | → | U9 Black |
-| U8 Gold | → | U9 Gold |
-| U9 | → | U10 |
-| U10 | → | U11 |
-| U11 Black | → | U12 Black *(new group)* |
-| U11 Gold | → | U12 Gold *(new group)* |
-| U13 Black | → | U14 Black |
-| U13 Gold | → | U14 Gold |
-| U14 | → | U15 |
+## Technical Details
 
-Slug equivalents: `u6s→u7s`, `u7s→u8s`, `u8s-black→u9s-black`, `u8s-gold→u9s-gold`, `u9s→u10s`, `u10s→u11s`, `u11s-black→u12s-black`, `u11s-gold→u12s-gold`, `u13s-black→u14s-black`, `u13s-gold→u14s-gold`, `u14s→u15s`.
+### New table: `sweepstake_team_assignments`
 
-## Critical: order of operations
+```
+id uuid pk
+raffle_id uuid fk -> raffles
+ticket_number int
+country_name text
+flag_emoji text
+group_letter text (A–L, nullable)
+status text default 'active'   -- active | advanced | eliminated | champion | runner_up | third | golden_boot
+created_at, updated_at
+unique (raffle_id, ticket_number)
+```
 
-Because old/new labels collide (e.g. promoted U7 clashes with existing U7), every UPDATE must run in **reverse age order** (U14 first, U6 last) inside a single transaction. Done correctly there are no collisions.
+GRANTs: SELECT for anon/authenticated (public reveal); INSERT/UPDATE/DELETE admin-only via RLS using `has_role(auth.uid(), 'admin')`. service_role full.
 
-## What changes
+### Extend `raffles` table
 
-### 1. Database — rename all rows (one migration, transactional)
+Add nullable columns (no migration to existing rows needed):
+- `sweepstake_mode boolean default false`
+- `prize_winner_pence int` / `prize_runner_up_pence` / `prize_third_pence` / `prize_golden_boot_pence`
+- `teams_revealed boolean default false`
 
-Update `age_group` / `team_slug` / `team_name` / `team` / `preferred_age_group` columns across these tables:
+### Frontend
 
-- `player_stats`, `user_age_groups`, `match_reports`, `player_of_the_match`, `live_matches`, `match_player_stats`, `team_selections`, `training_notes`
-- `team_members`, `team_invites`, `team_requests`, `guardians`
-- `hub_channels`, `hub_availability_events`, `hub_notifications`, `hub_payment_requests`, `fixture_availability`
-- `carpool_offers`, `carpool_requests`
-- `presentation_allocations`, `presentation_tables`, `presentation_award_settings`, `presentation_award_votes`
-- `club_events.team`, `player_registrations.preferred_age_group`
-- `tournament_age_groups`, `tournament_photos`, `tournament_teams` (team_name only if it embeds an age group)
+- New page `src/pages/WorldCupSweepstakePage.tsx` — route `/world-cup-sweepstake`.
+  - Reuses `NumberPicker` for buying, augmented to show team chips on already-revealed grids.
+  - Group-stage grouped view (A–L with 4 teams each, post-expansion 12 groups of 4 → 48 teams ✓).
+  - Status badges with PAFC gold/black palette.
+- New admin tab in `RaffleAdminPage.tsx`:
+  - "Sweepstake Manager" — table editor for 48 rows, status dropdowns, prize inputs.
+  - "Reveal Teams" button calls existing transactional email queue.
+- `MyProfilePage` — extend purchases tab to show assigned country + status for sweepstake tickets.
 
-### 2. Database — update canonical helper functions
+### Reuse (unchanged)
 
-`public.canonical_team_slug()` and `public.canonical_age_group()` currently hard-code the old labels. Both functions will be rewritten to reflect the new ladder (U7, U8, U9 B/G, U10, U11, U12 B/G, U13, U14 B/G, U15) plus legacy aliases.
+- `create-raffle-checkout` edge function (GoCardless).
+- `verify-raffle-payment`.
+- `RaffleDraw` component (not used for sweepstake — winner determined by tournament outcome, not a drawn number, but kept available).
+- `get_taken_ticket_numbers` RPC.
 
-### 3. Code — hard-coded age-group lists
+### Visual style
 
-Updated in:
+- Black/gold PAFC palette. Oswald headings.
+- Country grid: 12 group cards (A–L), each with 4 ticket cells showing flag + number + buyer name (if revealed).
+- Status overlays: green check for advanced, red strike for eliminated, gold trophy for champion.
 
-- `src/lib/faFixtureConfig.ts` — rename each entry's `team` + `slug`. **FA Full-Time `fixtureUrl` query params will be blanked** for promoted teams (they point to last season's FA team IDs which will not match new-season fixtures). You'll re-paste the new FA URLs per team once the league publishes them.
-- `src/hooks/useTeamRoster.ts` — `ageGroupMap`
-- `src/hooks/useUserAgeGroups.ts` — `SLUG_VARIANTS`
-- `src/components/PlayerStatsForm.tsx` — `ageGroups` constant
-- `src/pages/HubPage.tsx`, `DashboardPage.tsx`, `CoachPanelPage.tsx`, `TeamsPage.tsx`, `AuthPage.tsx`, `PresentationAwardsAdminPage.tsx`, `PlayerRegistrationPage.tsx`, `PlayerShowcaseDemo.tsx`, `PafcTvPage.tsx`, `TournamentPage.tsx`
-- `src/components/ResultsSection.tsx`, `FixturesSection.tsx`, `YouTubeSection.tsx`
-- `src/components/presentation/SeatingPlan.tsx`, `TheatreBlock.tsx`
-- `src/components/hub/TeamAccessRequest.tsx`, `AwardsVoting.tsx`
-- `src/components/dashboard/TeamRequestsManager.tsx`, `AdminNotificationComposer.tsx`
-- `src/lib/shopify.ts`, `src/lib/tournamentAgeOrder.ts` (if needed)
-- `supabase/functions/sync-photo-purchases/index.ts`, `shopify-orders/index.ts`, `export-council-fixtures/index.ts`, `_shared/transactional-email-templates/availability-event-added.tsx`
+## Phasing (single PR, but staged UX)
 
-### 4. Memory + brand
+1. Today: launch page in "blind sale" mode — 48 mystery tickets, drives buzz.
+2. Mar 31 2026: admin assigns teams, hits "Reveal" — buyers get email.
+3. Jun 11 – Jul 19: admin updates status as tournament progresses; site auto-shows winners.
 
-Update `mem://structure/age-group-naming` with the new ladder.
+## Out of scope (can add later)
 
-## What this does NOT change
+- Auto-scraping FIFA results to set status (manual updates for v1).
+- Predictor tiebreaker question.
+- Public bracket visualisation.
 
-- Player rows, photos, stats history, hub messages, GoCardless mandates, Shopify products, raffle data — all preserved. Only the age-group label moves with them.
-- Past `match_reports`, `player_of_the_match`, fixtures — these will also be relabelled, since you said "everything". If you'd rather keep last season's results stamped with the OLD label (so the U13 Gold trophy still says "U13 Gold"), say so and I'll exclude historical/match tables from the rename.
-- FA Full-Time URLs — replaced with empty strings; you provide the new season's URLs when ready.
+---
 
-## Risks
-
-- **Irreversible without a restore.** I'll wrap everything in a single transaction so a mid-migration failure rolls back cleanly, but once committed the only undo is a chat revert + DB restore.
-- **Active subscriptions / GoCardless mandates** are unaffected (they're linked by user_id, not age group).
-- **Notifications already sent** with old labels are not retroactively edited.
-
-## Confirm before I build
-
-1. **Historical match data** (`match_reports`, `player_of_the_match`, `match_player_stats`): rename to new labels, or keep stamped with the old season's label?
-2. **U6**: no current U6 promotes into nothing — but new U6 intake for 26/27 will use the existing U6 group. The empty U6 stays. OK?
-
-Reply with answers and I'll execute.
+Ready to build. Shall I proceed?
