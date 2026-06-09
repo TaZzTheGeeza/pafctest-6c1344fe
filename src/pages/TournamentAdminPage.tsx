@@ -14,7 +14,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DateInput } from "@/components/ui/date-input";
-import { Trophy, Plus, Check, X, Edit, Megaphone, Trash2, ChevronDown, ChevronUp } from "lucide-react";
+import { Trophy, Plus, Check, X, Edit, Megaphone, Trash2, ChevronDown, ChevronUp, RotateCcw } from "lucide-react";
 import { AdminTeamDetail } from "@/components/tournament/AdminTeamDetail";
 import { toast } from "sonner";
 
