@@ -11,21 +11,20 @@ interface Props {
   teamSlug: string;
 }
 
-// Canonical age-ordered team list for the availability dropdown (U7 → U15).
+// Canonical age-ordered team list matching the Hub sidebar (U6 → U15).
 const AVAILABILITY_TEAMS: { team: string; slug: string }[] = [
+  { team: "U6", slug: "u6s" },
   { team: "U7", slug: "u7s" },
-  { team: "U8 Black", slug: "u8s-black" },
-  { team: "U8 Gold", slug: "u8s-gold" },
-  { team: "U9", slug: "u9s" },
+  { team: "U8", slug: "u8s" },
+  { team: "U9 Black", slug: "u9s-black" },
+  { team: "U9 Gold", slug: "u9s-gold" },
   { team: "U10", slug: "u10s" },
-  { team: "U11 Black", slug: "u11s-black" },
-  { team: "U11 Gold", slug: "u11s-gold" },
+  { team: "U11", slug: "u11s" },
   { team: "U12 Black", slug: "u12s-black" },
   { team: "U12 Gold", slug: "u12s-gold" },
   { team: "U13", slug: "u13s" },
-  { team: "U13 Black", slug: "u13s-black" },
-  { team: "U13 Gold", slug: "u13s-gold" },
-  { team: "U14", slug: "u14s" },
+  { team: "U14 Black", slug: "u14s-black" },
+  { team: "U14 Gold", slug: "u14s-gold" },
   { team: "U15", slug: "u15s" },
 ];
 
