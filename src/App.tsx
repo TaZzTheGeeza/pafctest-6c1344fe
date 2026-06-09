@@ -149,6 +149,7 @@ function AppContent() {
         <Route path="/presentation-admin" element={<PresentationAdminPage />} />
         <Route path="/admin/player-registrations" element={<RoleGate requiredRole="admin"><PlayerRegistrationAdminPage /></RoleGate>} />
         <Route path="/presentation-awards-admin" element={<RoleGate requiredRole="admin"><PresentationAwardsAdminPage /></RoleGate>} />
+        <Route path="/whats-new-admin" element={<RoleGate requiredRole="admin"><WhatsNewAdminPage /></RoleGate>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
