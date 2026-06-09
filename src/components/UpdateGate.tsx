@@ -170,16 +170,18 @@ export function UpdateGate() {
       const fp = await getIndexFingerprint();
       if (cancelled || !fp) return;
 
-      const previous = localStorage.getItem(FP_KEY);
+      // On initial load, compare against the assets THIS document actually loaded.
+      // This catches stale tabs even if localStorage is empty or cross-device.
+      const currentFp = isInitial ? getCurrentDocumentFingerprint() : null;
+      const previous = isInitial && currentFp ? currentFp : localStorage.getItem(FP_KEY);
 
       if (!previous) {
-        // First check on this device — remember and move on
         localStorage.setItem(FP_KEY, fp);
         return;
       }
 
       if (previous === fp) {
-        // Nothing new
+        if (isInitial) localStorage.setItem(FP_KEY, fp);
         return;
       }
 
@@ -188,12 +190,11 @@ export function UpdateGate() {
       const dismissedFp = localStorage.getItem(DISMISSED_FP_KEY);
       const manualRefreshedFp = localStorage.getItem(MANUAL_REFRESHED_FP_KEY);
 
-      // On initial page load: always force-refresh immediately to get the latest version.
-      // The AUTO_REFRESHED_KEY guard prevents infinite loops if the fingerprint persists.
+      // On initial page load: force-refresh immediately to get the latest version.
+      // AUTO_REFRESHED_KEY guard prevents infinite loops if the new build can't actually load.
       if (isInitial) {
         const alreadyAutoRefreshed = localStorage.getItem(AUTO_REFRESHED_KEY) === fp;
-        const alreadyManualRefreshed = manualRefreshedFp === fp;
-        if (!alreadyAutoRefreshed && !alreadyManualRefreshed) {
+        if (!alreadyAutoRefreshed) {
           try {
             localStorage.setItem(AUTO_REFRESHED_KEY, fp);
             localStorage.setItem(FP_KEY, fp);
@@ -221,7 +222,6 @@ export function UpdateGate() {
         markActive();
         runCheck(false);
       } else if (newFpRef.current) {
-        // Tab being hidden with pending update — perfect moment to swap in
         tryAutoRefresh(newFpRef.current);
       }
     };
