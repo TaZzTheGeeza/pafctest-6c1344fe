@@ -397,10 +397,24 @@ const WorldCupSweepstakePage = () => {
                     {form.selectedNumbers.length} ticket{form.selectedNumbers.length === 1 ? "" : "s"} • £
                     {((form.selectedNumbers.length * raffle.ticket_price_cents) / 100).toFixed(2)} total
                   </div>
-                  <Button onClick={handlePurchase} disabled={purchasing || form.selectedNumbers.length === 0} className="bg-gold-gradient text-primary-foreground font-display">
-                    {purchasing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
-                    Pay via Direct Debit
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    {isAdmin && (
+                      <Button
+                        variant="outline"
+                        onClick={handleClaimFree}
+                        disabled={claimingFree || form.selectedNumbers.length === 0}
+                        className="border-primary/40"
+                        title="Admin only — claim ticket without payment to test the flow"
+                      >
+                        {claimingFree ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                        Claim free (test)
+                      </Button>
+                    )}
+                    <Button onClick={handlePurchase} disabled={purchasing || form.selectedNumbers.length === 0} className="bg-gold-gradient text-primary-foreground font-display">
+                      {purchasing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
+                      Pay via Direct Debit
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
