@@ -29,6 +29,8 @@ import SafeguardingPage from "./pages/SafeguardingPage.tsx";
 import PlayerRegistrationPage from "./pages/PlayerRegistrationPage.tsx";
 import RafflePage from "./pages/RafflePage.tsx";
 import RaffleAdminPage from "./pages/RaffleAdminPage.tsx";
+import WorldCupSweepstakePage from "./pages/WorldCupSweepstakePage.tsx";
+import WorldCupSweepstakeAdminPage from "./pages/WorldCupSweepstakeAdminPage.tsx";
 import TournamentPage from "./pages/TournamentPage.tsx";
 import TournamentAdminPage from "./pages/TournamentAdminPage.tsx";
 import TeamProfilePage from "./pages/TeamProfilePage.tsx";
