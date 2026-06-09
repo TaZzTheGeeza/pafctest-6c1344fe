@@ -253,6 +253,21 @@ const TournamentAdminPage = () => {
     toast.success("Score cleared");
   };
 
+  // RESET KNOCKOUT MATCH (clear teams + score so it goes back to TBC vs TBC)
+  const resetMatch = async (matchId: string) => {
+    if (!confirm("Reset this match? Teams will revert to TBC and the score will be cleared.")) return;
+    const { error } = await supabase.from("tournament_matches").update({
+      home_team_id: null,
+      away_team_id: null,
+      home_score: null,
+      away_score: null,
+      status: "scheduled",
+    }).eq("id", matchId);
+    if (error) { toast.error("Failed to reset match"); return; }
+    invalidateAll();
+    toast.success("Match reset — teams cleared to TBC");
+  };
+
   // ===== AUTO-PROGRESS KNOCKOUTS =====
   // Resolves placeholders like "U7 Group A 1st", "Winner SF1" into actual team IDs
   // based on completed group standings and semi-final winners.
