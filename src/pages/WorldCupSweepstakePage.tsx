@@ -405,7 +405,7 @@ const WorldCupSweepstakePage = () => {
                   </div>
                   <Button onClick={handlePurchase} disabled={purchasing || form.selectedNumbers.length === 0} className="bg-gold-gradient text-primary-foreground font-display">
                     {purchasing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
-                    Pay via Direct Debit
+                    Buy Tickets
                   </Button>
                 </div>
               </CardContent>
