@@ -505,17 +505,17 @@ const TournamentPage = () => {
                             <p className="text-xs font-medium text-muted-foreground mb-1 flex items-center gap-1"><MapPin className="h-3 w-3 text-yellow-500" /> Parking Location</p>
                             <div className="rounded-lg border border-border overflow-hidden aspect-video">
                               <iframe
-                                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2412.5!2d-0.2365!3d52.6095!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s!2s1-25+Hallfields+Ln%2C+Peterborough+PE4+7UW!5e0!3m2!1sen!2suk!4v1700000000001"
+                                src="https://maps.google.com/maps?q=https%3A%2F%2Fmaps.app.goo.gl%2FcF7jXCVcHG6o7dKy7&output=embed"
                                 width="100%"
                                 height="100%"
                                 style={{ border: 0 }}
                                 allowFullScreen
                                 loading="lazy"
                                 referrerPolicy="no-referrer-when-downgrade"
-                                title="Parking location - Hallfields Lane"
+                                title="Parking location"
                               />
                             </div>
-                            <a href="https://www.google.com/maps/dir//1-25+Hallfields+Ln,+Peterborough+PE4+7UW" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 mt-1 text-xs text-primary hover:underline">
+                            <a href="https://maps.app.goo.gl/cF7jXCVcHG6o7dKy7?g_st=ac" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 mt-1 text-xs text-primary hover:underline">
                               <MapPin className="h-3 w-3" /> Get directions to parking
                             </a>
                           </div>
