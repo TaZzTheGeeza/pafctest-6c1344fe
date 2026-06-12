@@ -29,6 +29,23 @@ Deno.serve(async (req) => {
     }
 
     const url = tableUrl || `https://fulltime.thefa.com/table.html?divisionseason=${divisionSeason}`;
+
+    // SSRF guard — only allow scraping the FA Full-Time host over HTTPS.
+    try {
+      const parsed = new URL(url);
+      if (parsed.protocol !== 'https:' || parsed.hostname !== 'fulltime.thefa.com') {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Only https://fulltime.thefa.com URLs are allowed' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    } catch {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Invalid URL' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     console.log('Scraping league table from:', url);
 
     const response = await fetch(url, {

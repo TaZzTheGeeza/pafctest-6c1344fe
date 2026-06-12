@@ -77,6 +77,33 @@ Deno.serve(async (req) => {
     )
   }
 
+  // --- Role gate: only admins, coaches, news_editor, welfare_officer, or service-role
+  // calls may send transactional emails. Prevents arbitrary authenticated users
+  // from sending PAFC-branded mail to arbitrary recipients.
+  const callerIsServiceRole = token === supabaseServiceKey
+  if (!callerIsServiceRole) {
+    const callerId = claimsData.claims.sub as string | undefined
+    if (!callerId) {
+      return new Response(JSON.stringify({ error: 'Forbidden' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+    const adminClient = createClient(supabaseUrl, supabaseServiceKey)
+    const { data: roles } = await adminClient
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', callerId)
+    const allowed = new Set(['admin', 'coach', 'news_editor', 'welfare_officer', 'treasurer'])
+    if (!roles?.some((r: any) => allowed.has(r.role))) {
+      return new Response(JSON.stringify({ error: 'Forbidden' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+  }
+
+
   // Parse request body
   let templateName: string
   let recipientEmail: string

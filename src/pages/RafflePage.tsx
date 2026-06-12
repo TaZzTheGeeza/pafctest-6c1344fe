@@ -14,6 +14,7 @@ import { useSearchParams } from "react-router-dom";
 import NumberPicker from "@/components/raffle/NumberPicker";
 import { AnimatePresence } from "framer-motion";
 import RaffleDraw, { type RaffleTicket as DrawTicket } from "@/components/raffle/RaffleDraw";
+import DOMPurify from "dompurify";
 
 interface Raffle {
   id: string;
@@ -260,7 +261,7 @@ const RafflePage = () => {
                         <div>
                           <CardTitle className="font-display text-2xl">{raffle.title}</CardTitle>
                           {raffle.description && (
-                            <CardDescription className="mt-2 text-sm" dangerouslySetInnerHTML={{ __html: raffle.description }} />
+                            <CardDescription className="mt-2 text-sm" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(raffle.description) }} />
                           )}
                         </div>
                         <Badge variant={isDrawn ? "secondary" : "default"} className={isDrawn ? "" : "bg-green-600"}>
