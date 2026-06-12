@@ -505,7 +505,7 @@ const TournamentPage = () => {
                             <p className="text-xs font-medium text-muted-foreground mb-1 flex items-center gap-1"><MapPin className="h-3 w-3 text-yellow-500" /> Parking Location</p>
                             <div className="rounded-lg border border-border overflow-hidden aspect-video">
                               <iframe
-                                src="https://maps.google.com/maps?q=https%3A%2F%2Fmaps.app.goo.gl%2FcF7jXCVcHG6o7dKy7&output=embed"
+                                src="https://maps.google.com/maps?q=52.606436,-0.258116&z=17&output=embed"
                                 width="100%"
                                 height="100%"
                                 style={{ border: 0 }}
@@ -515,7 +515,7 @@ const TournamentPage = () => {
                                 title="Parking location"
                               />
                             </div>
-                            <a href="https://maps.app.goo.gl/cF7jXCVcHG6o7dKy7?g_st=ac" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 mt-1 text-xs text-primary hover:underline">
+                            <a href="https://www.google.com/maps/dir/?api=1&destination=52.606436,-0.258116" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 mt-1 text-xs text-primary hover:underline">
                               <MapPin className="h-3 w-3" /> Get directions to parking
                             </a>
                           </div>
