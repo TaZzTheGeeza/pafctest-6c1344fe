@@ -6,13 +6,64 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-shopify-topic, x-shopify-hmac-sha256, x-shopify-shop-domain",
 };
 
+async function verifyShopifyHmac(rawBody: string, hmacHeader: string, secret: string): Promise<boolean> {
+  try {
+    const key = await crypto.subtle.importKey(
+      "raw",
+      new TextEncoder().encode(secret),
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["sign"],
+    );
+    const sigBytes = new Uint8Array(
+      await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(rawBody)),
+    );
+    let b64 = "";
+    sigBytes.forEach((b) => (b64 += String.fromCharCode(b)));
+    const expected = btoa(b64);
+    // constant-time-ish comparison
+    if (expected.length !== hmacHeader.length) return false;
+    let diff = 0;
+    for (let i = 0; i < expected.length; i++) diff |= expected.charCodeAt(i) ^ hmacHeader.charCodeAt(i);
+    return diff === 0;
+  } catch (e) {
+    console.error("HMAC verification error:", e);
+    return false;
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const body = await req.json();
+    const rawBody = await req.text();
+    const hmacHeader = req.headers.get("x-shopify-hmac-sha256") || "";
+    const webhookSecret = Deno.env.get("SHOPIFY_WEBHOOK_SECRET");
+
+    if (!webhookSecret) {
+      console.error("SHOPIFY_WEBHOOK_SECRET is not configured — rejecting webhook");
+      return new Response(JSON.stringify({ error: "Webhook not configured" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (!hmacHeader) {
+      return new Response(JSON.stringify({ error: "Missing HMAC header" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const ok = await verifyShopifyHmac(rawBody, hmacHeader, webhookSecret);
+    if (!ok) {
+      return new Response(JSON.stringify({ error: "Invalid HMAC signature" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const body = JSON.parse(rawBody);
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
