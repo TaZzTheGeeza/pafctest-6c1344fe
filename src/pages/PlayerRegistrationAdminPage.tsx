@@ -299,7 +299,7 @@ export default function PlayerRegistrationAdminPage() {
     setSending(true);
     try {
       const title = "Action Required: Player Registration 2026/27";
-      const link = "/player-registration";
+      const link = "/register";
 
       // 1. In-app notifications
       const notifications = Array.from(byParent.entries()).map(([uid, players]) => ({
