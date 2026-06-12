@@ -515,7 +515,7 @@ const TournamentPage = () => {
                                 title="Parking location"
                               />
                             </div>
-                            <a href="https://maps.app.goo.gl/cF7jXCVcHG6o7dKy7?g_st=ac" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 mt-1 text-xs text-primary hover:underline">
+                            <a href="https://www.google.com/maps/dir/?api=1&destination=52.606436,-0.258116" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 mt-1 text-xs text-primary hover:underline">
                               <MapPin className="h-3 w-3" /> Get directions to parking
                             </a>
                           </div>
