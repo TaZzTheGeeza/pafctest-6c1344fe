@@ -505,7 +505,7 @@ const TournamentPage = () => {
                             <p className="text-xs font-medium text-muted-foreground mb-1 flex items-center gap-1"><MapPin className="h-3 w-3 text-yellow-500" /> Parking Location</p>
                             <div className="rounded-lg border border-border overflow-hidden aspect-video">
                               <iframe
-                                src="https://maps.google.com/maps?q=https%3A%2F%2Fmaps.app.goo.gl%2FcF7jXCVcHG6o7dKy7&output=embed"
+                                src="https://maps.google.com/maps?q=52.606436,-0.258116&z=17&output=embed"
                                 width="100%"
                                 height="100%"
                                 style={{ border: 0 }}
