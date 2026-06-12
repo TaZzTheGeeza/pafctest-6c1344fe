@@ -329,7 +329,7 @@ export default function PlayerRegistrationAdminPage() {
                   `Hi ${player.parent_name},\n\n` +
                   `Our records show that the 2026/27 registration & payment is still outstanding for:\n\n${childList}\n\n` +
                   `Please complete it as soon as possible so your child is fully registered to play this season.\n\n` +
-                  `Register here: https://www.pa-fc.uk/player-registration\n\n` +
+                  `Register here: https://www.pa-fc.uk/register\n\n` +
                   `If you've already completed this and believe you're seeing this in error, please reply to this email and we'll get it sorted.`,
               },
             },
