@@ -16,14 +16,50 @@ Deno.serve(async (req) => {
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL')
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+  const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')
   const vapidPrivateKey = Deno.env.get('VAPID_PRIVATE_KEY')
 
-  if (!supabaseUrl || !supabaseServiceKey || !vapidPrivateKey) {
+  if (!supabaseUrl || !supabaseServiceKey || !supabaseAnonKey || !vapidPrivateKey) {
     console.error('Missing required environment variables')
     return new Response(
       JSON.stringify({ error: 'Server configuration error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
+  }
+
+  // --- Auth gate: allow service-role calls (server-to-server) or authenticated admin/coach users ---
+  const authHeader = req.headers.get('Authorization') || ''
+  const bearer = authHeader.replace('Bearer ', '').trim()
+  const isServiceRole = bearer && bearer === supabaseServiceKey
+  if (!isServiceRole) {
+    if (!bearer) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+    const userClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    })
+    const { data: claimsData, error: claimsError } = await userClient.auth.getClaims(bearer)
+    if (claimsError || !claimsData?.claims?.sub) {
+      return new Response(JSON.stringify({ error: 'Invalid token' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+    const adminCheck = createClient(supabaseUrl, supabaseServiceKey)
+    const { data: roles } = await adminCheck
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', claimsData.claims.sub as string)
+    const allowed = new Set(['admin', 'coach', 'welfare_officer', 'news_editor', 'treasurer'])
+    if (!roles?.some((r: any) => allowed.has(r.role))) {
+      return new Response(JSON.stringify({ error: 'Forbidden' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
   }
 
   const vapidPublicKey = 'BO7FDjXV69z4ccQypbzUFjJfgxnbZE6OHBhkDNsKbUEpBZ2SQYNjjLH6fjX6o8G5lgCFNIqYEf6OBxU8qLucTRo'

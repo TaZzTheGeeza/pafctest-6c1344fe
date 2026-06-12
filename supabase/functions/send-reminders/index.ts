@@ -12,10 +12,44 @@ serve(async (req) => {
   }
 
   try {
-    const supabaseAdmin = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-    );
+    // --- Auth gate: require either a CRON_SECRET bearer (scheduled jobs)
+    // or an authenticated admin user. Prevents anonymous notification spam.
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+    const cronSecret = Deno.env.get("CRON_SECRET");
+    const authHeader = req.headers.get("Authorization") || "";
+    const bearer = authHeader.replace("Bearer ", "").trim();
+
+    const isCron = cronSecret && bearer && bearer === cronSecret;
+    const isServiceRole = bearer && bearer === serviceKey;
+    let isAdminUser = false;
+    if (!isCron && !isServiceRole) {
+      if (!bearer) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const userClient = createClient(supabaseUrl, anonKey, {
+        global: { headers: { Authorization: authHeader } },
+      });
+      const { data: claims } = await userClient.auth.getClaims(bearer);
+      const uid = claims?.claims?.sub as string | undefined;
+      if (uid) {
+        const adm = createClient(supabaseUrl, serviceKey);
+        const { data: roles } = await adm.from("user_roles").select("role").eq("user_id", uid);
+        isAdminUser = !!roles?.some((r: any) => r.role === "admin");
+      }
+      if (!isAdminUser) {
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
+    const supabaseAdmin = createClient(supabaseUrl, serviceKey);
 
     // Get all team members
     const { data: teamMembers } = await supabaseAdmin
