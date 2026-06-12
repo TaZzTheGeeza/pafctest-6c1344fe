@@ -120,6 +120,24 @@ Deno.serve(async (req) => {
       );
     }
 
+    // SSRF guard — only allow scraping the FA Full-Time host over HTTPS.
+    const ALLOWED_HOST = 'fulltime.thefa.com';
+    const isAllowed = (u: string | undefined): boolean => {
+      if (!u) return true;
+      try {
+        const parsed = new URL(u);
+        return parsed.protocol === 'https:' && parsed.hostname === ALLOWED_HOST;
+      } catch {
+        return false;
+      }
+    };
+    if (!isAllowed(fixtureUrl) || !isAllowed(resultUrl)) {
+      return new Response(
+        JSON.stringify({ success: false, error: `Only https://${ALLOWED_HOST} URLs are allowed` }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const fetchWithTimeout = async (url: string, timeoutMs = 10000) => {
       const controller = new AbortController();
       const id = setTimeout(() => controller.abort(), timeoutMs);
