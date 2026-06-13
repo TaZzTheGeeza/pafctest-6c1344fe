@@ -40,6 +40,8 @@ const TournamentAdminPage = () => {
   const [matchFilterStage, setMatchFilterStage] = useState<string>("all");
   const [matchFilterStatus, setMatchFilterStatus] = useState<string>("all");
   const [editingGroup, setEditingGroup] = useState<{ id: string; name: string } | null>(null);
+  const [editingStandingId, setEditingStandingId] = useState<string | null>(null);
+  const [standingForm, setStandingForm] = useState<{ p: string; w: string; d: string; l: string; gf: string; ga: string; pts: string }>({ p: "", w: "", d: "", l: "", gf: "", ga: "", pts: "" });
   const [editingTeam, setEditingTeam] = useState<any | null>(null);
   const [editTeamForm, setEditTeamForm] = useState({ team_name: "", club_name: "", county: "", club_org_id: "", league_division: "", team_category: "", manager_name: "", manager_email: "", manager_phone: "", secretary_name: "", secretary_email: "", secretary_phone: "", player_count: "", whatsapp_contacts: [{ name: "", number: "" }] as { name: string; number: string }[], consent_rules: true, consent_photography: true });
   const invalidateAll = () => {
