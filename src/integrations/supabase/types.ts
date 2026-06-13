@@ -2738,6 +2738,13 @@ export type Database = {
           manager_email: string
           manager_name: string
           manager_phone: string | null
+          manual_drawn: number | null
+          manual_ga: number | null
+          manual_gf: number | null
+          manual_lost: number | null
+          manual_played: number | null
+          manual_points: number | null
+          manual_won: number | null
           player_count: number | null
           secretary_email: string | null
           secretary_name: string | null
@@ -2761,6 +2768,13 @@ export type Database = {
           manager_email: string
           manager_name: string
           manager_phone?: string | null
+          manual_drawn?: number | null
+          manual_ga?: number | null
+          manual_gf?: number | null
+          manual_lost?: number | null
+          manual_played?: number | null
+          manual_points?: number | null
+          manual_won?: number | null
           player_count?: number | null
           secretary_email?: string | null
           secretary_name?: string | null
@@ -2784,6 +2798,13 @@ export type Database = {
           manager_email?: string
           manager_name?: string
           manager_phone?: string | null
+          manual_drawn?: number | null
+          manual_ga?: number | null
+          manual_gf?: number | null
+          manual_lost?: number | null
+          manual_played?: number | null
+          manual_points?: number | null
+          manual_won?: number | null
           player_count?: number | null
           secretary_email?: string | null
           secretary_name?: string | null
