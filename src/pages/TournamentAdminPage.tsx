@@ -850,24 +850,61 @@ const TournamentAdminPage = () => {
                               <CardContent className="space-y-2">
                                 {groupTeams.length === 0 ? (
                                   <p className="text-xs text-muted-foreground">No teams assigned yet.</p>
-                                ) : (
-                                  <ul className="space-y-1">
-                                    {groupTeams.map(t => (
-                                      <li key={t.id} className="flex items-center justify-between text-sm group/item">
-                                        <span>{t.team_name}</span>
-                                        <Button
-                                          size="icon"
-                                          variant="ghost"
-                                          className="h-6 w-6 opacity-0 group-hover/item:opacity-100"
-                                          title="Remove from group"
-                                          onClick={() => assignTeamToGroup(t.id, null)}
-                                        >
-                                          <X className="h-3 w-3 text-destructive" />
-                                        </Button>
-                                      </li>
-                                    ))}
-                                  </ul>
-                                )}
+                                ) : (() => {
+                                  const groupMatches = (matches || []).filter(m => m.group_id === g.id && m.status === "completed");
+                                  const standings = groupTeams.map(team => {
+                                    const played = groupMatches.filter(m => m.home_team_id === team.id || m.away_team_id === team.id);
+                                    let w = 0, d = 0, l = 0, gf = 0, ga = 0;
+                                    played.forEach(m => {
+                                      const isHome = m.home_team_id === team.id;
+                                      const scored = isHome ? (m.home_score ?? 0) : (m.away_score ?? 0);
+                                      const conceded = isHome ? (m.away_score ?? 0) : (m.home_score ?? 0);
+                                      gf += scored; ga += conceded;
+                                      if (scored > conceded) w++; else if (scored === conceded) d++; else l++;
+                                    });
+                                    return { team, p: played.length, w, d, l, gf, ga, gd: gf - ga, pts: w * 3 + d };
+                                  }).sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf);
+                                  return (
+                                    <Table>
+                                      <TableHeader>
+                                        <TableRow>
+                                          <TableHead className="text-xs">Team</TableHead>
+                                          <TableHead className="text-center w-8 text-xs">P</TableHead>
+                                          <TableHead className="text-center w-8 text-xs">W</TableHead>
+                                          <TableHead className="text-center w-8 text-xs">D</TableHead>
+                                          <TableHead className="text-center w-8 text-xs">L</TableHead>
+                                          <TableHead className="text-center w-10 text-xs">GD</TableHead>
+                                          <TableHead className="text-center w-10 text-xs font-bold">Pts</TableHead>
+                                          <TableHead className="w-8"></TableHead>
+                                        </TableRow>
+                                      </TableHeader>
+                                      <TableBody>
+                                        {standings.map((s, i) => (
+                                          <TableRow key={s.team.id} className={i === 0 ? "bg-primary/5" : ""}>
+                                            <TableCell className="font-medium text-xs py-1.5">{s.team.team_name}</TableCell>
+                                            <TableCell className="text-center text-xs py-1.5">{s.p}</TableCell>
+                                            <TableCell className="text-center text-xs py-1.5">{s.w}</TableCell>
+                                            <TableCell className="text-center text-xs py-1.5">{s.d}</TableCell>
+                                            <TableCell className="text-center text-xs py-1.5">{s.l}</TableCell>
+                                            <TableCell className="text-center text-xs py-1.5">{s.gd}</TableCell>
+                                            <TableCell className="text-center text-xs py-1.5 font-bold">{s.pts}</TableCell>
+                                            <TableCell className="py-1.5 pr-2">
+                                              <Button
+                                                size="icon"
+                                                variant="ghost"
+                                                className="h-6 w-6"
+                                                title="Remove from group"
+                                                onClick={() => assignTeamToGroup(s.team.id, null)}
+                                              >
+                                                <X className="h-3 w-3 text-destructive" />
+                                              </Button>
+                                            </TableCell>
+                                          </TableRow>
+                                        ))}
+                                      </TableBody>
+                                    </Table>
+                                  );
+                                })()}
                                 {(() => {
                                   const unassigned = agTeams.filter(t => !t.group_id);
                                   if (unassigned.length === 0) return null;
