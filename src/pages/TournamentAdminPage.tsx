@@ -214,6 +214,43 @@ const TournamentAdminPage = () => {
     invalidateAll();
   };
 
+  const startEditStanding = (teamId: string, current: { p: number; w: number; d: number; l: number; gf: number; ga: number; pts: number }) => {
+    setEditingStandingId(teamId);
+    setStandingForm({
+      p: String(current.p), w: String(current.w), d: String(current.d), l: String(current.l),
+      gf: String(current.gf), ga: String(current.ga), pts: String(current.pts),
+    });
+  };
+
+  const saveStanding = async (teamId: string) => {
+    const toInt = (v: string) => v.trim() === "" ? null : parseInt(v, 10);
+    const payload = {
+      manual_played: toInt(standingForm.p),
+      manual_won: toInt(standingForm.w),
+      manual_drawn: toInt(standingForm.d),
+      manual_lost: toInt(standingForm.l),
+      manual_gf: toInt(standingForm.gf),
+      manual_ga: toInt(standingForm.ga),
+      manual_points: toInt(standingForm.pts),
+    };
+    const { error } = await supabase.from("tournament_teams").update(payload).eq("id", teamId);
+    if (error) { toast.error("Failed to save"); return; }
+    toast.success("Standing updated");
+    setEditingStandingId(null);
+    invalidateAll();
+  };
+
+  const clearStandingOverrides = async (teamId: string) => {
+    const { error } = await supabase.from("tournament_teams").update({
+      manual_played: null, manual_won: null, manual_drawn: null, manual_lost: null,
+      manual_gf: null, manual_ga: null, manual_points: null,
+    }).eq("id", teamId);
+    if (error) { toast.error("Failed to reset"); return; }
+    toast.success("Reset to computed values");
+    setEditingStandingId(null);
+    invalidateAll();
+  };
+
   // CONFIRM/REJECT TEAM
   const setTeamStatus = async (teamId: string, status: string) => {
     await supabase.from("tournament_teams").update({ status }).eq("id", teamId);
