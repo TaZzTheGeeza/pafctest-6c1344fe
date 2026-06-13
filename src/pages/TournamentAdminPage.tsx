@@ -40,6 +40,8 @@ const TournamentAdminPage = () => {
   const [matchFilterStage, setMatchFilterStage] = useState<string>("all");
   const [matchFilterStatus, setMatchFilterStatus] = useState<string>("all");
   const [editingGroup, setEditingGroup] = useState<{ id: string; name: string } | null>(null);
+  const [editingStandingId, setEditingStandingId] = useState<string | null>(null);
+  const [standingForm, setStandingForm] = useState<{ p: string; w: string; d: string; l: string; gf: string; ga: string; pts: string }>({ p: "", w: "", d: "", l: "", gf: "", ga: "", pts: "" });
   const [editingTeam, setEditingTeam] = useState<any | null>(null);
   const [editTeamForm, setEditTeamForm] = useState({ team_name: "", club_name: "", county: "", club_org_id: "", league_division: "", team_category: "", manager_name: "", manager_email: "", manager_phone: "", secretary_name: "", secretary_email: "", secretary_phone: "", player_count: "", whatsapp_contacts: [{ name: "", number: "" }] as { name: string; number: string }[], consent_rules: true, consent_photography: true });
   const invalidateAll = () => {
@@ -209,6 +211,43 @@ const TournamentAdminPage = () => {
   // ASSIGN TEAM TO GROUP
   const assignTeamToGroup = async (teamId: string, groupId: string | null) => {
     await supabase.from("tournament_teams").update({ group_id: groupId }).eq("id", teamId);
+    invalidateAll();
+  };
+
+  const startEditStanding = (teamId: string, current: { p: number; w: number; d: number; l: number; gf: number; ga: number; pts: number }) => {
+    setEditingStandingId(teamId);
+    setStandingForm({
+      p: String(current.p), w: String(current.w), d: String(current.d), l: String(current.l),
+      gf: String(current.gf), ga: String(current.ga), pts: String(current.pts),
+    });
+  };
+
+  const saveStanding = async (teamId: string) => {
+    const toInt = (v: string) => v.trim() === "" ? null : parseInt(v, 10);
+    const payload = {
+      manual_played: toInt(standingForm.p),
+      manual_won: toInt(standingForm.w),
+      manual_drawn: toInt(standingForm.d),
+      manual_lost: toInt(standingForm.l),
+      manual_gf: toInt(standingForm.gf),
+      manual_ga: toInt(standingForm.ga),
+      manual_points: toInt(standingForm.pts),
+    };
+    const { error } = await supabase.from("tournament_teams").update(payload).eq("id", teamId);
+    if (error) { toast.error("Failed to save"); return; }
+    toast.success("Standing updated");
+    setEditingStandingId(null);
+    invalidateAll();
+  };
+
+  const clearStandingOverrides = async (teamId: string) => {
+    const { error } = await supabase.from("tournament_teams").update({
+      manual_played: null, manual_won: null, manual_drawn: null, manual_lost: null,
+      manual_gf: null, manual_ga: null, manual_points: null,
+    }).eq("id", teamId);
+    if (error) { toast.error("Failed to reset"); return; }
+    toast.success("Reset to computed values");
+    setEditingStandingId(null);
     invalidateAll();
   };
 
@@ -862,45 +901,106 @@ const TournamentAdminPage = () => {
                                       gf += scored; ga += conceded;
                                       if (scored > conceded) w++; else if (scored === conceded) d++; else l++;
                                     });
-                                    return { team, p: played.length, w, d, l, gf, ga, gd: gf - ga, pts: w * 3 + d };
+                                    const computed = { p: played.length, w, d, l, gf, ga, pts: w * 3 + d };
+                                    const t: any = team;
+                                    const overridden =
+                                      t.manual_played !== null || t.manual_won !== null || t.manual_drawn !== null ||
+                                      t.manual_lost !== null || t.manual_gf !== null || t.manual_ga !== null || t.manual_points !== null;
+                                    const effective = {
+                                      p: t.manual_played ?? computed.p,
+                                      w: t.manual_won ?? computed.w,
+                                      d: t.manual_drawn ?? computed.d,
+                                      l: t.manual_lost ?? computed.l,
+                                      gf: t.manual_gf ?? computed.gf,
+                                      ga: t.manual_ga ?? computed.ga,
+                                      pts: t.manual_points ?? computed.pts,
+                                    };
+                                    return { team, ...effective, gd: effective.gf - effective.ga, overridden };
                                   }).sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf);
                                   return (
                                     <Table>
                                       <TableHeader>
                                         <TableRow>
                                           <TableHead className="text-xs">Team</TableHead>
-                                          <TableHead className="text-center w-8 text-xs">P</TableHead>
-                                          <TableHead className="text-center w-8 text-xs">W</TableHead>
-                                          <TableHead className="text-center w-8 text-xs">D</TableHead>
-                                          <TableHead className="text-center w-8 text-xs">L</TableHead>
+                                          <TableHead className="text-center w-10 text-xs">P</TableHead>
+                                          <TableHead className="text-center w-10 text-xs">W</TableHead>
+                                          <TableHead className="text-center w-10 text-xs">D</TableHead>
+                                          <TableHead className="text-center w-10 text-xs">L</TableHead>
+                                          <TableHead className="text-center w-10 text-xs">GF</TableHead>
+                                          <TableHead className="text-center w-10 text-xs">GA</TableHead>
                                           <TableHead className="text-center w-10 text-xs">GD</TableHead>
-                                          <TableHead className="text-center w-10 text-xs font-bold">Pts</TableHead>
-                                          <TableHead className="w-8"></TableHead>
+                                          <TableHead className="text-center w-12 text-xs font-bold">Pts</TableHead>
+                                          <TableHead className="w-20"></TableHead>
                                         </TableRow>
                                       </TableHeader>
                                       <TableBody>
-                                        {standings.map((s, i) => (
-                                          <TableRow key={s.team.id} className={i === 0 ? "bg-primary/5" : ""}>
-                                            <TableCell className="font-medium text-xs py-1.5">{s.team.team_name}</TableCell>
-                                            <TableCell className="text-center text-xs py-1.5">{s.p}</TableCell>
-                                            <TableCell className="text-center text-xs py-1.5">{s.w}</TableCell>
-                                            <TableCell className="text-center text-xs py-1.5">{s.d}</TableCell>
-                                            <TableCell className="text-center text-xs py-1.5">{s.l}</TableCell>
-                                            <TableCell className="text-center text-xs py-1.5">{s.gd}</TableCell>
-                                            <TableCell className="text-center text-xs py-1.5 font-bold">{s.pts}</TableCell>
-                                            <TableCell className="py-1.5 pr-2">
-                                              <Button
-                                                size="icon"
-                                                variant="ghost"
-                                                className="h-6 w-6"
-                                                title="Remove from group"
-                                                onClick={() => assignTeamToGroup(s.team.id, null)}
-                                              >
-                                                <X className="h-3 w-3 text-destructive" />
-                                              </Button>
-                                            </TableCell>
-                                          </TableRow>
-                                        ))}
+                                        {standings.map((s, i) => {
+                                          const isEditing = editingStandingId === s.team.id;
+                                          if (isEditing) {
+                                            const inp = (key: keyof typeof standingForm) => (
+                                              <Input
+                                                type="number"
+                                                value={standingForm[key]}
+                                                onChange={e => setStandingForm({ ...standingForm, [key]: e.target.value })}
+                                                className="h-7 w-12 px-1 text-center text-xs"
+                                              />
+                                            );
+                                            return (
+                                              <TableRow key={s.team.id}>
+                                                <TableCell className="font-medium text-xs py-1.5">{s.team.team_name}</TableCell>
+                                                <TableCell className="text-center py-1.5">{inp("p")}</TableCell>
+                                                <TableCell className="text-center py-1.5">{inp("w")}</TableCell>
+                                                <TableCell className="text-center py-1.5">{inp("d")}</TableCell>
+                                                <TableCell className="text-center py-1.5">{inp("l")}</TableCell>
+                                                <TableCell className="text-center py-1.5">{inp("gf")}</TableCell>
+                                                <TableCell className="text-center py-1.5">{inp("ga")}</TableCell>
+                                                <TableCell className="text-center text-xs py-1.5 text-muted-foreground">{(parseInt(standingForm.gf || "0") - parseInt(standingForm.ga || "0"))}</TableCell>
+                                                <TableCell className="text-center py-1.5">{inp("pts")}</TableCell>
+                                                <TableCell className="py-1.5 pr-2">
+                                                  <div className="flex items-center gap-0.5">
+                                                    <Button size="icon" variant="ghost" className="h-6 w-6" title="Save" onClick={() => saveStanding(s.team.id)}>
+                                                      <Check className="h-3 w-3 text-primary" />
+                                                    </Button>
+                                                    <Button size="icon" variant="ghost" className="h-6 w-6" title="Cancel" onClick={() => setEditingStandingId(null)}>
+                                                      <X className="h-3 w-3 text-muted-foreground" />
+                                                    </Button>
+                                                  </div>
+                                                </TableCell>
+                                              </TableRow>
+                                            );
+                                          }
+                                          return (
+                                            <TableRow key={s.team.id} className={i === 0 ? "bg-primary/5" : ""}>
+                                              <TableCell className="font-medium text-xs py-1.5">
+                                                {s.team.team_name}
+                                                {s.overridden && <Badge variant="outline" className="ml-1.5 text-[9px] py-0 px-1 h-4">manual</Badge>}
+                                              </TableCell>
+                                              <TableCell className="text-center text-xs py-1.5">{s.p}</TableCell>
+                                              <TableCell className="text-center text-xs py-1.5">{s.w}</TableCell>
+                                              <TableCell className="text-center text-xs py-1.5">{s.d}</TableCell>
+                                              <TableCell className="text-center text-xs py-1.5">{s.l}</TableCell>
+                                              <TableCell className="text-center text-xs py-1.5">{s.gf}</TableCell>
+                                              <TableCell className="text-center text-xs py-1.5">{s.ga}</TableCell>
+                                              <TableCell className="text-center text-xs py-1.5">{s.gd}</TableCell>
+                                              <TableCell className="text-center text-xs py-1.5 font-bold">{s.pts}</TableCell>
+                                              <TableCell className="py-1.5 pr-2">
+                                                <div className="flex items-center gap-0.5">
+                                                  <Button size="icon" variant="ghost" className="h-6 w-6" title="Edit standing" onClick={() => startEditStanding(s.team.id, s)}>
+                                                    <Edit className="h-3 w-3 text-muted-foreground" />
+                                                  </Button>
+                                                  {s.overridden && (
+                                                    <Button size="icon" variant="ghost" className="h-6 w-6" title="Reset to computed" onClick={() => clearStandingOverrides(s.team.id)}>
+                                                      <RotateCcw className="h-3 w-3 text-muted-foreground" />
+                                                    </Button>
+                                                  )}
+                                                  <Button size="icon" variant="ghost" className="h-6 w-6" title="Remove from group" onClick={() => assignTeamToGroup(s.team.id, null)}>
+                                                    <X className="h-3 w-3 text-destructive" />
+                                                  </Button>
+                                                </div>
+                                              </TableCell>
+                                            </TableRow>
+                                          );
+                                        })}
                                       </TableBody>
                                     </Table>
                                   );
