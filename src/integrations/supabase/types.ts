@@ -2646,6 +2646,7 @@ export type Database = {
           caption: string | null
           created_at: string
           id: string
+          photo_date: string | null
           preview_url: string
           price_cents: number
           storage_path: string
@@ -2656,6 +2657,7 @@ export type Database = {
           caption?: string | null
           created_at?: string
           id?: string
+          photo_date?: string | null
           preview_url: string
           price_cents?: number
           storage_path: string
@@ -2666,6 +2668,7 @@ export type Database = {
           caption?: string | null
           created_at?: string
           id?: string
+          photo_date?: string | null
           preview_url?: string
           price_cents?: number
           storage_path?: string
@@ -3010,6 +3013,7 @@ export type Database = {
           caption: string | null
           created_at: string | null
           id: string | null
+          photo_date: string | null
           preview_url: string | null
           price_cents: number | null
           tournament_id: string | null
@@ -3019,6 +3023,7 @@ export type Database = {
           caption?: string | null
           created_at?: string | null
           id?: string | null
+          photo_date?: string | null
           preview_url?: string | null
           price_cents?: number | null
           tournament_id?: string | null
@@ -3028,6 +3033,7 @@ export type Database = {
           caption?: string | null
           created_at?: string | null
           id?: string | null
+          photo_date?: string | null
           preview_url?: string | null
           price_cents?: number | null
           tournament_id?: string | null

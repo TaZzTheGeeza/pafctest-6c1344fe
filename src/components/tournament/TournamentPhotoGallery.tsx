@@ -53,6 +53,8 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
     staleTime: 1000 * 60 * 30,
   });
 
+  const dateKey = (p: any) => (p.photo_date || (p.created_at || "").slice(0, 10)) || "";
+
   const { data: photos, isLoading } = useQuery({
     queryKey: ["tournament-photos", tournamentId, filterAgeGroup, filterDate],
     queryFn: async () => {
@@ -70,19 +72,19 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
       if (error) throw error;
       let rows = data as any[];
       if (filterDate !== "all") {
-        rows = rows.filter((p: any) => (p.created_at || "").slice(0, 10) === filterDate);
+        rows = rows.filter((p: any) => dateKey(p) === filterDate);
       }
       return rows;
     },
   });
 
-  // Build distinct list of dates (YYYY-MM-DD) from all photos for this tournament (unfiltered by date)
+  // Build distinct list of dates from all photos for this tournament
   const { data: allDatesPhotos } = useQuery({
     queryKey: ["tournament-photo-dates", tournamentId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("tournament_photos_public" as any)
-        .select("created_at")
+        .select("created_at, photo_date")
         .eq("tournament_id", tournamentId);
       if (error) throw error;
       return data as any[];
@@ -90,7 +92,7 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
   });
 
   const availableDates = Array.from(
-    new Set((allDatesPhotos || []).map((p: any) => (p.created_at || "").slice(0, 10)).filter(Boolean))
+    new Set((allDatesPhotos || []).map((p: any) => dateKey(p)).filter(Boolean))
   ).sort((a, b) => b.localeCompare(a));
 
   const formatDateLabel = (iso: string) => {

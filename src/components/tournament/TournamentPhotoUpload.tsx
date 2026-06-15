@@ -18,6 +18,7 @@ export function TournamentPhotoUpload({ tournamentId, ageGroups }: TournamentPho
   const [uploading, setUploading] = useState(false);
   const [ageGroup, setAgeGroup] = useState("");
   const [caption, setCaption] = useState("");
+  const [photoDate, setPhotoDate] = useState(() => new Date().toISOString().slice(0, 10));
   const fileRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
 
@@ -133,6 +134,7 @@ export function TournamentPhotoUpload({ tournamentId, ageGroups }: TournamentPho
             preview_url: previewUrl.publicUrl,
             storage_path: storagePath,
             price_cents: 200,
+            photo_date: photoDate || null,
           });
 
         if (!insertErr) successCount++;
@@ -177,6 +179,18 @@ export function TournamentPhotoUpload({ tournamentId, ageGroups }: TournamentPho
               ))}
             </SelectContent>
           </Select>
+        </div>
+
+        <div>
+          <Label>Date taken</Label>
+          <Input
+            type="date"
+            value={photoDate}
+            onChange={(e) => setPhotoDate(e.target.value)}
+          />
+          <p className="text-xs text-muted-foreground mt-1">
+            Buyers filter the gallery by this date — set it to the match day.
+          </p>
         </div>
 
         <div>
