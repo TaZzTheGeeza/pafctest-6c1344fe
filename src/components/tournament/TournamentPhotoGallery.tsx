@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Camera, Download, Loader2, ShoppingCart, X, Trash2, Pencil, Info } from "lucide-react";
+import { Camera, Download, Loader2, ShoppingCart, X, Trash2, Pencil, Info, Star } from "lucide-react";
 import { toast } from "sonner";
 import { TournamentPhotoUpload } from "./TournamentPhotoUpload";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
@@ -236,6 +236,26 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
     }
   };
 
+  const handleToggleFeatured = async (photo: any) => {
+    try {
+      const next = !photo.featured;
+      // If turning on, unfeature all others first so only one shot of the day is active
+      if (next) {
+        await supabase.from("tournament_photos" as any).update({ featured: false }).eq("featured", true);
+      }
+      const { error } = await supabase
+        .from("tournament_photos" as any)
+        .update({ featured: next, featured_at: next ? new Date().toISOString() : null })
+        .eq("id", photo.id);
+      if (error) throw error;
+      toast.success(next ? "⭐ Set as Shot of the Day" : "Removed from Shot of the Day");
+      queryClient.invalidateQueries({ queryKey: ["tournament-photos"] });
+      queryClient.invalidateQueries({ queryKey: ["shot-of-the-day"] });
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update");
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -323,6 +343,11 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
                     {photo.age_group}
                   </Badge>
                 )}
+                {photo.featured && (
+                  <Badge className="absolute bottom-2 left-2 text-[10px] bg-primary text-primary-foreground gap-1">
+                    <Star className="h-3 w-3 fill-current" /> Shot of the Day
+                  </Badge>
+                )}
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
                   <span className="text-white text-xs font-medium bg-black/50 px-3 py-1.5 rounded-full">
                     Tap to view
@@ -330,6 +355,15 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
                 </div>
                 {isAdmin && (
                   <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button
+                      size="icon"
+                      variant={photo.featured ? "default" : "secondary"}
+                      className="h-7 w-7"
+                      onClick={(e) => { e.stopPropagation(); handleToggleFeatured(photo); }}
+                      title={photo.featured ? "Remove Shot of the Day" : "Set as Shot of the Day"}
+                    >
+                      <Star className={`h-3 w-3 ${photo.featured ? "fill-current" : ""}`} />
+                    </Button>
                     <Button
                       size="icon"
                       variant="secondary"
