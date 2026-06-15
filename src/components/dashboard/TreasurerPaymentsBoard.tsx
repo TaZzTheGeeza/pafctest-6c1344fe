@@ -35,6 +35,22 @@ interface PaymentRecord {
   charge_date: string | null;
 }
 
+interface PhotoSaleRecord {
+  id: string;
+  token: string;
+  email: string;
+  buyer_name: string | null;
+  total_cents: number;
+  download_count: number;
+  paid_at: string | null;
+  created_at: string;
+  expires_at: string;
+  provider: string;
+  shopify_order_id: string | null;
+  photo_refs: string[];
+  photo_count: number;
+}
+
 interface Summary {
   active_subscriptions: number;
   past_due: number;
