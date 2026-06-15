@@ -16,8 +16,11 @@ interface ClaimPhoto {
 
 export default function PhotoClaimPage() {
   const [params] = useSearchParams();
-  const token = params.get("token") || "";
+  const initialToken = params.get("token") || "";
+  const sessionId = params.get("session_id") || "";
+  const [token, setToken] = useState(initialToken);
   const [loading, setLoading] = useState(false);
+  const [waiting, setWaiting] = useState(false);
   const [data, setData] = useState<{
     order_name: string | null;
     photos: ClaimPhoto[];
@@ -30,19 +33,41 @@ export default function PhotoClaimPage() {
   const [resent, setResent] = useState(false);
 
   useEffect(() => {
-    if (!token) return;
-    setLoading(true);
-    supabase.functions
-      .invoke("claim-photos", { body: { token } })
-      .then(({ data, error }) => {
-        if (error || (data as any)?.error) {
-          setError((data as any)?.error || error?.message || "Invalid link");
-        } else {
-          setData(data as any);
-        }
-      })
-      .finally(() => setLoading(false));
-  }, [token]);
+    if (!token && !sessionId) return;
+
+    let cancelled = false;
+    let attempts = 0;
+    const maxAttempts = sessionId && !token ? 20 : 1; // poll for ~60s if coming from Stripe
+
+    const tryFetch = async () => {
+      if (cancelled) return;
+      setLoading(attempts === 0);
+      setWaiting(attempts > 0);
+      const body: Record<string, string> = token ? { token } : { session_id: sessionId };
+      const { data: res, error: invErr } = await supabase.functions.invoke("claim-photos", { body });
+      if (cancelled) return;
+
+      if (!invErr && !(res as any)?.error && (res as any)?.photos) {
+        setData(res as any);
+        if (!token && (res as any).token) setToken((res as any).token);
+        setLoading(false);
+        setWaiting(false);
+        return;
+      }
+
+      attempts++;
+      if (attempts >= maxAttempts) {
+        setError((res as any)?.error || invErr?.message || "Invalid or expired link");
+        setLoading(false);
+        setWaiting(false);
+        return;
+      }
+      setTimeout(tryFetch, 3000);
+    };
+
+    tryFetch();
+    return () => { cancelled = true; };
+  }, [token, sessionId]);
 
   const handleDownload = async (photoId: string) => {
     setDownloadingId(photoId);
