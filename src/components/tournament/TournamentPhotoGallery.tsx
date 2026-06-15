@@ -40,6 +40,9 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
   const [editCaption, setEditCaption] = useState("");
   const [editAgeGroup, setEditAgeGroup] = useState("");
   const [lightboxPhoto, setLightboxPhoto] = useState<any | null>(null);
+  const [checkoutPhotoId, setCheckoutPhotoId] = useState<string | null>(null);
+  const [guestName, setGuestName] = useState("");
+  const [guestEmail, setGuestEmail] = useState("");
   const [hasEntered, setHasEntered] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
     return sessionStorage.getItem(`tourney-photos-entered-${tournamentId}`) === "1";
@@ -128,24 +131,40 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
 
   const purchasedIds = new Set(purchases || []);
 
-  const handleBuy = async (photoId: string) => {
+  const startCheckout = async (photoId: string, name?: string, email?: string) => {
     setBuyingPhotoId(photoId);
     try {
-      const { data, error } = await supabase.functions.invoke("create-photo-checkout", {
-        body: { photo_id: photoId },
-      });
+      const body: Record<string, unknown> = { photo_id: photoId };
+      if (name) body.buyer_name = name;
+      if (email) body.buyer_email = email;
+      const { data, error } = await supabase.functions.invoke("create-photo-checkout", { body });
       if (error || (data as any)?.error) {
         throw new Error((data as any)?.error || error?.message || "Could not start checkout");
       }
       const url = (data as any).url;
       if (!url) throw new Error("Checkout URL missing");
-      // Open Stripe Checkout in a new tab so user can return to the gallery
-      window.open(url, "_blank", "noopener");
+      window.location.href = url;
     } catch (err: any) {
       toast.error(err.message || "Failed to start checkout");
     } finally {
       setBuyingPhotoId(null);
     }
+  };
+
+  const handleBuy = async (photoId: string) => {
+    if (user) { await startCheckout(photoId); return; }
+    setCheckoutPhotoId(photoId);
+  };
+
+  const submitGuestCheckout = async () => {
+    if (!checkoutPhotoId) return;
+    const email = guestEmail.trim();
+    const name = guestName.trim();
+    if (!name) { toast.error("Please enter your name"); return; }
+    if (!/^\S+@\S+\.\S+$/.test(email)) { toast.error("Please enter a valid email"); return; }
+    const photoId = checkoutPhotoId;
+    setCheckoutPhotoId(null);
+    await startCheckout(photoId, name, email);
   };
 
   const handleDownload = async (photoId: string) => {
