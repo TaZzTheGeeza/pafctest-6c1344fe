@@ -583,6 +583,13 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
                     )}
                     Download Hi-Res
                   </Button>
+                ) : !user ? (
+                  <Button asChild size="sm">
+                    <Link to={authHref}>
+                      <LogIn className="h-3 w-3 mr-1" />
+                      Sign in to Buy · £2
+                    </Link>
+                  </Button>
                 ) : (
                   <Button
                     size="sm"
