@@ -133,10 +133,21 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
 
   const purchasedIds = new Set(purchases || []);
 
-  const startCheckout = async (photoId: string, name?: string, email?: string) => {
-    setBuyingPhotoId(photoId);
+  const toggleBasket = (photoId: string) => {
+    setBasket((prev) => {
+      const next = new Set(prev);
+      if (next.has(photoId)) next.delete(photoId);
+      else next.add(photoId);
+      return next;
+    });
+  };
+
+  const startCheckout = async (ids: string[], name?: string, email?: string) => {
+    if (!ids.length) return;
+    const marker = ids.length === 1 ? ids[0] : "__basket__";
+    setBuyingPhotoId(marker);
     try {
-      const body: Record<string, unknown> = { photo_id: photoId };
+      const body: Record<string, unknown> = ids.length === 1 ? { photo_id: ids[0] } : { photo_ids: ids };
       if (name) body.buyer_name = name;
       if (email) body.buyer_email = email;
       const { data, error } = await supabase.functions.invoke("create-photo-checkout", { body });
@@ -154,19 +165,31 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
   };
 
   const handleBuy = async (photoId: string) => {
-    if (user) { await startCheckout(photoId); return; }
+    if (user) { await startCheckout([photoId]); return; }
     setCheckoutPhotoId(photoId);
+    setCheckoutBasket(null);
+  };
+
+  const handleBuyBasket = async () => {
+    const ids = Array.from(basket);
+    if (!ids.length) return;
+    if (user) { await startCheckout(ids); setBasket(new Set()); return; }
+    setCheckoutBasket(ids);
+    setCheckoutPhotoId(null);
   };
 
   const submitGuestCheckout = async () => {
-    if (!checkoutPhotoId) return;
+    const ids = checkoutBasket ?? (checkoutPhotoId ? [checkoutPhotoId] : []);
+    if (!ids.length) return;
     const email = guestEmail.trim();
     const name = guestName.trim();
     if (!name) { toast.error("Please enter your name"); return; }
     if (!/^\S+@\S+\.\S+$/.test(email)) { toast.error("Please enter a valid email"); return; }
-    const photoId = checkoutPhotoId;
+    const wasBasket = !!checkoutBasket;
     setCheckoutPhotoId(null);
-    await startCheckout(photoId, name, email);
+    setCheckoutBasket(null);
+    await startCheckout(ids, name, email);
+    if (wasBasket) setBasket(new Set());
   };
 
   const handleDownload = async (photoId: string) => {
