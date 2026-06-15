@@ -610,18 +610,31 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
                     Download Hi-Res
                   </Button>
                 ) : (
-                  <Button
-                    size="sm"
-                    onClick={() => handleBuy(lightboxPhoto.id)}
-                    disabled={buyingPhotoId === lightboxPhoto.id}
-                  >
-                    {buyingPhotoId === lightboxPhoto.id ? (
-                      <Loader2 className="h-3 w-3 animate-spin mr-1" />
-                    ) : (
-                      <ShoppingCart className="h-3 w-3 mr-1" />
-                    )}
-                    Buy Hi-Res · £2
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant={basket.has(lightboxPhoto.id) ? "default" : "secondary"}
+                      onClick={() => toggleBasket(lightboxPhoto.id)}
+                    >
+                      {basket.has(lightboxPhoto.id) ? (
+                        <><Check className="h-3 w-3 mr-1" /> Added</>
+                      ) : (
+                        <><Plus className="h-3 w-3 mr-1" /> Add to basket</>
+                      )}
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={() => handleBuy(lightboxPhoto.id)}
+                      disabled={buyingPhotoId === lightboxPhoto.id}
+                    >
+                      {buyingPhotoId === lightboxPhoto.id ? (
+                        <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                      ) : (
+                        <ShoppingCart className="h-3 w-3 mr-1" />
+                      )}
+                      Buy Now · £2
+                    </Button>
+                  </div>
                 )}
               </div>
             </div>
