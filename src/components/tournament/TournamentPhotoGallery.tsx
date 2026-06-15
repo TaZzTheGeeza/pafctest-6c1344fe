@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Camera, Download, Loader2, ShoppingCart, X, Trash2, Pencil, Info, Star, Eye, ShieldCheck, Sparkles, LogIn, Lock, Mail } from "lucide-react";
+import { Camera, Download, Loader2, ShoppingCart, X, Trash2, Pencil, Info, Star, Eye, ShieldCheck, Sparkles, LogIn, Lock, Mail, Check, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { TournamentPhotoUpload } from "./TournamentPhotoUpload";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
@@ -41,6 +41,8 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
   const [editAgeGroup, setEditAgeGroup] = useState("");
   const [lightboxPhoto, setLightboxPhoto] = useState<any | null>(null);
   const [checkoutPhotoId, setCheckoutPhotoId] = useState<string | null>(null);
+  const [checkoutBasket, setCheckoutBasket] = useState<string[] | null>(null);
+  const [basket, setBasket] = useState<Set<string>>(new Set());
   const [guestName, setGuestName] = useState("");
   const [guestEmail, setGuestEmail] = useState("");
   const [hasEntered, setHasEntered] = useState<boolean>(() => {
@@ -131,10 +133,21 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
 
   const purchasedIds = new Set(purchases || []);
 
-  const startCheckout = async (photoId: string, name?: string, email?: string) => {
-    setBuyingPhotoId(photoId);
+  const toggleBasket = (photoId: string) => {
+    setBasket((prev) => {
+      const next = new Set(prev);
+      if (next.has(photoId)) next.delete(photoId);
+      else next.add(photoId);
+      return next;
+    });
+  };
+
+  const startCheckout = async (ids: string[], name?: string, email?: string) => {
+    if (!ids.length) return;
+    const marker = ids.length === 1 ? ids[0] : "__basket__";
+    setBuyingPhotoId(marker);
     try {
-      const body: Record<string, unknown> = { photo_id: photoId };
+      const body: Record<string, unknown> = ids.length === 1 ? { photo_id: ids[0] } : { photo_ids: ids };
       if (name) body.buyer_name = name;
       if (email) body.buyer_email = email;
       const { data, error } = await supabase.functions.invoke("create-photo-checkout", { body });
@@ -152,19 +165,31 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
   };
 
   const handleBuy = async (photoId: string) => {
-    if (user) { await startCheckout(photoId); return; }
+    if (user) { await startCheckout([photoId]); return; }
     setCheckoutPhotoId(photoId);
+    setCheckoutBasket(null);
+  };
+
+  const handleBuyBasket = async () => {
+    const ids = Array.from(basket);
+    if (!ids.length) return;
+    if (user) { await startCheckout(ids); setBasket(new Set()); return; }
+    setCheckoutBasket(ids);
+    setCheckoutPhotoId(null);
   };
 
   const submitGuestCheckout = async () => {
-    if (!checkoutPhotoId) return;
+    const ids = checkoutBasket ?? (checkoutPhotoId ? [checkoutPhotoId] : []);
+    if (!ids.length) return;
     const email = guestEmail.trim();
     const name = guestName.trim();
     if (!name) { toast.error("Please enter your name"); return; }
     if (!/^\S+@\S+\.\S+$/.test(email)) { toast.error("Please enter a valid email"); return; }
-    const photoId = checkoutPhotoId;
+    const wasBasket = !!checkoutBasket;
     setCheckoutPhotoId(null);
-    await startCheckout(photoId, name, email);
+    setCheckoutBasket(null);
+    await startCheckout(ids, name, email);
+    if (wasBasket) setBasket(new Set());
   };
 
   const handleDownload = async (photoId: string) => {
@@ -481,20 +506,34 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
                     Download
                   </Button>
                 ) : (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="w-full text-xs"
-                    onClick={() => handleBuy(photo.id)}
-                    disabled={buyingPhotoId === photo.id}
-                  >
-                    {buyingPhotoId === photo.id ? (
-                      <Loader2 className="h-3 w-3 animate-spin mr-1" />
-                    ) : (
-                      <ShoppingCart className="h-3 w-3 mr-1" />
-                    )}
-                    Buy · £2
-                  </Button>
+                  <div className="flex gap-1.5">
+                    <Button
+                      size="sm"
+                      variant={basket.has(photo.id) ? "default" : "secondary"}
+                      className="flex-1 text-xs px-2"
+                      onClick={() => toggleBasket(photo.id)}
+                      title={basket.has(photo.id) ? "Remove from basket" : "Add to basket"}
+                    >
+                      {basket.has(photo.id) ? (
+                        <><Check className="h-3 w-3 mr-1" /> Added</>
+                      ) : (
+                        <><Plus className="h-3 w-3 mr-1" /> Add</>
+                      )}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="flex-1 text-xs px-2"
+                      onClick={() => handleBuy(photo.id)}
+                      disabled={buyingPhotoId === photo.id}
+                    >
+                      {buyingPhotoId === photo.id ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : (
+                        <>Buy · £2</>
+                      )}
+                    </Button>
+                  </div>
                 )}
               </CardContent>
             </Card>
@@ -571,18 +610,31 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
                     Download Hi-Res
                   </Button>
                 ) : (
-                  <Button
-                    size="sm"
-                    onClick={() => handleBuy(lightboxPhoto.id)}
-                    disabled={buyingPhotoId === lightboxPhoto.id}
-                  >
-                    {buyingPhotoId === lightboxPhoto.id ? (
-                      <Loader2 className="h-3 w-3 animate-spin mr-1" />
-                    ) : (
-                      <ShoppingCart className="h-3 w-3 mr-1" />
-                    )}
-                    Buy Hi-Res · £2
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant={basket.has(lightboxPhoto.id) ? "default" : "secondary"}
+                      onClick={() => toggleBasket(lightboxPhoto.id)}
+                    >
+                      {basket.has(lightboxPhoto.id) ? (
+                        <><Check className="h-3 w-3 mr-1" /> Added</>
+                      ) : (
+                        <><Plus className="h-3 w-3 mr-1" /> Add to basket</>
+                      )}
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={() => handleBuy(lightboxPhoto.id)}
+                      disabled={buyingPhotoId === lightboxPhoto.id}
+                    >
+                      {buyingPhotoId === lightboxPhoto.id ? (
+                        <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                      ) : (
+                        <ShoppingCart className="h-3 w-3 mr-1" />
+                      )}
+                      Buy Now · £2
+                    </Button>
+                  </div>
                 )}
               </div>
             </div>
@@ -633,10 +685,53 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
         <TournamentPhotoUpload tournamentId={tournamentId} ageGroups={ageGroups} />
       )}
 
+      {/* Floating basket bar */}
+      {basket.size > 0 && (
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 w-[min(94vw,520px)]">
+          <div className="rounded-full border border-primary/30 bg-background/95 backdrop-blur-md shadow-2xl px-4 py-2.5 flex items-center gap-3">
+            <div className="h-9 w-9 rounded-full bg-primary/15 flex items-center justify-center shrink-0">
+              <ShoppingCart className="h-4 w-4 text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold leading-tight">
+                {basket.size} photo{basket.size > 1 ? "s" : ""} · £{(basket.size * 2).toFixed(2)}
+              </p>
+              <button
+                type="button"
+                className="text-[11px] text-muted-foreground hover:text-foreground underline-offset-2 hover:underline"
+                onClick={() => setBasket(new Set())}
+              >
+                Clear basket
+              </button>
+            </div>
+            <Button
+              size="sm"
+              onClick={handleBuyBasket}
+              disabled={buyingPhotoId === "__basket__"}
+              className="rounded-full font-semibold"
+            >
+              {buyingPhotoId === "__basket__" ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-1" />
+              ) : null}
+              Checkout
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Guest checkout dialog */}
-      <Dialog open={!!checkoutPhotoId} onOpenChange={(open) => !open && setCheckoutPhotoId(null)}>
+      <Dialog
+        open={!!checkoutPhotoId || !!checkoutBasket}
+        onOpenChange={(open) => {
+          if (!open) { setCheckoutPhotoId(null); setCheckoutBasket(null); }
+        }}
+      >
         <DialogContent className="sm:max-w-md">
-          <DialogTitle>Buy this photo · £2</DialogTitle>
+          <DialogTitle>
+            {checkoutBasket
+              ? `Buy ${checkoutBasket.length} photos · £${(checkoutBasket.length * 2).toFixed(2)}`
+              : "Buy this photo · £2"}
+          </DialogTitle>
           <DialogDescription>
             Pay instantly with your bank (Open Banking via GoCardless). No card details, no account needed —
             we'll email a secure download link to the address below.
@@ -656,12 +751,12 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
               />
             </div>
             <div className="flex gap-2 justify-end pt-2">
-              <Button variant="outline" onClick={() => setCheckoutPhotoId(null)}>Cancel</Button>
+              <Button variant="outline" onClick={() => { setCheckoutPhotoId(null); setCheckoutBasket(null); }}>Cancel</Button>
               <Button
                 onClick={submitGuestCheckout}
-                disabled={buyingPhotoId === checkoutPhotoId}
+                disabled={buyingPhotoId === checkoutPhotoId || buyingPhotoId === "__basket__"}
               >
-                {buyingPhotoId === checkoutPhotoId ? (
+                {(buyingPhotoId === checkoutPhotoId || buyingPhotoId === "__basket__") ? (
                   <Loader2 className="h-4 w-4 animate-spin mr-1" />
                 ) : null}
                 Continue to bank
