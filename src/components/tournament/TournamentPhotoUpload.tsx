@@ -134,6 +134,7 @@ export function TournamentPhotoUpload({ tournamentId, ageGroups }: TournamentPho
             preview_url: previewUrl.publicUrl,
             storage_path: storagePath,
             price_cents: 200,
+            photo_date: photoDate || null,
           });
 
         if (!insertErr) successCount++;
