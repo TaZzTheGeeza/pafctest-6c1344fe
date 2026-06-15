@@ -15,14 +15,14 @@ Deno.serve(async (req) => {
   );
 
   try {
-    const { token, photo_id } = await req.json();
-    if (!token || typeof token !== "string") throw new Error("token is required");
+    const { token, photo_id, session_id } = await req.json();
+    if (!token && !session_id) throw new Error("token or session_id is required");
 
-    const { data: claim, error } = await admin
-      .from("photo_claim_tokens")
-      .select("*")
-      .eq("token", token)
-      .maybeSingle();
+    let query = admin.from("photo_claim_tokens").select("*");
+    if (token) query = query.eq("token", token);
+    else query = query.eq("shopify_order_id", session_id).order("created_at", { ascending: false }).limit(1);
+
+    const { data: claim, error } = await query.maybeSingle();
 
     if (error || !claim) throw new Error("Invalid or expired link");
     if (new Date(claim.expires_at).getTime() < Date.now()) {
@@ -56,9 +56,10 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Otherwise return the list with preview URLs
+    // Otherwise return the list with preview URLs (include token so client can switch to it)
     return new Response(
       JSON.stringify({
+        token: claim.token,
         order_name: claim.shopify_order_id,
         email: claim.email,
         expires_at: claim.expires_at,
