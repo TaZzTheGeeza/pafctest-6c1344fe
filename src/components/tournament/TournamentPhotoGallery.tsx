@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -12,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Camera, Download, Loader2, ShoppingCart, X, Trash2, Pencil, Info, Star, Eye, ShieldCheck, Sparkles } from "lucide-react";
+import { Camera, Download, Loader2, ShoppingCart, X, Trash2, Pencil, Info, Star, Eye, ShieldCheck, Sparkles, LogIn, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { TournamentPhotoUpload } from "./TournamentPhotoUpload";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
@@ -28,6 +29,8 @@ const PHOTO_VARIANT_ID = "gid://shopify/ProductVariant/53198621409623";
 export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGroup }: TournamentPhotoGalleryProps) {
   const { user, isAdmin, isPhotographer } = useAuth();
   const queryClient = useQueryClient();
+  const location = useLocation();
+  const authHref = `/auth?redirect=${encodeURIComponent(location.pathname + location.search)}`;
   const [filterAgeGroup, setFilterAgeGroup] = useState(defaultAgeGroup || "all");
   const [filterDate, setFilterDate] = useState("all");
   const [buyingPhotoId, setBuyingPhotoId] = useState<string | null>(null);
@@ -335,6 +338,23 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
 
   return (
     <div className="space-y-4">
+      {!user && (
+        <div className="flex items-start gap-3 rounded-xl border border-primary/30 bg-primary/5 px-4 py-3">
+          <Lock className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold text-sm">Sign in to buy photos</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              A free PAFC account is required so your high-resolution downloads can be safely stored in <span className="text-foreground font-medium">My Profile → Purchases</span>.
+            </p>
+          </div>
+          <Button asChild size="sm" className="shrink-0">
+            <Link to={authHref}>
+              <LogIn className="h-4 w-4 mr-1.5" />
+              Sign in
+            </Link>
+          </Button>
+        </div>
+      )}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h3 className="font-display font-bold text-lg flex items-center gap-2">
@@ -466,6 +486,13 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
                     )}
                     Download
                   </Button>
+                ) : !user ? (
+                  <Button asChild size="sm" variant="outline" className="w-full text-xs">
+                    <Link to={authHref}>
+                      <LogIn className="h-3 w-3 mr-1" />
+                      Sign in to Buy · £2
+                    </Link>
+                  </Button>
                 ) : (
                   <Button
                     size="sm"
@@ -555,6 +582,13 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
                       <Download className="h-3 w-3 mr-1" />
                     )}
                     Download Hi-Res
+                  </Button>
+                ) : !user ? (
+                  <Button asChild size="sm">
+                    <Link to={authHref}>
+                      <LogIn className="h-3 w-3 mr-1" />
+                      Sign in to Buy · £2
+                    </Link>
                   </Button>
                 ) : (
                   <Button
