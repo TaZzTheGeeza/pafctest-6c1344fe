@@ -37,6 +37,15 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
   const [editCaption, setEditCaption] = useState("");
   const [editAgeGroup, setEditAgeGroup] = useState("");
   const [lightboxPhoto, setLightboxPhoto] = useState<any | null>(null);
+  const [hasEntered, setHasEntered] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return sessionStorage.getItem(`tourney-photos-entered-${tournamentId}`) === "1";
+  });
+
+  const handleEnter = () => {
+    sessionStorage.setItem(`tourney-photos-entered-${tournamentId}`, "1");
+    setHasEntered(true);
+  };
   const addItem = useCartStore((s) => s.addItem);
   const isCartLoading = useCartStore((s) => s.isLoading);
 
