@@ -1230,32 +1230,41 @@ export type Database = {
       }
       photo_claim_tokens: {
         Row: {
+          buyer_name: string | null
           created_at: string
           download_count: number
           email: string
           expires_at: string
           id: string
+          paid_at: string | null
           photo_ids: string[]
+          provider: string
           shopify_order_id: string | null
           token: string
         }
         Insert: {
+          buyer_name?: string | null
           created_at?: string
           download_count?: number
           email: string
           expires_at?: string
           id?: string
+          paid_at?: string | null
           photo_ids?: string[]
+          provider?: string
           shopify_order_id?: string | null
           token: string
         }
         Update: {
+          buyer_name?: string | null
           created_at?: string
           download_count?: number
           email?: string
           expires_at?: string
           id?: string
+          paid_at?: string | null
           photo_ids?: string[]
+          provider?: string
           shopify_order_id?: string | null
           token?: string
         }

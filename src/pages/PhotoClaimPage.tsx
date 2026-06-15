@@ -37,17 +37,16 @@ export default function PhotoClaimPage() {
 
     let cancelled = false;
     let attempts = 0;
-    const maxAttempts = sessionId && !token ? 20 : 1; // poll for ~60s if coming from Stripe
+    const maxAttempts = 40; // ~2 min of polling while payment confirms
 
     const tryFetch = async () => {
       if (cancelled) return;
       setLoading(attempts === 0);
-      setWaiting(attempts > 0);
       const body: Record<string, string> = token ? { token } : { session_id: sessionId };
       const { data: res, error: invErr } = await supabase.functions.invoke("claim-photos", { body });
       if (cancelled) return;
 
-      if (!invErr && !(res as any)?.error && (res as any)?.photos) {
+      if (!invErr && (res as any)?.photos) {
         setData(res as any);
         if (!token && (res as any).token) setToken((res as any).token);
         setLoading(false);
@@ -55,19 +54,25 @@ export default function PhotoClaimPage() {
         return;
       }
 
-      attempts++;
-      if (attempts >= maxAttempts) {
-        setError((res as any)?.error || invErr?.message || "Invalid or expired link");
-        setLoading(false);
-        setWaiting(false);
-        return;
+      // Pending payment — keep polling
+      if (!invErr && (res as any)?.pending) {
+        setWaiting(true);
+        attempts++;
+        if (attempts < maxAttempts) {
+          setTimeout(tryFetch, 3000);
+          return;
+        }
       }
-      setTimeout(tryFetch, 3000);
+
+      setError((res as any)?.error || invErr?.message || "Invalid or expired link");
+      setLoading(false);
+      setWaiting(false);
     };
 
     tryFetch();
     return () => { cancelled = true; };
   }, [token, sessionId]);
+
 
   const handleDownload = async (photoId: string) => {
     setDownloadingId(photoId);
