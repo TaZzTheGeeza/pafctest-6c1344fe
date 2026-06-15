@@ -150,6 +150,35 @@ serve(async (req) => {
       },
     }, gcToken);
 
+    // Email the magic claim link immediately so the buyer has it even if the
+    // browser is closed mid-payment. The link only unlocks downloads once
+    // GoCardless confirms payment, but the email gets it to them safely.
+    try {
+      // Look up photo refs for the email body
+      const { data: photoRows } = await adminClient
+        .from("tournament_photos")
+        .select("photo_ref")
+        .in("id", finalIds);
+      const refs = (photoRows || []).map((p: any) => p.photo_ref).filter(Boolean).join(", ");
+      const claimUrl = `${origin}/photos/claim?token=${claimToken}`;
+      const { error: emailErr } = await adminClient.functions.invoke("send-transactional-email", {
+        body: {
+          templateName: "photo-claim-link",
+          recipientEmail: buyerEmail,
+          idempotencyKey: `photo-link-${claimToken}`,
+          templateData: {
+            claimUrl,
+            photoCount: String(finalIds.length),
+            orderName: billingRequestId,
+            photoRefs: refs,
+          },
+        },
+      });
+      if (emailErr) console.error("photo-claim checkout email failed:", emailErr);
+    } catch (e) {
+      console.error("photo-claim checkout email threw:", e);
+    }
+
     return new Response(JSON.stringify({
       url: brfResponse.billing_request_flows.authorisation_url,
       token: claimToken,
