@@ -83,24 +83,29 @@ Deno.serve(async (req) => {
       .select("id, caption, age_group, preview_url, storage_path, photo_ref")
       .in("id", photoIds);
 
-    // Send confirmation email when payment was just confirmed (best-effort, idempotent)
+    // Send confirmation email when payment was just confirmed (idempotent — awaited so it actually fires)
     if (justPaid) {
       const origin = req.headers.get("origin") || "https://www.pa-fc.uk";
       const claimUrl = `${origin}/photos/claim?token=${claim.token}`;
       const refs = (photos || []).map((p: any) => p.photo_ref).filter(Boolean).join(", ");
-      admin.functions.invoke("send-transactional-email", {
-        body: {
-          templateName: "photo-claim-link",
-          recipientEmail: claim.email,
-          idempotencyKey: `photo-paid-${claim.token}`,
-          templateData: {
-            claimUrl,
-            photoCount: String(photoIds.length),
-            orderName: claim.shopify_order_id || "",
-            photoRefs: refs,
+      try {
+        const { error: emailErr } = await admin.functions.invoke("send-transactional-email", {
+          body: {
+            templateName: "photo-claim-link",
+            recipientEmail: claim.email,
+            idempotencyKey: `photo-paid-${claim.token}`,
+            templateData: {
+              claimUrl,
+              photoCount: String(photoIds.length),
+              orderName: claim.shopify_order_id || "",
+              photoRefs: refs,
+            },
           },
-        },
-      }).catch((e) => console.error("email send failed:", e));
+        });
+        if (emailErr) console.error("photo-claim email send failed:", emailErr);
+      } catch (e) {
+        console.error("photo-claim email send threw:", e);
+      }
     }
 
     if (photo_id) {
