@@ -265,6 +265,57 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
     }
   };
 
+  if (!hasEntered) {
+    return (
+      <div className="relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-background via-background to-primary/5 p-6 md:p-10">
+        <div className="max-w-2xl mx-auto text-center space-y-6">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 border border-primary/20">
+            <Camera className="h-8 w-8 text-primary" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="font-display font-bold text-2xl md:text-3xl tracking-tight">
+              Tournament Action Photos
+            </h2>
+            <p className="text-muted-foreground text-sm md:text-base">
+              Before you browse — a quick note about what you'll see.
+            </p>
+          </div>
+
+          <div className="grid sm:grid-cols-3 gap-3 text-left">
+            <div className="rounded-xl border border-border/60 bg-card/50 p-4 space-y-2">
+              <Eye className="h-5 w-5 text-primary" />
+              <h3 className="font-semibold text-sm">Previews are low-res</h3>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Every photo on the next screen is a compressed, watermarked preview. Quality intentionally looks soft.
+              </p>
+            </div>
+            <div className="rounded-xl border border-border/60 bg-card/50 p-4 space-y-2">
+              <Sparkles className="h-5 w-5 text-primary" />
+              <h3 className="font-semibold text-sm">Purchases are full quality</h3>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Once bought, your download is the original high-resolution, watermark-free file — sharp, crisp and print-ready.
+              </p>
+            </div>
+            <div className="rounded-xl border border-border/60 bg-card/50 p-4 space-y-2">
+              <ShieldCheck className="h-5 w-5 text-primary" />
+              <h3 className="font-semibold text-sm">£2 each — supports the club</h3>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                All proceeds go straight back into PAFC. Downloads appear in <span className="text-foreground font-medium">My Profile → Purchases</span>.
+              </p>
+            </div>
+          </div>
+
+          <Button size="lg" onClick={handleEnter} className="font-semibold px-8">
+            Enter Photo Gallery
+          </Button>
+          <p className="text-[11px] text-muted-foreground/70">
+            By entering you understand previews are deliberately reduced in quality to protect the photographers' work.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
