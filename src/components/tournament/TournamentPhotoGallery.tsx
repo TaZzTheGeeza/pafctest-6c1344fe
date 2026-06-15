@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Camera, Download, Loader2, ShoppingCart, X, Trash2, Pencil, Info, Star, Eye, ShieldCheck, Sparkles } from "lucide-react";
+import { Camera, Download, Loader2, ShoppingCart, X, Trash2, Pencil, Info, Star, Eye, ShieldCheck, Sparkles, LogIn, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { TournamentPhotoUpload } from "./TournamentPhotoUpload";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
