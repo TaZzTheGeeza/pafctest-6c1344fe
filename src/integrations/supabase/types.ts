@@ -2645,6 +2645,8 @@ export type Database = {
           age_group: string | null
           caption: string | null
           created_at: string
+          featured: boolean
+          featured_at: string | null
           id: string
           photo_date: string | null
           preview_url: string
@@ -2656,6 +2658,8 @@ export type Database = {
           age_group?: string | null
           caption?: string | null
           created_at?: string
+          featured?: boolean
+          featured_at?: string | null
           id?: string
           photo_date?: string | null
           preview_url: string
@@ -2667,6 +2671,8 @@ export type Database = {
           age_group?: string | null
           caption?: string | null
           created_at?: string
+          featured?: boolean
+          featured_at?: string | null
           id?: string
           photo_date?: string | null
           preview_url?: string
@@ -3012,6 +3018,8 @@ export type Database = {
           age_group: string | null
           caption: string | null
           created_at: string | null
+          featured: boolean | null
+          featured_at: string | null
           id: string | null
           photo_date: string | null
           preview_url: string | null
@@ -3022,6 +3030,8 @@ export type Database = {
           age_group?: string | null
           caption?: string | null
           created_at?: string | null
+          featured?: boolean | null
+          featured_at?: string | null
           id?: string | null
           photo_date?: string | null
           preview_url?: string | null
@@ -3032,6 +3042,8 @@ export type Database = {
           age_group?: string | null
           caption?: string | null
           created_at?: string | null
+          featured?: boolean | null
+          featured_at?: string | null
           id?: string | null
           photo_date?: string | null
           preview_url?: string | null
