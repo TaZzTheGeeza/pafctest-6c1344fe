@@ -343,9 +343,9 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
         <div className="flex items-start gap-3 rounded-xl border border-primary/30 bg-primary/5 px-4 py-3">
           <Mail className="h-5 w-5 text-primary shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
-            <p className="font-semibold text-sm">No account needed</p>
+            <p className="font-semibold text-sm">Pay direct from your bank · No account needed</p>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Buy as a guest — after checkout we'll email a secure download link to the address you provide.{' '}
+              Instant Bank Pay via GoCardless — no card, no signup. We'll email a secure download link.{' '}
               <Link to="/photos/claim" className="underline text-foreground">Lost your link?</Link>
             </p>
           </div>
@@ -634,6 +634,44 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
       {(isAdmin || isPhotographer) && (
         <TournamentPhotoUpload tournamentId={tournamentId} ageGroups={ageGroups} />
       )}
+
+      {/* Guest checkout dialog */}
+      <Dialog open={!!checkoutPhotoId} onOpenChange={(open) => !open && setCheckoutPhotoId(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogTitle>Buy this photo · £2</DialogTitle>
+          <DialogDescription>
+            Pay instantly with your bank (Open Banking via GoCardless). No card details, no account needed —
+            we'll email a secure download link to the address below.
+          </DialogDescription>
+          <div className="space-y-3 pt-2">
+            <div>
+              <Label>Your name</Label>
+              <Input value={guestName} onChange={(e) => setGuestName(e.target.value)} placeholder="Jane Smith" autoFocus />
+            </div>
+            <div>
+              <Label>Email for download link</Label>
+              <Input
+                type="email"
+                value={guestEmail}
+                onChange={(e) => setGuestEmail(e.target.value)}
+                placeholder="you@example.com"
+              />
+            </div>
+            <div className="flex gap-2 justify-end pt-2">
+              <Button variant="outline" onClick={() => setCheckoutPhotoId(null)}>Cancel</Button>
+              <Button
+                onClick={submitGuestCheckout}
+                disabled={buyingPhotoId === checkoutPhotoId}
+              >
+                {buyingPhotoId === checkoutPhotoId ? (
+                  <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                ) : null}
+                Continue to bank
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
