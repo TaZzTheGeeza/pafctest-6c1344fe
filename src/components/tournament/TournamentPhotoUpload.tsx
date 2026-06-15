@@ -139,6 +139,10 @@ export function TournamentPhotoUpload({ tournamentId, ageGroups }: TournamentPho
     setProgress({ done: 0, total, etaSeconds: total * SECONDS_PER_PHOTO_ESTIMATE });
     const startedAt = Date.now();
     let successCount = 0;
+    let uploadFailCount = 0;
+    let previewFailCount = 0;
+    let insertFailCount = 0;
+    let lastInsertError: string | null = null;
 
     try {
       for (let i = 0; i < files.length; i++) {
@@ -151,10 +155,19 @@ export function TournamentPhotoUpload({ tournamentId, ageGroups }: TournamentPho
           .upload(storagePath, file);
         if (uploadErr) {
           console.error("Upload error:", uploadErr);
+          uploadFailCount++;
           continue;
         }
 
-        const previewBlob = await createResizedPreview(file);
+        let previewBlob: Blob;
+        try {
+          previewBlob = await createResizedPreview(file);
+        } catch (e) {
+          console.error("Preview generation error:", e);
+          previewFailCount++;
+          continue;
+        }
+
         const previewPath = `tournament-previews/${tournamentId}/${Date.now()}-${i}.jpg`;
         const { error: previewErr } = await supabase.storage
           .from("gallery-photos")
@@ -162,6 +175,7 @@ export function TournamentPhotoUpload({ tournamentId, ageGroups }: TournamentPho
 
         if (previewErr) {
           console.error("Preview upload error:", previewErr);
+          previewFailCount++;
           continue;
         }
 
@@ -181,7 +195,13 @@ export function TournamentPhotoUpload({ tournamentId, ageGroups }: TournamentPho
             photo_date: photoDate || null,
           });
 
-        if (!insertErr) successCount++;
+        if (insertErr) {
+          console.error("DB insert error:", insertErr, { storagePath });
+          insertFailCount++;
+          lastInsertError = insertErr.message;
+        } else {
+          successCount++;
+        }
 
         // Update progress + ETA using observed per-photo time
         const done = i + 1;
@@ -191,15 +211,25 @@ export function TournamentPhotoUpload({ tournamentId, ageGroups }: TournamentPho
         setProgress({ done, total, etaSeconds: Math.round(avgPerPhoto * remaining) });
       }
 
-      if (successCount > 0) {
+      const failTotal = uploadFailCount + previewFailCount + insertFailCount;
+      if (successCount > 0 && failTotal === 0) {
         toast.success(`${successCount} photo(s) uploaded successfully`);
+      } else if (successCount > 0 && failTotal > 0) {
+        toast.warning(
+          `${successCount} uploaded, ${failTotal} failed (upload: ${uploadFailCount}, preview: ${previewFailCount}, db: ${insertFailCount})`
+        );
+      } else {
+        toast.error(
+          `No photos saved. ${insertFailCount > 0 ? `DB error: ${lastInsertError}` : "Check console for details."}`
+        );
+      }
+
+      if (successCount > 0) {
         queryClient.invalidateQueries({ queryKey: ["tournament-photos"] });
         setCaption("");
         if (fileRef.current) fileRef.current.value = "";
         setSelectedCount(0);
         setSelectedSize(0);
-      } else {
-        toast.error("No photos were uploaded successfully");
       }
     } catch (err: any) {
       toast.error(err.message || "Upload failed");
