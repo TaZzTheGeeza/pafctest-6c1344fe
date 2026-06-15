@@ -29,6 +29,7 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
   const { user, isAdmin, isPhotographer } = useAuth();
   const queryClient = useQueryClient();
   const [filterAgeGroup, setFilterAgeGroup] = useState(defaultAgeGroup || "all");
+  const [filterDate, setFilterDate] = useState("all");
   const [buyingPhotoId, setBuyingPhotoId] = useState<string | null>(null);
   const [downloadingPhotoId, setDownloadingPhotoId] = useState<string | null>(null);
   const [deletingPhotoId, setDeletingPhotoId] = useState<string | null>(null);
@@ -53,7 +54,7 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
   });
 
   const { data: photos, isLoading } = useQuery({
-    queryKey: ["tournament-photos", tournamentId, filterAgeGroup],
+    queryKey: ["tournament-photos", tournamentId, filterAgeGroup, filterDate],
     queryFn: async () => {
       let query = supabase
         .from("tournament_photos_public" as any)
@@ -67,9 +68,35 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
 
       const { data, error } = await query;
       if (error) throw error;
+      let rows = data as any[];
+      if (filterDate !== "all") {
+        rows = rows.filter((p: any) => (p.created_at || "").slice(0, 10) === filterDate);
+      }
+      return rows;
+    },
+  });
+
+  // Build distinct list of dates (YYYY-MM-DD) from all photos for this tournament (unfiltered by date)
+  const { data: allDatesPhotos } = useQuery({
+    queryKey: ["tournament-photo-dates", tournamentId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("tournament_photos_public" as any)
+        .select("created_at")
+        .eq("tournament_id", tournamentId);
+      if (error) throw error;
       return data as any[];
     },
   });
+
+  const availableDates = Array.from(
+    new Set((allDatesPhotos || []).map((p: any) => (p.created_at || "").slice(0, 10)).filter(Boolean))
+  ).sort((a, b) => b.localeCompare(a));
+
+  const formatDateLabel = (iso: string) => {
+    const d = new Date(iso + "T12:00:00");
+    return d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
+  };
 
   const { data: purchases } = useQuery({
     queryKey: ["photo-purchases", user?.id],
@@ -245,19 +272,34 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
             </p>
           </div>
         </div>
-        <Select value={filterAgeGroup} onValueChange={setFilterAgeGroup}>
-          <SelectTrigger className="w-[160px]">
-            <SelectValue placeholder="All ages" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Ages</SelectItem>
-            {ageGroups.map((ag) => (
-              <SelectItem key={ag.id} value={ag.age_group}>
-                {ag.age_group}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="flex gap-2 flex-wrap">
+          <Select value={filterDate} onValueChange={setFilterDate}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="All dates" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Dates</SelectItem>
+              {availableDates.map((d) => (
+                <SelectItem key={d} value={d}>
+                  {formatDateLabel(d)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={filterAgeGroup} onValueChange={setFilterAgeGroup}>
+            <SelectTrigger className="w-[160px]">
+              <SelectValue placeholder="All ages" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Ages</SelectItem>
+              {ageGroups.map((ag) => (
+                <SelectItem key={ag.id} value={ag.age_group}>
+                  {ag.age_group}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
