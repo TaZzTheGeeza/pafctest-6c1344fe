@@ -343,6 +343,11 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
                     {photo.age_group}
                   </Badge>
                 )}
+                {photo.featured && (
+                  <Badge className="absolute bottom-2 left-2 text-[10px] bg-primary text-primary-foreground gap-1">
+                    <Star className="h-3 w-3 fill-current" /> Shot of the Day
+                  </Badge>
+                )}
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
                   <span className="text-white text-xs font-medium bg-black/50 px-3 py-1.5 rounded-full">
                     Tap to view
