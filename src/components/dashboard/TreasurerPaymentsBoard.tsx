@@ -75,23 +75,65 @@ interface ChartPoint {
   amount_cents: number;
 }
 
-type Tab = "subscriptions" | "payments";
+type Tab = "subscriptions" | "payments" | "photos";
 
 export function TreasurerPaymentsBoard() {
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<Summary | null>(null);
   const [subscriptions, setSubscriptions] = useState<SubRecord[]>([]);
   const [payments, setPayments] = useState<PaymentRecord[]>([]);
+  const [photoSales, setPhotoSales] = useState<PhotoSaleRecord[]>([]);
   const [chartData, setChartData] = useState<ChartPoint[]>([]);
   const [tab, setTab] = useState<Tab>("subscriptions");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [sortAsc, setSortAsc] = useState(false);
 
+  async function loadPhotoSales() {
+    const { data: claims, error } = await supabase
+      .from("photo_claim_tokens" as any)
+      .select("id, token, email, buyer_name, total_cents, download_count, paid_at, created_at, expires_at, provider, shopify_order_id, photo_ids")
+      .order("created_at", { ascending: false })
+      .limit(500);
+    if (error) { console.error(error); return; }
+    const rows = (claims || []) as any[];
+    // Resolve photo refs in one query
+    const allPhotoIds = Array.from(new Set(rows.flatMap((r) => r.photo_ids || [])));
+    let refMap: Record<string, string> = {};
+    if (allPhotoIds.length > 0) {
+      const { data: photos } = await supabase
+        .from("tournament_photos" as any)
+        .select("id, photo_ref")
+        .in("id", allPhotoIds);
+      for (const p of (photos || []) as any[]) {
+        if (p.photo_ref) refMap[p.id] = p.photo_ref;
+      }
+    }
+    setPhotoSales(rows.map((r) => ({
+      id: r.id,
+      token: r.token,
+      email: r.email,
+      buyer_name: r.buyer_name,
+      total_cents: r.total_cents || 0,
+      download_count: r.download_count || 0,
+      paid_at: r.paid_at,
+      created_at: r.created_at,
+      expires_at: r.expires_at,
+      provider: r.provider || "gocardless",
+      shopify_order_id: r.shopify_order_id,
+      photo_refs: (r.photo_ids || []).map((id: string) => refMap[id]).filter(Boolean),
+      photo_count: (r.photo_ids || []).length,
+    })));
+  }
+
   async function loadData() {
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("stripe-payments-board");
+      const [boardRes] = await Promise.all([
+        supabase.functions.invoke("stripe-payments-board"),
+        loadPhotoSales(),
+      ]);
+      const { data, error } = boardRes;
       if (error) throw error;
       if (data.error) throw new Error(data.error);
       setSummary(data.summary);
