@@ -10,9 +10,10 @@ interface Props {
   claimUrl?: string
   photoCount?: string
   orderName?: string
+  photoRefs?: string
 }
 
-const PhotoClaimLinkEmail = ({ claimUrl, photoCount, orderName }: Props) => (
+const PhotoClaimLinkEmail = ({ claimUrl, photoCount, orderName, photoRefs }: Props) => (
   <Html lang="en" dir="ltr">
     <Head />
     <Preview>Your tournament photos are ready to download</Preview>
@@ -36,9 +37,15 @@ const PhotoClaimLinkEmail = ({ claimUrl, photoCount, orderName }: Props) => (
             Download my photos
           </Button>
         </Section>
+        {photoRefs ? (
+          <Text style={smallText}>
+            <strong>Photo references:</strong> {photoRefs}
+            <br />Keep these handy if you ever need to contact us about your order.
+          </Text>
+        ) : null}
         <Text style={smallText}>
-          This link is unique to your order. Keep it safe — anyone with the link can download the photos.
-          The link is valid for 30 days.
+          This is your <strong>secure magic link</strong> — anyone with the link can download the photos, so keep it private.
+          The link is valid for 30 days and works on any device.
         </Text>
         <Text style={smallText}>
           If the button doesn't work, paste this URL into your browser:<br />
