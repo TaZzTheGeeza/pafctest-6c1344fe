@@ -685,10 +685,53 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
         <TournamentPhotoUpload tournamentId={tournamentId} ageGroups={ageGroups} />
       )}
 
+      {/* Floating basket bar */}
+      {basket.size > 0 && (
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 w-[min(94vw,520px)]">
+          <div className="rounded-full border border-primary/30 bg-background/95 backdrop-blur-md shadow-2xl px-4 py-2.5 flex items-center gap-3">
+            <div className="h-9 w-9 rounded-full bg-primary/15 flex items-center justify-center shrink-0">
+              <ShoppingCart className="h-4 w-4 text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold leading-tight">
+                {basket.size} photo{basket.size > 1 ? "s" : ""} · £{(basket.size * 2).toFixed(2)}
+              </p>
+              <button
+                type="button"
+                className="text-[11px] text-muted-foreground hover:text-foreground underline-offset-2 hover:underline"
+                onClick={() => setBasket(new Set())}
+              >
+                Clear basket
+              </button>
+            </div>
+            <Button
+              size="sm"
+              onClick={handleBuyBasket}
+              disabled={buyingPhotoId === "__basket__"}
+              className="rounded-full font-semibold"
+            >
+              {buyingPhotoId === "__basket__" ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-1" />
+              ) : null}
+              Checkout
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Guest checkout dialog */}
-      <Dialog open={!!checkoutPhotoId} onOpenChange={(open) => !open && setCheckoutPhotoId(null)}>
+      <Dialog
+        open={!!checkoutPhotoId || !!checkoutBasket}
+        onOpenChange={(open) => {
+          if (!open) { setCheckoutPhotoId(null); setCheckoutBasket(null); }
+        }}
+      >
         <DialogContent className="sm:max-w-md">
-          <DialogTitle>Buy this photo · £2</DialogTitle>
+          <DialogTitle>
+            {checkoutBasket
+              ? `Buy ${checkoutBasket.length} photos · £${(checkoutBasket.length * 2).toFixed(2)}`
+              : "Buy this photo · £2"}
+          </DialogTitle>
           <DialogDescription>
             Pay instantly with your bank (Open Banking via GoCardless). No card details, no account needed —
             we'll email a secure download link to the address below.
@@ -708,12 +751,12 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
               />
             </div>
             <div className="flex gap-2 justify-end pt-2">
-              <Button variant="outline" onClick={() => setCheckoutPhotoId(null)}>Cancel</Button>
+              <Button variant="outline" onClick={() => { setCheckoutPhotoId(null); setCheckoutBasket(null); }}>Cancel</Button>
               <Button
                 onClick={submitGuestCheckout}
-                disabled={buyingPhotoId === checkoutPhotoId}
+                disabled={buyingPhotoId === checkoutPhotoId || buyingPhotoId === "__basket__"}
               >
-                {buyingPhotoId === checkoutPhotoId ? (
+                {(buyingPhotoId === checkoutPhotoId || buyingPhotoId === "__basket__") ? (
                   <Loader2 className="h-4 w-4 animate-spin mr-1" />
                 ) : null}
                 Continue to bank
