@@ -352,6 +352,15 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
                   <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <Button
                       size="icon"
+                      variant={photo.featured ? "default" : "secondary"}
+                      className="h-7 w-7"
+                      onClick={(e) => { e.stopPropagation(); handleToggleFeatured(photo); }}
+                      title={photo.featured ? "Remove Shot of the Day" : "Set as Shot of the Day"}
+                    >
+                      <Star className={`h-3 w-3 ${photo.featured ? "fill-current" : ""}`} />
+                    </Button>
+                    <Button
+                      size="icon"
                       variant="secondary"
                       className="h-7 w-7"
                       onClick={(e) => { e.stopPropagation(); openEdit(photo); }}
