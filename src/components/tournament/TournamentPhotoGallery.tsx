@@ -129,38 +129,20 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
   const purchasedIds = new Set(purchases || []);
 
   const handleBuy = async (photoId: string) => {
-    if (!photoProduct) {
-      toast.error("Photo product not available, please try again");
-      return;
-    }
-
-    const photo = photos?.find((p: any) => p.id === photoId);
-
     setBuyingPhotoId(photoId);
     try {
-      const attributes: { key: string; value: string }[] = [
-        { key: "photo_id", value: photoId },
-      ];
-      if (user?.id) attributes.push({ key: "user_id", value: user.id });
-
-      await addItem({
-        product: photoProduct,
-        variantId: PHOTO_VARIANT_ID,
-        variantTitle: "Tournament Action Photo",
-        price: { amount: "2.00", currencyCode: "GBP" },
-        quantity: 1,
-        selectedOptions: [],
-        attributes,
-        customImageUrl: photo?.preview_url,
+      const { data, error } = await supabase.functions.invoke("create-photo-checkout", {
+        body: { photo_id: photoId },
       });
-      toast.success("Photo added to cart!", {
-        description: user
-          ? "After purchase, download your full-resolution photos from My Profile → Purchases."
-          : "After checkout, we'll email you a download link to the address you provide at checkout.",
-        duration: 6000,
-      });
+      if (error || (data as any)?.error) {
+        throw new Error((data as any)?.error || error?.message || "Could not start checkout");
+      }
+      const url = (data as any).url;
+      if (!url) throw new Error("Checkout URL missing");
+      // Open Stripe Checkout in a new tab so user can return to the gallery
+      window.open(url, "_blank", "noopener");
     } catch (err: any) {
-      toast.error(err.message || "Failed to add to cart");
+      toast.error(err.message || "Failed to start checkout");
     } finally {
       setBuyingPhotoId(null);
     }
@@ -487,9 +469,9 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
                     variant="outline"
                     className="w-full text-xs"
                     onClick={() => handleBuy(photo.id)}
-                    disabled={buyingPhotoId === photo.id || isCartLoading}
+                    disabled={buyingPhotoId === photo.id}
                   >
-                    {buyingPhotoId === photo.id || isCartLoading ? (
+                    {buyingPhotoId === photo.id ? (
                       <Loader2 className="h-3 w-3 animate-spin mr-1" />
                     ) : (
                       <ShoppingCart className="h-3 w-3 mr-1" />
