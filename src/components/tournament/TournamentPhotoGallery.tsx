@@ -364,18 +364,6 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
 
   return (
     <div className="space-y-4">
-      {!user && (
-        <div className="flex items-start gap-3 rounded-xl border border-primary/30 bg-primary/5 px-4 py-3">
-          <Mail className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-          <div className="flex-1 min-w-0">
-            <p className="font-semibold text-sm">Pay direct from your bank · No account needed</p>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Instant Bank Pay via GoCardless — no card, no signup. We'll email a secure download link.{' '}
-              <Link to="/photos/claim" className="underline text-foreground">Lost your link?</Link>
-            </p>
-          </div>
-        </div>
-      )}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h3 className="font-display font-bold text-lg flex items-center gap-2">
