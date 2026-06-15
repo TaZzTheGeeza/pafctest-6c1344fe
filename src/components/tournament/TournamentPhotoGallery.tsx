@@ -304,7 +304,7 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
               <ShieldCheck className="h-5 w-5 text-primary" />
               <h3 className="font-semibold text-sm">£2 each — supports the club</h3>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                All proceeds go straight back into PAFC. Downloads appear in <span className="text-foreground font-medium">My Profile → Purchases</span>.
+                All proceeds go straight back into PAFC. We'll email you a <span className="text-foreground font-medium">secure download link</span> as soon as your bank confirms payment.
               </p>
             </div>
           </div>
