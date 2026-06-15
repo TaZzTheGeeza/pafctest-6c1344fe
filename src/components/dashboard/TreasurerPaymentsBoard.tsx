@@ -401,28 +401,41 @@ export function TreasurerPaymentsBoard() {
                 className="w-full bg-background border border-border rounded-lg pl-9 pr-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground"
               />
             </div>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground"
-            >
-              <option value="all">All Statuses</option>
-              {tab === "subscriptions" ? (
-                <>
-                  <option value="active">Active</option>
-                  <option value="cancelled">Cancelled</option>
-                </>
-              ) : (
-                <>
-                  <option value="pending_submission">Pending</option>
-                  <option value="submitted">Submitted</option>
-                  <option value="confirmed">Confirmed</option>
-                  <option value="paid_out">Paid Out</option>
-                  <option value="failed">Failed</option>
-                  <option value="cancelled">Cancelled</option>
-                </>
-              )}
-            </select>
+            {tab !== "photos" && (
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground"
+              >
+                <option value="all">All Statuses</option>
+                {tab === "subscriptions" ? (
+                  <>
+                    <option value="active">Active</option>
+                    <option value="cancelled">Cancelled</option>
+                  </>
+                ) : (
+                  <>
+                    <option value="pending_submission">Pending</option>
+                    <option value="submitted">Submitted</option>
+                    <option value="confirmed">Confirmed</option>
+                    <option value="paid_out">Paid Out</option>
+                    <option value="failed">Failed</option>
+                    <option value="cancelled">Cancelled</option>
+                  </>
+                )}
+              </select>
+            )}
+            {tab === "photos" && (
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground"
+              >
+                <option value="all">All Orders</option>
+                <option value="paid">Paid</option>
+                <option value="pending">Pending payment</option>
+              </select>
+            )}
             <button
               onClick={() => setSortAsc(!sortAsc)}
               className="flex items-center gap-1 px-3 py-2.5 border border-border rounded-lg text-sm text-muted-foreground hover:text-foreground transition-colors"
