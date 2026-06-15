@@ -1,11 +1,12 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Camera, Upload, Loader2, Trash2 } from "lucide-react";
+import { Camera, Upload, Loader2, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -14,13 +15,45 @@ interface TournamentPhotoUploadProps {
   ageGroups: { id: string; age_group: string }[];
 }
 
+// Rough throughput estimate per photo (upload full-res + generate preview + upload preview + insert row).
+// Tuned to feel realistic on typical UK home broadband.
+const SECONDS_PER_PHOTO_ESTIMATE = 4;
+
+function formatDuration(seconds: number): string {
+  if (!isFinite(seconds) || seconds < 0) return "—";
+  seconds = Math.max(1, Math.round(seconds));
+  if (seconds < 60) return `${seconds}s`;
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  if (m < 60) return s ? `${m}m ${s}s` : `${m}m`;
+  const h = Math.floor(m / 60);
+  const rm = m % 60;
+  return rm ? `${h}h ${rm}m` : `${h}h`;
+}
+
 export function TournamentPhotoUpload({ tournamentId, ageGroups }: TournamentPhotoUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [ageGroup, setAgeGroup] = useState("");
   const [caption, setCaption] = useState("");
   const [photoDate, setPhotoDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [selectedCount, setSelectedCount] = useState(0);
+  const [selectedSize, setSelectedSize] = useState(0);
+  const [progress, setProgress] = useState({ done: 0, total: 0, etaSeconds: 0 });
   const fileRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
+
+  const refreshSelected = () => {
+    const files = fileRef.current?.files;
+    if (!files?.length) {
+      setSelectedCount(0);
+      setSelectedSize(0);
+      return;
+    }
+    let size = 0;
+    for (let i = 0; i < files.length; i++) size += files[i].size;
+    setSelectedCount(files.length);
+    setSelectedSize(size);
+  };
 
   const createResizedPreview = (file: File): Promise<Blob> => {
     return new Promise((resolve, reject) => {
@@ -34,7 +67,6 @@ export function TournamentPhotoUpload({ tournamentId, ageGroups }: TournamentPho
         const ctx = canvas.getContext("2d")!;
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-        // Tiled watermark pattern across entire image
         ctx.save();
         ctx.globalAlpha = 0.18;
         ctx.fillStyle = "#ffffff";
@@ -60,7 +92,6 @@ export function TournamentPhotoUpload({ tournamentId, ageGroups }: TournamentPho
         }
         ctx.restore();
 
-        // Large central watermark
         ctx.save();
         ctx.globalAlpha = 0.15;
         ctx.fillStyle = "#ffffff";
@@ -91,6 +122,9 @@ export function TournamentPhotoUpload({ tournamentId, ageGroups }: TournamentPho
     }
 
     setUploading(true);
+    const total = files.length;
+    setProgress({ done: 0, total, etaSeconds: total * SECONDS_PER_PHOTO_ESTIMATE });
+    const startedAt = Date.now();
     let successCount = 0;
 
     try {
@@ -99,7 +133,6 @@ export function TournamentPhotoUpload({ tournamentId, ageGroups }: TournamentPho
         const ext = file.name.split(".").pop() || "jpg";
         const storagePath = `${tournamentId}/${Date.now()}-${i}.${ext}`;
 
-        // Upload full-res to private bucket
         const { error: uploadErr } = await supabase.storage
           .from("tournament-photos")
           .upload(storagePath, file);
@@ -108,7 +141,6 @@ export function TournamentPhotoUpload({ tournamentId, ageGroups }: TournamentPho
           continue;
         }
 
-        // Create resized preview and upload to public gallery-photos bucket
         const previewBlob = await createResizedPreview(file);
         const previewPath = `tournament-previews/${tournamentId}/${Date.now()}-${i}.jpg`;
         const { error: previewErr } = await supabase.storage
@@ -124,7 +156,6 @@ export function TournamentPhotoUpload({ tournamentId, ageGroups }: TournamentPho
           .from("gallery-photos")
           .getPublicUrl(previewPath);
 
-        // Insert photo record
         const { error: insertErr } = await supabase
           .from("tournament_photos" as any)
           .insert({
@@ -138,6 +169,13 @@ export function TournamentPhotoUpload({ tournamentId, ageGroups }: TournamentPho
           });
 
         if (!insertErr) successCount++;
+
+        // Update progress + ETA using observed per-photo time
+        const done = i + 1;
+        const elapsedSec = (Date.now() - startedAt) / 1000;
+        const avgPerPhoto = elapsedSec / done;
+        const remaining = total - done;
+        setProgress({ done, total, etaSeconds: Math.round(avgPerPhoto * remaining) });
       }
 
       if (successCount > 0) {
@@ -145,6 +183,8 @@ export function TournamentPhotoUpload({ tournamentId, ageGroups }: TournamentPho
         queryClient.invalidateQueries({ queryKey: ["tournament-photos"] });
         setCaption("");
         if (fileRef.current) fileRef.current.value = "";
+        setSelectedCount(0);
+        setSelectedSize(0);
       } else {
         toast.error("No photos were uploaded successfully");
       }
@@ -152,8 +192,12 @@ export function TournamentPhotoUpload({ tournamentId, ageGroups }: TournamentPho
       toast.error(err.message || "Upload failed");
     } finally {
       setUploading(false);
+      setProgress({ done: 0, total: 0, etaSeconds: 0 });
     }
   };
+
+  const estimatedTotal = selectedCount * SECONDS_PER_PHOTO_ESTIMATE;
+  const percent = progress.total ? Math.round((progress.done / progress.total) * 100) : 0;
 
   return (
     <Card>
@@ -211,17 +255,47 @@ export function TournamentPhotoUpload({ tournamentId, ageGroups }: TournamentPho
             accept="image/*"
             multiple
             className="cursor-pointer"
+            onChange={refreshSelected}
           />
           <p className="text-xs text-muted-foreground mt-1">
             Select multiple photos. Watermarked previews are generated automatically.
           </p>
+
+          {selectedCount > 0 && !uploading && (
+            <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+              <Clock className="h-3.5 w-3.5 text-primary" />
+              <span>
+                {selectedCount} photo{selectedCount === 1 ? "" : "s"} ·{" "}
+                {(selectedSize / (1024 * 1024)).toFixed(1)} MB · est. {formatDuration(estimatedTotal)} to upload
+              </span>
+            </div>
+          )}
         </div>
+
+        {uploading && progress.total > 0 && (
+          <div className="space-y-2 rounded-md border border-border/50 bg-muted/30 p-3">
+            <div className="flex items-center justify-between text-xs">
+              <span className="font-medium">
+                Uploading {progress.done} / {progress.total}
+              </span>
+              <span className="flex items-center gap-1 text-muted-foreground">
+                <Clock className="h-3.5 w-3.5" />
+                {progress.done === 0
+                  ? `est. ${formatDuration(progress.total * SECONDS_PER_PHOTO_ESTIMATE)}`
+                  : progress.done < progress.total
+                  ? `~${formatDuration(progress.etaSeconds)} remaining`
+                  : "Finishing…"}
+              </span>
+            </div>
+            <Progress value={percent} />
+          </div>
+        )}
 
         <Button onClick={handleUpload} disabled={uploading} className="w-full">
           {uploading ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin mr-2" />
-              Uploading...
+              Uploading… {percent}%
             </>
           ) : (
             <>
