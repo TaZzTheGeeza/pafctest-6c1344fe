@@ -272,19 +272,34 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
             </p>
           </div>
         </div>
-        <Select value={filterAgeGroup} onValueChange={setFilterAgeGroup}>
-          <SelectTrigger className="w-[160px]">
-            <SelectValue placeholder="All ages" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Ages</SelectItem>
-            {ageGroups.map((ag) => (
-              <SelectItem key={ag.id} value={ag.age_group}>
-                {ag.age_group}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="flex gap-2 flex-wrap">
+          <Select value={filterDate} onValueChange={setFilterDate}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="All dates" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Dates</SelectItem>
+              {availableDates.map((d) => (
+                <SelectItem key={d} value={d}>
+                  {formatDateLabel(d)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={filterAgeGroup} onValueChange={setFilterAgeGroup}>
+            <SelectTrigger className="w-[160px]">
+              <SelectValue placeholder="All ages" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Ages</SelectItem>
+              {ageGroups.map((ag) => (
+                <SelectItem key={ag.id} value={ag.age_group}>
+                  {ag.age_group}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
