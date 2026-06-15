@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Camera, Download, Loader2, ShoppingCart, X, Trash2, Pencil, Info, Star, Eye, ShieldCheck, Sparkles, LogIn, Lock } from "lucide-react";
+import { Camera, Download, Loader2, ShoppingCart, X, Trash2, Pencil, Info, Star, Eye, ShieldCheck, Sparkles, LogIn, Lock, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { TournamentPhotoUpload } from "./TournamentPhotoUpload";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
@@ -340,19 +340,14 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
     <div className="space-y-4">
       {!user && (
         <div className="flex items-start gap-3 rounded-xl border border-primary/30 bg-primary/5 px-4 py-3">
-          <Lock className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+          <Mail className="h-5 w-5 text-primary shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
-            <p className="font-semibold text-sm">Sign in to buy photos</p>
+            <p className="font-semibold text-sm">No account needed</p>
             <p className="text-xs text-muted-foreground mt-0.5">
-              A free PAFC account is required so your high-resolution downloads can be safely stored in <span className="text-foreground font-medium">My Profile → Purchases</span>.
+              Buy as a guest — after checkout we'll email a secure download link to the address you provide.{' '}
+              <Link to="/photos/claim" className="underline text-foreground">Lost your link?</Link>
             </p>
           </div>
-          <Button asChild size="sm" className="shrink-0">
-            <Link to={authHref}>
-              <LogIn className="h-4 w-4 mr-1.5" />
-              Sign in
-            </Link>
-          </Button>
         </div>
       )}
       <div className="flex items-center justify-between flex-wrap gap-3">
