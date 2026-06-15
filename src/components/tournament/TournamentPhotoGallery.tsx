@@ -41,6 +41,8 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
   const [editAgeGroup, setEditAgeGroup] = useState("");
   const [lightboxPhoto, setLightboxPhoto] = useState<any | null>(null);
   const [checkoutPhotoId, setCheckoutPhotoId] = useState<string | null>(null);
+  const [checkoutBasket, setCheckoutBasket] = useState<string[] | null>(null);
+  const [basket, setBasket] = useState<Set<string>>(new Set());
   const [guestName, setGuestName] = useState("");
   const [guestEmail, setGuestEmail] = useState("");
   const [hasEntered, setHasEntered] = useState<boolean>(() => {
