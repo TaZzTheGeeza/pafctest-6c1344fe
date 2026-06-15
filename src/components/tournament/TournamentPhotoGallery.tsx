@@ -29,6 +29,7 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
   const { user, isAdmin, isPhotographer } = useAuth();
   const queryClient = useQueryClient();
   const [filterAgeGroup, setFilterAgeGroup] = useState(defaultAgeGroup || "all");
+  const [filterDate, setFilterDate] = useState("all");
   const [buyingPhotoId, setBuyingPhotoId] = useState<string | null>(null);
   const [downloadingPhotoId, setDownloadingPhotoId] = useState<string | null>(null);
   const [deletingPhotoId, setDeletingPhotoId] = useState<string | null>(null);
