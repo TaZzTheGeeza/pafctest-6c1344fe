@@ -105,7 +105,7 @@ export default function PhotoClaimPage() {
     }
   };
 
-  if (!token) {
+  if (!token && !sessionId) {
     return (
       <div className="min-h-screen pt-28 px-4 max-w-xl mx-auto">
         <Card>
@@ -143,9 +143,10 @@ export default function PhotoClaimPage() {
         <p className="text-sm text-muted-foreground mb-6">Order {data.order_name}</p>
       )}
 
-      {loading && (
+      {(loading || waiting) && (
         <div className="flex items-center gap-2 text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" /> Looking up your photos…
+          <Loader2 className="h-4 w-4 animate-spin" />
+          {waiting ? "Payment received — preparing your photos…" : "Looking up your photos…"}
         </div>
       )}
 
