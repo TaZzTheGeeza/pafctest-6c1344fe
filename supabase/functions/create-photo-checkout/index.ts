@@ -113,9 +113,8 @@ serve(async (req) => {
           scheme: "faster_payments",
           metadata: {
             kind: "tournament_photos",
-            photo_ids: finalIds.join(","),
             claim_token: claimToken,
-            user_id: userId || "",
+            photo_count: String(finalIds.length),
           },
         },
       },
