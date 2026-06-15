@@ -375,7 +375,7 @@ export function TreasurerPaymentsBoard() {
         <div className="p-4 border-b border-border space-y-3">
           <div className="flex items-center gap-3 flex-wrap">
             <div className="flex gap-1">
-              {(["subscriptions", "payments"] as Tab[]).map((t) => (
+              {(["subscriptions", "payments", "photos"] as Tab[]).map((t) => (
                 <button
                   key={t}
                   onClick={() => { setTab(t); setStatusFilter("all"); }}
@@ -383,7 +383,7 @@ export function TreasurerPaymentsBoard() {
                     tab === t ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  {t === "subscriptions" ? "Subscriptions" : "Payment History"}
+                  {t === "subscriptions" ? "Subscriptions" : t === "payments" ? "Payment History" : "Photo Sales"}
                 </button>
               ))}
             </div>
