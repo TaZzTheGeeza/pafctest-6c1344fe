@@ -391,19 +391,6 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
               ))}
             </SelectContent>
           </Select>
-          <Select value={filterAgeGroup} onValueChange={setFilterAgeGroup}>
-            <SelectTrigger className="w-[160px]">
-              <SelectValue placeholder="All ages" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Ages</SelectItem>
-              {ageGroups.map((ag) => (
-                <SelectItem key={ag.id} value={ag.age_group}>
-                  {ag.age_group}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
         </div>
       </div>
 
