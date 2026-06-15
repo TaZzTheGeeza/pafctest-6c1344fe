@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Camera, Download, Loader2, ShoppingCart, X, Trash2, Pencil, Info, Star, Eye, ShieldCheck, Sparkles, LogIn, Lock } from "lucide-react";
+import { Camera, Download, Loader2, ShoppingCart, X, Trash2, Pencil, Info, Star, Eye, ShieldCheck, Sparkles, LogIn, Lock, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { TournamentPhotoUpload } from "./TournamentPhotoUpload";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
@@ -129,10 +129,6 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
   const purchasedIds = new Set(purchases || []);
 
   const handleBuy = async (photoId: string) => {
-    if (!user) {
-      toast.error("Please log in to purchase photos");
-      return;
-    }
     if (!photoProduct) {
       toast.error("Photo product not available, please try again");
       return;
@@ -142,6 +138,11 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
 
     setBuyingPhotoId(photoId);
     try {
+      const attributes: { key: string; value: string }[] = [
+        { key: "photo_id", value: photoId },
+      ];
+      if (user?.id) attributes.push({ key: "user_id", value: user.id });
+
       await addItem({
         product: photoProduct,
         variantId: PHOTO_VARIANT_ID,
@@ -149,14 +150,13 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
         price: { amount: "2.00", currencyCode: "GBP" },
         quantity: 1,
         selectedOptions: [],
-        attributes: [
-          { key: "photo_id", value: photoId },
-          { key: "user_id", value: user.id },
-        ],
+        attributes,
         customImageUrl: photo?.preview_url,
       });
       toast.success("Photo added to cart!", {
-        description: "After purchase, download your full-resolution photos from My Profile → Purchases.",
+        description: user
+          ? "After purchase, download your full-resolution photos from My Profile → Purchases."
+          : "After checkout, we'll email you a download link to the address you provide at checkout.",
         duration: 6000,
       });
     } catch (err: any) {
@@ -340,19 +340,14 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
     <div className="space-y-4">
       {!user && (
         <div className="flex items-start gap-3 rounded-xl border border-primary/30 bg-primary/5 px-4 py-3">
-          <Lock className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+          <Mail className="h-5 w-5 text-primary shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
-            <p className="font-semibold text-sm">Sign in to buy photos</p>
+            <p className="font-semibold text-sm">No account needed</p>
             <p className="text-xs text-muted-foreground mt-0.5">
-              A free PAFC account is required so your high-resolution downloads can be safely stored in <span className="text-foreground font-medium">My Profile → Purchases</span>.
+              Buy as a guest — after checkout we'll email a secure download link to the address you provide.{' '}
+              <Link to="/photos/claim" className="underline text-foreground">Lost your link?</Link>
             </p>
           </div>
-          <Button asChild size="sm" className="shrink-0">
-            <Link to={authHref}>
-              <LogIn className="h-4 w-4 mr-1.5" />
-              Sign in
-            </Link>
-          </Button>
         </div>
       )}
       <div className="flex items-center justify-between flex-wrap gap-3">
@@ -486,13 +481,6 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
                     )}
                     Download
                   </Button>
-                ) : !user ? (
-                  <Button asChild size="sm" variant="outline" className="w-full text-xs">
-                    <Link to={authHref}>
-                      <LogIn className="h-3 w-3 mr-1" />
-                      Sign in to Buy · £2
-                    </Link>
-                  </Button>
                 ) : (
                   <Button
                     size="sm"
@@ -582,13 +570,6 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
                       <Download className="h-3 w-3 mr-1" />
                     )}
                     Download Hi-Res
-                  </Button>
-                ) : !user ? (
-                  <Button asChild size="sm">
-                    <Link to={authHref}>
-                      <LogIn className="h-3 w-3 mr-1" />
-                      Sign in to Buy · £2
-                    </Link>
                   </Button>
                 ) : (
                   <Button

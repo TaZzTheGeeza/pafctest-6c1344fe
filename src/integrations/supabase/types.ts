@@ -1228,6 +1228,39 @@ export type Database = {
         }
         Relationships: []
       }
+      photo_claim_tokens: {
+        Row: {
+          created_at: string
+          download_count: number
+          email: string
+          expires_at: string
+          id: string
+          photo_ids: string[]
+          shopify_order_id: string | null
+          token: string
+        }
+        Insert: {
+          created_at?: string
+          download_count?: number
+          email: string
+          expires_at?: string
+          id?: string
+          photo_ids?: string[]
+          shopify_order_id?: string | null
+          token: string
+        }
+        Update: {
+          created_at?: string
+          download_count?: number
+          email?: string
+          expires_at?: string
+          id?: string
+          photo_ids?: string[]
+          shopify_order_id?: string | null
+          token?: string
+        }
+        Relationships: []
+      }
       player_documents: {
         Row: {
           created_at: string

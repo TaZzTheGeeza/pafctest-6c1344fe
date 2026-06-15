@@ -113,22 +113,64 @@ Deno.serve(async (req) => {
 
     // Handle tournament photo purchases from line item properties
     if (body.financial_status === "paid") {
+      const guestPhotoIds: string[] = [];
       for (const li of body.line_items || []) {
         if (li.sku === "TOURNAMENT-PHOTO" && li.properties) {
           const photoId = li.properties.find((p: any) => p.name === "photo_id")?.value;
           const userId = li.properties.find((p: any) => p.name === "user_id")?.value;
-          if (photoId && userId) {
+          if (!photoId) continue;
+          if (userId) {
+            // Logged-in buyer: link purchase to their account
             await supabase
               .from("tournament_photo_purchases")
               .upsert(
-                {
-                  photo_id: photoId,
-                  user_id: userId,
-                  stripe_session_id: `shopify-${body.id}`,
-                },
+                { photo_id: photoId, user_id: userId, stripe_session_id: `shopify-${body.id}` },
                 { onConflict: "user_id,photo_id" }
               );
+          } else {
+            guestPhotoIds.push(photoId);
           }
+        }
+      }
+
+      // Guest checkout: issue a magic-link claim token and email it
+      const buyerEmail: string | null = body.email || body.customer?.email || null;
+      if (guestPhotoIds.length > 0 && buyerEmail) {
+        const tokenBytes = new Uint8Array(32);
+        crypto.getRandomValues(tokenBytes);
+        const token = Array.from(tokenBytes).map((b) => b.toString(16).padStart(2, "0")).join("");
+        const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+
+        const { data: claim } = await supabase
+          .from("photo_claim_tokens")
+          .insert({
+            token,
+            email: buyerEmail,
+            shopify_order_id: orderName,
+            photo_ids: guestPhotoIds,
+            expires_at: expiresAt,
+          })
+          .select("id")
+          .single();
+
+        if (claim) {
+          const origin =
+            req.headers.get("origin") ||
+            Deno.env.get("PUBLIC_SITE_URL") ||
+            "https://www.pa-fc.uk";
+          const claimUrl = `${origin.replace(/\/$/, "")}/photos/claim?token=${token}`;
+          await supabase.functions.invoke("send-transactional-email", {
+            body: {
+              templateName: "photo-claim-link",
+              recipientEmail: buyerEmail,
+              idempotencyKey: `photo-claim-${body.id}`,
+              templateData: {
+                claimUrl,
+                photoCount: String(guestPhotoIds.length),
+                orderName,
+              },
+            },
+          });
         }
       }
     }

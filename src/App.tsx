@@ -61,6 +61,7 @@ import PresentationPage from "./pages/PresentationPage.tsx";
 import PresentationAdminPage from "./pages/PresentationAdminPage.tsx";
 import PlayerRegistrationAdminPage from "./pages/PlayerRegistrationAdminPage.tsx";
 import PresentationAwardsAdminPage from "./pages/PresentationAwardsAdminPage.tsx";
+import PhotoClaimPage from "./pages/PhotoClaimPage.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -123,6 +124,7 @@ function AppContent() {
         <Route path="/tournament" element={<TournamentPage />} />
         <Route path="/tournament-admin" element={<TournamentAdminPage />} />
         <Route path="/tournament/team/:teamId" element={<TeamProfilePage />} />
+        <Route path="/photos/claim" element={<PhotoClaimPage />} />
         
         <Route path="/player-of-the-match" element={<POTMPage />} />
         <Route path="/calendar" element={<Navigate to="/events" replace />} />
