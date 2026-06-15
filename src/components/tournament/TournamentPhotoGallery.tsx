@@ -361,12 +361,10 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
             High-resolution action shots — £2 each. All proceeds go back into the club.
           </p>
           <div className="flex items-start gap-2 mt-2 bg-primary/10 border border-primary/20 rounded-lg px-3 py-2">
-            <Info className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+            <Mail className="h-4 w-4 text-primary shrink-0 mt-0.5" />
             <p className="text-xs text-muted-foreground">
-              After purchasing, collect your full-resolution downloads from{" "}
-              <a href="/my-profile" className="text-primary font-semibold hover:underline">
-                My Profile → Purchases
-              </a>.
+              After your bank confirms payment, we'll <span className="text-foreground font-semibold">email a secure magic link</span> to your inbox — open it on any device to download the full-resolution files. The link is also shown on screen right after payment.{" "}
+              <Link to="/photos/claim" className="text-primary font-semibold hover:underline">Lost your link?</Link>
             </p>
           </div>
         </div>
