@@ -129,10 +129,6 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
   const purchasedIds = new Set(purchases || []);
 
   const handleBuy = async (photoId: string) => {
-    if (!user) {
-      toast.error("Please log in to purchase photos");
-      return;
-    }
     if (!photoProduct) {
       toast.error("Photo product not available, please try again");
       return;
@@ -142,6 +138,11 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
 
     setBuyingPhotoId(photoId);
     try {
+      const attributes: { key: string; value: string }[] = [
+        { key: "photo_id", value: photoId },
+      ];
+      if (user?.id) attributes.push({ key: "user_id", value: user.id });
+
       await addItem({
         product: photoProduct,
         variantId: PHOTO_VARIANT_ID,
@@ -149,14 +150,13 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
         price: { amount: "2.00", currencyCode: "GBP" },
         quantity: 1,
         selectedOptions: [],
-        attributes: [
-          { key: "photo_id", value: photoId },
-          { key: "user_id", value: user.id },
-        ],
+        attributes,
         customImageUrl: photo?.preview_url,
       });
       toast.success("Photo added to cart!", {
-        description: "After purchase, download your full-resolution photos from My Profile → Purchases.",
+        description: user
+          ? "After purchase, download your full-resolution photos from My Profile → Purchases."
+          : "After checkout, we'll email you a download link to the address you provide at checkout.",
         duration: 6000,
       });
     } catch (err: any) {
@@ -486,13 +486,6 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
                     )}
                     Download
                   </Button>
-                ) : !user ? (
-                  <Button asChild size="sm" variant="outline" className="w-full text-xs">
-                    <Link to={authHref}>
-                      <LogIn className="h-3 w-3 mr-1" />
-                      Sign in to Buy · £2
-                    </Link>
-                  </Button>
                 ) : (
                   <Button
                     size="sm"
@@ -582,13 +575,6 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
                       <Download className="h-3 w-3 mr-1" />
                     )}
                     Download Hi-Res
-                  </Button>
-                ) : !user ? (
-                  <Button asChild size="sm">
-                    <Link to={authHref}>
-                      <LogIn className="h-3 w-3 mr-1" />
-                      Sign in to Buy · £2
-                    </Link>
                   </Button>
                 ) : (
                   <Button
