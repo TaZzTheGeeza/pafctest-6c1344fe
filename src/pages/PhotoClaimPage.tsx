@@ -12,6 +12,7 @@ interface ClaimPhoto {
   caption: string | null;
   age_group: string | null;
   preview_url: string;
+  photo_ref?: string | null;
 }
 
 export default function PhotoClaimPage() {
