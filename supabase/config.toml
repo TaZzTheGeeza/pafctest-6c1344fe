@@ -13,3 +13,11 @@ project_id = "scfiodwfvpjqgfmekqwg"
     verify_jwt = true
   [functions.send-transactional-email]
     verify_jwt = false
+  [functions.stripe-photo-webhook]
+    verify_jwt = false
+  [functions.claim-photos]
+    verify_jwt = false
+  [functions.resend-photo-claim]
+    verify_jwt = false
+  [functions.create-photo-checkout]
+    verify_jwt = false
