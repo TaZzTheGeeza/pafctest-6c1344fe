@@ -9,79 +9,95 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   const supabaseClient = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
     Deno.env.get("SUPABASE_ANON_KEY") ?? ""
   );
+  const adminClient = createClient(
+    Deno.env.get("SUPABASE_URL") ?? "",
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+  );
 
   try {
-    const authHeader = req.headers.get("Authorization")!;
-    const token = authHeader.replace("Bearer ", "");
-    const { data: { user } } = await supabaseClient.auth.getUser(token);
-    if (!user?.email) throw new Error("You must be logged in to purchase photos");
+    const { photo_id, photo_ids } = await req.json();
+    const ids: string[] = photo_ids?.length ? photo_ids : (photo_id ? [photo_id] : []);
+    if (ids.length === 0) throw new Error("photo_id or photo_ids is required");
+    if (ids.length > 50) throw new Error("Too many photos in a single checkout");
 
-    const { photo_id } = await req.json();
-    if (!photo_id) throw new Error("photo_id is required");
+    // Optional auth — guest checkout supported
+    let userId: string | null = null;
+    let userEmail: string | null = null;
+    const authHeader = req.headers.get("Authorization");
+    if (authHeader) {
+      const token = authHeader.replace("Bearer ", "");
+      const { data } = await supabaseClient.auth.getUser(token);
+      if (data?.user) {
+        userId = data.user.id;
+        userEmail = data.user.email ?? null;
+      }
+    }
 
-    // Fetch photo details
-    const { data: photo, error: photoErr } = await supabaseClient
+    // Fetch photos to confirm they exist
+    const { data: photos, error: photosErr } = await adminClient
       .from("tournament_photos")
-      .select("*")
-      .eq("id", photo_id)
-      .single();
-    if (photoErr || !photo) throw new Error("Photo not found");
-
-    // Check if already purchased
-    const adminClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-    );
-    const { data: existing } = await adminClient
-      .from("tournament_photo_purchases")
       .select("id")
-      .eq("user_id", user.id)
-      .eq("photo_id", photo_id)
-      .maybeSingle();
-    if (existing) throw new Error("You have already purchased this photo");
+      .in("id", ids);
+    if (photosErr || !photos || photos.length !== ids.length) {
+      throw new Error("One or more photos not found");
+    }
+
+    // If logged in, exclude photos already purchased
+    if (userId) {
+      const { data: existing } = await adminClient
+        .from("tournament_photo_purchases")
+        .select("photo_id")
+        .eq("user_id", userId)
+        .in("photo_id", ids);
+      const purchased = new Set((existing || []).map((p: any) => p.photo_id));
+      const remaining = ids.filter((id) => !purchased.has(id));
+      if (remaining.length === 0) throw new Error("You already own these photos");
+      ids.length = 0;
+      ids.push(...remaining);
+    }
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
     });
 
-    // Find or create Stripe customer
-    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
-    let customerId: string | undefined;
-    if (customers.data.length > 0) {
-      customerId = customers.data[0].id;
-    }
+    const origin = req.headers.get("origin") || "https://www.pa-fc.uk";
 
     const session = await stripe.checkout.sessions.create({
-      customer: customerId,
-      customer_email: customerId ? undefined : user.email,
+      customer_email: userEmail || undefined,
       line_items: [
         {
-          price: "price_1THiX3CLdtMESt0qE4eB3R7D",
-          quantity: 1,
+          price: "price_1THiX3CLdtMESt0qE4eB3R7D", // £2.00 Tournament Photo
+          quantity: ids.length,
         },
       ],
       mode: "payment",
       metadata: {
-        photo_id,
-        user_id: user.id,
+        kind: "tournament_photos",
+        photo_ids: ids.join(","),
+        user_id: userId || "",
       },
-      success_url: `${req.headers.get("origin")}/tournament?photo_purchased=${photo_id}`,
-      cancel_url: `${req.headers.get("origin")}/tournament?tab=photos`,
+      payment_intent_data: {
+        metadata: {
+          kind: "tournament_photos",
+          photo_ids: ids.join(","),
+          user_id: userId || "",
+        },
+      },
+      success_url: `${origin}/photos/claim?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/tournament?tab=photos`,
     });
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
-  } catch (error) {
+  } catch (error: any) {
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 400,
