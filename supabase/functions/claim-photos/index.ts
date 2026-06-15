@@ -45,6 +45,7 @@ Deno.serve(async (req) => {
     }
 
     // If not yet marked paid, check GoCardless status
+    let justPaid = false;
     if (!claim.paid_at && claim.provider === "gocardless" && claim.shopify_order_id) {
       const gcToken = Deno.env.get("GOCARDLESS_ACCESS_TOKEN");
       if (!gcToken) throw new Error("Payment provider not configured");
@@ -54,22 +55,7 @@ Deno.serve(async (req) => {
         const nowIso = new Date().toISOString();
         await admin.from("photo_claim_tokens").update({ paid_at: nowIso }).eq("id", claim.id);
         claim.paid_at = nowIso;
-
-        // Send confirmation email (best-effort, idempotent by token)
-        const origin = req.headers.get("origin") || "https://www.pa-fc.uk";
-        const claimUrl = `${origin}/photos/claim?token=${claim.token}`;
-        admin.functions.invoke("send-transactional-email", {
-          body: {
-            templateName: "photo-claim-link",
-            recipientEmail: claim.email,
-            idempotencyKey: `photo-paid-${claim.token}`,
-            templateData: {
-              claimUrl,
-              photoCount: String((claim.photo_ids || []).length),
-              orderName: claim.shopify_order_id || "",
-            },
-          },
-        }).catch((e) => console.error("email send failed:", e));
+        justPaid = true;
       } else if (status === "cancelled") {
         return new Response(JSON.stringify({ error: "Payment was cancelled" }), {
           status: 400,
@@ -94,8 +80,28 @@ Deno.serve(async (req) => {
 
     const { data: photos } = await admin
       .from("tournament_photos")
-      .select("id, caption, age_group, preview_url, storage_path")
+      .select("id, caption, age_group, preview_url, storage_path, photo_ref")
       .in("id", photoIds);
+
+    // Send confirmation email when payment was just confirmed (best-effort, idempotent)
+    if (justPaid) {
+      const origin = req.headers.get("origin") || "https://www.pa-fc.uk";
+      const claimUrl = `${origin}/photos/claim?token=${claim.token}`;
+      const refs = (photos || []).map((p: any) => p.photo_ref).filter(Boolean).join(", ");
+      admin.functions.invoke("send-transactional-email", {
+        body: {
+          templateName: "photo-claim-link",
+          recipientEmail: claim.email,
+          idempotencyKey: `photo-paid-${claim.token}`,
+          templateData: {
+            claimUrl,
+            photoCount: String(photoIds.length),
+            orderName: claim.shopify_order_id || "",
+            photoRefs: refs,
+          },
+        },
+      }).catch((e) => console.error("email send failed:", e));
+    }
 
     if (photo_id) {
       if (!photoIds.includes(photo_id)) throw new Error("Photo not in this order");
@@ -125,6 +131,7 @@ Deno.serve(async (req) => {
           caption: p.caption,
           age_group: p.age_group,
           preview_url: p.preview_url,
+          photo_ref: p.photo_ref,
         })),
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
