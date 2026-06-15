@@ -29,6 +29,8 @@ const PHOTO_VARIANT_ID = "gid://shopify/ProductVariant/53198621409623";
 export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGroup }: TournamentPhotoGalleryProps) {
   const { user, isAdmin, isPhotographer } = useAuth();
   const queryClient = useQueryClient();
+  const location = useLocation();
+  const authHref = `/auth?redirect=${encodeURIComponent(location.pathname + location.search)}`;
   const [filterAgeGroup, setFilterAgeGroup] = useState(defaultAgeGroup || "all");
   const [filterDate, setFilterDate] = useState("all");
   const [buyingPhotoId, setBuyingPhotoId] = useState<string | null>(null);
