@@ -557,9 +557,9 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
                   <Button
                     size="sm"
                     onClick={() => handleBuy(lightboxPhoto.id)}
-                    disabled={buyingPhotoId === lightboxPhoto.id || isCartLoading}
+                    disabled={buyingPhotoId === lightboxPhoto.id}
                   >
-                    {buyingPhotoId === lightboxPhoto.id || isCartLoading ? (
+                    {buyingPhotoId === lightboxPhoto.id ? (
                       <Loader2 className="h-3 w-3 animate-spin mr-1" />
                     ) : (
                       <ShoppingCart className="h-3 w-3 mr-1" />
