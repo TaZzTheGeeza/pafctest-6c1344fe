@@ -6,6 +6,21 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+const GC_API = "https://api.gocardless.com";
+
+async function getBillingRequestStatus(brId: string, token: string): Promise<string | null> {
+  try {
+    const res = await fetch(`${GC_API}/billing_requests/${brId}`, {
+      headers: { Authorization: `Bearer ${token}`, "GoCardless-Version": "2015-07-06" },
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data?.billing_requests?.status ?? null;
+  } catch {
+    return null;
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -15,30 +30,73 @@ Deno.serve(async (req) => {
   );
 
   try {
-    const { token, photo_id, session_id } = await req.json();
-    if (!token && !session_id) throw new Error("token or session_id is required");
+    const { token, photo_id } = await req.json();
+    if (!token) throw new Error("token is required");
 
-    let query = admin.from("photo_claim_tokens").select("*");
-    if (token) query = query.eq("token", token);
-    else query = query.eq("shopify_order_id", session_id).order("created_at", { ascending: false }).limit(1);
-
-    const { data: claim, error } = await query.maybeSingle();
+    const { data: claim, error } = await admin
+      .from("photo_claim_tokens")
+      .select("*")
+      .eq("token", token)
+      .maybeSingle();
 
     if (error || !claim) throw new Error("Invalid or expired link");
     if (new Date(claim.expires_at).getTime() < Date.now()) {
       throw new Error("This download link has expired");
     }
 
+    // If not yet marked paid, check GoCardless status
+    if (!claim.paid_at && claim.provider === "gocardless" && claim.shopify_order_id) {
+      const gcToken = Deno.env.get("GOCARDLESS_ACCESS_TOKEN");
+      if (!gcToken) throw new Error("Payment provider not configured");
+      const status = await getBillingRequestStatus(claim.shopify_order_id, gcToken);
+
+      if (status === "fulfilled" || status === "fulfilling" || status === "ready_to_fulfil") {
+        const nowIso = new Date().toISOString();
+        await admin.from("photo_claim_tokens").update({ paid_at: nowIso }).eq("id", claim.id);
+        claim.paid_at = nowIso;
+
+        // Send confirmation email (best-effort, idempotent by token)
+        const origin = req.headers.get("origin") || "https://www.pa-fc.uk";
+        const claimUrl = `${origin}/photos/claim?token=${claim.token}`;
+        admin.functions.invoke("send-transactional-email", {
+          body: {
+            templateName: "photo-claim-link",
+            recipientEmail: claim.email,
+            idempotencyKey: `photo-paid-${claim.token}`,
+            templateData: {
+              claimUrl,
+              photoCount: String((claim.photo_ids || []).length),
+              orderName: claim.shopify_order_id || "",
+            },
+          },
+        }).catch((e) => console.error("email send failed:", e));
+      } else if (status === "cancelled") {
+        return new Response(JSON.stringify({ error: "Payment was cancelled" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      } else {
+        // pending / unknown — let client poll
+        return new Response(JSON.stringify({ pending: true, status: status || "pending" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
+    if (!claim.paid_at) {
+      return new Response(JSON.stringify({ pending: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const photoIds: string[] = claim.photo_ids || [];
     if (photoIds.length === 0) throw new Error("No photos found for this link");
 
-    // Fetch photo metadata
     const { data: photos } = await admin
       .from("tournament_photos")
       .select("id, caption, age_group, preview_url, storage_path")
       .in("id", photoIds);
 
-    // If photo_id supplied, return a single signed URL (download action)
     if (photo_id) {
       if (!photoIds.includes(photo_id)) throw new Error("Photo not in this order");
       const p = (photos || []).find((x: any) => x.id === photo_id);
@@ -56,7 +114,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Otherwise return the list with preview URLs (include token so client can switch to it)
     return new Response(
       JSON.stringify({
         token: claim.token,
