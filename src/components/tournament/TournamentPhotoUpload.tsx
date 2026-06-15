@@ -18,6 +18,7 @@ export function TournamentPhotoUpload({ tournamentId, ageGroups }: TournamentPho
   const [uploading, setUploading] = useState(false);
   const [ageGroup, setAgeGroup] = useState("");
   const [caption, setCaption] = useState("");
+  const [photoDate, setPhotoDate] = useState(() => new Date().toISOString().slice(0, 10));
   const fileRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
 
