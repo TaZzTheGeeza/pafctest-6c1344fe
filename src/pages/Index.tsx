@@ -3,6 +3,7 @@ import { HeroSection } from "@/components/HeroSection";
 import { FeaturedSections } from "@/components/FeaturedSections";
 import { AboutSection } from "@/components/AboutSection";
 import { SponsorsSection } from "@/components/SponsorsSection";
+import { ShotOfTheDay } from "@/components/ShotOfTheDay";
 
 import { FAAccreditedSection } from "@/components/FAAccreditedSection";
 import { Footer } from "@/components/Footer";
@@ -19,6 +20,7 @@ const Index = () => {
       />
       <Navbar />
       <HeroSection />
+      <ShotOfTheDay />
       <FeaturedSections />
       
       <AboutSection />
