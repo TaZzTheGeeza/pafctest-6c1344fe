@@ -189,6 +189,9 @@ export default function PhotoClaimPage() {
                   <img src={p.preview_url} alt={p.caption || ""} className="w-full h-full object-cover" />
                 </div>
                 <CardContent className="p-2.5">
+                  {p.photo_ref && (
+                    <p className="text-[10px] font-mono text-primary mb-1">{p.photo_ref}</p>
+                  )}
                   {p.caption && <p className="text-xs text-muted-foreground truncate mb-2">{p.caption}</p>}
                   <Button
                     size="sm"
