@@ -1241,6 +1241,7 @@ export type Database = {
           provider: string
           shopify_order_id: string | null
           token: string
+          total_cents: number
         }
         Insert: {
           buyer_name?: string | null
@@ -1254,6 +1255,7 @@ export type Database = {
           provider?: string
           shopify_order_id?: string | null
           token: string
+          total_cents?: number
         }
         Update: {
           buyer_name?: string | null
@@ -1267,6 +1269,7 @@ export type Database = {
           provider?: string
           shopify_order_id?: string | null
           token?: string
+          total_cents?: number
         }
         Relationships: []
       }
@@ -2691,6 +2694,7 @@ export type Database = {
           featured_at: string | null
           id: string
           photo_date: string | null
+          photo_ref: string
           preview_url: string
           price_cents: number
           storage_path: string
@@ -2704,6 +2708,7 @@ export type Database = {
           featured_at?: string | null
           id?: string
           photo_date?: string | null
+          photo_ref?: string
           preview_url: string
           price_cents?: number
           storage_path: string
@@ -2717,6 +2722,7 @@ export type Database = {
           featured_at?: string | null
           id?: string
           photo_date?: string | null
+          photo_ref?: string
           preview_url?: string
           price_cents?: number
           storage_path?: string
@@ -3064,6 +3070,7 @@ export type Database = {
           featured_at: string | null
           id: string | null
           photo_date: string | null
+          photo_ref: string | null
           preview_url: string | null
           price_cents: number | null
           tournament_id: string | null
@@ -3076,6 +3083,7 @@ export type Database = {
           featured_at?: string | null
           id?: string | null
           photo_date?: string | null
+          photo_ref?: string | null
           preview_url?: string | null
           price_cents?: number | null
           tournament_id?: string | null
@@ -3088,6 +3096,7 @@ export type Database = {
           featured_at?: string | null
           id?: string | null
           photo_date?: string | null
+          photo_ref?: string | null
           preview_url?: string | null
           price_cents?: number | null
           tournament_id?: string | null

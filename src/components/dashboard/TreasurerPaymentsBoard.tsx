@@ -35,6 +35,22 @@ interface PaymentRecord {
   charge_date: string | null;
 }
 
+interface PhotoSaleRecord {
+  id: string;
+  token: string;
+  email: string;
+  buyer_name: string | null;
+  total_cents: number;
+  download_count: number;
+  paid_at: string | null;
+  created_at: string;
+  expires_at: string;
+  provider: string;
+  shopify_order_id: string | null;
+  photo_refs: string[];
+  photo_count: number;
+}
+
 interface Summary {
   active_subscriptions: number;
   past_due: number;
@@ -59,23 +75,65 @@ interface ChartPoint {
   amount_cents: number;
 }
 
-type Tab = "subscriptions" | "payments";
+type Tab = "subscriptions" | "payments" | "photos";
 
 export function TreasurerPaymentsBoard() {
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<Summary | null>(null);
   const [subscriptions, setSubscriptions] = useState<SubRecord[]>([]);
   const [payments, setPayments] = useState<PaymentRecord[]>([]);
+  const [photoSales, setPhotoSales] = useState<PhotoSaleRecord[]>([]);
   const [chartData, setChartData] = useState<ChartPoint[]>([]);
   const [tab, setTab] = useState<Tab>("subscriptions");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [sortAsc, setSortAsc] = useState(false);
 
+  async function loadPhotoSales() {
+    const { data: claims, error } = await supabase
+      .from("photo_claim_tokens" as any)
+      .select("id, token, email, buyer_name, total_cents, download_count, paid_at, created_at, expires_at, provider, shopify_order_id, photo_ids")
+      .order("created_at", { ascending: false })
+      .limit(500);
+    if (error) { console.error(error); return; }
+    const rows = (claims || []) as any[];
+    // Resolve photo refs in one query
+    const allPhotoIds = Array.from(new Set(rows.flatMap((r) => r.photo_ids || [])));
+    let refMap: Record<string, string> = {};
+    if (allPhotoIds.length > 0) {
+      const { data: photos } = await supabase
+        .from("tournament_photos" as any)
+        .select("id, photo_ref")
+        .in("id", allPhotoIds);
+      for (const p of (photos || []) as any[]) {
+        if (p.photo_ref) refMap[p.id] = p.photo_ref;
+      }
+    }
+    setPhotoSales(rows.map((r) => ({
+      id: r.id,
+      token: r.token,
+      email: r.email,
+      buyer_name: r.buyer_name,
+      total_cents: r.total_cents || 0,
+      download_count: r.download_count || 0,
+      paid_at: r.paid_at,
+      created_at: r.created_at,
+      expires_at: r.expires_at,
+      provider: r.provider || "gocardless",
+      shopify_order_id: r.shopify_order_id,
+      photo_refs: (r.photo_ids || []).map((id: string) => refMap[id]).filter(Boolean),
+      photo_count: (r.photo_ids || []).length,
+    })));
+  }
+
   async function loadData() {
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("stripe-payments-board");
+      const [boardRes] = await Promise.all([
+        supabase.functions.invoke("stripe-payments-board"),
+        loadPhotoSales(),
+      ]);
+      const { data, error } = boardRes;
       if (error) throw error;
       if (data.error) throw new Error(data.error);
       setSummary(data.summary);
@@ -317,7 +375,7 @@ export function TreasurerPaymentsBoard() {
         <div className="p-4 border-b border-border space-y-3">
           <div className="flex items-center gap-3 flex-wrap">
             <div className="flex gap-1">
-              {(["subscriptions", "payments"] as Tab[]).map((t) => (
+              {(["subscriptions", "payments", "photos"] as Tab[]).map((t) => (
                 <button
                   key={t}
                   onClick={() => { setTab(t); setStatusFilter("all"); }}
@@ -325,7 +383,7 @@ export function TreasurerPaymentsBoard() {
                     tab === t ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  {t === "subscriptions" ? "Subscriptions" : "Payment History"}
+                  {t === "subscriptions" ? "Subscriptions" : t === "payments" ? "Payment History" : "Photo Sales"}
                 </button>
               ))}
             </div>
@@ -343,28 +401,41 @@ export function TreasurerPaymentsBoard() {
                 className="w-full bg-background border border-border rounded-lg pl-9 pr-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground"
               />
             </div>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground"
-            >
-              <option value="all">All Statuses</option>
-              {tab === "subscriptions" ? (
-                <>
-                  <option value="active">Active</option>
-                  <option value="cancelled">Cancelled</option>
-                </>
-              ) : (
-                <>
-                  <option value="pending_submission">Pending</option>
-                  <option value="submitted">Submitted</option>
-                  <option value="confirmed">Confirmed</option>
-                  <option value="paid_out">Paid Out</option>
-                  <option value="failed">Failed</option>
-                  <option value="cancelled">Cancelled</option>
-                </>
-              )}
-            </select>
+            {tab !== "photos" && (
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground"
+              >
+                <option value="all">All Statuses</option>
+                {tab === "subscriptions" ? (
+                  <>
+                    <option value="active">Active</option>
+                    <option value="cancelled">Cancelled</option>
+                  </>
+                ) : (
+                  <>
+                    <option value="pending_submission">Pending</option>
+                    <option value="submitted">Submitted</option>
+                    <option value="confirmed">Confirmed</option>
+                    <option value="paid_out">Paid Out</option>
+                    <option value="failed">Failed</option>
+                    <option value="cancelled">Cancelled</option>
+                  </>
+                )}
+              </select>
+            )}
+            {tab === "photos" && (
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground"
+              >
+                <option value="all">All Orders</option>
+                <option value="paid">Paid</option>
+                <option value="pending">Pending payment</option>
+              </select>
+            )}
             <button
               onClick={() => setSortAsc(!sortAsc)}
               className="flex items-center gap-1 px-3 py-2.5 border border-border rounded-lg text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -459,11 +530,83 @@ export function TreasurerPaymentsBoard() {
           </div>
         )}
 
+        {/* Photo Sales Table */}
+        {tab === "photos" && (() => {
+          const filtered = photoSales.filter((s) => {
+            if (statusFilter === "paid" && !s.paid_at) return false;
+            if (statusFilter === "pending" && s.paid_at) return false;
+            if (search) {
+              const q = search.toLowerCase();
+              return (
+                (s.email || "").toLowerCase().includes(q) ||
+                (s.buyer_name || "").toLowerCase().includes(q) ||
+                s.photo_refs.some((r) => r.toLowerCase().includes(q))
+              );
+            }
+            return true;
+          }).sort((a, b) => sortAsc
+            ? new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+            : new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          );
+          const totalGross = filtered.filter((s) => s.paid_at).reduce((acc, s) => acc + (s.total_cents || 0), 0);
+          return (
+            <>
+              <div className="px-4 py-2 bg-secondary/30 border-b border-border text-[11px] text-muted-foreground flex justify-between">
+                <span>Gross from photo sales (filtered, paid only)</span>
+                <span className="font-display font-bold text-foreground">{fmt(totalGross)}</span>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-border bg-secondary/30">
+                      <th className="text-left px-4 py-3 font-display text-[10px] tracking-wider uppercase text-muted-foreground">Buyer</th>
+                      <th className="text-left px-4 py-3 font-display text-[10px] tracking-wider uppercase text-muted-foreground">Photos</th>
+                      <th className="text-left px-4 py-3 font-display text-[10px] tracking-wider uppercase text-muted-foreground">Photo Refs</th>
+                      <th className="text-left px-4 py-3 font-display text-[10px] tracking-wider uppercase text-muted-foreground">Amount</th>
+                      <th className="text-left px-4 py-3 font-display text-[10px] tracking-wider uppercase text-muted-foreground">Status</th>
+                      <th className="text-left px-4 py-3 font-display text-[10px] tracking-wider uppercase text-muted-foreground">Downloads</th>
+                      <th className="text-left px-4 py-3 font-display text-[10px] tracking-wider uppercase text-muted-foreground">Ordered</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {filtered.length === 0 ? (
+                      <tr><td colSpan={7} className="text-center py-12 text-muted-foreground">No photo orders found</td></tr>
+                    ) : (
+                      filtered.map((s) => (
+                        <tr key={s.id} className="hover:bg-secondary/20 transition-colors">
+                          <td className="px-4 py-3">
+                            <p className="font-display font-semibold text-foreground text-xs">{s.buyer_name || "—"}</p>
+                            <p className="text-[10px] text-muted-foreground">{s.email}</p>
+                          </td>
+                          <td className="px-4 py-3 text-xs text-foreground">{s.photo_count}</td>
+                          <td className="px-4 py-3 text-[10px] text-muted-foreground font-mono max-w-[260px]">
+                            {s.photo_refs.length > 0 ? s.photo_refs.join(", ") : "—"}
+                          </td>
+                          <td className="px-4 py-3 font-display text-xs text-foreground">{fmt(s.total_cents)}</td>
+                          <td className="px-4 py-3">
+                            <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-display tracking-wider uppercase ${s.paid_at ? "bg-emerald-500/20 text-emerald-400" : "bg-amber-500/20 text-amber-400"}`}>
+                              {s.paid_at ? "Paid" : "Pending"}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-xs text-muted-foreground">{s.download_count}</td>
+                          <td className="px-4 py-3 text-xs text-muted-foreground">{fmtDate(s.created_at)}</td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          );
+        })()}
+
         <div className="p-3 border-t border-border bg-secondary/30 text-center">
           <p className="text-xs text-muted-foreground">
             {tab === "subscriptions"
               ? `Showing ${filteredSubs.length} of ${subscriptions.length} subscriptions`
-              : `Showing ${filteredPayments.length} of ${payments.length} payments (last 90 days)`}
+              : tab === "payments"
+              ? `Showing ${filteredPayments.length} of ${payments.length} payments (last 90 days)`
+              : `Showing photo orders from the last 500 records`}
           </p>
         </div>
       </div>

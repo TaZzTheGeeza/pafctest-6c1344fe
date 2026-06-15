@@ -129,6 +129,7 @@ serve(async (req) => {
       shopify_order_id: billingRequestId, // reused as provider ref
       provider: "gocardless",
       photo_ids: finalIds,
+      total_cents: totalPence,
       expires_at: expiresAt,
     });
     if (insErr) throw new Error("Could not create claim record: " + insErr.message);
