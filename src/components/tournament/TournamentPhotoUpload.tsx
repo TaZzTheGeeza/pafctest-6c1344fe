@@ -42,6 +42,19 @@ export function TournamentPhotoUpload({ tournamentId, ageGroups }: TournamentPho
   const fileRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
 
+  // Warn the user if they try to leave/close the tab mid-upload — navigating away
+  // cancels in-flight uploads since they run entirely in the browser.
+  useEffect(() => {
+    if (!uploading) return;
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+      return "";
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [uploading]);
+
   const refreshSelected = () => {
     const files = fileRef.current?.files;
     if (!files?.length) {
