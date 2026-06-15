@@ -506,20 +506,34 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
                     Download
                   </Button>
                 ) : (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="w-full text-xs"
-                    onClick={() => handleBuy(photo.id)}
-                    disabled={buyingPhotoId === photo.id}
-                  >
-                    {buyingPhotoId === photo.id ? (
-                      <Loader2 className="h-3 w-3 animate-spin mr-1" />
-                    ) : (
-                      <ShoppingCart className="h-3 w-3 mr-1" />
-                    )}
-                    Buy · £2
-                  </Button>
+                  <div className="flex gap-1.5">
+                    <Button
+                      size="sm"
+                      variant={basket.has(photo.id) ? "default" : "secondary"}
+                      className="flex-1 text-xs px-2"
+                      onClick={() => toggleBasket(photo.id)}
+                      title={basket.has(photo.id) ? "Remove from basket" : "Add to basket"}
+                    >
+                      {basket.has(photo.id) ? (
+                        <><Check className="h-3 w-3 mr-1" /> Added</>
+                      ) : (
+                        <><Plus className="h-3 w-3 mr-1" /> Add</>
+                      )}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="flex-1 text-xs px-2"
+                      onClick={() => handleBuy(photo.id)}
+                      disabled={buyingPhotoId === photo.id}
+                    >
+                      {buyingPhotoId === photo.id ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : (
+                        <>Buy · £2</>
+                      )}
+                    </Button>
+                  </div>
                 )}
               </CardContent>
             </Card>
