@@ -530,11 +530,83 @@ export function TreasurerPaymentsBoard() {
           </div>
         )}
 
+        {/* Photo Sales Table */}
+        {tab === "photos" && (() => {
+          const filtered = photoSales.filter((s) => {
+            if (statusFilter === "paid" && !s.paid_at) return false;
+            if (statusFilter === "pending" && s.paid_at) return false;
+            if (search) {
+              const q = search.toLowerCase();
+              return (
+                (s.email || "").toLowerCase().includes(q) ||
+                (s.buyer_name || "").toLowerCase().includes(q) ||
+                s.photo_refs.some((r) => r.toLowerCase().includes(q))
+              );
+            }
+            return true;
+          }).sort((a, b) => sortAsc
+            ? new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+            : new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          );
+          const totalGross = filtered.filter((s) => s.paid_at).reduce((acc, s) => acc + (s.total_cents || 0), 0);
+          return (
+            <>
+              <div className="px-4 py-2 bg-secondary/30 border-b border-border text-[11px] text-muted-foreground flex justify-between">
+                <span>Gross from photo sales (filtered, paid only)</span>
+                <span className="font-display font-bold text-foreground">{fmt(totalGross)}</span>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-border bg-secondary/30">
+                      <th className="text-left px-4 py-3 font-display text-[10px] tracking-wider uppercase text-muted-foreground">Buyer</th>
+                      <th className="text-left px-4 py-3 font-display text-[10px] tracking-wider uppercase text-muted-foreground">Photos</th>
+                      <th className="text-left px-4 py-3 font-display text-[10px] tracking-wider uppercase text-muted-foreground">Photo Refs</th>
+                      <th className="text-left px-4 py-3 font-display text-[10px] tracking-wider uppercase text-muted-foreground">Amount</th>
+                      <th className="text-left px-4 py-3 font-display text-[10px] tracking-wider uppercase text-muted-foreground">Status</th>
+                      <th className="text-left px-4 py-3 font-display text-[10px] tracking-wider uppercase text-muted-foreground">Downloads</th>
+                      <th className="text-left px-4 py-3 font-display text-[10px] tracking-wider uppercase text-muted-foreground">Ordered</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {filtered.length === 0 ? (
+                      <tr><td colSpan={7} className="text-center py-12 text-muted-foreground">No photo orders found</td></tr>
+                    ) : (
+                      filtered.map((s) => (
+                        <tr key={s.id} className="hover:bg-secondary/20 transition-colors">
+                          <td className="px-4 py-3">
+                            <p className="font-display font-semibold text-foreground text-xs">{s.buyer_name || "—"}</p>
+                            <p className="text-[10px] text-muted-foreground">{s.email}</p>
+                          </td>
+                          <td className="px-4 py-3 text-xs text-foreground">{s.photo_count}</td>
+                          <td className="px-4 py-3 text-[10px] text-muted-foreground font-mono max-w-[260px]">
+                            {s.photo_refs.length > 0 ? s.photo_refs.join(", ") : "—"}
+                          </td>
+                          <td className="px-4 py-3 font-display text-xs text-foreground">{fmt(s.total_cents)}</td>
+                          <td className="px-4 py-3">
+                            <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-display tracking-wider uppercase ${s.paid_at ? "bg-emerald-500/20 text-emerald-400" : "bg-amber-500/20 text-amber-400"}`}>
+                              {s.paid_at ? "Paid" : "Pending"}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-xs text-muted-foreground">{s.download_count}</td>
+                          <td className="px-4 py-3 text-xs text-muted-foreground">{fmtDate(s.created_at)}</td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          );
+        })()}
+
         <div className="p-3 border-t border-border bg-secondary/30 text-center">
           <p className="text-xs text-muted-foreground">
             {tab === "subscriptions"
               ? `Showing ${filteredSubs.length} of ${subscriptions.length} subscriptions`
-              : `Showing ${filteredPayments.length} of ${payments.length} payments (last 90 days)`}
+              : tab === "payments"
+              ? `Showing ${filteredPayments.length} of ${payments.length} payments (last 90 days)`
+              : `Showing photo orders from the last 500 records`}
           </p>
         </div>
       </div>
