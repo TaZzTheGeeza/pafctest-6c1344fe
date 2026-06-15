@@ -182,6 +182,18 @@ export function TournamentPhotoUpload({ tournamentId, ageGroups }: TournamentPho
         </div>
 
         <div>
+          <Label>Date taken</Label>
+          <Input
+            type="date"
+            value={photoDate}
+            onChange={(e) => setPhotoDate(e.target.value)}
+          />
+          <p className="text-xs text-muted-foreground mt-1">
+            Buyers filter the gallery by this date — set it to the match day.
+          </p>
+        </div>
+
+        <div>
           <Label>Caption (optional, applies to all)</Label>
           <Input
             value={caption}
