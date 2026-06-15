@@ -49,21 +49,6 @@ Deno.serve(async (req) => {
   }
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-  const anonKey = Deno.env.get('SUPABASE_ANON_KEY')!
-  const authClient = createClient(supabaseUrl, anonKey, {
-    global: { headers: { Authorization: authHeader } },
-  })
-
-  const token = authHeader.replace('Bearer ', '')
-  const { data: claimsData, error: claimsError } = await authClient.auth.getClaims(token)
-
-  if (claimsError || !claimsData?.claims) {
-    return new Response(JSON.stringify({ error: 'Invalid token' }), {
-      status: 401,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    })
-  }
-
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
 
   if (!supabaseUrl || !supabaseServiceKey) {
@@ -77,12 +62,32 @@ Deno.serve(async (req) => {
     )
   }
 
+  const token = authHeader.replace('Bearer ', '')
+  const callerIsServiceRole = token === supabaseServiceKey
+  let callerId: string | undefined
+
+  if (!callerIsServiceRole) {
+    const anonKey = Deno.env.get('SUPABASE_ANON_KEY')!
+    const authClient = createClient(supabaseUrl, anonKey, {
+      global: { headers: { Authorization: authHeader } },
+    })
+
+    const { data: claimsData, error: claimsError } = await authClient.auth.getClaims(token)
+
+    if (claimsError || !claimsData?.claims) {
+      return new Response(JSON.stringify({ error: 'Invalid token' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    callerId = claimsData.claims.sub as string | undefined
+  }
+
   // --- Role gate: only admins, coaches, news_editor, welfare_officer, or service-role
   // calls may send transactional emails. Prevents arbitrary authenticated users
   // from sending PAFC-branded mail to arbitrary recipients.
-  const callerIsServiceRole = token === supabaseServiceKey
   if (!callerIsServiceRole) {
-    const callerId = claimsData.claims.sub as string | undefined
     if (!callerId) {
       return new Response(JSON.stringify({ error: 'Forbidden' }), {
         status: 403,
