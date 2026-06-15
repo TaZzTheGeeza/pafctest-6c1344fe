@@ -236,6 +236,26 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
     }
   };
 
+  const handleToggleFeatured = async (photo: any) => {
+    try {
+      const next = !photo.featured;
+      // If turning on, unfeature all others first so only one shot of the day is active
+      if (next) {
+        await supabase.from("tournament_photos" as any).update({ featured: false }).eq("featured", true);
+      }
+      const { error } = await supabase
+        .from("tournament_photos" as any)
+        .update({ featured: next, featured_at: next ? new Date().toISOString() : null })
+        .eq("id", photo.id);
+      if (error) throw error;
+      toast.success(next ? "⭐ Set as Shot of the Day" : "Removed from Shot of the Day");
+      queryClient.invalidateQueries({ queryKey: ["tournament-photos"] });
+      queryClient.invalidateQueries({ queryKey: ["shot-of-the-day"] });
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update");
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
