@@ -1,0 +1,2 @@
+[functions.broadcast-registration-reminder]
+verify_jwt = false
