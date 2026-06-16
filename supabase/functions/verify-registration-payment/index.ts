@@ -52,7 +52,7 @@ serve(async (req) => {
 
     const { data: reg, error: regError } = await supabase
       .from("player_registrations")
-      .select("id, payment_status, gocardless_billing_request_id, email, parent_name, child_name, age_group, confirmation_email_sent_at")
+      .select("id, payment_status, gocardless_billing_request_id, email, parent_name, child_name, preferred_age_group, confirmation_email_sent_at")
       .eq("id", registrationId)
       .maybeSingle();
 
@@ -75,7 +75,7 @@ serve(async (req) => {
             templateData: {
               parentName: reg.parent_name,
               childName: reg.child_name,
-              ageGroup: reg.age_group,
+              ageGroup: reg.preferred_age_group,
               amountPaid: "40.00",
             },
           },
