@@ -83,7 +83,7 @@ Up the Lions! 🦁`
   let ok = 0, fail = 0, skipped = 0
   const failures: { email: string; error: string }[] = []
   for (const email of emails) {
-    if (alreadySent.has(email)) { skipped++; continue }
+    if (alreadyAttempted.has(email)) { skipped++; continue }
     let attempt = 0
     let sent = false
     while (attempt < 3 && !sent) {
