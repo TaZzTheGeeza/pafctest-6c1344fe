@@ -52,7 +52,7 @@ serve(async (req) => {
 
     const { data: reg, error: regError } = await supabase
       .from("player_registrations")
-      .select("id, payment_status, gocardless_billing_request_id")
+      .select("id, payment_status, gocardless_billing_request_id, email, parent_name, child_name, age_group, confirmation_email_sent_at")
       .eq("id", registrationId)
       .maybeSingle();
 
@@ -64,7 +64,33 @@ serve(async (req) => {
       });
     }
 
+    const sendConfirmationEmail = async () => {
+      if (!reg.email || reg.confirmation_email_sent_at) return;
+      try {
+        await supabase.functions.invoke("send-transactional-email", {
+          body: {
+            templateName: "registration-confirmation",
+            recipientEmail: reg.email,
+            idempotencyKey: `registration-confirm-${reg.id}`,
+            templateData: {
+              parentName: reg.parent_name,
+              childName: reg.child_name,
+              ageGroup: reg.age_group,
+              amountPaid: "40.00",
+            },
+          },
+        });
+        await supabase
+          .from("player_registrations")
+          .update({ confirmation_email_sent_at: new Date().toISOString() })
+          .eq("id", reg.id);
+      } catch (e) {
+        console.error("Failed to send registration confirmation email", e);
+      }
+    };
+
     if (reg.payment_status === "paid") {
+      await sendConfirmationEmail();
       return new Response(JSON.stringify({ status: "paid" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -85,6 +111,8 @@ serve(async (req) => {
         .from("player_registrations")
         .update({ payment_status: "paid", paid_at: new Date().toISOString() })
         .eq("id", registrationId);
+
+      await sendConfirmationEmail();
 
       return new Response(JSON.stringify({ status: "paid" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
