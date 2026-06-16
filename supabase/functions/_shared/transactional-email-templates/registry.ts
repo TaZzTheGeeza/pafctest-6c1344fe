@@ -19,6 +19,7 @@ import { template as meetingInvite } from './meeting-invite.tsx'
 import { template as teamInvite } from './team-invite.tsx'
 import { template as presentationSeatsAllocated } from './presentation-seats-allocated.tsx'
 import { template as photoClaimLink } from './photo-claim-link.tsx'
+import { template as registrationConfirmation } from './registration-confirmation.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'payment-request-created': paymentRequestCreated,
@@ -31,4 +32,5 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'team-invite': teamInvite,
   'presentation-seats-allocated': presentationSeatsAllocated,
   'photo-claim-link': photoClaimLink,
+  'registration-confirmation': registrationConfirmation,
 }

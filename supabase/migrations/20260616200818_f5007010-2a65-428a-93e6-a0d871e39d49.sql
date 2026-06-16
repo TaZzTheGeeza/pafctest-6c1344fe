@@ -1,0 +1,1 @@
+ALTER TABLE public.player_registrations ADD COLUMN IF NOT EXISTS confirmation_email_sent_at timestamptz;

@@ -1354,6 +1354,7 @@ export type Database = {
           address: string | null
           child_dob: string
           child_name: string
+          confirmation_email_sent_at: string | null
           consent_medical: boolean | null
           consent_photography: boolean | null
           created_at: string
@@ -1385,6 +1386,7 @@ export type Database = {
           address?: string | null
           child_dob: string
           child_name: string
+          confirmation_email_sent_at?: string | null
           consent_medical?: boolean | null
           consent_photography?: boolean | null
           created_at?: string
@@ -1416,6 +1418,7 @@ export type Database = {
           address?: string | null
           child_dob?: string
           child_name?: string
+          confirmation_email_sent_at?: string | null
           consent_medical?: boolean | null
           consent_photography?: boolean | null
           created_at?: string
