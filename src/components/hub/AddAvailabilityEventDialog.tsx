@@ -215,6 +215,39 @@ export function AddAvailabilityEventDialog({ teamSlug }: Props) {
                 />
               </div>
 
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-display text-muted-foreground mb-1 tracking-wider uppercase">
+                    Repeat
+                  </label>
+                  <select
+                    value={repeat}
+                    onChange={(e) => setRepeat(e.target.value as any)}
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  >
+                    <option value="none">Does not repeat</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="biweekly">Every 2 weeks</option>
+                    <option value="monthly">Monthly</option>
+                  </select>
+                </div>
+                {repeat !== "none" && (
+                  <div>
+                    <label className="block text-xs font-display text-muted-foreground mb-1 tracking-wider uppercase">
+                      Until *
+                    </label>
+                    <input
+                      type="date"
+                      value={repeatUntil}
+                      onChange={(e) => setRepeatUntil(e.target.value)}
+                      min={eventDate || undefined}
+                      required
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                    />
+                  </div>
+                )}
+              </div>
+
               <div className="flex justify-end gap-2 pt-2">
                 <button
                   type="button"
