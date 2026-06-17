@@ -39,6 +39,8 @@ export function AddAvailabilityEventDialog({ teamSlug }: Props) {
   const [eventTime, setEventTime] = useState("10:00");
   const [venue, setVenue] = useState("");
   const [selectedTeam, setSelectedTeam] = useState(teamSlug);
+  const [repeat, setRepeat] = useState<"none" | "weekly" | "biweekly" | "monthly">("none");
+  const [repeatUntil, setRepeatUntil] = useState("");
 
   const reset = () => {
     setTitle("");
@@ -46,25 +48,49 @@ export function AddAvailabilityEventDialog({ teamSlug }: Props) {
     setEventTime("10:00");
     setVenue("");
     setSelectedTeam(teamSlug);
+    setRepeat("none");
+    setRepeatUntil("");
+  };
+
+  const buildDates = (): Date[] => {
+    const [sy, sm, sd] = eventDate.split("-").map(Number);
+    const start = new Date(sy, sm - 1, sd);
+    if (repeat === "none" || !repeatUntil) return [start];
+    const [ey, em, ed] = repeatUntil.split("-").map(Number);
+    const end = new Date(ey, em - 1, ed);
+    if (end < start) return [start];
+    const dates: Date[] = [];
+    const cursor = new Date(start);
+    while (cursor <= end && dates.length < 104) {
+      dates.push(new Date(cursor));
+      if (repeat === "weekly") cursor.setDate(cursor.getDate() + 7);
+      else if (repeat === "biweekly") cursor.setDate(cursor.getDate() + 14);
+      else if (repeat === "monthly") cursor.setMonth(cursor.getMonth() + 1);
+    }
+    return dates;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title || !eventDate || !user) return;
 
-    // Convert YYYY-MM-DD to DD/MM/YY to match FA fixture format
-    const [yyyy, mm, dd] = eventDate.split("-");
-    const formattedDate = `${dd}/${mm}/${yyyy.slice(2)}`;
+    const dates = buildDates();
+    const rows = dates.map((d) => {
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const dd = String(d.getDate()).padStart(2, "0");
+      return {
+        team_slug: selectedTeam,
+        title,
+        event_date: `${dd}/${mm}/${String(yyyy).slice(2)}`,
+        event_time: eventTime,
+        venue: venue || null,
+        created_by: user.id,
+      };
+    });
 
     setSaving(true);
-    const { error } = await supabase.from("hub_availability_events").insert({
-      team_slug: selectedTeam,
-      title,
-      event_date: formattedDate,
-      event_time: eventTime,
-      venue: venue || null,
-      created_by: user.id,
-    } as any);
+    const { error } = await supabase.from("hub_availability_events").insert(rows as any);
 
     setSaving(false);
     if (error) {
@@ -73,25 +99,25 @@ export function AddAvailabilityEventDialog({ teamSlug }: Props) {
       return;
     }
 
-    // Notify team members
-    const friendlyDate = new Date(eventDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+    const friendlyFirst = dates[0].toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+    const seriesLabel = dates.length > 1 ? ` (+${dates.length - 1} more)` : "";
     notifyTeamMembers({
       teamSlug: selectedTeam,
       excludeUserId: user.id,
       notification: {
-        title: "New Availability Event",
-        message: `${title} — ${friendlyDate}`,
+        title: dates.length > 1 ? "New Recurring Availability Events" : "New Availability Event",
+        message: `${title} — ${friendlyFirst}${seriesLabel}`,
         type: "event",
         link: "/hub?tab=availability",
       },
       email: {
         templateName: "availability-event-added",
-        templateData: { eventTitle: title, eventDate: friendlyDate, eventTime, venue: venue || undefined, teamName: selectedTeam },
-        idempotencyPrefix: `avail-event-${selectedTeam}-${formattedDate}-${Date.now()}`,
+        templateData: { eventTitle: dates.length > 1 ? `${title} (${dates.length} dates)` : title, eventDate: friendlyFirst, eventTime, venue: venue || undefined, teamName: selectedTeam },
+        idempotencyPrefix: `avail-event-${selectedTeam}-${rows[0].event_date}-${Date.now()}`,
       },
     });
 
-    toast.success("Event added to availability");
+    toast.success(dates.length > 1 ? `${dates.length} events added` : "Event added to availability");
     queryClient.invalidateQueries({ queryKey: ["hub-availability-events"] });
     reset();
     setOpen(false);
@@ -187,6 +213,39 @@ export function AddAvailabilityEventDialog({ teamSlug }: Props) {
                   placeholder="Optional"
                   className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
                 />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-display text-muted-foreground mb-1 tracking-wider uppercase">
+                    Repeat
+                  </label>
+                  <select
+                    value={repeat}
+                    onChange={(e) => setRepeat(e.target.value as any)}
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  >
+                    <option value="none">Does not repeat</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="biweekly">Every 2 weeks</option>
+                    <option value="monthly">Monthly</option>
+                  </select>
+                </div>
+                {repeat !== "none" && (
+                  <div>
+                    <label className="block text-xs font-display text-muted-foreground mb-1 tracking-wider uppercase">
+                      Until *
+                    </label>
+                    <input
+                      type="date"
+                      value={repeatUntil}
+                      onChange={(e) => setRepeatUntil(e.target.value)}
+                      min={eventDate || undefined}
+                      required
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                    />
+                  </div>
+                )}
               </div>
 
               <div className="flex justify-end gap-2 pt-2">
