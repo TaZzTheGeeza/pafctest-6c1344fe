@@ -122,6 +122,29 @@ const TournamentAdminPage = () => {
     enabled: !!ageGroups?.length,
   });
 
+  const { data: announcements } = useQuery({
+    queryKey: ["admin-announcements", selectedTournament],
+    queryFn: async () => {
+      if (!selectedTournament) return [];
+      const { data, error } = await supabase
+        .from("tournament_announcements")
+        .select("*")
+        .eq("tournament_id", selectedTournament)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!selectedTournament,
+  });
+
+  const deleteAnnouncement = async (id: string) => {
+    if (!confirm("Delete this announcement?")) return;
+    const { error } = await supabase.from("tournament_announcements").delete().eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Announcement deleted");
+    invalidateAll();
+  };
+
   // CREATE TOURNAMENT
   const createTournament = async () => {
     if (!tournamentForm.name.trim()) { toast.error("Name required"); return; }
@@ -1233,9 +1256,29 @@ const TournamentAdminPage = () => {
       {/* ANNOUNCEMENT DIALOG */}
       <Dialog open={showAnnouncement} onOpenChange={setShowAnnouncement}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Post Announcement</DialogTitle></DialogHeader>
-          <Textarea value={announcementText} onChange={e => setAnnouncementText(e.target.value)} placeholder="Type your announcement..." rows={3} />
-          <Button onClick={postAnnouncement} className="w-full">Post</Button>
+          <DialogHeader><DialogTitle>Announcements</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <Textarea value={announcementText} onChange={e => setAnnouncementText(e.target.value)} placeholder="Type your announcement..." rows={3} />
+            <Button onClick={postAnnouncement} className="w-full">Post</Button>
+            {announcements && announcements.length > 0 && (
+              <div className="space-y-2 pt-2 border-t">
+                <Label className="text-xs text-muted-foreground">Posted announcements</Label>
+                <div className="max-h-64 overflow-y-auto space-y-2">
+                  {announcements.map((a: any) => (
+                    <div key={a.id} className="flex items-start justify-between gap-2 p-2 rounded border bg-muted/30">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm whitespace-pre-wrap break-words">{a.message}</p>
+                        <p className="text-[10px] text-muted-foreground mt-1">{new Date(a.created_at).toLocaleString()}</p>
+                      </div>
+                      <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => deleteAnnouncement(a.id)}>
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </DialogContent>
       </Dialog>
       {/* ADD TEAM DIALOG */}
