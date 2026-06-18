@@ -122,6 +122,29 @@ const TournamentAdminPage = () => {
     enabled: !!ageGroups?.length,
   });
 
+  const { data: announcements } = useQuery({
+    queryKey: ["admin-announcements", selectedTournament],
+    queryFn: async () => {
+      if (!selectedTournament) return [];
+      const { data, error } = await supabase
+        .from("tournament_announcements")
+        .select("*")
+        .eq("tournament_id", selectedTournament)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!selectedTournament,
+  });
+
+  const deleteAnnouncement = async (id: string) => {
+    if (!confirm("Delete this announcement?")) return;
+    const { error } = await supabase.from("tournament_announcements").delete().eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Announcement deleted");
+    invalidateAll();
+  };
+
   // CREATE TOURNAMENT
   const createTournament = async () => {
     if (!tournamentForm.name.trim()) { toast.error("Name required"); return; }
