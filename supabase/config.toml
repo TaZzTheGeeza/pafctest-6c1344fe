@@ -23,3 +23,5 @@ project_id = "scfiodwfvpjqgfmekqwg"
     verify_jwt = false
   [functions.create-photo-checkout]
     verify_jwt = false
+  [functions.admin-send-parking-reminder]
+    verify_jwt = false
