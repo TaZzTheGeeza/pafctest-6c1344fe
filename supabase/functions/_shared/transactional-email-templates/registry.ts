@@ -34,4 +34,5 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'presentation-seats-allocated': presentationSeatsAllocated,
   'photo-claim-link': photoClaimLink,
   'registration-confirmation': registrationConfirmation,
+  'tournament-parking-reminder': tournamentParkingReminder,
 }
