@@ -70,7 +70,7 @@ for (let i = 0; i < SCENES.length; i++) {
 const inputs = SCENES.map((s) => `-i "${path.join(audioDir, s.audio)}"`).join(" ");
 let filters = SCENES.map((s, i) => {
   const delayMs = Math.round(starts[i] * 1000);
-  return `[${i}:a]adelay=${delayMs}|${delayMs}[a${i}]`;
+  return `[${i + 1}:a]adelay=${delayMs}|${delayMs}[a${i}]`;
 }).join("; ");
 const mixInputs = SCENES.map((_, i) => `[a${i}]`).join("");
 filters += `; ${mixInputs}amix=inputs=${SCENES.length}:dropout_transition=0:normalize=0[aout]`;
