@@ -55,7 +55,7 @@ export const SCENES: Scene[] = [
   { kind: "module", audio: "yc-06.mp3", dur: 198, eyebrow: "MODULE 03", title: "CLUB SHOP",
     sub: "Branded kit. Zero setup.", shot: { src: S("05-shop.png"), frame: "laptop" } },
   { kind: "module", audio: "yc-07.mp3", dur: 192, eyebrow: "MODULE 04", title: "MEETINGS",
-    sub: "Video calls + RSVP, built in.", shot: { src: S("hub-meetings.png"), frame: "phone" } },
+    sub: "Video calls + RSVP, built in.", shot: { src: S("hub-meetings.png"), frame: "laptop" } },
   { kind: "module", audio: "yc-08.mp3", dur: 171, eyebrow: "MODULE 05", title: "NEWS",
     sub: "Matchday programmes. AI-assisted.", shot: { src: S("news.png"), frame: "laptop" } },
   { kind: "module", audio: "yc-09.mp3", dur: 174, eyebrow: "MODULE 06", title: "PLAYER SHOWCASE",
