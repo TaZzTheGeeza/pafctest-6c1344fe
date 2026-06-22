@@ -2,7 +2,7 @@ import { Composition } from "remotion";
 import { MainVideo } from "./MainVideo";
 import { MainVideoV2 } from "./MainVideoV2";
 import { MainVideoSales, TOTAL_FRAMES as SALES_TOTAL } from "./MainVideoSales";
-import { MainVideoMagna, TOTAL_FRAMES as MAGNA_TOTAL } from "./MainVideoMagna";
+import { MainVideoMagna, TOTAL as MAGNA_TOTAL } from "./MainVideoMagna";
 
 const V2_SCENES = [462, 347, 506, 474, 553, 552, 893, 370, 564, 526, 531, 1017, 943, 709, 614];
 const V2_TRANS = 20;
