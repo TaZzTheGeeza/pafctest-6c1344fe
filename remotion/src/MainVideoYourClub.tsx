@@ -32,11 +32,10 @@ export const SCENES: Scene[] = [
     title: "YOUR TEAM'S\nCOMMAND\nCENTRE.",
     sub: "Chat · Availability · Registrations · Directions · Payments",
     shots: [
-      { src: S("hub-chat.png"), frame: "phone", caption: "Real-time team chat" },
-      { src: S("hub-availability.png"), frame: "phone", caption: "One-tap availability + directions" },
+      { src: S("hub-chat.png"), frame: "laptop", caption: "Real-time team chat" },
+      { src: S("hub-availability.png"), frame: "laptop", caption: "One-tap availability + directions" },
       { src: S("player-registration.png"), frame: "laptop", caption: "Online registrations & profiles" },
-      { src: S("hub-payments.png"), frame: "phone", caption: "Direct-debit subs & fees" },
-      { src: S("hub-overview.png"), frame: "phone", caption: "Everything in one place" },
+      { src: S("hub-payments.png"), frame: "laptop", caption: "Direct-debit subs & fees" },
     ],
   },
 
@@ -56,7 +55,7 @@ export const SCENES: Scene[] = [
   { kind: "module", audio: "yc-06.mp3", dur: 198, eyebrow: "MODULE 03", title: "CLUB SHOP",
     sub: "Branded kit. Zero setup.", shot: { src: S("05-shop.png"), frame: "laptop" } },
   { kind: "module", audio: "yc-07.mp3", dur: 192, eyebrow: "MODULE 04", title: "MEETINGS",
-    sub: "Video calls + RSVP, built in.", shot: { src: S("hub-meetings.png"), frame: "phone" } },
+    sub: "Video calls + RSVP, built in.", shot: { src: S("hub-meetings.png"), frame: "laptop" } },
   { kind: "module", audio: "yc-08.mp3", dur: 171, eyebrow: "MODULE 05", title: "NEWS",
     sub: "Matchday programmes. AI-assisted.", shot: { src: S("news.png"), frame: "laptop" } },
   { kind: "module", audio: "yc-09.mp3", dur: 174, eyebrow: "MODULE 06", title: "PLAYER SHOWCASE",
