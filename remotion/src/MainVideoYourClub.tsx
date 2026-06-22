@@ -32,11 +32,10 @@ export const SCENES: Scene[] = [
     title: "YOUR TEAM'S\nCOMMAND\nCENTRE.",
     sub: "Chat · Availability · Registrations · Directions · Payments",
     shots: [
-      { src: S("hub-chat.png"), frame: "phone", caption: "Real-time team chat" },
-      { src: S("hub-availability.png"), frame: "phone", caption: "One-tap availability + directions" },
+      { src: S("hub-chat.png"), frame: "laptop", caption: "Real-time team chat" },
+      { src: S("hub-availability.png"), frame: "laptop", caption: "One-tap availability + directions" },
       { src: S("player-registration.png"), frame: "laptop", caption: "Online registrations & profiles" },
-      { src: S("hub-payments.png"), frame: "phone", caption: "Direct-debit subs & fees" },
-      { src: S("hub-overview.png"), frame: "phone", caption: "Everything in one place" },
+      { src: S("hub-payments.png"), frame: "laptop", caption: "Direct-debit subs & fees" },
     ],
   },
 
