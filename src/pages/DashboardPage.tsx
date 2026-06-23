@@ -144,6 +144,31 @@ export default function DashboardPage() {
     setTogglingPresentation(false);
   }
 
+  async function loadTournamentSetting() {
+    const { data } = await supabase
+      .from("site_settings" as any)
+      .select("value")
+      .eq("key", "tournament_enabled")
+      .maybeSingle();
+    if (data) setTournamentEnabled((data as any).value === "true");
+  }
+
+  async function toggleTournament() {
+    setTogglingTournament(true);
+    const newVal = !tournamentEnabled;
+    const { error } = await supabase
+      .from("site_settings" as any)
+      .upsert({ key: "tournament_enabled", value: newVal ? "true" : "false", updated_at: new Date().toISOString() } as any);
+    if (error) {
+      toast.error("Failed to update Tournament setting");
+    } else {
+      setTournamentEnabled(newVal);
+      toast.success(`Tournament ${newVal ? "enabled" : "hidden"} site-wide`);
+    }
+    setTogglingTournament(false);
+  }
+
+
   async function loadRegistrationSetting() {
     const { data } = await supabase
       .from("site_settings" as any)
