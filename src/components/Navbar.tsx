@@ -5,6 +5,7 @@ import { Menu, X, ChevronDown, Trophy, ShoppingBag, LogIn, Newspaper, CalendarDa
 import { CartDrawer } from "@/components/CartDrawer";
 import { NotificationBell } from "@/components/hub/NotificationBell";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTournamentEnabled } from "@/hooks/useTournamentEnabled";
 import clubLogo from "@/assets/club-logo.jpg";
 import wildcatsLogo from "@/assets/wildcats-logo.png";
 
@@ -164,6 +165,7 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
   const { user, signOut, isCoach, isAdmin, isTreasurer } = useAuth();
+  const { enabled: tournamentEnabled } = useTournamentEnabled();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -181,9 +183,11 @@ export function Navbar() {
       <div className="bg-secondary border-b border-border/50">
         <div className="container mx-auto px-4 flex items-center justify-between h-10 py-1">
           <div className="flex items-center gap-2">
-            <Link to="/tournament" className="font-display text-[10px] tracking-[0.15em] uppercase bg-primary/15 text-primary hover:bg-primary/25 transition-colors flex items-center gap-1.5 px-2.5 py-1 rounded-md font-semibold">
-              <Trophy className="h-3 w-3" /> Tournament
-            </Link>
+            {tournamentEnabled && (
+              <Link to="/tournament" className="font-display text-[10px] tracking-[0.15em] uppercase bg-primary/15 text-primary hover:bg-primary/25 transition-colors flex items-center gap-1.5 px-2.5 py-1 rounded-md font-semibold">
+                <Trophy className="h-3 w-3" /> Tournament
+              </Link>
+            )}
             <Link to="/shop" className="font-display text-[10px] tracking-[0.15em] uppercase bg-primary/15 text-primary hover:bg-primary/25 transition-colors flex items-center gap-1.5 px-2.5 py-1 rounded-md font-semibold">
               <ShoppingBag className="h-3 w-3" /> Shop
             </Link>
@@ -314,9 +318,11 @@ export function Navbar() {
               )
             )}
             <div className="flex gap-2 mt-2 pt-3 border-t border-border">
-              <Link to="/tournament" onClick={() => setIsOpen(false)} className="flex-1 flex items-center justify-center gap-2 font-display text-sm tracking-wider py-2.5 rounded-md border border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground transition-all">
-                <Trophy className="h-4 w-4" /> Tournament
-              </Link>
+              {tournamentEnabled && (
+                <Link to="/tournament" onClick={() => setIsOpen(false)} className="flex-1 flex items-center justify-center gap-2 font-display text-sm tracking-wider py-2.5 rounded-md border border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground transition-all">
+                  <Trophy className="h-4 w-4" /> Tournament
+                </Link>
+              )}
               <Link to="/shop" onClick={() => setIsOpen(false)} className="flex-1 flex items-center justify-center gap-2 font-display text-sm tracking-wider py-2.5 rounded-md border border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground transition-all">
                 <ShoppingBag className="h-4 w-4" /> Shop
               </Link>

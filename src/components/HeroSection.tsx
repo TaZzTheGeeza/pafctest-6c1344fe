@@ -5,10 +5,12 @@ import { ShoppingBag, Trophy, ChevronRight, Smartphone, Sparkles, UserPlus, Tick
 import heroBg from "@/assets/hero-bg.jpg";
 import { usePresentationEnabled } from "@/hooks/usePresentationEnabled";
 import { useRegistrationOpen } from "@/hooks/useRegistrationOpen";
+import { useTournamentEnabled } from "@/hooks/useTournamentEnabled";
 
 export function HeroSection() {
   const { enabled: presentationEnabled } = usePresentationEnabled();
   const { open: registrationOpen } = useRegistrationOpen();
+  const { enabled: tournamentEnabled } = useTournamentEnabled();
   return (
     <section className="relative min-h-[90vh] flex items-end justify-center overflow-hidden">
       <div
@@ -53,16 +55,18 @@ export function HeroSection() {
                 World Cup Sweepstake — £375 Pot
               </Link>
             </Button>
-            <Button
-              size="lg"
-              className="bg-gold-gradient text-primary-foreground font-display tracking-wider hover:opacity-90 transition-opacity"
-              asChild
-            >
-              <Link to="/tournament">
-                <Trophy className="w-5 h-5 mr-2" />
-                Tournament
-              </Link>
-            </Button>
+            {tournamentEnabled && (
+              <Button
+                size="lg"
+                className="bg-gold-gradient text-primary-foreground font-display tracking-wider hover:opacity-90 transition-opacity"
+                asChild
+              >
+                <Link to="/tournament">
+                  <Trophy className="w-5 h-5 mr-2" />
+                  Tournament
+                </Link>
+              </Button>
+            )}
             {presentationEnabled && (
               <Button
                 size="lg"
