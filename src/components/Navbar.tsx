@@ -5,6 +5,7 @@ import { Menu, X, ChevronDown, Trophy, ShoppingBag, LogIn, Newspaper, CalendarDa
 import { CartDrawer } from "@/components/CartDrawer";
 import { NotificationBell } from "@/components/hub/NotificationBell";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTournamentEnabled } from "@/hooks/useTournamentEnabled";
 import clubLogo from "@/assets/club-logo.jpg";
 import wildcatsLogo from "@/assets/wildcats-logo.png";
 
