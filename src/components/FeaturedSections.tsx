@@ -1,8 +1,12 @@
 import { Link } from "react-router-dom";
 import { Trophy, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
+import { useTournamentEnabled } from "@/hooks/useTournamentEnabled";
 
 export function FeaturedSections() {
+  const { enabled: tournamentEnabled } = useTournamentEnabled();
+  if (!tournamentEnabled) return null;
+
   return (
     <section className="py-16 px-4">
       <div className="container mx-auto max-w-3xl">
