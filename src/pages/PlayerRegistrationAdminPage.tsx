@@ -309,9 +309,7 @@ export default function PlayerRegistrationAdminPage() {
       .map((g) => {
         const profile = parentProfiles.find((p) => p.id === g.parent_user_id);
         const ageGroup = teamSlugToAgeGroup(g.team_slug);
-        const firstName = g.player_name.split(" ")[0] || g.player_name;
-        const nameMatch = registeredKeys.has(`${normaliseName(firstName)}::${ageGroup}`)
-          || registeredKeys.has(`${normaliseName(g.player_name)}::${ageGroup}`);
+        const nameMatch = matchesPaid(g.player_name, ageGroup);
         const emailMatch = profile?.email ? paidEmails.has(profile.email.toLowerCase().trim()) : false;
         return {
           guardian_id: g.id,
@@ -325,7 +323,7 @@ export default function PlayerRegistrationAdminPage() {
         };
       })
       .sort((a, b) => a.age_group.localeCompare(b.age_group) || a.player_name.localeCompare(b.player_name));
-  }, [guardians, parentProfiles, registeredKeys, paidEmails]);
+  }, [guardians, parentProfiles, paidIndex, paidEmails]);
 
   const hubRegisteredCount = hubPlayers.filter((h) => h.registered).length;
   const hubOutstandingCount = hubPlayers.length - hubRegisteredCount;
