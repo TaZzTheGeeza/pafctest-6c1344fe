@@ -229,26 +229,49 @@ export default function PlayerRegistrationAdminPage() {
     return Array.from(set).sort();
   }, [registrations, roster]);
 
-  // Index PAID registered names per age group — only paid registrations count as complete.
-  const registeredKeys = useMemo(() => {
-    const set = new Set<string>();
-    paidRegistrations.forEach((r) => {
+  // Index PAID registrations per age group — pre-parsed for flexible matching.
+  type PaidIndex = { first: string; surname: string; full: string; ag: string };
+  const paidIndex = useMemo<PaidIndex[]>(() => {
+    return paidRegistrations.map((r) => {
       const parts = normaliseName(r.child_name).split(" ").filter(Boolean);
-      const first = parts[0] || r.child_name;
-      const lastInitial = parts.length > 1 ? parts[parts.length - 1][0] : "";
-      set.add(`${normaliseName(first)}::${r.preferred_age_group}`);
-      set.add(`${normaliseName(r.child_name)}::${r.preferred_age_group}`);
-      if (lastInitial) set.add(`${normaliseName(first)} ${lastInitial}::${r.preferred_age_group}`);
+      return {
+        first: parts[0] || "",
+        surname: parts.slice(1).join(" "),
+        full: normaliseName(r.child_name),
+        ag: r.preferred_age_group,
+      };
     });
-    return set;
   }, [paidRegistrations]);
 
-  const outstanding = useMemo(() => {
-    return roster.filter((p) => {
-      const key = `${normaliseName(p.first_name)}::${p.age_group}`;
-      return !registeredKeys.has(key);
+  // Flexible matcher: handles full names, first-only, "first lastInitial",
+  // nicknames where roster is a prefix of registration (e.g. "Muz" → "Muzima"),
+  // and roster "first lastInitial" matching registration "first surname".
+  const matchesPaid = (rosterName: string, ageGroup: string): boolean => {
+    const rParts = normaliseName(rosterName).split(" ").filter(Boolean);
+    if (rParts.length === 0) return false;
+    const rFirst = rParts[0];
+    const rRest = rParts.slice(1).join(" ");
+    return paidIndex.some((p) => {
+      if (p.ag !== ageGroup) return false;
+      if (p.full === normaliseName(rosterName)) return true;
+      // First-name match: exact, or one is a prefix of the other (≥3 chars to avoid false positives)
+      const firstMatch =
+        p.first === rFirst ||
+        (rFirst.length >= 3 && p.first.startsWith(rFirst)) ||
+        (p.first.length >= 3 && rFirst.startsWith(p.first));
+      if (!firstMatch) return false;
+      // If roster supplied a surname/initial, it must match the registration surname
+      if (rRest) {
+        if (!p.surname) return false;
+        return p.surname.startsWith(rRest) || rRest.startsWith(p.surname[0] || "");
+      }
+      return true;
     });
-  }, [roster, registeredKeys]);
+  };
+
+  const outstanding = useMemo(() => {
+    return roster.filter((p) => !matchesPaid(p.first_name, p.age_group));
+  }, [roster, paidIndex]);
 
   const applySearch = (r: Registration) => {
     if (ageGroupFilter !== "all" && r.preferred_age_group !== ageGroupFilter) return false;
