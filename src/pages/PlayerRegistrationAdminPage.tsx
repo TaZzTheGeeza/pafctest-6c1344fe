@@ -674,7 +674,7 @@ function RegisteredList({ items, onSelect, showUnpaid = false }: { items: Regist
   );
 }
 
-function OutstandingList({ items }: { items: RosterPlayer[] }) {
+function OutstandingList({ items, onMarkComplete, markingId }: { items: RosterPlayer[]; onMarkComplete: (p: RosterPlayer) => void; markingId: string | null }) {
   if (!items.length) {
     return (
       <div className="text-center py-16 text-green-500 bg-card border border-border rounded-xl">
@@ -700,6 +700,15 @@ function OutstandingList({ items }: { items: RosterPlayer[] }) {
                 {p.shirt_number ? ` • #${p.shirt_number}` : ""}
               </p>
             </div>
+            <button
+              onClick={() => onMarkComplete(p)}
+              disabled={markingId === p.id}
+              className="inline-flex items-center gap-1.5 text-[10px] px-2.5 py-1 rounded-md bg-green-500/20 text-green-500 hover:bg-green-500/30 font-display tracking-wider disabled:opacity-50"
+              title="Mark as registered & paid manually (no payment required)"
+            >
+              {markingId === p.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckSquare className="h-3 w-3" />}
+              MARK COMPLETE
+            </button>
             <span className="text-[10px] px-2 py-1 rounded-full bg-amber-500/20 text-amber-500 font-display tracking-wider">
               NOT REGISTERED
             </span>
