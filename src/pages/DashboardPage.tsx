@@ -113,6 +113,7 @@ export default function DashboardPage() {
       loadRegistrationSetting();
       loadShopSetting();
       loadPresentationSetting();
+      loadTournamentSetting();
       loadUsers();
     } else {
       setLoading(false);
