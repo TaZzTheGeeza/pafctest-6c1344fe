@@ -678,6 +678,8 @@ export default function PlayerRegistrationAdminPage() {
             items={filteredOutstanding}
             onMarkComplete={(p) => markComplete(resolveManualCompletionDetails(p))}
             markingId={markingId}
+            excludedItems={excludedRosterPlayers}
+            onToggleExclude={toggleExcluded}
           />
         ) : (
           <RegisteredList items={visibleRegistrations} onSelect={setSelected} showUnpaid={false} />
