@@ -194,8 +194,8 @@ export default function PlayerRegistrationAdminPage() {
         toast.success(`${opts.childName} registered manually`);
       }
       await queryClient.invalidateQueries({ queryKey: ["player-registrations"] });
-    } catch (e: any) {
-      toast.error(e.message || "Failed to mark complete");
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Failed to mark complete");
     } finally {
       setMarkingId(null);
     }
@@ -315,7 +315,7 @@ export default function PlayerRegistrationAdminPage() {
     return roster.filter((p) => !matchesPaid(p.first_name, p.age_group));
   }, [roster, matchesPaid]);
 
-  const applySearch = (r: Registration) => {
+  const applySearch = useCallback((r: Registration) => {
     if (ageGroupFilter !== "all" && r.preferred_age_group !== ageGroupFilter) return false;
     if (!search.trim()) return true;
     const q = search.toLowerCase();
@@ -325,10 +325,10 @@ export default function PlayerRegistrationAdminPage() {
       r.email.toLowerCase().includes(q) ||
       (r.phone || "").toLowerCase().includes(q)
     );
-  };
+  }, [ageGroupFilter, search]);
 
-  const filteredPaid = useMemo(() => paidRegistrations.filter(applySearch), [paidRegistrations, search, ageGroupFilter]);
-  const filteredUnpaid = useMemo(() => unpaidRegistrations.filter(applySearch), [unpaidRegistrations, search, ageGroupFilter]);
+  const filteredPaid = useMemo(() => paidRegistrations.filter(applySearch), [paidRegistrations, applySearch]);
+  const filteredUnpaid = useMemo(() => unpaidRegistrations.filter(applySearch), [unpaidRegistrations, applySearch]);
 
   const filteredOutstanding = useMemo(() => {
     return outstanding.filter((p) => {
@@ -365,7 +365,7 @@ export default function PlayerRegistrationAdminPage() {
         };
       })
       .sort((a, b) => a.age_group.localeCompare(b.age_group) || a.player_name.localeCompare(b.player_name));
-  }, [guardians, parentProfiles, paidIndex, paidEmails]);
+  }, [guardians, parentProfiles, matchesPaid, paidEmails]);
 
   const hubRegisteredCount = hubPlayers.filter((h) => h.registered).length;
   const hubOutstandingCount = hubPlayers.length - hubRegisteredCount;
