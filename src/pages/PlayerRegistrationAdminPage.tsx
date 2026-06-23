@@ -233,9 +233,12 @@ export default function PlayerRegistrationAdminPage() {
   const registeredKeys = useMemo(() => {
     const set = new Set<string>();
     paidRegistrations.forEach((r) => {
-      const first = r.child_name.split(" ")[0] || r.child_name;
+      const parts = normaliseName(r.child_name).split(" ").filter(Boolean);
+      const first = parts[0] || r.child_name;
+      const lastInitial = parts.length > 1 ? parts[parts.length - 1][0] : "";
       set.add(`${normaliseName(first)}::${r.preferred_age_group}`);
       set.add(`${normaliseName(r.child_name)}::${r.preferred_age_group}`);
+      if (lastInitial) set.add(`${normaliseName(first)} ${lastInitial}::${r.preferred_age_group}`);
     });
     return set;
   }, [paidRegistrations]);
