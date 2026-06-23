@@ -21,7 +21,7 @@ import { useUserAgeGroups } from "@/hooks/useUserAgeGroups";
 import { faTeamConfigs } from "@/lib/faFixtureConfig";
 import { POTMForm } from "@/pages/CoachPanelPage";
 import { MatchReportForm } from "@/pages/CoachPanelPage";
-import { Upload, CheckCircle, AlertTriangle, UserPlus as UserPlusIcon, Award, Sparkles } from "lucide-react";
+import { Upload, CheckCircle, AlertTriangle, UserPlus as UserPlusIcon, Award, Sparkles, Trophy } from "lucide-react";
 import { TeamRequestsManager } from "@/components/dashboard/TeamRequestsManager";
 import { AdminNotificationComposer } from "@/components/dashboard/AdminNotificationComposer";
 import { OrdersTab } from "@/components/dashboard/OrdersTab";
