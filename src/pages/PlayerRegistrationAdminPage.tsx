@@ -326,8 +326,13 @@ export default function PlayerRegistrationAdminPage() {
   }, [paidIndex]);
 
   const outstanding = useMemo(() => {
-    return roster.filter((p) => !matchesPaid(p.first_name, p.age_group));
-  }, [roster, matchesPaid]);
+    return roster.filter((p) => !excludedRosterIds.has(p.id) && !matchesPaid(p.first_name, p.age_group));
+  }, [roster, matchesPaid, excludedRosterIds]);
+
+  const excludedRosterPlayers = useMemo(
+    () => roster.filter((p) => excludedRosterIds.has(p.id)),
+    [roster, excludedRosterIds],
+  );
 
   const applySearch = useCallback((r: Registration) => {
     if (ageGroupFilter !== "all" && r.preferred_age_group !== ageGroupFilter) return false;
