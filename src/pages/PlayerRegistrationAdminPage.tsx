@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Link } from "react-router-dom";
 import {
   ArrowLeft, CheckCircle2, AlertCircle, Search, Download, Loader2,
   User as UserIcon, Mail, Phone, MapPin, Calendar, Heart, ShieldAlert, X,
-  Bell, Send, Users,
+  Bell, Send, Users, CheckSquare,
 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
