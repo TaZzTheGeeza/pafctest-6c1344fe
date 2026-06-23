@@ -5,6 +5,7 @@ import { ShoppingBag, Trophy, ChevronRight, Smartphone, Sparkles, UserPlus, Tick
 import heroBg from "@/assets/hero-bg.jpg";
 import { usePresentationEnabled } from "@/hooks/usePresentationEnabled";
 import { useRegistrationOpen } from "@/hooks/useRegistrationOpen";
+import { useTournamentEnabled } from "@/hooks/useTournamentEnabled";
 
 export function HeroSection() {
   const { enabled: presentationEnabled } = usePresentationEnabled();
