@@ -189,13 +189,52 @@ export function PlayerRosterManager({ teamSlug, teamName }: { teamSlug: string; 
   }
 
   async function remove(p: Player) {
-    if (!confirm(`Remove ${p.first_name} from ${ageGroup}? This will also delete their match stats history.`)) return;
+    if (!confirm(`Remove ${p.first_name} from ${ageGroup}?\n\nThis will also delete:\n• Their match stats history\n• Any player registration record matching this name\n• Linked parent/guardian records for this player on this team\n• Their availability responses for this team`)) return;
+
+    const firstName = p.first_name.trim();
+    const firstToken = firstName.toLowerCase().split(/\s+/)[0];
+
+    // 1. Player registrations — match by first name token + age group (case-insensitive)
+    const { data: regs } = await supabase
+      .from("player_registrations")
+      .select("id, child_name, preferred_age_group")
+      .ilike("child_name", `${firstToken}%`);
+    const regIds = (regs || [])
+      .filter((r) => (r.preferred_age_group || "").toLowerCase().includes(ageGroup.toLowerCase()))
+      .map((r) => r.id);
+    if (regIds.length) {
+      await supabase.from("player_registrations").delete().in("id", regIds);
+    }
+
+    // 2. Guardians for this player on this team
+    const { data: gs } = await supabase
+      .from("guardians")
+      .select("id, player_name")
+      .eq("team_slug", teamSlug);
+    const gIds = (gs || [])
+      .filter((g) => {
+        const gFirst = (g.player_name || "").trim().toLowerCase().split(/\s+/)[0];
+        return gFirst === firstToken;
+      })
+      .map((g) => g.id);
+    if (gIds.length) {
+      await supabase.from("guardians").delete().in("id", gIds);
+    }
+
+    // 3. Fixture availability responses where responding_for matches this player name
+    await supabase
+      .from("fixture_availability")
+      .delete()
+      .eq("team_slug", teamSlug)
+      .ilike("responding_for", `${firstToken}%`);
+
+    // 4. Finally remove the roster entry (cascades match stats)
     const { error } = await supabase.from("player_stats").delete().eq("id", p.id);
     if (error) {
       toast.error(error.message);
       return;
     }
-    toast.success("Player removed");
+    toast.success(`Removed ${p.first_name} and cleaned up ${regIds.length} registration(s), ${gIds.length} guardian link(s)`);
     load();
   }
 
