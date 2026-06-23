@@ -646,6 +646,26 @@ export default function DashboardPage() {
                       <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${presentationOpen ? "translate-x-6" : "translate-x-1"}`} />
                     </button>
                   </div>
+                  <div className="bg-card border border-border rounded-xl p-5 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-primary/10">
+                        <Trophy className="h-4 w-4 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-display font-semibold text-foreground">Tournament</p>
+                        <p className="text-[10px] text-muted-foreground">
+                          {tournamentEnabled ? "Visible on homepage & navigation" : "Hidden — turn on when next tournament is ready"}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={toggleTournament}
+                      disabled={togglingTournament}
+                      className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${tournamentEnabled ? "bg-primary" : "bg-muted"}`}
+                    >
+                      <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${tournamentEnabled ? "translate-x-6" : "translate-x-1"}`} />
+                    </button>
+                  </div>
                 </div>
               )}
 
