@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Link } from "react-router-dom";
 import {
   ArrowLeft, CheckCircle2, AlertCircle, Search, Download, Loader2,
   User as UserIcon, Mail, Phone, MapPin, Calendar, Heart, ShieldAlert, X,
-  Bell, Send, Users,
+  Bell, Send, Users, CheckSquare,
 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -106,6 +106,59 @@ export default function PlayerRegistrationAdminPage() {
   const [selected, setSelected] = useState<Registration | null>(null);
   const [selectedParents, setSelectedParents] = useState<Set<string>>(new Set());
   const [sending, setSending] = useState(false);
+  const [markingId, setMarkingId] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+
+  const markComplete = async (opts: {
+    childName: string;
+    ageGroup: string;
+    parentName?: string | null;
+    email?: string | null;
+    phone?: string | null;
+    rowKey: string;
+  }) => {
+    if (!confirm(`Mark ${opts.childName} (${opts.ageGroup}) as registered & paid? Use this only when payment has been received outside the system (cash, bank transfer, etc.).`)) return;
+    setMarkingId(opts.rowKey);
+    try {
+      // Check if a registration already exists for this child/age group
+      const { data: existing } = await supabase
+        .from("player_registrations")
+        .select("id, payment_status")
+        .ilike("child_name", `${opts.childName.split(" ")[0]}%`)
+        .eq("preferred_age_group", opts.ageGroup)
+        .limit(1)
+        .maybeSingle();
+
+      if (existing) {
+        const { error } = await supabase
+          .from("player_registrations")
+          .update({ payment_status: "paid", paid_at: new Date().toISOString() })
+          .eq("id", existing.id);
+        if (error) throw error;
+        toast.success(`${opts.childName} marked as paid`);
+      } else {
+        const { error } = await supabase.from("player_registrations").insert({
+          child_name: opts.childName,
+          child_dob: "1900-01-01",
+          parent_name: opts.parentName || "Manual entry",
+          email: opts.email || "manual@pa-fc.uk",
+          phone: opts.phone || "N/A",
+          preferred_age_group: opts.ageGroup,
+          payment_status: "paid",
+          paid_at: new Date().toISOString(),
+          additional_info: "Manually marked complete by admin (payment received outside system).",
+          declaration_confirmed: true,
+        });
+        if (error) throw error;
+        toast.success(`${opts.childName} registered manually`);
+      }
+      await queryClient.invalidateQueries({ queryKey: ["player-registrations"] });
+    } catch (e: any) {
+      toast.error(e.message || "Failed to mark complete");
+    } finally {
+      setMarkingId(null);
+    }
+  };
 
 
   const { data: registrations = [], isLoading } = useQuery({
@@ -510,9 +563,25 @@ export default function PlayerRegistrationAdminPage() {
             items={filteredHub}
             selected={selectedParents}
             onToggle={toggleParent}
+            onMarkComplete={(h) => markComplete({
+              childName: h.player_name,
+              ageGroup: h.age_group,
+              parentName: h.parent_name,
+              email: h.parent_email,
+              rowKey: h.guardian_id,
+            })}
+            markingId={markingId}
           />
         ) : tab === "outstanding" ? (
-          <OutstandingList items={filteredOutstanding} />
+          <OutstandingList
+            items={filteredOutstanding}
+            onMarkComplete={(p) => markComplete({
+              childName: p.first_name,
+              ageGroup: p.age_group,
+              rowKey: p.id,
+            })}
+            markingId={markingId}
+          />
         ) : (
           <RegisteredList items={visibleRegistrations} onSelect={setSelected} showUnpaid={false} />
         )}
@@ -605,7 +674,7 @@ function RegisteredList({ items, onSelect, showUnpaid = false }: { items: Regist
   );
 }
 
-function OutstandingList({ items }: { items: RosterPlayer[] }) {
+function OutstandingList({ items, onMarkComplete, markingId }: { items: RosterPlayer[]; onMarkComplete: (p: RosterPlayer) => void; markingId: string | null }) {
   if (!items.length) {
     return (
       <div className="text-center py-16 text-green-500 bg-card border border-border rounded-xl">
@@ -631,6 +700,15 @@ function OutstandingList({ items }: { items: RosterPlayer[] }) {
                 {p.shirt_number ? ` • #${p.shirt_number}` : ""}
               </p>
             </div>
+            <button
+              onClick={() => onMarkComplete(p)}
+              disabled={markingId === p.id}
+              className="inline-flex items-center gap-1.5 text-[10px] px-2.5 py-1 rounded-md bg-green-500/20 text-green-500 hover:bg-green-500/30 font-display tracking-wider disabled:opacity-50"
+              title="Mark as registered & paid manually (no payment required)"
+            >
+              {markingId === p.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckSquare className="h-3 w-3" />}
+              MARK COMPLETE
+            </button>
             <span className="text-[10px] px-2 py-1 rounded-full bg-amber-500/20 text-amber-500 font-display tracking-wider">
               NOT REGISTERED
             </span>
@@ -756,10 +834,14 @@ function HubPlayerList({
   items,
   selected,
   onToggle,
+  onMarkComplete,
+  markingId,
 }: {
   items: HubPlayer[];
   selected: Set<string>;
   onToggle: (userId: string) => void;
+  onMarkComplete: (h: HubPlayer) => void;
+  markingId: string | null;
 }) {
   if (!items.length) {
     return (
@@ -771,17 +853,17 @@ function HubPlayerList({
   return (
     <div className="bg-card border border-border rounded-xl overflow-hidden">
       <div className="px-4 py-3 bg-primary/5 border-b border-border text-xs text-muted-foreground font-display tracking-wider">
-        Hub players are linked to a parent account via the PAFC Hub. Tick outstanding parents to send a registration reminder (in-app + email + push).
+        Hub players are linked to a parent account via the PAFC Hub. Tick outstanding parents to send a reminder, or click <span className="text-green-500">Mark Complete</span> to manually register a player whose payment was received outside the system.
       </div>
       <div className="divide-y divide-border">
         {items.map((h) => {
           const isSel = selected.has(h.parent_user_id);
           const disabled = h.registered;
           return (
-            <label
+            <div
               key={h.guardian_id}
               className={`flex items-center gap-3 px-4 py-3 transition-colors ${
-                disabled ? "opacity-70" : "cursor-pointer hover:bg-secondary/40"
+                disabled ? "opacity-70" : ""
               } ${isSel ? "bg-primary/5" : ""}`}
             >
               <input
@@ -810,6 +892,17 @@ function HubPlayerList({
                   {h.parent_email ? ` · ${h.parent_email}` : " · (no email)"}
                 </p>
               </div>
+              {!h.registered && (
+                <button
+                  onClick={() => onMarkComplete(h)}
+                  disabled={markingId === h.guardian_id}
+                  className="inline-flex items-center gap-1.5 text-[10px] px-2.5 py-1 rounded-md bg-green-500/20 text-green-500 hover:bg-green-500/30 font-display tracking-wider disabled:opacity-50"
+                  title="Mark as registered & paid manually (no payment required)"
+                >
+                  {markingId === h.guardian_id ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckSquare className="h-3 w-3" />}
+                  MARK COMPLETE
+                </button>
+              )}
               {h.registered ? (
                 <span className="text-[10px] px-2 py-1 rounded-full bg-green-500/20 text-green-500 font-display tracking-wider shrink-0">
                   REGISTERED
@@ -819,7 +912,7 @@ function HubPlayerList({
                   <Bell className="h-3 w-3" /> OUTSTANDING
                 </span>
               )}
-            </label>
+            </div>
           );
         })}
       </div>
