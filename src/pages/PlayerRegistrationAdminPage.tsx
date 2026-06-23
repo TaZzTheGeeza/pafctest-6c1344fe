@@ -673,7 +673,7 @@ export default function PlayerRegistrationAdminPage() {
   );
 }
 
-function StatCard({ label, value, icon: Icon, color }: { label: string; value: number; icon: any; color: string }) {
+function StatCard({ label, value, icon: Icon, color }: { label: string; value: number; icon: ElementType; color: string }) {
   return (
     <div className="bg-card border border-border rounded-xl p-5">
       <div className="flex items-center justify-between">
@@ -870,7 +870,7 @@ function RegistrationDetail({ registration: r, onClose }: { registration: Regist
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div>
       <h3 className="font-display text-xs font-bold text-primary uppercase tracking-wider mb-3">{title}</h3>
@@ -879,7 +879,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-function Field({ icon: Icon, label, value }: { icon: any; label: string; value: string }) {
+function Field({ icon: Icon, label, value }: { icon: ElementType; label: string; value: string }) {
   return (
     <div className="flex items-start gap-3 py-2 border-b border-border/50 last:border-0">
       <Icon className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
