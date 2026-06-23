@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import type { ElementType, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Navbar } from "@/components/Navbar";
@@ -15,7 +16,7 @@ import { toast } from "sonner";
 
 // Resolves a signed URL for a photo stored in the private `registration-photos` bucket.
 // Accepts either a raw storage path (e.g. "userId/123.jpg") or a full https URL (legacy).
-function RegPhoto({ path, alt, className, fallback }: { path: string | null; alt: string; className: string; fallback: React.ReactNode }) {
+function RegPhoto({ path, alt, className, fallback }: { path: string | null; alt: string; className: string; fallback: ReactNode }) {
   const [url, setUrl] = useState<string | null>(null);
   useEffect(() => {
     let cancelled = false;
@@ -286,7 +287,7 @@ export default function PlayerRegistrationAdminPage() {
   // Flexible matcher: handles full names, first-only, "first lastInitial",
   // nicknames where roster is a prefix of registration (e.g. "Muz" → "Muzima"),
   // and roster "first lastInitial" matching registration "first surname".
-  const matchesPaid = (rosterName: string, ageGroup: string): boolean => {
+  const matchesPaid = useCallback((rosterName: string, ageGroup: string): boolean => {
     const rParts = normaliseName(rosterName).split(" ").filter(Boolean);
     if (rParts.length === 0) return false;
     const rFirst = rParts[0];
@@ -308,11 +309,11 @@ export default function PlayerRegistrationAdminPage() {
       }
       return true;
     });
-  };
+  }, [paidIndex]);
 
   const outstanding = useMemo(() => {
     return roster.filter((p) => !matchesPaid(p.first_name, p.age_group));
-  }, [roster, paidIndex]);
+  }, [roster, matchesPaid]);
 
   const applySearch = (r: Registration) => {
     if (ageGroupFilter !== "all" && r.preferred_age_group !== ageGroupFilter) return false;
