@@ -834,10 +834,14 @@ function HubPlayerList({
   items,
   selected,
   onToggle,
+  onMarkComplete,
+  markingId,
 }: {
   items: HubPlayer[];
   selected: Set<string>;
   onToggle: (userId: string) => void;
+  onMarkComplete: (h: HubPlayer) => void;
+  markingId: string | null;
 }) {
   if (!items.length) {
     return (
@@ -849,17 +853,17 @@ function HubPlayerList({
   return (
     <div className="bg-card border border-border rounded-xl overflow-hidden">
       <div className="px-4 py-3 bg-primary/5 border-b border-border text-xs text-muted-foreground font-display tracking-wider">
-        Hub players are linked to a parent account via the PAFC Hub. Tick outstanding parents to send a registration reminder (in-app + email + push).
+        Hub players are linked to a parent account via the PAFC Hub. Tick outstanding parents to send a reminder, or click <span className="text-green-500">Mark Complete</span> to manually register a player whose payment was received outside the system.
       </div>
       <div className="divide-y divide-border">
         {items.map((h) => {
           const isSel = selected.has(h.parent_user_id);
           const disabled = h.registered;
           return (
-            <label
+            <div
               key={h.guardian_id}
               className={`flex items-center gap-3 px-4 py-3 transition-colors ${
-                disabled ? "opacity-70" : "cursor-pointer hover:bg-secondary/40"
+                disabled ? "opacity-70" : ""
               } ${isSel ? "bg-primary/5" : ""}`}
             >
               <input
@@ -888,6 +892,17 @@ function HubPlayerList({
                   {h.parent_email ? ` · ${h.parent_email}` : " · (no email)"}
                 </p>
               </div>
+              {!h.registered && (
+                <button
+                  onClick={() => onMarkComplete(h)}
+                  disabled={markingId === h.guardian_id}
+                  className="inline-flex items-center gap-1.5 text-[10px] px-2.5 py-1 rounded-md bg-green-500/20 text-green-500 hover:bg-green-500/30 font-display tracking-wider disabled:opacity-50"
+                  title="Mark as registered & paid manually (no payment required)"
+                >
+                  {markingId === h.guardian_id ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckSquare className="h-3 w-3" />}
+                  MARK COMPLETE
+                </button>
+              )}
               {h.registered ? (
                 <span className="text-[10px] px-2 py-1 rounded-full bg-green-500/20 text-green-500 font-display tracking-wider shrink-0">
                   REGISTERED
@@ -897,7 +912,7 @@ function HubPlayerList({
                   <Bell className="h-3 w-3" /> OUTSTANDING
                 </span>
               )}
-            </label>
+            </div>
           );
         })}
       </div>
