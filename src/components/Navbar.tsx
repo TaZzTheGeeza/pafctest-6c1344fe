@@ -165,6 +165,7 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
   const { user, signOut, isCoach, isAdmin, isTreasurer } = useAuth();
+  const { enabled: tournamentEnabled } = useTournamentEnabled();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
