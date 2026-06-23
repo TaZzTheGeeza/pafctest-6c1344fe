@@ -92,6 +92,8 @@ export default function DashboardPage() {
   const [togglingShop, setTogglingShop] = useState(false);
   const [presentationOpen, setPresentationOpen] = useState(false);
   const [togglingPresentation, setTogglingPresentation] = useState(false);
+  const [tournamentEnabled, setTournamentEnabled] = useState(false);
+  const [togglingTournament, setTogglingTournament] = useState(false);
   const [activeSection, setActiveSection] = useState<DashboardSection>("overview");
   const [searchParams] = useSearchParams();
 
