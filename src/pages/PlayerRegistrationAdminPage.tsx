@@ -78,6 +78,39 @@ interface RosterPlayer {
 
 const normaliseName = (s: string) => s.trim().toLowerCase().replace(/\s+/g, " ");
 
+const splitName = (name: string) => {
+  const parts = normaliseName(name).split(" ").filter(Boolean);
+  return {
+    first: parts[0] || "",
+    surname: parts.slice(1).join(" "),
+    full: parts.join(" "),
+  };
+};
+
+const nameMatchScore = (shortOrRosterName: string, fullCandidateName: string): number => {
+  const roster = splitName(shortOrRosterName);
+  const candidate = splitName(fullCandidateName);
+  if (!roster.first || !candidate.first) return 0;
+  if (roster.full === candidate.full) return 100;
+
+  const firstMatch =
+    candidate.first === roster.first ||
+    (roster.first.length >= 3 && candidate.first.startsWith(roster.first)) ||
+    (candidate.first.length >= 3 && roster.first.startsWith(candidate.first));
+  if (!firstMatch) return 0;
+
+  if (roster.surname) {
+    if (!candidate.surname) return 0;
+    if (candidate.surname === roster.surname) return 95;
+    if (candidate.surname.startsWith(roster.surname)) return 85;
+    if (candidate.surname[0] && roster.surname === candidate.surname[0]) return 80;
+    if (candidate.surname[0] && roster.surname.startsWith(candidate.surname[0]) && roster.surname.length === 1) return 75;
+    return 0;
+  }
+
+  return candidate.first === roster.first ? 45 : 35;
+};
+
 // Map team_slug (e.g. "u9s-gold") to the human age group used in registrations (e.g. "U9 Gold")
 function teamSlugToAgeGroup(slug: string): string {
   const s = (slug || "").toLowerCase().trim();
@@ -120,14 +153,21 @@ export default function PlayerRegistrationAdminPage() {
     if (!confirm(`Mark ${opts.childName} (${opts.ageGroup}) as registered & paid? Use this only when payment has been received outside the system (cash, bank transfer, etc.).`)) return;
     setMarkingId(opts.rowKey);
     try {
-      // Check if a registration already exists for this child/age group
-      const { data: existing } = await supabase
+      // Check all same-age registrations for the best name match. This avoids
+      // "Charlie M" accidentally updating another Charlie in the same age group.
+      const firstName = splitName(opts.childName).first;
+      const { data: existingRows, error: lookupError } = await supabase
         .from("player_registrations")
-        .select("id, payment_status")
-        .ilike("child_name", `${opts.childName.split(" ")[0]}%`)
+        .select("id, child_name, payment_status")
         .eq("preferred_age_group", opts.ageGroup)
-        .limit(1)
-        .maybeSingle();
+        .ilike("child_name", `${firstName}%`);
+
+      if (lookupError) throw lookupError;
+
+      const existing = (existingRows || [])
+        .map((row) => ({ ...row, score: nameMatchScore(opts.childName, row.child_name) }))
+        .filter((row) => row.score > 0)
+        .sort((a, b) => b.score - a.score || (a.payment_status === "paid" ? 1 : 0) - (b.payment_status === "paid" ? 1 : 0))[0];
 
       if (existing) {
         const { error } = await supabase
@@ -233,11 +273,11 @@ export default function PlayerRegistrationAdminPage() {
   type PaidIndex = { first: string; surname: string; full: string; ag: string };
   const paidIndex = useMemo<PaidIndex[]>(() => {
     return paidRegistrations.map((r) => {
-      const parts = normaliseName(r.child_name).split(" ").filter(Boolean);
+      const parts = splitName(r.child_name);
       return {
-        first: parts[0] || "",
-        surname: parts.slice(1).join(" "),
-        full: normaliseName(r.child_name),
+        first: parts.first,
+        surname: parts.surname,
+        full: parts.full,
         ag: r.preferred_age_group,
       };
     });
@@ -253,6 +293,7 @@ export default function PlayerRegistrationAdminPage() {
     const rRest = rParts.slice(1).join(" ");
     return paidIndex.some((p) => {
       if (p.ag !== ageGroup) return false;
+      if (nameMatchScore(rosterName, p.full) >= 35) return true;
       if (p.full === normaliseName(rosterName)) return true;
       // First-name match: exact, or one is a prefix of the other (≥3 chars to avoid false positives)
       const firstMatch =
@@ -341,6 +382,22 @@ export default function PlayerRegistrationAdminPage() {
       );
     });
   }, [hubPlayers, search, ageGroupFilter]);
+
+  const resolveManualCompletionDetails = (player: RosterPlayer) => {
+    const hubMatch = hubPlayers
+      .filter((h) => h.age_group === player.age_group)
+      .map((h) => ({ player: h, score: nameMatchScore(player.first_name, h.player_name) }))
+      .filter((match) => match.score > 0)
+      .sort((a, b) => b.score - a.score)[0]?.player;
+
+    return {
+      childName: hubMatch?.player_name || player.first_name,
+      ageGroup: player.age_group,
+      parentName: hubMatch?.parent_name,
+      email: hubMatch?.parent_email,
+      rowKey: player.id,
+    };
+  };
 
   const toggleParent = (userId: string) => {
     setSelectedParents((prev) => {
@@ -599,11 +656,7 @@ export default function PlayerRegistrationAdminPage() {
         ) : tab === "outstanding" ? (
           <OutstandingList
             items={filteredOutstanding}
-            onMarkComplete={(p) => markComplete({
-              childName: p.first_name,
-              ageGroup: p.age_group,
-              rowKey: p.id,
-            })}
+            onMarkComplete={(p) => markComplete(resolveManualCompletionDetails(p))}
             markingId={markingId}
           />
         ) : (
