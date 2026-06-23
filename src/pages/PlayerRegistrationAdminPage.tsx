@@ -773,50 +773,99 @@ function RegisteredList({ items, onSelect, showUnpaid = false }: { items: Regist
   );
 }
 
-function OutstandingList({ items, onMarkComplete, markingId }: { items: RosterPlayer[]; onMarkComplete: (p: RosterPlayer) => void; markingId: string | null }) {
-  if (!items.length) {
-    return (
-      <div className="text-center py-16 text-green-500 bg-card border border-border rounded-xl">
-        🎉 Everyone on the roster has registered!
-      </div>
-    );
-  }
+function OutstandingList({ items, onMarkComplete, markingId, excludedItems, onToggleExclude }: {
+  items: RosterPlayer[];
+  onMarkComplete: (p: RosterPlayer) => void;
+  markingId: string | null;
+  excludedItems: RosterPlayer[];
+  onToggleExclude: (id: string) => void;
+}) {
   return (
-    <div className="bg-card border border-border rounded-xl overflow-hidden">
-      <div className="px-4 py-3 bg-amber-500/10 border-b border-amber-500/20 text-xs text-amber-500 font-display tracking-wider">
-        These players appear on a team roster but have not submitted a 2026/27 registration form yet.
-      </div>
-      <div className="divide-y divide-border">
-        {items.map((p) => (
-          <div key={p.id} className="px-4 py-3 flex items-center gap-3">
-            <div className="h-10 w-10 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-500 font-display font-bold">
-              {p.first_name[0]?.toUpperCase()}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-display font-bold text-foreground text-sm truncate">{p.first_name}</p>
-              <p className="text-xs text-muted-foreground truncate">
-                {p.team_name} • {p.age_group}
-                {p.shirt_number ? ` • #${p.shirt_number}` : ""}
-              </p>
-            </div>
-            <button
-              onClick={() => onMarkComplete(p)}
-              disabled={markingId === p.id}
-              className="inline-flex items-center gap-1.5 text-[10px] px-2.5 py-1 rounded-md bg-green-500/20 text-green-500 hover:bg-green-500/30 font-display tracking-wider disabled:opacity-50"
-              title="Mark as registered & paid manually (no payment required)"
-            >
-              {markingId === p.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckSquare className="h-3 w-3" />}
-              MARK COMPLETE
-            </button>
-            <span className="text-[10px] px-2 py-1 rounded-full bg-amber-500/20 text-amber-500 font-display tracking-wider">
-              NOT REGISTERED
-            </span>
+    <div className="space-y-4">
+      {items.length === 0 ? (
+        <div className="text-center py-16 text-green-500 bg-card border border-border rounded-xl">
+          🎉 Everyone on the roster has registered!
+        </div>
+      ) : (
+        <div className="bg-card border border-border rounded-xl overflow-hidden">
+          <div className="px-4 py-3 bg-amber-500/10 border-b border-amber-500/20 text-xs text-amber-500 font-display tracking-wider">
+            These players appear on a team roster but have not submitted a 2026/27 registration form yet.
           </div>
-        ))}
-      </div>
+          <div className="divide-y divide-border">
+            {items.map((p) => (
+              <div key={p.id} className="px-4 py-3 flex items-center gap-3">
+                <div className="h-10 w-10 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-500 font-display font-bold">
+                  {p.first_name[0]?.toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-display font-bold text-foreground text-sm truncate">{p.first_name}</p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {p.team_name} • {p.age_group}
+                    {p.shirt_number ? ` • #${p.shirt_number}` : ""}
+                  </p>
+                </div>
+                <button
+                  onClick={() => onMarkComplete(p)}
+                  disabled={markingId === p.id}
+                  className="inline-flex items-center gap-1.5 text-[10px] px-2.5 py-1 rounded-md bg-green-500/20 text-green-500 hover:bg-green-500/30 font-display tracking-wider disabled:opacity-50"
+                  title="Mark as registered & paid manually (no payment required)"
+                >
+                  {markingId === p.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckSquare className="h-3 w-3" />}
+                  MARK COMPLETE
+                </button>
+                <button
+                  onClick={() => {
+                    if (confirm(`Mark ${p.first_name} (${p.team_name}) as a coach/staff member? They will be hidden from the outstanding list and won't require a player registration.`)) {
+                      onToggleExclude(p.id);
+                    }
+                  }}
+                  className="inline-flex items-center gap-1.5 text-[10px] px-2.5 py-1 rounded-md bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 font-display tracking-wider"
+                  title="Hide from outstanding list — this person is a coach/staff member, not a player"
+                >
+                  NOT A PLAYER
+                </button>
+                <span className="text-[10px] px-2 py-1 rounded-full bg-amber-500/20 text-amber-500 font-display tracking-wider">
+                  NOT REGISTERED
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {excludedItems.length > 0 && (
+        <div className="bg-card border border-border rounded-xl overflow-hidden">
+          <div className="px-4 py-3 bg-blue-500/10 border-b border-blue-500/20 text-xs text-blue-400 font-display tracking-wider">
+            Coaches / Staff — hidden from outstanding ({excludedItems.length})
+          </div>
+          <div className="divide-y divide-border">
+            {excludedItems.map((p) => (
+              <div key={p.id} className="px-4 py-3 flex items-center gap-3">
+                <div className="h-8 w-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 font-display font-bold text-xs">
+                  {p.first_name[0]?.toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-display font-bold text-foreground text-sm truncate">{p.first_name}</p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {p.team_name} • {p.age_group} • Coach/Staff
+                  </p>
+                </div>
+                <button
+                  onClick={() => onToggleExclude(p.id)}
+                  className="text-[10px] px-2.5 py-1 rounded-md bg-secondary text-muted-foreground hover:text-foreground hover:bg-secondary/80 font-display tracking-wider"
+                  title="Restore to outstanding list"
+                >
+                  UNDO
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
 
 function RegistrationDetail({ registration: r, onClose }: { registration: Registration; onClose: () => void }) {
   return (
