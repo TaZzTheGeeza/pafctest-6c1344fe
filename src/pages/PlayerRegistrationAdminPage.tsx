@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import type { ElementType, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Navbar } from "@/components/Navbar";
@@ -15,7 +16,7 @@ import { toast } from "sonner";
 
 // Resolves a signed URL for a photo stored in the private `registration-photos` bucket.
 // Accepts either a raw storage path (e.g. "userId/123.jpg") or a full https URL (legacy).
-function RegPhoto({ path, alt, className, fallback }: { path: string | null; alt: string; className: string; fallback: React.ReactNode }) {
+function RegPhoto({ path, alt, className, fallback }: { path: string | null; alt: string; className: string; fallback: ReactNode }) {
   const [url, setUrl] = useState<string | null>(null);
   useEffect(() => {
     let cancelled = false;
@@ -78,6 +79,39 @@ interface RosterPlayer {
 
 const normaliseName = (s: string) => s.trim().toLowerCase().replace(/\s+/g, " ");
 
+const splitName = (name: string) => {
+  const parts = normaliseName(name).split(" ").filter(Boolean);
+  return {
+    first: parts[0] || "",
+    surname: parts.slice(1).join(" "),
+    full: parts.join(" "),
+  };
+};
+
+const nameMatchScore = (shortOrRosterName: string, fullCandidateName: string): number => {
+  const roster = splitName(shortOrRosterName);
+  const candidate = splitName(fullCandidateName);
+  if (!roster.first || !candidate.first) return 0;
+  if (roster.full === candidate.full) return 100;
+
+  const firstMatch =
+    candidate.first === roster.first ||
+    (roster.first.length >= 3 && candidate.first.startsWith(roster.first)) ||
+    (candidate.first.length >= 3 && roster.first.startsWith(candidate.first));
+  if (!firstMatch) return 0;
+
+  if (roster.surname) {
+    if (!candidate.surname) return 0;
+    if (candidate.surname === roster.surname) return 95;
+    if (candidate.surname.startsWith(roster.surname)) return 85;
+    if (candidate.surname[0] && roster.surname === candidate.surname[0]) return 80;
+    if (candidate.surname[0] && roster.surname.startsWith(candidate.surname[0]) && roster.surname.length === 1) return 75;
+    return 0;
+  }
+
+  return candidate.first === roster.first ? 45 : 35;
+};
+
 // Map team_slug (e.g. "u9s-gold") to the human age group used in registrations (e.g. "U9 Gold")
 function teamSlugToAgeGroup(slug: string): string {
   const s = (slug || "").toLowerCase().trim();
@@ -120,14 +154,21 @@ export default function PlayerRegistrationAdminPage() {
     if (!confirm(`Mark ${opts.childName} (${opts.ageGroup}) as registered & paid? Use this only when payment has been received outside the system (cash, bank transfer, etc.).`)) return;
     setMarkingId(opts.rowKey);
     try {
-      // Check if a registration already exists for this child/age group
-      const { data: existing } = await supabase
+      // Check all same-age registrations for the best name match. This avoids
+      // "Charlie M" accidentally updating another Charlie in the same age group.
+      const firstName = splitName(opts.childName).first;
+      const { data: existingRows, error: lookupError } = await supabase
         .from("player_registrations")
-        .select("id, payment_status")
-        .ilike("child_name", `${opts.childName.split(" ")[0]}%`)
+        .select("id, child_name, payment_status")
         .eq("preferred_age_group", opts.ageGroup)
-        .limit(1)
-        .maybeSingle();
+        .ilike("child_name", `${firstName}%`);
+
+      if (lookupError) throw lookupError;
+
+      const existing = (existingRows || [])
+        .map((row) => ({ ...row, score: nameMatchScore(opts.childName, row.child_name) }))
+        .filter((row) => row.score > 0)
+        .sort((a, b) => b.score - a.score || (a.payment_status === "paid" ? 1 : 0) - (b.payment_status === "paid" ? 1 : 0))[0];
 
       if (existing) {
         const { error } = await supabase
@@ -153,8 +194,8 @@ export default function PlayerRegistrationAdminPage() {
         toast.success(`${opts.childName} registered manually`);
       }
       await queryClient.invalidateQueries({ queryKey: ["player-registrations"] });
-    } catch (e: any) {
-      toast.error(e.message || "Failed to mark complete");
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Failed to mark complete");
     } finally {
       setMarkingId(null);
     }
@@ -233,11 +274,11 @@ export default function PlayerRegistrationAdminPage() {
   type PaidIndex = { first: string; surname: string; full: string; ag: string };
   const paidIndex = useMemo<PaidIndex[]>(() => {
     return paidRegistrations.map((r) => {
-      const parts = normaliseName(r.child_name).split(" ").filter(Boolean);
+      const parts = splitName(r.child_name);
       return {
-        first: parts[0] || "",
-        surname: parts.slice(1).join(" "),
-        full: normaliseName(r.child_name),
+        first: parts.first,
+        surname: parts.surname,
+        full: parts.full,
         ag: r.preferred_age_group,
       };
     });
@@ -246,13 +287,14 @@ export default function PlayerRegistrationAdminPage() {
   // Flexible matcher: handles full names, first-only, "first lastInitial",
   // nicknames where roster is a prefix of registration (e.g. "Muz" → "Muzima"),
   // and roster "first lastInitial" matching registration "first surname".
-  const matchesPaid = (rosterName: string, ageGroup: string): boolean => {
+  const matchesPaid = useCallback((rosterName: string, ageGroup: string): boolean => {
     const rParts = normaliseName(rosterName).split(" ").filter(Boolean);
     if (rParts.length === 0) return false;
     const rFirst = rParts[0];
     const rRest = rParts.slice(1).join(" ");
     return paidIndex.some((p) => {
       if (p.ag !== ageGroup) return false;
+      if (nameMatchScore(rosterName, p.full) >= 35) return true;
       if (p.full === normaliseName(rosterName)) return true;
       // First-name match: exact, or one is a prefix of the other (≥3 chars to avoid false positives)
       const firstMatch =
@@ -267,13 +309,13 @@ export default function PlayerRegistrationAdminPage() {
       }
       return true;
     });
-  };
+  }, [paidIndex]);
 
   const outstanding = useMemo(() => {
     return roster.filter((p) => !matchesPaid(p.first_name, p.age_group));
-  }, [roster, paidIndex]);
+  }, [roster, matchesPaid]);
 
-  const applySearch = (r: Registration) => {
+  const applySearch = useCallback((r: Registration) => {
     if (ageGroupFilter !== "all" && r.preferred_age_group !== ageGroupFilter) return false;
     if (!search.trim()) return true;
     const q = search.toLowerCase();
@@ -283,10 +325,10 @@ export default function PlayerRegistrationAdminPage() {
       r.email.toLowerCase().includes(q) ||
       (r.phone || "").toLowerCase().includes(q)
     );
-  };
+  }, [ageGroupFilter, search]);
 
-  const filteredPaid = useMemo(() => paidRegistrations.filter(applySearch), [paidRegistrations, search, ageGroupFilter]);
-  const filteredUnpaid = useMemo(() => unpaidRegistrations.filter(applySearch), [unpaidRegistrations, search, ageGroupFilter]);
+  const filteredPaid = useMemo(() => paidRegistrations.filter(applySearch), [paidRegistrations, applySearch]);
+  const filteredUnpaid = useMemo(() => unpaidRegistrations.filter(applySearch), [unpaidRegistrations, applySearch]);
 
   const filteredOutstanding = useMemo(() => {
     return outstanding.filter((p) => {
@@ -323,7 +365,7 @@ export default function PlayerRegistrationAdminPage() {
         };
       })
       .sort((a, b) => a.age_group.localeCompare(b.age_group) || a.player_name.localeCompare(b.player_name));
-  }, [guardians, parentProfiles, paidIndex, paidEmails]);
+  }, [guardians, parentProfiles, matchesPaid, paidEmails]);
 
   const hubRegisteredCount = hubPlayers.filter((h) => h.registered).length;
   const hubOutstandingCount = hubPlayers.length - hubRegisteredCount;
@@ -341,6 +383,22 @@ export default function PlayerRegistrationAdminPage() {
       );
     });
   }, [hubPlayers, search, ageGroupFilter]);
+
+  const resolveManualCompletionDetails = (player: RosterPlayer) => {
+    const hubMatch = hubPlayers
+      .filter((h) => h.age_group === player.age_group)
+      .map((h) => ({ player: h, score: nameMatchScore(player.first_name, h.player_name) }))
+      .filter((match) => match.score > 0)
+      .sort((a, b) => b.score - a.score)[0]?.player;
+
+    return {
+      childName: hubMatch?.player_name || player.first_name,
+      ageGroup: player.age_group,
+      parentName: hubMatch?.parent_name,
+      email: hubMatch?.parent_email,
+      rowKey: player.id,
+    };
+  };
 
   const toggleParent = (userId: string) => {
     setSelectedParents((prev) => {
@@ -599,11 +657,7 @@ export default function PlayerRegistrationAdminPage() {
         ) : tab === "outstanding" ? (
           <OutstandingList
             items={filteredOutstanding}
-            onMarkComplete={(p) => markComplete({
-              childName: p.first_name,
-              ageGroup: p.age_group,
-              rowKey: p.id,
-            })}
+            onMarkComplete={(p) => markComplete(resolveManualCompletionDetails(p))}
             markingId={markingId}
           />
         ) : (
@@ -619,7 +673,7 @@ export default function PlayerRegistrationAdminPage() {
   );
 }
 
-function StatCard({ label, value, icon: Icon, color }: { label: string; value: number; icon: any; color: string }) {
+function StatCard({ label, value, icon: Icon, color }: { label: string; value: number; icon: ElementType; color: string }) {
   return (
     <div className="bg-card border border-border rounded-xl p-5">
       <div className="flex items-center justify-between">
@@ -816,7 +870,7 @@ function RegistrationDetail({ registration: r, onClose }: { registration: Regist
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div>
       <h3 className="font-display text-xs font-bold text-primary uppercase tracking-wider mb-3">{title}</h3>
@@ -825,7 +879,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-function Field({ icon: Icon, label, value }: { icon: any; label: string; value: string }) {
+function Field({ icon: Icon, label, value }: { icon: ElementType; label: string; value: string }) {
   return (
     <div className="flex items-start gap-3 py-2 border-b border-border/50 last:border-0">
       <Icon className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
