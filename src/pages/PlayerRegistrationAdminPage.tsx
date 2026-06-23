@@ -141,6 +141,20 @@ export default function PlayerRegistrationAdminPage() {
   const [selectedParents, setSelectedParents] = useState<Set<string>>(new Set());
   const [sending, setSending] = useState(false);
   const [markingId, setMarkingId] = useState<string | null>(null);
+  const [excludedRosterIds, setExcludedRosterIds] = useState<Set<string>>(() => {
+    try {
+      const raw = localStorage.getItem("registration-excluded-roster-ids");
+      return new Set(raw ? (JSON.parse(raw) as string[]) : []);
+    } catch { return new Set(); }
+  });
+  const toggleExcluded = useCallback((id: string) => {
+    setExcludedRosterIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      try { localStorage.setItem("registration-excluded-roster-ids", JSON.stringify(Array.from(next))); } catch { /* ignore */ }
+      return next;
+    });
+  }, []);
   const queryClient = useQueryClient();
 
   const markComplete = async (opts: {
