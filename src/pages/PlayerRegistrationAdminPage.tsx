@@ -563,9 +563,25 @@ export default function PlayerRegistrationAdminPage() {
             items={filteredHub}
             selected={selectedParents}
             onToggle={toggleParent}
+            onMarkComplete={(h) => markComplete({
+              childName: h.player_name,
+              ageGroup: h.age_group,
+              parentName: h.parent_name,
+              email: h.parent_email,
+              rowKey: h.guardian_id,
+            })}
+            markingId={markingId}
           />
         ) : tab === "outstanding" ? (
-          <OutstandingList items={filteredOutstanding} />
+          <OutstandingList
+            items={filteredOutstanding}
+            onMarkComplete={(p) => markComplete({
+              childName: p.first_name,
+              ageGroup: p.age_group,
+              rowKey: p.id,
+            })}
+            markingId={markingId}
+          />
         ) : (
           <RegisteredList items={visibleRegistrations} onSelect={setSelected} showUnpaid={false} />
         )}
