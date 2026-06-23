@@ -106,6 +106,59 @@ export default function PlayerRegistrationAdminPage() {
   const [selected, setSelected] = useState<Registration | null>(null);
   const [selectedParents, setSelectedParents] = useState<Set<string>>(new Set());
   const [sending, setSending] = useState(false);
+  const [markingId, setMarkingId] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+
+  const markComplete = async (opts: {
+    childName: string;
+    ageGroup: string;
+    parentName?: string | null;
+    email?: string | null;
+    phone?: string | null;
+    rowKey: string;
+  }) => {
+    if (!confirm(`Mark ${opts.childName} (${opts.ageGroup}) as registered & paid? Use this only when payment has been received outside the system (cash, bank transfer, etc.).`)) return;
+    setMarkingId(opts.rowKey);
+    try {
+      // Check if a registration already exists for this child/age group
+      const { data: existing } = await supabase
+        .from("player_registrations")
+        .select("id, payment_status")
+        .ilike("child_name", `${opts.childName.split(" ")[0]}%`)
+        .eq("preferred_age_group", opts.ageGroup)
+        .limit(1)
+        .maybeSingle();
+
+      if (existing) {
+        const { error } = await supabase
+          .from("player_registrations")
+          .update({ payment_status: "paid", paid_at: new Date().toISOString() })
+          .eq("id", existing.id);
+        if (error) throw error;
+        toast.success(`${opts.childName} marked as paid`);
+      } else {
+        const { error } = await supabase.from("player_registrations").insert({
+          child_name: opts.childName,
+          child_dob: "1900-01-01",
+          parent_name: opts.parentName || "Manual entry",
+          email: opts.email || "manual@pa-fc.uk",
+          phone: opts.phone || "N/A",
+          preferred_age_group: opts.ageGroup,
+          payment_status: "paid",
+          paid_at: new Date().toISOString(),
+          additional_info: "Manually marked complete by admin (payment received outside system).",
+          declaration_confirmed: true,
+        });
+        if (error) throw error;
+        toast.success(`${opts.childName} registered manually`);
+      }
+      await queryClient.invalidateQueries({ queryKey: ["player-registrations"] });
+    } catch (e: any) {
+      toast.error(e.message || "Failed to mark complete");
+    } finally {
+      setMarkingId(null);
+    }
+  };
 
 
   const { data: registrations = [], isLoading } = useQuery({
