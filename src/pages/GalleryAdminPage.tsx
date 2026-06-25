@@ -192,6 +192,29 @@ function AdminInner() {
                 </div>
               </div>
 
+              {uploadProgress && (
+                <div className="bg-card border border-border rounded-lg p-4 mb-4">
+                  <div className="flex items-center justify-between text-sm mb-2">
+                    <span className="font-display font-semibold flex items-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                      Uploading {uploadProgress.current} of {uploadProgress.total}
+                    </span>
+                    <span className="text-muted-foreground">
+                      {Math.round((uploadProgress.current / uploadProgress.total) * 100)}%
+                    </span>
+                  </div>
+                  <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-primary transition-all duration-300"
+                      style={{ width: `${(uploadProgress.current / uploadProgress.total) * 100}%` }}
+                    />
+                  </div>
+                  {uploadProgress.fileName && (
+                    <p className="text-xs text-muted-foreground mt-2 truncate">{uploadProgress.fileName}</p>
+                  )}
+                </div>
+              )}
+
               {photos.length === 0 ? (
                 <div className="bg-card border border-border rounded-lg p-12 text-center">
                   <Camera className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
