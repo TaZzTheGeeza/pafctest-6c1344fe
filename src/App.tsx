@@ -109,6 +109,7 @@ function AppContent() {
         <Route path="/news/:slug" element={<NewsArticlePage />} />
         <Route path="/events" element={<CalendarPage />} />
         <Route path="/gallery" element={<GalleryPage />} />
+        <Route path="/gallery-admin" element={<GalleryAdminPage />} />
         <Route path="/club-documents" element={<RoleGate requiredRole="player"><ClubDocumentsPage /></RoleGate>} />
         <Route path="/sponsors" element={<SponsorsPage />} />
         <Route path="/club-info" element={<ClubInfoPage />} />
