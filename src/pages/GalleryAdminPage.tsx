@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Camera, Plus, Trash2, Upload, Lock, Globe, Pencil, ChevronLeft, Loader2 } from "lucide-react";
+import { Camera, Plus, Trash2, Upload, Lock, Globe, Pencil, ChevronLeft, Loader2, Download } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 
