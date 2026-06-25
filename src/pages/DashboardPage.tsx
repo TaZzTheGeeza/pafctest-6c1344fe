@@ -71,6 +71,7 @@ const ADMIN_LINKS = [
   { label: "Club Documents", path: "/club-documents", icon: FileText, desc: "Manage club docs" },
   { label: "Bulk Doc Upload", path: "/admin/bulk-documents", icon: FileText, desc: "Upload docs for multiple players" },
   { label: "Safeguarding Reports", path: "/admin/safeguarding-reports", icon: Shield, desc: "View & manage safeguarding concerns" },
+  { label: "Gallery Admin", path: "/gallery-admin", icon: Eye, desc: "Create albums & upload photos" },
 ];
 
 type DashboardSection = "overview" | "users" | "requests" | "enquiries" | "messages" | "notifications" | "orders" | "potm" | "report" | "stats" | "manage" | "finances" | "permissions";
