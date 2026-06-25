@@ -188,7 +188,14 @@ export default function GalleryPage() {
                     </div>
                   )}
                   <div className="p-5">
-                    <h3 className="font-display text-lg font-bold text-foreground mb-1">{album.title}</h3>
+                    <div className="flex items-start justify-between gap-2 mb-1">
+                      <h3 className="font-display text-lg font-bold text-foreground">{album.title}</h3>
+                      {album.visibility === "hub" && (
+                        <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 shrink-0">
+                          <Lock className="h-2.5 w-2.5" /> Hub
+                        </span>
+                      )}
+                    </div>
                     {album.description && <p className="text-sm text-muted-foreground line-clamp-2">{album.description}</p>}
                     {album.event_date && <p className="text-xs text-muted-foreground mt-2">{format(new Date(album.event_date), "dd MMMM yyyy")}</p>}
                   </div>
