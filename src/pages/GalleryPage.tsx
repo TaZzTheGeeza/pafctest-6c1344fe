@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
-import { Image, X, ChevronLeft, ChevronRight, Camera, Lock, Settings } from "lucide-react";
+import { Image, X, ChevronLeft, ChevronRight, Camera, Lock, Settings, Download } from "lucide-react";
 import { format } from "date-fns";
 import { SEO } from "@/components/SEO";
 import { useAuth } from "@/contexts/AuthContext";
