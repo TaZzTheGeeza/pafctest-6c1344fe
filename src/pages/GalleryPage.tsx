@@ -116,7 +116,14 @@ export default function GalleryPage() {
             <h1 className="text-4xl md:text-5xl font-bold font-display text-center mb-2">
               <span className="text-gold-gradient">Gallery</span>
             </h1>
-            <p className="text-muted-foreground text-center mb-12">Photos from matches, training, and club events</p>
+            <p className="text-muted-foreground text-center mb-6">Photos from matches, training, and club events</p>
+            {isAdmin && (
+              <div className="flex justify-center mb-8">
+                <Link to="/gallery-admin" className="inline-flex items-center gap-2 text-sm bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 px-4 py-2 rounded-lg transition-colors">
+                  <Settings className="h-4 w-4" /> Manage Albums
+                </Link>
+              </div>
+            )}
           </motion.div>
 
           {selectedAlbum ? (
