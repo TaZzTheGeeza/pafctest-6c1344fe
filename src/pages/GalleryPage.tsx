@@ -82,6 +82,7 @@ export default function GalleryPage() {
   const [selectedAlbum, setSelectedAlbum] = useState<Album | null>(null);
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(true);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const { isAdmin } = useAuth();
 
   useEffect(() => {
