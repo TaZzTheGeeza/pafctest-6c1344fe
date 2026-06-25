@@ -90,7 +90,7 @@ export default function GalleryPage() {
       .select("*")
       .order("event_date", { ascending: false })
       .then(({ data }) => {
-        if (data) setAlbums(data);
+        if (data) setAlbums(data as Album[]);
         setLoading(false);
       });
   }, []);
