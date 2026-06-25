@@ -39,6 +39,7 @@ function AdminInner() {
   const [editing, setEditing] = useState<Album | null>(null);
   const [form, setForm] = useState({ title: "", description: "", event_date: "", visibility: "public" as "public" | "hub", cover_url: "" });
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{ current: number; total: number; fileName: string } | null>(null);
 
   const loadAlbums = async () => {
     setLoading(true);
