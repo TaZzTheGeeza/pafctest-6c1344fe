@@ -3,9 +3,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
-import { Image, X, ChevronLeft, ChevronRight, Camera } from "lucide-react";
+import { Image, X, ChevronLeft, ChevronRight, Camera, Lock, Settings } from "lucide-react";
 import { format } from "date-fns";
 import { SEO } from "@/components/SEO";
+import { useAuth } from "@/contexts/AuthContext";
+import { Link } from "react-router-dom";
 
 interface Album {
   id: string;
@@ -13,6 +15,7 @@ interface Album {
   description: string | null;
   cover_url: string | null;
   event_date: string | null;
+  visibility: "public" | "hub";
 }
 
 interface Photo {
@@ -78,8 +81,9 @@ export default function GalleryPage() {
   const [albums, setAlbums] = useState<Album[]>([]);
   const [selectedAlbum, setSelectedAlbum] = useState<Album | null>(null);
   const [photos, setPhotos] = useState<Photo[]>([]);
-  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const { isAdmin } = useAuth();
 
   useEffect(() => {
     supabase
@@ -87,7 +91,7 @@ export default function GalleryPage() {
       .select("*")
       .order("event_date", { ascending: false })
       .then(({ data }) => {
-        if (data) setAlbums(data);
+        if (data) setAlbums(data as Album[]);
         setLoading(false);
       });
   }, []);
@@ -112,7 +116,14 @@ export default function GalleryPage() {
             <h1 className="text-4xl md:text-5xl font-bold font-display text-center mb-2">
               <span className="text-gold-gradient">Gallery</span>
             </h1>
-            <p className="text-muted-foreground text-center mb-12">Photos from matches, training, and club events</p>
+            <p className="text-muted-foreground text-center mb-6">Photos from matches, training, and club events</p>
+            {isAdmin && (
+              <div className="flex justify-center mb-8">
+                <Link to="/gallery-admin" className="inline-flex items-center gap-2 text-sm bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 px-4 py-2 rounded-lg transition-colors">
+                  <Settings className="h-4 w-4" /> Manage Albums
+                </Link>
+              </div>
+            )}
           </motion.div>
 
           {selectedAlbum ? (
@@ -177,7 +188,14 @@ export default function GalleryPage() {
                     </div>
                   )}
                   <div className="p-5">
-                    <h3 className="font-display text-lg font-bold text-foreground mb-1">{album.title}</h3>
+                    <div className="flex items-start justify-between gap-2 mb-1">
+                      <h3 className="font-display text-lg font-bold text-foreground">{album.title}</h3>
+                      {album.visibility === "hub" && (
+                        <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 shrink-0">
+                          <Lock className="h-2.5 w-2.5" /> Hub
+                        </span>
+                      )}
+                    </div>
                     {album.description && <p className="text-sm text-muted-foreground line-clamp-2">{album.description}</p>}
                     {album.event_date && <p className="text-xs text-muted-foreground mt-2">{format(new Date(album.event_date), "dd MMMM yyyy")}</p>}
                   </div>

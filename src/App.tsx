@@ -23,6 +23,7 @@ import NewsArticlePage from "./pages/NewsArticlePage.tsx";
 import NewsEditorPage from "./pages/NewsEditorPage.tsx";
 import EventsPage from "./pages/EventsPage.tsx";
 import GalleryPage from "./pages/GalleryPage.tsx";
+import GalleryAdminPage from "./pages/GalleryAdminPage.tsx";
 import ClubDocumentsPage from "./pages/ClubDocumentsPage.tsx";
 import SponsorsPage from "./pages/SponsorsPage.tsx";
 import ClubInfoPage from "./pages/ClubInfoPage.tsx";
@@ -108,6 +109,7 @@ function AppContent() {
         <Route path="/news/:slug" element={<NewsArticlePage />} />
         <Route path="/events" element={<CalendarPage />} />
         <Route path="/gallery" element={<GalleryPage />} />
+        <Route path="/gallery-admin" element={<GalleryAdminPage />} />
         <Route path="/club-documents" element={<RoleGate requiredRole="player"><ClubDocumentsPage /></RoleGate>} />
         <Route path="/sponsors" element={<SponsorsPage />} />
         <Route path="/club-info" element={<ClubInfoPage />} />
