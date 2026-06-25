@@ -23,6 +23,7 @@ import NewsArticlePage from "./pages/NewsArticlePage.tsx";
 import NewsEditorPage from "./pages/NewsEditorPage.tsx";
 import EventsPage from "./pages/EventsPage.tsx";
 import GalleryPage from "./pages/GalleryPage.tsx";
+import GalleryAdminPage from "./pages/GalleryAdminPage.tsx";
 import ClubDocumentsPage from "./pages/ClubDocumentsPage.tsx";
 import SponsorsPage from "./pages/SponsorsPage.tsx";
 import ClubInfoPage from "./pages/ClubInfoPage.tsx";
