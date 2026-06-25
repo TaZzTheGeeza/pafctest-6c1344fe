@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
-import { Image, X, ChevronLeft, ChevronRight, Camera, Lock, Settings } from "lucide-react";
+import { Image, X, ChevronLeft, ChevronRight, Camera, Lock, Settings, Download } from "lucide-react";
 import { format } from "date-fns";
 import { SEO } from "@/components/SEO";
 import { useAuth } from "@/contexts/AuthContext";
@@ -53,9 +53,34 @@ function Lightbox({ photos, index, onClose, onNext, onPrev }: {
       className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center"
       onClick={onClose}
     >
-      <button onClick={onClose} className="absolute top-4 right-4 text-white/70 hover:text-white z-10">
-        <X className="h-8 w-8" />
-      </button>
+      <div className="absolute top-4 right-4 flex items-center gap-3 z-10">
+        <button
+          onClick={async (e) => {
+            e.stopPropagation();
+            try {
+              const res = await fetch(photo.url);
+              const blob = await res.blob();
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = photo.url.split("/").pop()?.split("?")[0] || "photo.jpg";
+              document.body.appendChild(a);
+              a.click();
+              a.remove();
+              URL.revokeObjectURL(url);
+            } catch {
+              window.open(photo.url, "_blank");
+            }
+          }}
+          className="text-white/70 hover:text-white"
+          title="Download photo"
+        >
+          <Download className="h-7 w-7" />
+        </button>
+        <button onClick={onClose} className="text-white/70 hover:text-white">
+          <X className="h-8 w-8" />
+        </button>
+      </div>
 
       {photos.length > 1 && (
         <>
