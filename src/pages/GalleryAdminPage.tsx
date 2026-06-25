@@ -39,6 +39,7 @@ function AdminInner() {
   const [editing, setEditing] = useState<Album | null>(null);
   const [form, setForm] = useState({ title: "", description: "", event_date: "", visibility: "public" as "public" | "hub", cover_url: "" });
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{ current: number; total: number; fileName: string } | null>(null);
 
   const loadAlbums = async () => {
     setLoading(true);
@@ -116,9 +117,13 @@ function AdminInner() {
 
   const uploadPhotos = async (files: FileList) => {
     if (!selected) return;
+    const fileArr = Array.from(files);
     setUploading(true);
+    setUploadProgress({ current: 0, total: fileArr.length, fileName: "" });
     let added = 0;
-    for (const file of Array.from(files)) {
+    for (let i = 0; i < fileArr.length; i++) {
+      const file = fileArr[i];
+      setUploadProgress({ current: i, total: fileArr.length, fileName: file.name });
       const path = `${selected.id}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
       const { error: upErr } = await supabase.storage.from("gallery-photos").upload(path, file);
       if (upErr) { toast.error(`${file.name}: ${upErr.message}`); continue; }
@@ -128,8 +133,10 @@ function AdminInner() {
       });
       if (insErr) { toast.error(insErr.message); continue; }
       added++;
+      setUploadProgress({ current: i + 1, total: fileArr.length, fileName: file.name });
     }
     setUploading(false);
+    setUploadProgress(null);
     if (added) toast.success(`Uploaded ${added} photo${added > 1 ? "s" : ""}`);
     openAlbum(selected);
   };
@@ -184,6 +191,29 @@ function AdminInner() {
                   </label>
                 </div>
               </div>
+
+              {uploadProgress && (
+                <div className="bg-card border border-border rounded-lg p-4 mb-4">
+                  <div className="flex items-center justify-between text-sm mb-2">
+                    <span className="font-display font-semibold flex items-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                      Uploading {uploadProgress.current} of {uploadProgress.total}
+                    </span>
+                    <span className="text-muted-foreground">
+                      {Math.round((uploadProgress.current / uploadProgress.total) * 100)}%
+                    </span>
+                  </div>
+                  <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-primary transition-all duration-300"
+                      style={{ width: `${(uploadProgress.current / uploadProgress.total) * 100}%` }}
+                    />
+                  </div>
+                  {uploadProgress.fileName && (
+                    <p className="text-xs text-muted-foreground mt-2 truncate">{uploadProgress.fileName}</p>
+                  )}
+                </div>
+              )}
 
               {photos.length === 0 ? (
                 <div className="bg-card border border-border rounded-lg p-12 text-center">
