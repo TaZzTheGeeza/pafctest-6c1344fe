@@ -117,9 +117,13 @@ function AdminInner() {
 
   const uploadPhotos = async (files: FileList) => {
     if (!selected) return;
+    const fileArr = Array.from(files);
     setUploading(true);
+    setUploadProgress({ current: 0, total: fileArr.length, fileName: "" });
     let added = 0;
-    for (const file of Array.from(files)) {
+    for (let i = 0; i < fileArr.length; i++) {
+      const file = fileArr[i];
+      setUploadProgress({ current: i, total: fileArr.length, fileName: file.name });
       const path = `${selected.id}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
       const { error: upErr } = await supabase.storage.from("gallery-photos").upload(path, file);
       if (upErr) { toast.error(`${file.name}: ${upErr.message}`); continue; }
@@ -129,8 +133,10 @@ function AdminInner() {
       });
       if (insErr) { toast.error(insErr.message); continue; }
       added++;
+      setUploadProgress({ current: i + 1, total: fileArr.length, fileName: file.name });
     }
     setUploading(false);
+    setUploadProgress(null);
     if (added) toast.success(`Uploaded ${added} photo${added > 1 ? "s" : ""}`);
     openAlbum(selected);
   };
