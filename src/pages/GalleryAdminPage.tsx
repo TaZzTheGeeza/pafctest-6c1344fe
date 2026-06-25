@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Camera, Plus, Trash2, Upload, Lock, Globe, Pencil, ChevronLeft, Loader2 } from "lucide-react";
+import { Camera, Plus, Trash2, Upload, Lock, Globe, Pencil, ChevronLeft, Loader2, Download } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 
@@ -225,10 +225,40 @@ function AdminInner() {
                   {photos.map((p) => (
                     <div key={p.id} className="relative aspect-square rounded-lg overflow-hidden group bg-secondary">
                       <img src={p.url} alt="" className="w-full h-full object-cover" />
-                      <button onClick={() => deletePhoto(p)}
-                        className="absolute top-2 right-2 bg-black/70 hover:bg-destructive text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
+                      <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <a
+                          href={p.url}
+                          download
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={async (e) => {
+                            e.preventDefault();
+                            try {
+                              const res = await fetch(p.url);
+                              const blob = await res.blob();
+                              const url = URL.createObjectURL(blob);
+                              const a = document.createElement("a");
+                              a.href = url;
+                              a.download = p.url.split("/").pop() || "photo.jpg";
+                              document.body.appendChild(a);
+                              a.click();
+                              a.remove();
+                              URL.revokeObjectURL(url);
+                            } catch {
+                              window.open(p.url, "_blank");
+                            }
+                          }}
+                          className="bg-black/70 hover:bg-primary text-white rounded-full p-1.5"
+                          title="Download"
+                        >
+                          <Download className="h-3.5 w-3.5" />
+                        </a>
+                        <button onClick={() => deletePhoto(p)}
+                          className="bg-black/70 hover:bg-destructive text-white rounded-full p-1.5"
+                          title="Delete">
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
