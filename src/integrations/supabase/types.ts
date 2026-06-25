@@ -515,6 +515,7 @@ export type Database = {
           event_date: string | null
           id: string
           title: string
+          visibility: string
         }
         Insert: {
           cover_url?: string | null
@@ -523,6 +524,7 @@ export type Database = {
           event_date?: string | null
           id?: string
           title: string
+          visibility?: string
         }
         Update: {
           cover_url?: string | null
@@ -531,6 +533,7 @@ export type Database = {
           event_date?: string | null
           id?: string
           title?: string
+          visibility?: string
         }
         Relationships: []
       }
