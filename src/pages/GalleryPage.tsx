@@ -3,9 +3,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
-import { Image, X, ChevronLeft, ChevronRight, Camera } from "lucide-react";
+import { Image, X, ChevronLeft, ChevronRight, Camera, Lock, Settings } from "lucide-react";
 import { format } from "date-fns";
 import { SEO } from "@/components/SEO";
+import { useAuth } from "@/contexts/AuthContext";
+import { Link } from "react-router-dom";
 
 interface Album {
   id: string;
@@ -13,6 +15,7 @@ interface Album {
   description: string | null;
   cover_url: string | null;
   event_date: string | null;
+  visibility: "public" | "hub";
 }
 
 interface Photo {
