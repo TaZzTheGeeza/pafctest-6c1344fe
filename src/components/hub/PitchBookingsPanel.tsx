@@ -149,16 +149,21 @@ function BookingDialog({ pitch, dayBookings, overlapBookings, pitches, selectedD
           </DialogTitle>
         </DialogHeader>
 
-        {dayBookings.length > 0 && (
+        {combined.length > 0 && (
           <div className="text-xs bg-secondary/30 rounded-lg p-3 space-y-1">
             <div className="font-display uppercase tracking-wider text-muted-foreground mb-1">Existing on {format(parseISO(selectedDate), "dd MMM")}</div>
-            {dayBookings.map(b => (
-              <div key={b.id} className="flex items-center gap-2">
-                <StatusPill status={b.status} faLocked={!!b.fa_fixture_id} />
-                <span>{format(parseISO(b.start_time), "HH:mm")}–{format(parseISO(b.end_time), "HH:mm")}</span>
-                {b.opponent && <span className="text-muted-foreground">vs {b.opponent}</span>}
-              </div>
-            ))}
+            {combined.map(b => {
+              const bp = pitches.find(p => p.id === b.pitch_id);
+              const isOverlap = bp && bp.id !== pitch.id;
+              return (
+                <div key={b.id} className="flex items-center gap-2">
+                  <StatusPill status={b.status} faLocked={!!b.fa_fixture_id} />
+                  <span>{format(parseISO(b.start_time), "HH:mm")}–{format(parseISO(b.end_time), "HH:mm")}</span>
+                  {b.opponent && <span className="text-muted-foreground">vs {b.opponent}</span>}
+                  {isOverlap && <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-900/40 text-amber-300 uppercase tracking-wider">on {bp?.name} · overlaps</span>}
+                </div>
+              );
+            })}
           </div>
         )}
 
