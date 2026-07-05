@@ -572,6 +572,14 @@ export default function PitchBookingsPanel() {
           onCreated={() => { setDialogPitch(null); loadBookings(); }}
         />
       )}
+      {editBooking && (
+        <EditBookingDialog
+          booking={editBooking}
+          pitches={pitches}
+          onClose={() => setEditBooking(null)}
+          onSaved={() => { setEditBooking(null); loadBookings(); }}
+        />
+      )}
     </div>
   );
 }
