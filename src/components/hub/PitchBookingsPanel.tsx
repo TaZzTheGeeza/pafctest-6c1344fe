@@ -50,6 +50,22 @@ const PITCH_LAYOUT: Record<number, { x: number; y: number; w: number; h: number 
   4: { x: 380, y: 340, w: 160, h: 180 }, // bottom-right 5v5
 };
 
+// Physical overlap groups: 9v9 (Pitch 5) and 11v11 (Pitch 6) share space with pitches 1-4.
+// A booking on any pitch in a group blocks all other pitches in that group at the same time.
+const PITCH_OVERLAPS: Record<number, number[]> = {
+  1: [5, 6],
+  2: [5, 6],
+  3: [5, 6],
+  4: [5, 6],
+  5: [1, 2, 3, 4, 6],
+  6: [1, 2, 3, 4, 5],
+};
+
+function overlappingPitchIds(pitchNumber: number, pitches: Pitch[]): string[] {
+  const nums = PITCH_OVERLAPS[pitchNumber] || [];
+  return pitches.filter(p => nums.includes(p.number)).map(p => p.id);
+}
+
 function statusColor(status: string, isFaLocked: boolean) {
   if (isFaLocked) return { fill: "#374151", stroke: "#6b7280", text: "#e5e7eb" };
   switch (status) {
@@ -81,8 +97,8 @@ function StatusPill({ status, faLocked }: { status: string; faLocked: boolean })
   return <span className={`inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded uppercase tracking-wider ${s.c}`}><Icon className="h-3 w-3" />{s.label}</span>;
 }
 
-function BookingDialog({ pitch, dayBookings, selectedDate, onClose, onCreated }: {
-  pitch: Pitch; dayBookings: Booking[]; selectedDate: string; onClose: () => void; onCreated: () => void;
+function BookingDialog({ pitch, dayBookings, overlapBookings, pitches, selectedDate, onClose, onCreated }: {
+  pitch: Pitch; dayBookings: Booking[]; overlapBookings: Booking[]; pitches: Pitch[]; selectedDate: string; onClose: () => void; onCreated: () => void;
 }) {
   const { user } = useAuth();
   const [startTime, setStartTime] = useState("10:00");
@@ -93,11 +109,13 @@ function BookingDialog({ pitch, dayBookings, selectedDate, onClose, onCreated }:
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  const combined = useMemo(() => [...dayBookings, ...overlapBookings], [dayBookings, overlapBookings]);
+
   const hasConflict = useMemo(() => {
     const s = new Date(`${selectedDate}T${startTime}:00`);
     const e = new Date(`${selectedDate}T${endTime}:00`);
-    return dayBookings.some(b => b.status === "approved" && new Date(b.start_time) < e && new Date(b.end_time) > s);
-  }, [dayBookings, selectedDate, startTime, endTime]);
+    return combined.some(b => b.status === "approved" && new Date(b.start_time) < e && new Date(b.end_time) > s);
+  }, [combined, selectedDate, startTime, endTime]);
 
   async function submit() {
     if (!user) return;
@@ -131,16 +149,21 @@ function BookingDialog({ pitch, dayBookings, selectedDate, onClose, onCreated }:
           </DialogTitle>
         </DialogHeader>
 
-        {dayBookings.length > 0 && (
+        {combined.length > 0 && (
           <div className="text-xs bg-secondary/30 rounded-lg p-3 space-y-1">
             <div className="font-display uppercase tracking-wider text-muted-foreground mb-1">Existing on {format(parseISO(selectedDate), "dd MMM")}</div>
-            {dayBookings.map(b => (
-              <div key={b.id} className="flex items-center gap-2">
-                <StatusPill status={b.status} faLocked={!!b.fa_fixture_id} />
-                <span>{format(parseISO(b.start_time), "HH:mm")}–{format(parseISO(b.end_time), "HH:mm")}</span>
-                {b.opponent && <span className="text-muted-foreground">vs {b.opponent}</span>}
-              </div>
-            ))}
+            {combined.map(b => {
+              const bp = pitches.find(p => p.id === b.pitch_id);
+              const isOverlap = bp && bp.id !== pitch.id;
+              return (
+                <div key={b.id} className="flex items-center gap-2">
+                  <StatusPill status={b.status} faLocked={!!b.fa_fixture_id} />
+                  <span>{format(parseISO(b.start_time), "HH:mm")}–{format(parseISO(b.end_time), "HH:mm")}</span>
+                  {b.opponent && <span className="text-muted-foreground">vs {b.opponent}</span>}
+                  {isOverlap && <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-900/40 text-amber-300 uppercase tracking-wider">on {bp?.name} · overlaps</span>}
+                </div>
+              );
+            })}
           </div>
         )}
 
@@ -186,7 +209,7 @@ function BookingDialog({ pitch, dayBookings, selectedDate, onClose, onCreated }:
 
           {hasConflict && (
             <div className="text-xs bg-red-950/40 border border-red-800 rounded-lg p-2 text-red-300">
-              ⚠ This slot overlaps an approved booking. It can still be requested but is unlikely to be approved.
+              ⚠ This slot overlaps an approved booking on {pitch.name} or a physically overlapping pitch (9v9/11v11 share space with pitches 1–4). It can still be requested but is unlikely to be approved.
             </div>
           )}
 
@@ -305,11 +328,15 @@ export default function PitchBookingsPanel() {
     return map;
   }, [bookings]);
 
-  function pitchPrimaryStatus(pitchId: string): { status: string; faLocked: boolean } {
+  function pitchPrimaryStatus(pitchId: string): { status: string; faLocked: boolean; blockedByOverlap?: boolean } {
+    const pitch = pitches.find(p => p.id === pitchId);
     const bs = dayBookingsByPitch.get(pitchId) || [];
-    const faLocked = bs.some(b => b.fa_fixture_id && b.status === "approved");
-    if (bs.some(b => b.status === "approved")) return { status: "approved", faLocked };
-    if (bs.some(b => b.status === "pending")) return { status: "pending", faLocked };
+    const overlapIds = pitch ? overlappingPitchIds(pitch.number, pitches) : [];
+    const overlapBs = overlapIds.flatMap(id => dayBookingsByPitch.get(id) || []);
+    const combined = [...bs, ...overlapBs];
+    const faLocked = combined.some(b => b.fa_fixture_id && b.status === "approved");
+    if (combined.some(b => b.status === "approved")) return { status: "approved", faLocked, blockedByOverlap: overlapBs.some(b => b.status === "approved") && !bs.some(b => b.status === "approved") };
+    if (combined.some(b => b.status === "pending")) return { status: "pending", faLocked };
     return { status: "free", faLocked: false };
   }
 
@@ -407,6 +434,8 @@ export default function PitchBookingsPanel() {
         <BookingDialog
           pitch={dialogPitch}
           dayBookings={dayBookingsByPitch.get(dialogPitch.id) || []}
+          overlapBookings={overlappingPitchIds(dialogPitch.number, pitches).flatMap(id => dayBookingsByPitch.get(id) || [])}
+          pitches={pitches}
           selectedDate={selectedDate}
           onClose={() => setDialogPitch(null)}
           onCreated={() => { setDialogPitch(null); loadBookings(); }}

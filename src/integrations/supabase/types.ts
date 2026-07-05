@@ -3298,6 +3298,8 @@ export type Database = {
           end_time: string
           id: string
           opponent: string
+          pitch_id: string
+          pitch_name: string
           start_time: string
           status: string
         }[]
@@ -3355,6 +3357,10 @@ export type Database = {
           source_queue: string
         }
         Returns: number
+      }
+      pitch_numbers_overlap: {
+        Args: { _a: number; _b: number }
+        Returns: boolean
       }
       prune_tournament_audit_log: { Args: never; Returns: number }
       read_email_batch: {
