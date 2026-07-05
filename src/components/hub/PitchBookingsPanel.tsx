@@ -546,6 +546,12 @@ export default function PitchBookingsPanel() {
                   <div className="text-xs text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" />{format(parseISO(b.start_time), "HH:mm")} – {format(parseISO(b.end_time), "HH:mm")}</div>
                   <div className="text-xs text-foreground">{b.age_group ? `${b.age_group}` : ""}{b.opponent ? ` vs ${b.opponent}` : ""}</div>
                   <div className="text-[11px] text-muted-foreground ml-auto uppercase">{b.purpose}</div>
+                  {canManage && (
+                    <div className="flex items-center gap-1">
+                      <button onClick={() => setEditBooking(b)} title="Edit booking" className="text-muted-foreground hover:text-primary p-1"><Pencil className="h-3.5 w-3.5" /></button>
+                      <button onClick={() => deleteBooking(b.id)} title="Delete booking" className="text-muted-foreground hover:text-destructive p-1"><Trash2 className="h-3.5 w-3.5" /></button>
+                    </div>
+                  )}
                 </div>
               );
             })}
