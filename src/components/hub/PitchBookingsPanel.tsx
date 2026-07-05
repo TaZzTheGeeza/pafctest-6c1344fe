@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { format, addDays, startOfDay, parseISO } from "date-fns";
-import { Loader2, MapPin, Clock, Plus, X, CheckCircle2, XCircle, Hourglass, Lock } from "lucide-react";
+import { Loader2, MapPin, Clock, Plus, X, CheckCircle2, XCircle, Hourglass, Lock, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
