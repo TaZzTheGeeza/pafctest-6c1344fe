@@ -1276,6 +1276,110 @@ export type Database = {
         }
         Relationships: []
       }
+      pitch_bookings: {
+        Row: {
+          admin_override: boolean
+          age_group: string | null
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          decline_reason: string | null
+          end_time: string
+          fa_fixture_id: string | null
+          id: string
+          notes: string | null
+          opponent: string | null
+          pitch_id: string
+          purpose: string
+          requested_by: string | null
+          start_time: string
+          status: string
+          team_slug: string | null
+          updated_at: string
+        }
+        Insert: {
+          admin_override?: boolean
+          age_group?: string | null
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decline_reason?: string | null
+          end_time: string
+          fa_fixture_id?: string | null
+          id?: string
+          notes?: string | null
+          opponent?: string | null
+          pitch_id: string
+          purpose?: string
+          requested_by?: string | null
+          start_time: string
+          status?: string
+          team_slug?: string | null
+          updated_at?: string
+        }
+        Update: {
+          admin_override?: boolean
+          age_group?: string | null
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decline_reason?: string | null
+          end_time?: string
+          fa_fixture_id?: string | null
+          id?: string
+          notes?: string | null
+          opponent?: string | null
+          pitch_id?: string
+          purpose?: string
+          requested_by?: string | null
+          start_time?: string
+          status?: string
+          team_slug?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pitch_bookings_pitch_id_fkey"
+            columns: ["pitch_id"]
+            isOneToOne: false
+            referencedRelation: "pitches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pitches: {
+        Row: {
+          active: boolean
+          created_at: string
+          format: string
+          id: string
+          name: string
+          number: number
+          suggested_age_groups: string[]
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          format: string
+          id?: string
+          name: string
+          number: number
+          suggested_age_groups?: string[]
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          format?: string
+          id?: string
+          name?: string
+          number?: number
+          suggested_age_groups?: string[]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       player_documents: {
         Row: {
           created_at: string
@@ -3182,6 +3286,22 @@ export type Database = {
       }
       canonical_age_group: { Args: { _value: string }; Returns: string }
       canonical_team_slug: { Args: { _slug: string }; Returns: string }
+      check_pitch_conflict: {
+        Args: {
+          _end: string
+          _exclude_id?: string
+          _pitch_id: string
+          _start: string
+        }
+        Returns: {
+          age_group: string
+          end_time: string
+          id: string
+          opponent: string
+          start_time: string
+          status: string
+        }[]
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
