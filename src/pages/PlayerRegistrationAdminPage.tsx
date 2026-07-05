@@ -224,6 +224,14 @@ export default function PlayerRegistrationAdminPage() {
     await queryClient.invalidateQueries({ queryKey: ["player-registrations"] });
   };
 
+  const deleteHubPlayer = async (h: HubPlayer) => {
+    if (!confirm(`Remove ${h.player_name} (${h.age_group}) from the hub?\n\nThis unlinks the parent/guardian record. It does NOT delete the parent's account or any completed registration.`)) return;
+    const { error } = await supabase.from("guardians").delete().eq("id", h.guardian_id);
+    if (error) { toast.error(error.message); return; }
+    toast.success(`Removed ${h.player_name} from the hub`);
+    await queryClient.invalidateQueries({ queryKey: ["hub-guardians"] });
+  };
+
 
 
   const { data: registrations = [], isLoading } = useQuery({
