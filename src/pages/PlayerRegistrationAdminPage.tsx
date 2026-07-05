@@ -215,6 +215,16 @@ export default function PlayerRegistrationAdminPage() {
     }
   };
 
+  const deleteRegistration = async (r: Registration) => {
+    if (!confirm(`Permanently delete the registration for ${r.child_name} (${r.preferred_age_group})?\n\nThis cannot be undone.`)) return;
+    const { error } = await supabase.from("player_registrations").delete().eq("id", r.id);
+    if (error) { toast.error(error.message); return; }
+    toast.success(`Deleted ${r.child_name}'s registration`);
+    setSelected(null);
+    await queryClient.invalidateQueries({ queryKey: ["player-registrations"] });
+  };
+
+
 
   const { data: registrations = [], isLoading } = useQuery({
     queryKey: ["player-registrations"],
