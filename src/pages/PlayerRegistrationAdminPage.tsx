@@ -224,6 +224,14 @@ export default function PlayerRegistrationAdminPage() {
     await queryClient.invalidateQueries({ queryKey: ["player-registrations"] });
   };
 
+  const deleteHubPlayer = async (h: HubPlayer) => {
+    if (!confirm(`Remove ${h.player_name} (${h.age_group}) from the hub?\n\nThis unlinks the parent/guardian record. It does NOT delete the parent's account or any completed registration.`)) return;
+    const { error } = await supabase.from("guardians").delete().eq("id", h.guardian_id);
+    if (error) { toast.error(error.message); return; }
+    toast.success(`Removed ${h.player_name} from the hub`);
+    await queryClient.invalidateQueries({ queryKey: ["hub-guardians"] });
+  };
+
 
 
   const { data: registrations = [], isLoading } = useQuery({
@@ -681,6 +689,7 @@ export default function PlayerRegistrationAdminPage() {
               email: h.parent_email,
               rowKey: h.guardian_id,
             })}
+            onDelete={deleteHubPlayer}
             markingId={markingId}
           />
         ) : tab === "outstanding" ? (
@@ -1126,12 +1135,14 @@ function HubPlayerList({
   selected,
   onToggle,
   onMarkComplete,
+  onDelete,
   markingId,
 }: {
   items: HubPlayer[];
   selected: Set<string>;
   onToggle: (userId: string) => void;
   onMarkComplete: (h: HubPlayer) => void;
+  onDelete: (h: HubPlayer) => void;
   markingId: string | null;
 }) {
   if (!items.length) {
@@ -1203,6 +1214,13 @@ function HubPlayerList({
                   <Bell className="h-3 w-3" /> OUTSTANDING
                 </span>
               )}
+              <button
+                onClick={() => onDelete(h)}
+                className="p-1.5 rounded-md text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors shrink-0"
+                title="Remove from hub (unlink parent/guardian)"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
             </div>
           );
         })}
