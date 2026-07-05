@@ -434,6 +434,8 @@ export default function PitchBookingsPanel() {
         <BookingDialog
           pitch={dialogPitch}
           dayBookings={dayBookingsByPitch.get(dialogPitch.id) || []}
+          overlapBookings={overlappingPitchIds(dialogPitch.number, pitches).flatMap(id => dayBookingsByPitch.get(id) || [])}
+          pitches={pitches}
           selectedDate={selectedDate}
           onClose={() => setDialogPitch(null)}
           onCreated={() => { setDialogPitch(null); loadBookings(); }}
