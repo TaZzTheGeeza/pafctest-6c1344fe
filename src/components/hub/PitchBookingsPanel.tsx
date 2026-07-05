@@ -109,7 +109,7 @@ function BookingDialog({ pitch, dayBookings, overlapBookings, pitches, selectedD
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  const combined = useMemo(() => [...dayBookings, ...overlapBookings], [dayBookings, overlapBookings]);
+  const combined = useMemo(() => [...(dayBookings || []), ...(overlapBookings || [])], [dayBookings, overlapBookings]);
 
   const hasConflict = useMemo(() => {
     const s = new Date(`${selectedDate}T${startTime}:00`);
