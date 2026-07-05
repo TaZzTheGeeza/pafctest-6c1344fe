@@ -328,11 +328,15 @@ export default function PitchBookingsPanel() {
     return map;
   }, [bookings]);
 
-  function pitchPrimaryStatus(pitchId: string): { status: string; faLocked: boolean } {
+  function pitchPrimaryStatus(pitchId: string): { status: string; faLocked: boolean; blockedByOverlap?: boolean } {
+    const pitch = pitches.find(p => p.id === pitchId);
     const bs = dayBookingsByPitch.get(pitchId) || [];
-    const faLocked = bs.some(b => b.fa_fixture_id && b.status === "approved");
-    if (bs.some(b => b.status === "approved")) return { status: "approved", faLocked };
-    if (bs.some(b => b.status === "pending")) return { status: "pending", faLocked };
+    const overlapIds = pitch ? overlappingPitchIds(pitch.number, pitches) : [];
+    const overlapBs = overlapIds.flatMap(id => dayBookingsByPitch.get(id) || []);
+    const combined = [...bs, ...overlapBs];
+    const faLocked = combined.some(b => b.fa_fixture_id && b.status === "approved");
+    if (combined.some(b => b.status === "approved")) return { status: "approved", faLocked, blockedByOverlap: overlapBs.some(b => b.status === "approved") && !bs.some(b => b.status === "approved") };
+    if (combined.some(b => b.status === "pending")) return { status: "pending", faLocked };
     return { status: "free", faLocked: false };
   }
 
