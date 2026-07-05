@@ -63,6 +63,8 @@ import PresentationAdminPage from "./pages/PresentationAdminPage.tsx";
 import PlayerRegistrationAdminPage from "./pages/PlayerRegistrationAdminPage.tsx";
 import PresentationAwardsAdminPage from "./pages/PresentationAwardsAdminPage.tsx";
 import PhotoClaimPage from "./pages/PhotoClaimPage.tsx";
+import PitchBookingsPage from "./pages/PitchBookingsPage.tsx";
+import PitchBookingsAdminPage from "./pages/PitchBookingsAdminPage.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -152,6 +154,8 @@ function AppContent() {
         <Route path="/admin/player-registrations" element={<RoleGate requiredRole="admin"><PlayerRegistrationAdminPage /></RoleGate>} />
         <Route path="/presentation-awards-admin" element={<RoleGate requiredRole="admin"><PresentationAwardsAdminPage /></RoleGate>} />
         <Route path="/whats-new-admin" element={<RoleGate requiredRole="admin"><WhatsNewAdminPage /></RoleGate>} />
+        <Route path="/pitch-bookings" element={<PitchBookingsPage />} />
+        <Route path="/pitch-bookings-admin" element={<PitchBookingsAdminPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
