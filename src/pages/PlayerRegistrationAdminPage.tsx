@@ -1026,18 +1026,45 @@ function RegistrationDetail({ registration: r, onClose, onDelete, onSaved }: {
           </div>
 
           <div className="p-6 space-y-6">
-            {r.photo_url && (
-              <RegPhoto
-                path={r.photo_url}
-                alt={form.child_name}
-                className="h-32 w-32 rounded-xl object-cover border-2 border-border"
-                fallback={
-                  <div className="h-32 w-32 rounded-xl bg-secondary/40 border-2 border-border flex items-center justify-center">
-                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                  </div>
-                }
-              />
-            )}
+            <div className="flex items-start gap-4">
+              {form.photo_url ? (
+                <RegPhoto
+                  key={form.photo_url}
+                  path={form.photo_url}
+                  alt={form.child_name}
+                  className="h-32 w-32 rounded-xl object-cover border-2 border-border"
+                  fallback={
+                    <div className="h-32 w-32 rounded-xl bg-secondary/40 border-2 border-border flex items-center justify-center">
+                      <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                    </div>
+                  }
+                />
+              ) : (
+                <div className="h-32 w-32 rounded-xl bg-secondary/40 border-2 border-dashed border-border flex items-center justify-center text-muted-foreground text-xs font-display tracking-wider">
+                  NO PHOTO
+                </div>
+              )}
+              {editing && (
+                <div className="flex flex-col gap-2">
+                  <label className={`inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-xs font-display tracking-wider hover:bg-primary/90 cursor-pointer ${uploadingPhoto ? "opacity-50 pointer-events-none" : ""}`}>
+                    {uploadingPhoto ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Pencil className="h-3.5 w-3.5" />}
+                    {form.photo_url ? "Replace Photo" : "Upload Photo"}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => { const f = e.target.files?.[0]; if (f) handlePhotoUpload(f); e.target.value = ""; }}
+                    />
+                  </label>
+                  {form.photo_url && (
+                    <button onClick={handlePhotoRemove} className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md bg-red-500/20 text-red-400 text-xs font-display tracking-wider hover:bg-red-500/30">
+                      <Trash2 className="h-3.5 w-3.5" /> Remove
+                    </button>
+                  )}
+                  <p className="text-[10px] text-muted-foreground max-w-[10rem]">JPG/PNG, up to 20MB. Click Save to persist.</p>
+                </div>
+              )}
+            </div>
 
             {editing ? (
               <>
