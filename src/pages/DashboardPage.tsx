@@ -9,7 +9,7 @@ import {
   Users, Shield, ShieldCheck, ShieldAlert, UserCog, Trash2,
   Search, ChevronDown, Trophy, Ticket, BarChart3, FileText,
    MessageSquare, Settings, Eye, Plus, Loader2, Crown, Swords, ShoppingBag,
-   Star, LayoutDashboard, Mail, Clock, ExternalLink, Pencil, Check, X as XIcon, Megaphone, CreditCard, Video, Newspaper, KeyRound, KeySquare
+   Star, LayoutDashboard, Mail, Clock, ExternalLink, Pencil, Check, X as XIcon, Megaphone, CreditCard, Video, Newspaper, KeyRound, KeySquare, MapPin
 } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 import { isUserOnline, formatLastSeen } from "@/hooks/usePresence";
