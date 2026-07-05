@@ -48,6 +48,7 @@ const tabs = [
   { id: "carpool", label: "Carpool", icon: Car },
   { id: "attendance", label: "Attendance", icon: TrendingUp },
   { id: "guardian", label: "Guardian", icon: UserPlus },
+  { id: "pitch-bookings", label: "Pitch Bookings", icon: MapPin },
   { id: "meetings", label: "Meetings", icon: Video },
   { id: "awards", label: "Awards", icon: Award },
   { id: "player", label: "Player Zone", icon: User },
@@ -66,15 +67,6 @@ const playerHubItems = [
     bgColor: "bg-gradient-to-br from-primary/20 to-primary/5",
     borderColor: "border-primary/40",
     featured: true,
-  },
-  {
-    title: "Pitch Bookings",
-    description: "Book pitches for matches and training. See live availability on the ground map.",
-    icon: MapPin,
-    path: "/pitch-bookings",
-    color: "text-green-400",
-    bgColor: "bg-green-400/10",
-    borderColor: "border-green-400/20",
   },
   {
     title: "My Profile",
@@ -214,6 +206,7 @@ export default function HubPage() {
       {activeTab === "members" && activeTeam && (isAdmin || isCoach) && <TeamMemberManager teamSlug={activeTeam} teamName={activeTeamName || ""} />}
       {activeTab === "roster" && activeTeam && isAdmin && <PlayerRosterManager teamSlug={activeTeam} teamName={activeTeamName || ""} />}
       {activeTab === "meetings" && <HubMeetingsEmbed />}
+      {activeTab === "pitch-bookings" && <PitchBookingsPanel />}
       {activeTab === "awards" && activeTeam && activeTeam !== "u6s" && <AwardsVoting teamSlug={activeTeam} teamName={activeTeamName || ""} />}
       {activeTab === "player" && (
         <div className="space-y-4">
