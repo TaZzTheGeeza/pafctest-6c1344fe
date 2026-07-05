@@ -50,6 +50,22 @@ const PITCH_LAYOUT: Record<number, { x: number; y: number; w: number; h: number 
   4: { x: 380, y: 340, w: 160, h: 180 }, // bottom-right 5v5
 };
 
+// Physical overlap groups: 9v9 (Pitch 5) and 11v11 (Pitch 6) share space with pitches 1-4.
+// A booking on any pitch in a group blocks all other pitches in that group at the same time.
+const PITCH_OVERLAPS: Record<number, number[]> = {
+  1: [5, 6],
+  2: [5, 6],
+  3: [5, 6],
+  4: [5, 6],
+  5: [1, 2, 3, 4, 6],
+  6: [1, 2, 3, 4, 5],
+};
+
+function overlappingPitchIds(pitchNumber: number, pitches: Pitch[]): string[] {
+  const nums = PITCH_OVERLAPS[pitchNumber] || [];
+  return pitches.filter(p => nums.includes(p.number)).map(p => p.id);
+}
+
 function statusColor(status: string, isFaLocked: boolean) {
   if (isFaLocked) return { fill: "#374151", stroke: "#6b7280", text: "#e5e7eb" };
   switch (status) {
