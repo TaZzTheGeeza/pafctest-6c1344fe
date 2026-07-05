@@ -727,7 +727,7 @@ function StatCard({ label, value, icon: Icon, color }: { label: string; value: n
   );
 }
 
-function RegisteredList({ items, onSelect, showUnpaid = false }: { items: Registration[]; onSelect: (r: Registration) => void; showUnpaid?: boolean }) {
+function RegisteredList({ items, onSelect, onDelete, showUnpaid = false }: { items: Registration[]; onSelect: (r: Registration) => void; onDelete: (r: Registration) => void; showUnpaid?: boolean }) {
   if (!items.length) {
     return (
       <div className="text-center py-16 text-muted-foreground bg-card border border-border rounded-xl">
@@ -746,10 +746,9 @@ function RegisteredList({ items, onSelect, showUnpaid = false }: { items: Regist
       )}
       <div className="divide-y divide-border">
         {items.map((r) => (
-          <button
+          <div
             key={r.id}
-            onClick={() => onSelect(r)}
-            className="w-full text-left px-4 py-3 hover:bg-secondary/40 transition-colors flex items-center gap-3"
+            className="px-4 py-3 hover:bg-secondary/40 transition-colors flex items-center gap-3"
           >
             <RegPhoto
               path={r.photo_url}
@@ -761,12 +760,12 @@ function RegisteredList({ items, onSelect, showUnpaid = false }: { items: Regist
                 </div>
               }
             />
-            <div className="flex-1 min-w-0">
+            <button onClick={() => onSelect(r)} className="flex-1 min-w-0 text-left">
               <p className="font-display font-bold text-foreground text-sm truncate">{r.child_name}</p>
               <p className="text-xs text-muted-foreground truncate">
                 {r.preferred_age_group} • {r.parent_name} • {r.email}
               </p>
-            </div>
+            </button>
             <div className="hidden sm:flex flex-col items-end text-right">
               <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-display">Submitted</span>
               <span className="text-xs text-foreground font-display">
@@ -785,14 +784,27 @@ function RegisteredList({ items, onSelect, showUnpaid = false }: { items: Regist
             {(!r.consent_photography || !r.consent_medical || !r.declaration_confirmed) && (
               <ShieldAlert className="h-4 w-4 text-amber-500 shrink-0" />
             )}
-          </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); onSelect(r); }}
+              className="p-2 rounded-md text-muted-foreground hover:text-primary hover:bg-secondary transition-colors"
+              title="Edit registration"
+            >
+              <Pencil className="h-4 w-4" />
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); onDelete(r); }}
+              className="p-2 rounded-md text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors"
+              title="Delete registration"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          </div>
         ))}
       </div>
     </div>
   );
 }
 
-function OutstandingList({ items, onMarkComplete, markingId, excludedItems, onToggleExclude }: {
   items: RosterPlayer[];
   onMarkComplete: (p: RosterPlayer) => void;
   markingId: string | null;
