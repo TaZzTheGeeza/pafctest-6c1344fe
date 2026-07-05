@@ -209,7 +209,7 @@ function BookingDialog({ pitch, dayBookings, overlapBookings, pitches, selectedD
 
           {hasConflict && (
             <div className="text-xs bg-red-950/40 border border-red-800 rounded-lg p-2 text-red-300">
-              ⚠ This slot overlaps an approved booking. It can still be requested but is unlikely to be approved.
+              ⚠ This slot overlaps an approved booking on {pitch.name} or a physically overlapping pitch (9v9/11v11 share space with pitches 1–4). It can still be requested but is unlikely to be approved.
             </div>
           )}
 
