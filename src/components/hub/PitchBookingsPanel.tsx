@@ -97,8 +97,8 @@ function StatusPill({ status, faLocked }: { status: string; faLocked: boolean })
   return <span className={`inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded uppercase tracking-wider ${s.c}`}><Icon className="h-3 w-3" />{s.label}</span>;
 }
 
-function BookingDialog({ pitch, dayBookings, selectedDate, onClose, onCreated }: {
-  pitch: Pitch; dayBookings: Booking[]; selectedDate: string; onClose: () => void; onCreated: () => void;
+function BookingDialog({ pitch, dayBookings, overlapBookings, pitches, selectedDate, onClose, onCreated }: {
+  pitch: Pitch; dayBookings: Booking[]; overlapBookings: Booking[]; pitches: Pitch[]; selectedDate: string; onClose: () => void; onCreated: () => void;
 }) {
   const { user } = useAuth();
   const [startTime, setStartTime] = useState("10:00");
@@ -109,11 +109,13 @@ function BookingDialog({ pitch, dayBookings, selectedDate, onClose, onCreated }:
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  const combined = useMemo(() => [...dayBookings, ...overlapBookings], [dayBookings, overlapBookings]);
+
   const hasConflict = useMemo(() => {
     const s = new Date(`${selectedDate}T${startTime}:00`);
     const e = new Date(`${selectedDate}T${endTime}:00`);
-    return dayBookings.some(b => b.status === "approved" && new Date(b.start_time) < e && new Date(b.end_time) > s);
-  }, [dayBookings, selectedDate, startTime, endTime]);
+    return combined.some(b => b.status === "approved" && new Date(b.start_time) < e && new Date(b.end_time) > s);
+  }, [combined, selectedDate, startTime, endTime]);
 
   async function submit() {
     if (!user) return;
