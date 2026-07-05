@@ -402,6 +402,14 @@ export default function PitchBookingsPanel() {
   const [selectedDate, setSelectedDate] = useState(() => format(new Date(), "yyyy-MM-dd"));
   const [loading, setLoading] = useState(true);
   const [dialogPitch, setDialogPitch] = useState<Pitch | null>(null);
+  const [editBooking, setEditBooking] = useState<Booking | null>(null);
+
+  async function deleteBooking(id: string) {
+    if (!confirm("Delete this booking permanently?")) return;
+    const { error } = await (supabase as any).from("pitch_bookings").delete().eq("id", id);
+    if (error) toast.error(error.message);
+    else { toast.success("Booking deleted"); loadBookings(); }
+  }
   const [tab, setTab] = useState<"map" | "mine">("map");
 
   useEffect(() => { loadPitches(); }, []);
