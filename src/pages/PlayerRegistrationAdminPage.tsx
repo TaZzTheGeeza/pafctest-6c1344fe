@@ -1135,12 +1135,14 @@ function HubPlayerList({
   selected,
   onToggle,
   onMarkComplete,
+  onDelete,
   markingId,
 }: {
   items: HubPlayer[];
   selected: Set<string>;
   onToggle: (userId: string) => void;
   onMarkComplete: (h: HubPlayer) => void;
+  onDelete: (h: HubPlayer) => void;
   markingId: string | null;
 }) {
   if (!items.length) {
