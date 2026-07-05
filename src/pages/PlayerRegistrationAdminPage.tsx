@@ -916,11 +916,46 @@ function RegistrationDetail({ registration: r, onClose, onDelete, onSaved }: {
 }) {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [form, setForm] = useState<Registration>(r);
 
   useEffect(() => { setForm(r); setEditing(false); }, [r]);
 
   const set = <K extends keyof Registration>(k: K, v: Registration[K]) => setForm((f) => ({ ...f, [k]: v }));
+
+  const handlePhotoUpload = async (file: File) => {
+    if (!file) return;
+    if (file.size > 20 * 1024 * 1024) { toast.error("Image must be under 20MB"); return; }
+    setUploadingPhoto(true);
+    try {
+      const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+      const path = `admin/${r.id}-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("registration-photos")
+        .upload(path, file, { upsert: true, contentType: file.type });
+      if (upErr) throw upErr;
+      // Remove previous photo if it was a storage path (not a legacy https URL)
+      if (form.photo_url && !/^https?:\/\//i.test(form.photo_url)) {
+        await supabase.storage.from("registration-photos").remove([form.photo_url]);
+      }
+      set("photo_url", path);
+      toast.success("Photo updated — click Save to persist");
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Upload failed");
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
+  const handlePhotoRemove = async () => {
+    if (!form.photo_url) return;
+    if (!confirm("Remove this photo?")) return;
+    if (!/^https?:\/\//i.test(form.photo_url)) {
+      await supabase.storage.from("registration-photos").remove([form.photo_url]);
+    }
+    set("photo_url", null);
+    toast.success("Photo removed — click Save to persist");
+  };
 
   const save = async () => {
     setSaving(true);
@@ -944,6 +979,7 @@ function RegistrationDetail({ registration: r, onClose, onDelete, onSaved }: {
       consent_medical: form.consent_medical,
       declaration_confirmed: form.declaration_confirmed,
       payment_status: form.payment_status,
+      photo_url: form.photo_url,
     }).eq("id", r.id);
     setSaving(false);
     if (error) { toast.error(error.message); return; }
@@ -990,18 +1026,45 @@ function RegistrationDetail({ registration: r, onClose, onDelete, onSaved }: {
           </div>
 
           <div className="p-6 space-y-6">
-            {r.photo_url && (
-              <RegPhoto
-                path={r.photo_url}
-                alt={form.child_name}
-                className="h-32 w-32 rounded-xl object-cover border-2 border-border"
-                fallback={
-                  <div className="h-32 w-32 rounded-xl bg-secondary/40 border-2 border-border flex items-center justify-center">
-                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                  </div>
-                }
-              />
-            )}
+            <div className="flex items-start gap-4">
+              {form.photo_url ? (
+                <RegPhoto
+                  key={form.photo_url}
+                  path={form.photo_url}
+                  alt={form.child_name}
+                  className="h-32 w-32 rounded-xl object-cover border-2 border-border"
+                  fallback={
+                    <div className="h-32 w-32 rounded-xl bg-secondary/40 border-2 border-border flex items-center justify-center">
+                      <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                    </div>
+                  }
+                />
+              ) : (
+                <div className="h-32 w-32 rounded-xl bg-secondary/40 border-2 border-dashed border-border flex items-center justify-center text-muted-foreground text-xs font-display tracking-wider">
+                  NO PHOTO
+                </div>
+              )}
+              {editing && (
+                <div className="flex flex-col gap-2">
+                  <label className={`inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-xs font-display tracking-wider hover:bg-primary/90 cursor-pointer ${uploadingPhoto ? "opacity-50 pointer-events-none" : ""}`}>
+                    {uploadingPhoto ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Pencil className="h-3.5 w-3.5" />}
+                    {form.photo_url ? "Replace Photo" : "Upload Photo"}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => { const f = e.target.files?.[0]; if (f) handlePhotoUpload(f); e.target.value = ""; }}
+                    />
+                  </label>
+                  {form.photo_url && (
+                    <button onClick={handlePhotoRemove} className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md bg-red-500/20 text-red-400 text-xs font-display tracking-wider hover:bg-red-500/30">
+                      <Trash2 className="h-3.5 w-3.5" /> Remove
+                    </button>
+                  )}
+                  <p className="text-[10px] text-muted-foreground max-w-[10rem]">JPG/PNG, up to 20MB. Click Save to persist.</p>
+                </div>
+              )}
+            </div>
 
             {editing ? (
               <>
