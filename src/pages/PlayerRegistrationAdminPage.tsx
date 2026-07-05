@@ -916,11 +916,46 @@ function RegistrationDetail({ registration: r, onClose, onDelete, onSaved }: {
 }) {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [form, setForm] = useState<Registration>(r);
 
   useEffect(() => { setForm(r); setEditing(false); }, [r]);
 
   const set = <K extends keyof Registration>(k: K, v: Registration[K]) => setForm((f) => ({ ...f, [k]: v }));
+
+  const handlePhotoUpload = async (file: File) => {
+    if (!file) return;
+    if (file.size > 20 * 1024 * 1024) { toast.error("Image must be under 20MB"); return; }
+    setUploadingPhoto(true);
+    try {
+      const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+      const path = `admin/${r.id}-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("registration-photos")
+        .upload(path, file, { upsert: true, contentType: file.type });
+      if (upErr) throw upErr;
+      // Remove previous photo if it was a storage path (not a legacy https URL)
+      if (form.photo_url && !/^https?:\/\//i.test(form.photo_url)) {
+        await supabase.storage.from("registration-photos").remove([form.photo_url]);
+      }
+      set("photo_url", path);
+      toast.success("Photo updated — click Save to persist");
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Upload failed");
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
+  const handlePhotoRemove = async () => {
+    if (!form.photo_url) return;
+    if (!confirm("Remove this photo?")) return;
+    if (!/^https?:\/\//i.test(form.photo_url)) {
+      await supabase.storage.from("registration-photos").remove([form.photo_url]);
+    }
+    set("photo_url", null);
+    toast.success("Photo removed — click Save to persist");
+  };
 
   const save = async () => {
     setSaving(true);
@@ -944,6 +979,7 @@ function RegistrationDetail({ registration: r, onClose, onDelete, onSaved }: {
       consent_medical: form.consent_medical,
       declaration_confirmed: form.declaration_confirmed,
       payment_status: form.payment_status,
+      photo_url: form.photo_url,
     }).eq("id", r.id);
     setSaving(false);
     if (error) { toast.error(error.message); return; }
