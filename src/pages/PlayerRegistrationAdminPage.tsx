@@ -689,6 +689,7 @@ export default function PlayerRegistrationAdminPage() {
               email: h.parent_email,
               rowKey: h.guardian_id,
             })}
+            onDelete={deleteHubPlayer}
             markingId={markingId}
           />
         ) : tab === "outstanding" ? (
