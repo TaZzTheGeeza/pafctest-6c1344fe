@@ -7,7 +7,7 @@ import { TeamChat } from "@/components/hub/TeamChat";
 import { PaymentCenter } from "@/components/hub/PaymentCenter";
 import { NotificationCenter } from "@/components/hub/NotificationCenter";
 import { TeamMemberManager } from "@/components/hub/TeamMemberManager";
-import { MessageSquare, CreditCard, Bell, CalendarCheck, Users, Shield, ChevronDown, Car, TrendingUp, UserPlus, User, FileText, ChevronRight, Video, Sparkles, Award, ClipboardList } from "lucide-react";
+import { MessageSquare, CreditCard, Bell, CalendarCheck, Users, Shield, ChevronDown, Car, TrendingUp, UserPlus, User, FileText, ChevronRight, Video, Sparkles, Award, ClipboardList, MapPin } from "lucide-react";
 import { PlayerRosterManager } from "@/components/hub/PlayerRosterManager";
 import { AwardsVoting } from "@/components/hub/AwardsVoting";
 import { FixtureAvailability } from "@/components/hub/FixtureAvailability";
@@ -65,6 +65,15 @@ const playerHubItems = [
     bgColor: "bg-gradient-to-br from-primary/20 to-primary/5",
     borderColor: "border-primary/40",
     featured: true,
+  },
+  {
+    title: "Pitch Bookings",
+    description: "Book pitches for matches and training. See live availability on the ground map.",
+    icon: MapPin,
+    path: "/pitch-bookings",
+    color: "text-green-400",
+    bgColor: "bg-green-400/10",
+    borderColor: "border-green-400/20",
   },
   {
     title: "My Profile",
