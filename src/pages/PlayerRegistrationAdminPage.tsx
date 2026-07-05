@@ -692,12 +692,21 @@ export default function PlayerRegistrationAdminPage() {
             onToggleExclude={toggleExcluded}
           />
         ) : (
-          <RegisteredList items={visibleRegistrations} onSelect={setSelected} showUnpaid={false} />
+          <RegisteredList items={visibleRegistrations} onSelect={setSelected} onDelete={deleteRegistration} showUnpaid={false} />
         )}
       </main>
 
 
-      {selected && <RegistrationDetail registration={selected} onClose={() => setSelected(null)} />}
+      {selected && (
+        <RegistrationDetail
+          registration={selected}
+          onClose={() => setSelected(null)}
+          onDelete={() => deleteRegistration(selected)}
+          onSaved={async () => {
+            await queryClient.invalidateQueries({ queryKey: ["player-registrations"] });
+          }}
+        />
+      )}
 
       <Footer />
     </div>
