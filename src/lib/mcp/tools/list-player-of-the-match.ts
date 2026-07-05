@@ -17,8 +17,8 @@ export default defineTool({
     });
     let query = supabase
       .from("player_of_the_match")
-      .select("player_name, age_group, match_date, opponent, notes")
-      .order("match_date", { ascending: false })
+      .select("player_name, age_group, team_name, award_date, match_description, reason, shirt_number")
+      .order("award_date", { ascending: false })
       .limit(limit);
     if (age_group) query = query.eq("age_group", age_group);
     const { data, error } = await query;

@@ -16,8 +16,8 @@ export default defineTool({
     });
     const { data, error } = await supabase
       .from("news_articles")
-      .select("title, slug, excerpt, published_at, status")
-      .eq("status", "published")
+      .select("title, slug, excerpt, published_at, category, author_name")
+      .eq("is_published", true)
       .order("published_at", { ascending: false })
       .limit(limit);
     if (error) return { content: [{ type: "text", text: error.message }], isError: true };
