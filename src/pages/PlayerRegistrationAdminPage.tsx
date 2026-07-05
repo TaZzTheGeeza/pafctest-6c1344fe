@@ -805,6 +805,7 @@ function RegisteredList({ items, onSelect, onDelete, showUnpaid = false }: { ite
   );
 }
 
+function OutstandingList({ items, onMarkComplete, markingId, excludedItems, onToggleExclude }: {
   items: RosterPlayer[];
   onMarkComplete: (p: RosterPlayer) => void;
   markingId: string | null;
