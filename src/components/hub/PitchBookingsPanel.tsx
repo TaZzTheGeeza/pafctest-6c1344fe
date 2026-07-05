@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { format, addDays, startOfDay, parseISO } from "date-fns";
-import { Loader2, MapPin, Clock, Plus, X, CheckCircle2, XCircle, Hourglass, Lock } from "lucide-react";
+import { Loader2, MapPin, Clock, Plus, X, CheckCircle2, XCircle, Hourglass, Lock, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -278,13 +278,138 @@ function MyBookingsTab({ userId, pitches }: { userId?: string; pitches: Pitch[] 
   );
 }
 
+function EditBookingDialog({ booking, pitches, onClose, onSaved }: {
+  booking: Booking; pitches: Pitch[]; onClose: () => void; onSaved: () => void;
+}) {
+  const pitch = pitches.find(p => p.id === booking.pitch_id);
+  const dateStr = format(parseISO(booking.start_time), "yyyy-MM-dd");
+  const [date, setDate] = useState(dateStr);
+  const [startTime, setStartTime] = useState(format(parseISO(booking.start_time), "HH:mm"));
+  const [endTime, setEndTime] = useState(format(parseISO(booking.end_time), "HH:mm"));
+  const [purpose, setPurpose] = useState(booking.purpose);
+  const [ageGroup, setAgeGroup] = useState(booking.age_group || "");
+  const [opponent, setOpponent] = useState(booking.opponent || "");
+  const [notes, setNotes] = useState(booking.notes || "");
+  const [status, setStatus] = useState<Booking["status"]>(booking.status);
+  const [pitchId, setPitchId] = useState(booking.pitch_id);
+  const [saving, setSaving] = useState(false);
+
+  async function save() {
+    const start = new Date(`${date}T${startTime}:00`);
+    const end = new Date(`${date}T${endTime}:00`);
+    if (end <= start) { toast.error("End time must be after start time"); return; }
+    setSaving(true);
+    const { error } = await (supabase as any).from("pitch_bookings").update({
+      pitch_id: pitchId,
+      start_time: start.toISOString(),
+      end_time: end.toISOString(),
+      purpose,
+      age_group: ageGroup || null,
+      opponent: opponent || null,
+      notes: notes || null,
+      status,
+      admin_override: true,
+    }).eq("id", booking.id);
+    setSaving(false);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Booking updated");
+    onSaved();
+  }
+
+  return (
+    <Dialog open onOpenChange={v => !v && onClose()}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle className="font-display tracking-wider uppercase flex items-center gap-2">
+            <Pencil className="h-4 w-4 text-primary" /> Edit Booking <span className="text-xs text-muted-foreground">({pitch?.name})</span>
+          </DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3 mt-2">
+          <div>
+            <label className="text-[11px] uppercase tracking-wider text-muted-foreground">Pitch</label>
+            <Select value={pitchId} onValueChange={setPitchId}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {pitches.map(p => <SelectItem key={p.id} value={p.id}>{p.name} ({p.format})</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <label className="text-[11px] uppercase tracking-wider text-muted-foreground">Date</label>
+            <Input type="date" value={date} onChange={e => setDate(e.target.value)} />
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="text-[11px] uppercase tracking-wider text-muted-foreground">Start</label>
+              <Input type="time" value={startTime} onChange={e => setStartTime(e.target.value)} />
+            </div>
+            <div>
+              <label className="text-[11px] uppercase tracking-wider text-muted-foreground">End</label>
+              <Input type="time" value={endTime} onChange={e => setEndTime(e.target.value)} />
+            </div>
+          </div>
+          <div>
+            <label className="text-[11px] uppercase tracking-wider text-muted-foreground">Purpose</label>
+            <Select value={purpose} onValueChange={setPurpose}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {PURPOSE_OPTIONS.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <label className="text-[11px] uppercase tracking-wider text-muted-foreground">Age group</label>
+            <Input value={ageGroup} onChange={e => setAgeGroup(e.target.value)} />
+          </div>
+          <div>
+            <label className="text-[11px] uppercase tracking-wider text-muted-foreground">Opponent</label>
+            <Input value={opponent} onChange={e => setOpponent(e.target.value)} />
+          </div>
+          <div>
+            <label className="text-[11px] uppercase tracking-wider text-muted-foreground">Notes</label>
+            <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2} />
+          </div>
+          <div>
+            <label className="text-[11px] uppercase tracking-wider text-muted-foreground">Status</label>
+            <Select value={status} onValueChange={v => setStatus(v as Booking["status"])}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="approved">Approved</SelectItem>
+                <SelectItem value="declined">Declined</SelectItem>
+                <SelectItem value="cancelled">Cancelled</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex gap-2 pt-2">
+            <button onClick={save} disabled={saving}
+              className="flex-1 flex items-center justify-center gap-1 bg-primary text-primary-foreground rounded-lg py-2 text-xs font-display tracking-wider uppercase disabled:opacity-50">
+              {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Pencil className="h-3 w-3" />} Save changes
+            </button>
+            <button onClick={onClose} className="px-4 py-2 text-xs text-muted-foreground hover:text-foreground">Cancel</button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export default function PitchBookingsPanel() {
-  const { user } = useAuth();
+  const { user, isCoach, isAdmin } = useAuth();
+  const canManage = isCoach || isAdmin;
   const [pitches, setPitches] = useState<Pitch[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [selectedDate, setSelectedDate] = useState(() => format(new Date(), "yyyy-MM-dd"));
   const [loading, setLoading] = useState(true);
   const [dialogPitch, setDialogPitch] = useState<Pitch | null>(null);
+  const [editBooking, setEditBooking] = useState<Booking | null>(null);
+
+  async function deleteBooking(id: string) {
+    if (!confirm("Delete this booking permanently?")) return;
+    const { error } = await (supabase as any).from("pitch_bookings").delete().eq("id", id);
+    if (error) toast.error(error.message);
+    else { toast.success("Booking deleted"); loadBookings(); }
+  }
   const [tab, setTab] = useState<"map" | "mine">("map");
 
   useEffect(() => { loadPitches(); }, []);
@@ -421,6 +546,12 @@ export default function PitchBookingsPanel() {
                   <div className="text-xs text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" />{format(parseISO(b.start_time), "HH:mm")} – {format(parseISO(b.end_time), "HH:mm")}</div>
                   <div className="text-xs text-foreground">{b.age_group ? `${b.age_group}` : ""}{b.opponent ? ` vs ${b.opponent}` : ""}</div>
                   <div className="text-[11px] text-muted-foreground ml-auto uppercase">{b.purpose}</div>
+                  {canManage && (
+                    <div className="flex items-center gap-1">
+                      <button onClick={() => setEditBooking(b)} title="Edit booking" className="text-muted-foreground hover:text-primary p-1"><Pencil className="h-3.5 w-3.5" /></button>
+                      <button onClick={() => deleteBooking(b.id)} title="Delete booking" className="text-muted-foreground hover:text-destructive p-1"><Trash2 className="h-3.5 w-3.5" /></button>
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -439,6 +570,14 @@ export default function PitchBookingsPanel() {
           selectedDate={selectedDate}
           onClose={() => setDialogPitch(null)}
           onCreated={() => { setDialogPitch(null); loadBookings(); }}
+        />
+      )}
+      {editBooking && (
+        <EditBookingDialog
+          booking={editBooking}
+          pitches={pitches}
+          onClose={() => setEditBooking(null)}
+          onSaved={() => { setEditBooking(null); loadBookings(); }}
         />
       )}
     </div>
