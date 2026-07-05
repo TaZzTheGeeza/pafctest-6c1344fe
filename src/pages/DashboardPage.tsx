@@ -72,6 +72,7 @@ const ADMIN_LINKS = [
   { label: "Bulk Doc Upload", path: "/admin/bulk-documents", icon: FileText, desc: "Upload docs for multiple players" },
   { label: "Safeguarding Reports", path: "/admin/safeguarding-reports", icon: Shield, desc: "View & manage safeguarding concerns" },
   { label: "Gallery Admin", path: "/gallery-admin", icon: Eye, desc: "Create albums & upload photos" },
+  { label: "Pitch Bookings Admin", path: "/pitch-bookings-admin", icon: MapPin, desc: "Approve or decline pitch booking requests" },
 ];
 
 type DashboardSection = "overview" | "users" | "requests" | "enquiries" | "messages" | "notifications" | "orders" | "potm" | "report" | "stats" | "manage" | "finances" | "permissions";

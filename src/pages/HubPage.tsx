@@ -67,6 +67,15 @@ const playerHubItems = [
     featured: true,
   },
   {
+    title: "Pitch Bookings",
+    description: "Book pitches for matches and training. See live availability on the ground map.",
+    icon: MapPin,
+    path: "/pitch-bookings",
+    color: "text-green-400",
+    bgColor: "bg-green-400/10",
+    borderColor: "border-green-400/20",
+  },
+  {
     title: "My Profile",
     description: "View your stats, documents, availability history, and POTM awards.",
     icon: User,
