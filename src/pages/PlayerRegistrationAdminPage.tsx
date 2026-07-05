@@ -8,7 +8,7 @@ import { Link } from "react-router-dom";
 import {
   ArrowLeft, CheckCircle2, AlertCircle, Search, Download, Loader2,
   User as UserIcon, Mail, Phone, MapPin, Calendar, Heart, ShieldAlert, X,
-  Bell, Send, Users, CheckSquare,
+  Bell, Send, Users, CheckSquare, Trash2, Pencil, Save,
 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -214,6 +214,16 @@ export default function PlayerRegistrationAdminPage() {
       setMarkingId(null);
     }
   };
+
+  const deleteRegistration = async (r: Registration) => {
+    if (!confirm(`Permanently delete the registration for ${r.child_name} (${r.preferred_age_group})?\n\nThis cannot be undone.`)) return;
+    const { error } = await supabase.from("player_registrations").delete().eq("id", r.id);
+    if (error) { toast.error(error.message); return; }
+    toast.success(`Deleted ${r.child_name}'s registration`);
+    setSelected(null);
+    await queryClient.invalidateQueries({ queryKey: ["player-registrations"] });
+  };
+
 
 
   const { data: registrations = [], isLoading } = useQuery({
@@ -682,12 +692,21 @@ export default function PlayerRegistrationAdminPage() {
             onToggleExclude={toggleExcluded}
           />
         ) : (
-          <RegisteredList items={visibleRegistrations} onSelect={setSelected} showUnpaid={false} />
+          <RegisteredList items={visibleRegistrations} onSelect={setSelected} onDelete={deleteRegistration} showUnpaid={false} />
         )}
       </main>
 
 
-      {selected && <RegistrationDetail registration={selected} onClose={() => setSelected(null)} />}
+      {selected && (
+        <RegistrationDetail
+          registration={selected}
+          onClose={() => setSelected(null)}
+          onDelete={() => deleteRegistration(selected)}
+          onSaved={async () => {
+            await queryClient.invalidateQueries({ queryKey: ["player-registrations"] });
+          }}
+        />
+      )}
 
       <Footer />
     </div>
@@ -708,7 +727,7 @@ function StatCard({ label, value, icon: Icon, color }: { label: string; value: n
   );
 }
 
-function RegisteredList({ items, onSelect, showUnpaid = false }: { items: Registration[]; onSelect: (r: Registration) => void; showUnpaid?: boolean }) {
+function RegisteredList({ items, onSelect, onDelete, showUnpaid = false }: { items: Registration[]; onSelect: (r: Registration) => void; onDelete: (r: Registration) => void; showUnpaid?: boolean }) {
   if (!items.length) {
     return (
       <div className="text-center py-16 text-muted-foreground bg-card border border-border rounded-xl">
@@ -727,10 +746,9 @@ function RegisteredList({ items, onSelect, showUnpaid = false }: { items: Regist
       )}
       <div className="divide-y divide-border">
         {items.map((r) => (
-          <button
+          <div
             key={r.id}
-            onClick={() => onSelect(r)}
-            className="w-full text-left px-4 py-3 hover:bg-secondary/40 transition-colors flex items-center gap-3"
+            className="px-4 py-3 hover:bg-secondary/40 transition-colors flex items-center gap-3"
           >
             <RegPhoto
               path={r.photo_url}
@@ -742,12 +760,12 @@ function RegisteredList({ items, onSelect, showUnpaid = false }: { items: Regist
                 </div>
               }
             />
-            <div className="flex-1 min-w-0">
+            <button onClick={() => onSelect(r)} className="flex-1 min-w-0 text-left">
               <p className="font-display font-bold text-foreground text-sm truncate">{r.child_name}</p>
               <p className="text-xs text-muted-foreground truncate">
                 {r.preferred_age_group} • {r.parent_name} • {r.email}
               </p>
-            </div>
+            </button>
             <div className="hidden sm:flex flex-col items-end text-right">
               <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-display">Submitted</span>
               <span className="text-xs text-foreground font-display">
@@ -766,7 +784,21 @@ function RegisteredList({ items, onSelect, showUnpaid = false }: { items: Regist
             {(!r.consent_photography || !r.consent_medical || !r.declaration_confirmed) && (
               <ShieldAlert className="h-4 w-4 text-amber-500 shrink-0" />
             )}
-          </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); onSelect(r); }}
+              className="p-2 rounded-md text-muted-foreground hover:text-primary hover:bg-secondary transition-colors"
+              title="Edit registration"
+            >
+              <Pencil className="h-4 w-4" />
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); onDelete(r); }}
+              className="p-2 rounded-md text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors"
+              title="Delete registration"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          </div>
         ))}
       </div>
     </div>
@@ -867,28 +899,92 @@ function OutstandingList({ items, onMarkComplete, markingId, excludedItems, onTo
 }
 
 
-function RegistrationDetail({ registration: r, onClose }: { registration: Registration; onClose: () => void }) {
+function RegistrationDetail({ registration: r, onClose, onDelete, onSaved }: {
+  registration: Registration;
+  onClose: () => void;
+  onDelete: () => void;
+  onSaved: () => Promise<void> | void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState<Registration>(r);
+
+  useEffect(() => { setForm(r); setEditing(false); }, [r]);
+
+  const set = <K extends keyof Registration>(k: K, v: Registration[K]) => setForm((f) => ({ ...f, [k]: v }));
+
+  const save = async () => {
+    setSaving(true);
+    const { error } = await supabase.from("player_registrations").update({
+      child_name: form.child_name,
+      child_dob: form.child_dob,
+      preferred_age_group: form.preferred_age_group,
+      previous_club: form.previous_club,
+      fa_fan_number: form.fa_fan_number,
+      address: form.address,
+      parent_name: form.parent_name,
+      relationship_to_child: form.relationship_to_child,
+      email: form.email,
+      phone: form.phone,
+      emergency_contact_name: form.emergency_contact_name,
+      emergency_contact_relationship: form.emergency_contact_relationship,
+      emergency_contact_phone: form.emergency_contact_phone,
+      medical_conditions: form.medical_conditions,
+      additional_info: form.additional_info,
+      consent_photography: form.consent_photography,
+      consent_medical: form.consent_medical,
+      declaration_confirmed: form.declaration_confirmed,
+      payment_status: form.payment_status,
+    }).eq("id", r.id);
+    setSaving(false);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Registration updated");
+    setEditing(false);
+    await onSaved();
+  };
+
+  const inputCls = "w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground mt-1";
+
   return (
     <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm overflow-y-auto" onClick={onClose}>
       <div className="container mx-auto px-4 py-10 max-w-3xl" onClick={(e) => e.stopPropagation()}>
         <div className="bg-card border border-border rounded-2xl shadow-2xl">
-          <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-            <div>
-              <h2 className="font-display text-xl font-black text-foreground">{r.child_name}</h2>
+          <div className="flex items-center justify-between px-6 py-4 border-b border-border gap-2">
+            <div className="min-w-0">
+              <h2 className="font-display text-xl font-black text-foreground truncate">{form.child_name}</h2>
               <p className="text-xs text-muted-foreground">
-                {r.preferred_age_group} • Submitted {format(new Date(r.created_at), "dd MMM yyyy 'at' HH:mm")}
+                {form.preferred_age_group} • Submitted {format(new Date(r.created_at), "dd MMM yyyy 'at' HH:mm")}
               </p>
             </div>
-            <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
-              <X className="h-5 w-5" />
-            </button>
+            <div className="flex items-center gap-1 shrink-0">
+              {!editing ? (
+                <button onClick={() => setEditing(true)} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-xs font-display tracking-wider hover:bg-primary/90">
+                  <Pencil className="h-3.5 w-3.5" /> Edit
+                </button>
+              ) : (
+                <>
+                  <button onClick={save} disabled={saving} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-xs font-display tracking-wider hover:bg-primary/90 disabled:opacity-50">
+                    {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />} Save
+                  </button>
+                  <button onClick={() => { setForm(r); setEditing(false); }} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-secondary text-foreground text-xs font-display tracking-wider hover:bg-secondary/80">
+                    Cancel
+                  </button>
+                </>
+              )}
+              <button onClick={onDelete} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-red-500/20 text-red-400 text-xs font-display tracking-wider hover:bg-red-500/30">
+                <Trash2 className="h-3.5 w-3.5" /> Delete
+              </button>
+              <button onClick={onClose} className="text-muted-foreground hover:text-foreground p-1">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
           </div>
 
           <div className="p-6 space-y-6">
             {r.photo_url && (
               <RegPhoto
                 path={r.photo_url}
-                alt={r.child_name}
+                alt={form.child_name}
                 className="h-32 w-32 rounded-xl object-cover border-2 border-border"
                 fallback={
                   <div className="h-32 w-32 rounded-xl bg-secondary/40 border-2 border-border flex items-center justify-center">
@@ -898,41 +994,88 @@ function RegistrationDetail({ registration: r, onClose }: { registration: Regist
               />
             )}
 
-            <Section title="Child">
-              <Field icon={UserIcon} label="Full Name" value={r.child_name} />
-              <Field icon={Calendar} label="Date of Birth" value={r.child_dob ? format(new Date(r.child_dob), "dd/MM/yyyy") : "—"} />
-              <Field icon={UserIcon} label="Preferred Age Group" value={r.preferred_age_group} />
-              <Field icon={UserIcon} label="Previous Club" value={r.previous_club || "—"} />
-              <Field icon={UserIcon} label="FA Fan Number" value={r.fa_fan_number || "—"} />
-              <Field icon={MapPin} label="Address" value={r.address || "—"} />
-            </Section>
+            {editing ? (
+              <>
+                <Section title="Child">
+                  <label className="block"><span className="text-[10px] uppercase tracking-wider text-muted-foreground font-display">Full Name</span><input className={inputCls} value={form.child_name} onChange={(e) => set("child_name", e.target.value)} /></label>
+                  <label className="block"><span className="text-[10px] uppercase tracking-wider text-muted-foreground font-display">Date of Birth</span><input type="date" className={inputCls} value={form.child_dob || ""} onChange={(e) => set("child_dob", e.target.value)} /></label>
+                  <label className="block"><span className="text-[10px] uppercase tracking-wider text-muted-foreground font-display">Preferred Age Group</span><input className={inputCls} value={form.preferred_age_group} onChange={(e) => set("preferred_age_group", e.target.value)} /></label>
+                  <label className="block"><span className="text-[10px] uppercase tracking-wider text-muted-foreground font-display">Previous Club</span><input className={inputCls} value={form.previous_club || ""} onChange={(e) => set("previous_club", e.target.value)} /></label>
+                  <label className="block"><span className="text-[10px] uppercase tracking-wider text-muted-foreground font-display">FA Fan Number</span><input className={inputCls} value={form.fa_fan_number || ""} onChange={(e) => set("fa_fan_number", e.target.value)} /></label>
+                  <label className="block"><span className="text-[10px] uppercase tracking-wider text-muted-foreground font-display">Address</span><textarea rows={2} className={inputCls} value={form.address || ""} onChange={(e) => set("address", e.target.value)} /></label>
+                </Section>
 
-            <Section title="Parent / Guardian">
-              <Field icon={UserIcon} label="Name" value={r.parent_name} />
-              <Field icon={UserIcon} label="Relationship" value={r.relationship_to_child || "—"} />
-              <Field icon={Mail} label="Email" value={r.email} />
-              <Field icon={Phone} label="Phone" value={r.phone} />
-            </Section>
+                <Section title="Parent / Guardian">
+                  <label className="block"><span className="text-[10px] uppercase tracking-wider text-muted-foreground font-display">Name</span><input className={inputCls} value={form.parent_name} onChange={(e) => set("parent_name", e.target.value)} /></label>
+                  <label className="block"><span className="text-[10px] uppercase tracking-wider text-muted-foreground font-display">Relationship</span><input className={inputCls} value={form.relationship_to_child || ""} onChange={(e) => set("relationship_to_child", e.target.value)} /></label>
+                  <label className="block"><span className="text-[10px] uppercase tracking-wider text-muted-foreground font-display">Email</span><input type="email" className={inputCls} value={form.email} onChange={(e) => set("email", e.target.value)} /></label>
+                  <label className="block"><span className="text-[10px] uppercase tracking-wider text-muted-foreground font-display">Phone</span><input className={inputCls} value={form.phone} onChange={(e) => set("phone", e.target.value)} /></label>
+                </Section>
 
-            <Section title="Emergency Contact">
-              <Field icon={UserIcon} label="Name" value={r.emergency_contact_name || "—"} />
-              <Field icon={UserIcon} label="Relationship" value={r.emergency_contact_relationship || "—"} />
-              <Field icon={Phone} label="Phone" value={r.emergency_contact_phone || "—"} />
-            </Section>
+                <Section title="Emergency Contact">
+                  <label className="block"><span className="text-[10px] uppercase tracking-wider text-muted-foreground font-display">Name</span><input className={inputCls} value={form.emergency_contact_name || ""} onChange={(e) => set("emergency_contact_name", e.target.value)} /></label>
+                  <label className="block"><span className="text-[10px] uppercase tracking-wider text-muted-foreground font-display">Relationship</span><input className={inputCls} value={form.emergency_contact_relationship || ""} onChange={(e) => set("emergency_contact_relationship", e.target.value)} /></label>
+                  <label className="block"><span className="text-[10px] uppercase tracking-wider text-muted-foreground font-display">Phone</span><input className={inputCls} value={form.emergency_contact_phone || ""} onChange={(e) => set("emergency_contact_phone", e.target.value)} /></label>
+                </Section>
 
-            <Section title="Medical & Safeguarding">
-              <Field icon={Heart} label="Medical Conditions" value={r.medical_conditions || "None reported"} />
-              <Field icon={ShieldAlert} label="Known to Social Services" value={r.known_to_social_services ? "Yes" : "No"} />
-              {r.social_services_details && <Field icon={ShieldAlert} label="Social Services Details" value={r.social_services_details} />}
-              {r.foster_care_details && <Field icon={ShieldAlert} label="Foster Care Details" value={r.foster_care_details} />}
-              <Field icon={UserIcon} label="Additional Info" value={r.additional_info || "—"} />
-            </Section>
+                <Section title="Medical & Additional">
+                  <label className="block"><span className="text-[10px] uppercase tracking-wider text-muted-foreground font-display">Medical Conditions</span><textarea rows={2} className={inputCls} value={form.medical_conditions || ""} onChange={(e) => set("medical_conditions", e.target.value)} /></label>
+                  <label className="block"><span className="text-[10px] uppercase tracking-wider text-muted-foreground font-display">Additional Info</span><textarea rows={2} className={inputCls} value={form.additional_info || ""} onChange={(e) => set("additional_info", e.target.value)} /></label>
+                </Section>
 
-            <Section title="Consents">
-              <ConsentRow label="Photography & Video" granted={!!r.consent_photography} />
-              <ConsentRow label="Medical Treatment" granted={!!r.consent_medical} />
-              <ConsentRow label="Declaration Confirmed" granted={!!r.declaration_confirmed} />
-            </Section>
+                <Section title="Consents & Payment">
+                  <label className="flex items-center gap-2 text-sm text-foreground"><input type="checkbox" checked={!!form.consent_photography} onChange={(e) => set("consent_photography", e.target.checked)} /> Photography & Video</label>
+                  <label className="flex items-center gap-2 text-sm text-foreground"><input type="checkbox" checked={!!form.consent_medical} onChange={(e) => set("consent_medical", e.target.checked)} /> Medical Treatment</label>
+                  <label className="flex items-center gap-2 text-sm text-foreground"><input type="checkbox" checked={!!form.declaration_confirmed} onChange={(e) => set("declaration_confirmed", e.target.checked)} /> Declaration Confirmed</label>
+                  <label className="block mt-2"><span className="text-[10px] uppercase tracking-wider text-muted-foreground font-display">Payment Status</span>
+                    <select className={inputCls} value={form.payment_status || ""} onChange={(e) => set("payment_status", e.target.value)}>
+                      <option value="">—</option>
+                      <option value="paid">paid</option>
+                      <option value="pending">pending</option>
+                      <option value="unpaid">unpaid</option>
+                    </select>
+                  </label>
+                </Section>
+              </>
+            ) : (
+              <>
+                <Section title="Child">
+                  <Field icon={UserIcon} label="Full Name" value={r.child_name} />
+                  <Field icon={Calendar} label="Date of Birth" value={r.child_dob ? format(new Date(r.child_dob), "dd/MM/yyyy") : "—"} />
+                  <Field icon={UserIcon} label="Preferred Age Group" value={r.preferred_age_group} />
+                  <Field icon={UserIcon} label="Previous Club" value={r.previous_club || "—"} />
+                  <Field icon={UserIcon} label="FA Fan Number" value={r.fa_fan_number || "—"} />
+                  <Field icon={MapPin} label="Address" value={r.address || "—"} />
+                </Section>
+
+                <Section title="Parent / Guardian">
+                  <Field icon={UserIcon} label="Name" value={r.parent_name} />
+                  <Field icon={UserIcon} label="Relationship" value={r.relationship_to_child || "—"} />
+                  <Field icon={Mail} label="Email" value={r.email} />
+                  <Field icon={Phone} label="Phone" value={r.phone} />
+                </Section>
+
+                <Section title="Emergency Contact">
+                  <Field icon={UserIcon} label="Name" value={r.emergency_contact_name || "—"} />
+                  <Field icon={UserIcon} label="Relationship" value={r.emergency_contact_relationship || "—"} />
+                  <Field icon={Phone} label="Phone" value={r.emergency_contact_phone || "—"} />
+                </Section>
+
+                <Section title="Medical & Safeguarding">
+                  <Field icon={Heart} label="Medical Conditions" value={r.medical_conditions || "None reported"} />
+                  <Field icon={ShieldAlert} label="Known to Social Services" value={r.known_to_social_services ? "Yes" : "No"} />
+                  {r.social_services_details && <Field icon={ShieldAlert} label="Social Services Details" value={r.social_services_details} />}
+                  {r.foster_care_details && <Field icon={ShieldAlert} label="Foster Care Details" value={r.foster_care_details} />}
+                  <Field icon={UserIcon} label="Additional Info" value={r.additional_info || "—"} />
+                </Section>
+
+                <Section title="Consents">
+                  <ConsentRow label="Photography & Video" granted={!!r.consent_photography} />
+                  <ConsentRow label="Medical Treatment" granted={!!r.consent_medical} />
+                  <ConsentRow label="Declaration Confirmed" granted={!!r.declaration_confirmed} />
+                </Section>
+              </>
+            )}
           </div>
         </div>
       </div>
