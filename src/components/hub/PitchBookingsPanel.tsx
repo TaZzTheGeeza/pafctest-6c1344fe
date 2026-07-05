@@ -396,7 +396,6 @@ function EditBookingDialog({ booking, pitches, onClose, onSaved }: {
 
 export default function PitchBookingsPanel() {
   const { user, isCoach, isAdmin } = useAuth();
-  const canManage = isCoach || isAdmin;
   const [pitches, setPitches] = useState<Pitch[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [selectedDate, setSelectedDate] = useState(() => format(new Date(), "yyyy-MM-dd"));
