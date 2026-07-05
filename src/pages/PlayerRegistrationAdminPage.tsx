@@ -8,7 +8,7 @@ import { Link } from "react-router-dom";
 import {
   ArrowLeft, CheckCircle2, AlertCircle, Search, Download, Loader2,
   User as UserIcon, Mail, Phone, MapPin, Calendar, Heart, ShieldAlert, X,
-  Bell, Send, Users, CheckSquare,
+  Bell, Send, Users, CheckSquare, Trash2, Pencil, Save,
 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
