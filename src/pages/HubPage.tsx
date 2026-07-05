@@ -16,6 +16,7 @@ import { AttendanceStats } from "@/components/hub/AttendanceStats";
 import { GuardianManager } from "@/components/hub/GuardianManager";
 import { HubMeetingsEmbed } from "@/components/hub/HubMeetingsEmbed";
 import { TeamAccessRequest } from "@/components/hub/TeamAccessRequest";
+import PitchBookingsPanel from "@/components/hub/PitchBookingsPanel";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
