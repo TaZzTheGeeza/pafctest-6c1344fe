@@ -1214,6 +1214,13 @@ function HubPlayerList({
                   <Bell className="h-3 w-3" /> OUTSTANDING
                 </span>
               )}
+              <button
+                onClick={() => onDelete(h)}
+                className="p-1.5 rounded-md text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors shrink-0"
+                title="Remove from hub (unlink parent/guardian)"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
             </div>
           );
         })}
