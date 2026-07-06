@@ -114,6 +114,7 @@ export default function HubPage() {
   const [myTeams, setMyTeams] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [showTeamPicker, setShowTeamPicker] = useState(false);
+  const [mobileView, setMobileView] = useState<"menu" | "content">(searchParams.get("tab") ? "content" : "menu");
   const { user, isAdmin, isCoach, rolesLoading } = useAuth();
   const isMobile = useIsMobile();
   const { enabled: presentationEnabled } = usePresentationEnabled();
