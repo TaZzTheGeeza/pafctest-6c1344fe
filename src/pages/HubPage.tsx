@@ -287,9 +287,9 @@ export default function HubPage() {
             </div>
           ) : (
             <div className="flex gap-0 md:gap-6">
-              {/* Sidebar */}
+              {/* Sidebar - full width on mobile menu view, hidden on mobile content view */}
               <TooltipProvider delayDuration={100}>
-                <aside className="shrink-0 w-40 md:w-56 bg-card border border-border rounded-xl overflow-visible md:overflow-hidden">
+                <aside className={`${mobileView === "content" ? "hidden md:block" : "w-full md:w-56"} shrink-0 md:w-56 bg-card border border-border rounded-xl overflow-visible md:overflow-hidden`}>
                   {/* Team Picker */}
                   <div className="relative border-b border-border">
                     <button
