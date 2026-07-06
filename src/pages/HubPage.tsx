@@ -107,7 +107,6 @@ const playerHubItems = [
 ];
 
 export default function HubPage() {
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "chat");
   const [activeTeam, setActiveTeam] = useState<string | null>(searchParams.get("team") || null);
