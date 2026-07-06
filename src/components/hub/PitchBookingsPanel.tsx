@@ -230,26 +230,34 @@ function BookingDialog({ pitch, dayBookings, overlapBookings, pitches, selectedD
 function MyBookingsTab({ userId, pitches }: { userId?: string; pitches: Pitch[] }) {
   const [items, setItems] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
+  const [editBooking, setEditBooking] = useState<Booking | null>(null);
 
-  useEffect(() => {
+  async function load() {
     if (!userId) return;
-    (async () => {
-      setLoading(true);
-      const { data } = await (supabase as any)
-        .from("pitch_bookings")
-        .select("*")
-        .eq("requested_by", userId)
-        .order("start_time", { ascending: false });
-      setItems((data as Booking[]) || []);
-      setLoading(false);
-    })();
-  }, [userId]);
+    setLoading(true);
+    const { data } = await (supabase as any)
+      .from("pitch_bookings")
+      .select("*")
+      .eq("requested_by", userId)
+      .order("start_time", { ascending: false });
+    setItems((data as Booking[]) || []);
+    setLoading(false);
+  }
+
+  useEffect(() => { load(); }, [userId]);
 
   async function cancel(id: string) {
     if (!confirm("Cancel this booking request?")) return;
     const { error } = await (supabase as any).from("pitch_bookings").update({ status: "cancelled" }).eq("id", id);
     if (error) toast.error(error.message);
     else { toast.success("Cancelled"); setItems(prev => prev.map(i => i.id === id ? { ...i, status: "cancelled" } : i)); }
+  }
+
+  async function remove(id: string) {
+    if (!confirm("Delete this booking permanently?")) return;
+    const { error } = await (supabase as any).from("pitch_bookings").delete().eq("id", id);
+    if (error) toast.error(error.message);
+    else { toast.success("Deleted"); setItems(prev => prev.filter(i => i.id !== id)); }
   }
 
   if (loading) return <div className="flex justify-center py-16"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
@@ -268,12 +276,24 @@ function MyBookingsTab({ userId, pitches }: { userId?: string; pitches: Pitch[] 
             {b.status === "declined" && b.decline_reason && (
               <div className="text-[11px] text-red-300 basis-full">Reason: {b.decline_reason}</div>
             )}
-            {b.status === "pending" && (
-              <button onClick={() => cancel(b.id)} className="ml-auto text-[11px] text-muted-foreground hover:text-destructive flex items-center gap-1"><X className="h-3 w-3" />Cancel</button>
-            )}
+            <div className="ml-auto flex items-center gap-1">
+              {b.status === "pending" && (
+                <button onClick={() => cancel(b.id)} title="Cancel request" className="text-[11px] text-muted-foreground hover:text-amber-300 flex items-center gap-1 px-1"><X className="h-3 w-3" />Cancel</button>
+              )}
+              <button onClick={() => setEditBooking(b)} title="Edit booking" className="text-muted-foreground hover:text-primary p-1"><Pencil className="h-3.5 w-3.5" /></button>
+              <button onClick={() => remove(b.id)} title="Delete booking" className="text-muted-foreground hover:text-destructive p-1"><Trash2 className="h-3.5 w-3.5" /></button>
+            </div>
           </div>
         );
       })}
+      {editBooking && (
+        <EditBookingDialog
+          booking={editBooking}
+          pitches={pitches}
+          onClose={() => setEditBooking(null)}
+          onSaved={() => { setEditBooking(null); load(); }}
+        />
+      )}
     </div>
   );
 }
