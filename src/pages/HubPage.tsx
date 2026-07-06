@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSearchParams, Link, useNavigate } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -7,7 +7,7 @@ import { TeamChat } from "@/components/hub/TeamChat";
 import { PaymentCenter } from "@/components/hub/PaymentCenter";
 import { NotificationCenter } from "@/components/hub/NotificationCenter";
 import { TeamMemberManager } from "@/components/hub/TeamMemberManager";
-import { MessageSquare, CreditCard, Bell, CalendarCheck, Users, Shield, ChevronDown, Car, TrendingUp, UserPlus, User, FileText, ChevronRight, Video, Sparkles, Award, ClipboardList, MapPin } from "lucide-react";
+import { MessageSquare, CreditCard, Bell, CalendarCheck, Users, Shield, ChevronDown, Car, TrendingUp, UserPlus, User, FileText, ChevronRight, ChevronLeft, Video, Sparkles, Award, ClipboardList, MapPin } from "lucide-react";
 import { PlayerRosterManager } from "@/components/hub/PlayerRosterManager";
 import { AwardsVoting } from "@/components/hub/AwardsVoting";
 import { FixtureAvailability } from "@/components/hub/FixtureAvailability";
@@ -107,13 +107,13 @@ const playerHubItems = [
 ];
 
 export default function HubPage() {
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "chat");
   const [activeTeam, setActiveTeam] = useState<string | null>(searchParams.get("team") || null);
   const [myTeams, setMyTeams] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [showTeamPicker, setShowTeamPicker] = useState(false);
+  const [mobileView, setMobileView] = useState<"menu" | "content">(searchParams.get("tab") ? "content" : "menu");
   const { user, isAdmin, isCoach, rolesLoading } = useAuth();
   const isMobile = useIsMobile();
   const { enabled: presentationEnabled } = usePresentationEnabled();
@@ -177,11 +177,8 @@ export default function HubPage() {
   }
 
   function selectTab(id: string) {
-    if (id === "pitch-bookings") {
-      navigate("/pitch-bookings");
-      return;
-    }
     setActiveTab(id);
+    setMobileView("content");
     setSearchParams({ tab: id, ...(activeTeam ? { team: activeTeam } : {}) });
   }
 
@@ -290,9 +287,9 @@ export default function HubPage() {
             </div>
           ) : (
             <div className="flex gap-0 md:gap-6">
-              {/* Sidebar */}
+              {/* Sidebar - full width on mobile menu view, hidden on mobile content view */}
               <TooltipProvider delayDuration={100}>
-                <aside className="shrink-0 w-40 md:w-56 bg-card border border-border rounded-xl overflow-visible md:overflow-hidden">
+                <aside className={`${mobileView === "content" ? "hidden md:block" : "w-full md:w-56"} shrink-0 md:w-56 bg-card border border-border rounded-xl overflow-visible md:overflow-hidden`}>
                   {/* Team Picker */}
                   <div className="relative border-b border-border">
                     <button
@@ -374,8 +371,16 @@ export default function HubPage() {
                 </aside>
               </TooltipProvider>
 
-              {/* Main Content */}
-              <div className="flex-1 min-w-0">
+              {/* Main Content - hidden on mobile menu view */}
+              <div className={`${mobileView === "menu" ? "hidden md:block" : "block"} flex-1 min-w-0`}>
+                {isMobile && (
+                  <button
+                    onClick={() => setMobileView("menu")}
+                    className="mb-3 inline-flex items-center gap-1 text-xs font-display tracking-wider text-muted-foreground hover:text-primary uppercase"
+                  >
+                    <ChevronLeft className="h-4 w-4" /> Back to menu
+                  </button>
+                )}
                 {renderContent()}
               </div>
             </div>
