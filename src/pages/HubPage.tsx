@@ -178,11 +178,8 @@ export default function HubPage() {
   }
 
   function selectTab(id: string) {
-    if (id === "pitch-bookings") {
-      navigate("/pitch-bookings");
-      return;
-    }
     setActiveTab(id);
+    setMobileView("content");
     setSearchParams({ tab: id, ...(activeTeam ? { team: activeTeam } : {}) });
   }
 
