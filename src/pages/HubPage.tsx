@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSearchParams, Link } from "react-router-dom";
+import { useSearchParams, Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -107,6 +107,7 @@ const playerHubItems = [
 ];
 
 export default function HubPage() {
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "chat");
   const [activeTeam, setActiveTeam] = useState<string | null>(searchParams.get("team") || null);
@@ -176,6 +177,10 @@ export default function HubPage() {
   }
 
   function selectTab(id: string) {
+    if (id === "pitch-bookings") {
+      navigate("/pitch-bookings");
+      return;
+    }
     setActiveTab(id);
     setSearchParams({ tab: id, ...(activeTeam ? { team: activeTeam } : {}) });
   }
