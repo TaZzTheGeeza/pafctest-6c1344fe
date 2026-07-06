@@ -371,8 +371,16 @@ export default function HubPage() {
                 </aside>
               </TooltipProvider>
 
-              {/* Main Content */}
-              <div className="flex-1 min-w-0">
+              {/* Main Content - hidden on mobile menu view */}
+              <div className={`${mobileView === "menu" ? "hidden md:block" : "block"} flex-1 min-w-0`}>
+                {isMobile && (
+                  <button
+                    onClick={() => setMobileView("menu")}
+                    className="mb-3 inline-flex items-center gap-1 text-xs font-display tracking-wider text-muted-foreground hover:text-primary uppercase"
+                  >
+                    <ChevronLeft className="h-4 w-4" /> Back to menu
+                  </button>
+                )}
                 {renderContent()}
               </div>
             </div>
