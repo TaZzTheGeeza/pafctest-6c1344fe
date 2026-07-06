@@ -177,6 +177,10 @@ export default function HubPage() {
   }
 
   function selectTab(id: string) {
+    if (id === "pitch-bookings") {
+      navigate("/pitch-bookings");
+      return;
+    }
     setActiveTab(id);
     setSearchParams({ tab: id, ...(activeTeam ? { team: activeTeam } : {}) });
   }
