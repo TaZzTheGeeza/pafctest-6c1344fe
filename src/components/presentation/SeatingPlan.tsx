@@ -138,6 +138,8 @@ export function SeatingPlan({
     "u6s":         { h: 0,   s: 90, l: 60 },
     "u7s":         { h: 28,  s: 100, l: 55 },
     "u8s":         { h: 55,  s: 100, l: 65 },
+    "u8s-black":   { h: 48,  s: 95, l: 55 },
+    "u8s-gold":    { h: 62,  s: 100, l: 60 },
     "u9s-black":   { h: 95,  s: 70, l: 50 },
     "u9s-gold":    { h: 145, s: 80, l: 45 },
     "u10s":        { h: 175, s: 85, l: 55 },
