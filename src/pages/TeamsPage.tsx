@@ -49,7 +49,8 @@ interface TeamData {
 const allTeams: TeamData[] = [
   { slug: "u6s", name: "U6", ageGroup: "Under 6", training: "TBC", nextFixture: { opponent: "TBC", venue: "Home", date: "TBC", kickoff: "TBC" } },
   { slug: "u7s", name: "U7", ageGroup: "Under 7", training: "TBC", nextFixture: { opponent: "TBC", venue: "Home", date: "TBC", kickoff: "TBC" } },
-  { slug: "u8s", name: "U8", ageGroup: "Under 8", training: "TBC", nextFixture: { opponent: "TBC", venue: "Home", date: "TBC", kickoff: "TBC" } },
+  { slug: "u8s-black", name: "U8 Black", ageGroup: "Under 8", training: "TBC", nextFixture: { opponent: "TBC", venue: "Home", date: "TBC", kickoff: "TBC" } },
+  { slug: "u8s-gold", name: "U8 Gold", ageGroup: "Under 8", training: "TBC", nextFixture: { opponent: "TBC", venue: "Home", date: "TBC", kickoff: "TBC" } },
   { slug: "u9s-black", name: "U9 Black", ageGroup: "Under 9", training: "TBC", nextFixture: { opponent: "TBC", venue: "Home", date: "TBC", kickoff: "TBC" } },
   { slug: "u9s-gold", name: "U9 Gold", ageGroup: "Under 9", training: "TBC", nextFixture: { opponent: "TBC", venue: "Home", date: "TBC", kickoff: "TBC" } },
   { slug: "u10s", name: "U10", ageGroup: "Under 10", training: "TBC", nextFixture: { opponent: "TBC", venue: "Home", date: "TBC", kickoff: "TBC" } },
