@@ -281,7 +281,7 @@ export default function DashboardPage() {
   }
 
   const AGE_GROUP_TO_TEAM_SLUG: Record<string, string> = {
-    "U6": "u6s", "U7": "u7s", "U8": "u8s", "U9 Black": "u9s-black", "U9 Gold": "u9s-gold", "U10": "u10s", "U11": "u11s",
+    "U6": "u6s", "U7": "u7s", "U8": "u8s", "U8 Black": "u8s-black", "U8 Gold": "u8s-gold", "U9 Black": "u9s-black", "U9 Gold": "u9s-gold", "U10": "u10s", "U11": "u11s",
     "U12 Black": "u12s-black", "U12 Gold": "u12s-gold", "U13": "u13s", "U14 Black": "u14s-black", "U14 Gold": "u14s-gold", "U15": "u15s",
   };
 
