@@ -501,6 +501,8 @@ function TheatreSeatBlock({
     "u6s":        { bg1: "hsl(0 75% 35%)",   bg2: "hsl(0 70% 18%)",   border: "hsl(0 90% 60%)",   text: "hsl(0 90% 90%)" },     // red
     "u7s":        { bg1: "hsl(28 95% 42%)",  bg2: "hsl(28 90% 22%)",  border: "hsl(28 100% 60%)", text: "hsl(28 100% 88%)" },   // orange
     "u8s":        { bg1: "hsl(55 90% 45%)",  bg2: "hsl(55 85% 22%)",  border: "hsl(55 100% 65%)", text: "hsl(55 100% 88%)" },   // yellow
+    "u8s-black":  { bg1: "hsl(48 85% 38%)",  bg2: "hsl(48 80% 18%)",  border: "hsl(48 95% 55%)",  text: "hsl(48 95% 85%)" },    // amber
+    "u8s-gold":   { bg1: "hsl(62 95% 42%)",  bg2: "hsl(62 90% 20%)",  border: "hsl(62 100% 60%)", text: "hsl(62 100% 88%)" },   // gold
     "u9s-black":  { bg1: "hsl(95 65% 28%)",  bg2: "hsl(95 60% 14%)",  border: "hsl(95 70% 50%)",  text: "hsl(95 80% 80%)" },    // olive
     "u9s-gold":   { bg1: "hsl(145 80% 25%)", bg2: "hsl(145 75% 12%)", border: "hsl(145 80% 45%)", text: "hsl(145 80% 80%)" },   // emerald
     "u10s":       { bg1: "hsl(175 75% 32%)", bg2: "hsl(175 70% 16%)", border: "hsl(175 85% 55%)", text: "hsl(175 90% 85%)" },   // turquoise
