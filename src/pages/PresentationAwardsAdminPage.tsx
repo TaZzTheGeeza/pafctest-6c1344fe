@@ -9,7 +9,8 @@ import { Award, ArrowLeft, Download, Loader2, Lock, Unlock, Trophy, Medal } from
 
 const TEAMS = [
   { slug: "u7s", name: "U7" },
-  { slug: "u8s", name: "U8" },
+  { slug: "u8s-black", name: "U8 Black" },
+  { slug: "u8s-gold", name: "U8 Gold" },
   { slug: "u9s-black", name: "U9 Black" },
   { slug: "u9s-gold", name: "U9 Gold" },
   { slug: "u10s", name: "U10" },

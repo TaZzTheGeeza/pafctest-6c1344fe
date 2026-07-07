@@ -27,7 +27,8 @@ import { registerPushSubscription, isPushSupported, isPushEnabled } from "@/lib/
 const TEAMS = [
   { slug: "u6s", name: "U6" },
   { slug: "u7s", name: "U7" },
-  { slug: "u8s", name: "U8" },
+  { slug: "u8s-black", name: "U8 Black" },
+  { slug: "u8s-gold", name: "U8 Gold" },
   { slug: "u9s-black", name: "U9 Black" },
   { slug: "u9s-gold", name: "U9 Gold" },
   { slug: "u10s", name: "U10" },
@@ -161,6 +162,7 @@ export default function HubPage() {
     // Normalize non-canonical slugs to canonical ones
     const canonicalMap: Record<string, string> = {
       "u6": "u6s", "u7": "u7s", "u8": "u8s",
+      "u8-black": "u8s-black", "u8-gold": "u8s-gold",
       "u9-black": "u9s-black", "u9-gold": "u9s-gold",
       "u10": "u10s", "u11": "u11s",
       "u12-black": "u12s-black", "u12-gold": "u12s-gold",

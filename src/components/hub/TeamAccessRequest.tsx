@@ -8,7 +8,8 @@ import { toast } from "sonner";
 const TEAMS = [
   { slug: "u6s", label: "U6" },
   { slug: "u7s", label: "U7" },
-  { slug: "u8s", label: "U8" },
+  { slug: "u8s-black", label: "U8 Black" },
+  { slug: "u8s-gold", label: "U8 Gold" },
   { slug: "u9s-black", label: "U9 Black" },
   { slug: "u9s-gold", label: "U9 Gold" },
   { slug: "u10s", label: "U10" },

@@ -15,7 +15,8 @@ interface Props {
 const AVAILABILITY_TEAMS: { team: string; slug: string }[] = [
   { team: "U6", slug: "u6s" },
   { team: "U7", slug: "u7s" },
-  { team: "U8", slug: "u8s" },
+  { team: "U8 Black", slug: "u8s-black" },
+  { team: "U8 Gold", slug: "u8s-gold" },
   { team: "U9 Black", slug: "u9s-black" },
   { team: "U9 Gold", slug: "u9s-gold" },
   { team: "U10", slug: "u10s" },
