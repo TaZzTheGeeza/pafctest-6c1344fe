@@ -93,6 +93,9 @@ export function FixtureAvailability({ teamSlug }: Props) {
   const [reminderItem, setReminderItem] = useState<AvailabilityItem | null>(null);
   const [editingVenue, setEditingVenue] = useState<string | null>(null);
   const [venueInput, setVenueInput] = useState("");
+  const [typeFilter, setTypeFilter] = useState<"all" | "fixtures" | "events">("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "available" | "maybe" | "unavailable" | "none">("all");
+  const [searchQuery, setSearchQuery] = useState("");
   const { data: teamData, isLoading: fixturesLoading, isError: fixturesError } = useTeamFixtures(teamSlug);
 
   const getFriendlyDate = (date: string) => {
