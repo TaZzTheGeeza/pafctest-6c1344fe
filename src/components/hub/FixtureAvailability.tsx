@@ -3,7 +3,7 @@ import { useTeamFixtures, type FAFixture } from "@/hooks/useTeamFixtures";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Check, X, HelpCircle, Loader2, MapPin, Clock, Navigation, ChevronDown, ChevronUp, Trash2, CalendarPlus, Users, Send, Pencil } from "lucide-react";
+import { Check, X, HelpCircle, Loader2, MapPin, Clock, Navigation, ChevronDown, ChevronUp, Trash2, CalendarPlus, Users, Send, Pencil, Calendar } from "lucide-react";
 
 import { toast } from "sonner";
 import { AddAvailabilityEventDialog } from "./AddAvailabilityEventDialog";
@@ -102,6 +102,51 @@ export function FixtureAvailability({ teamSlug }: Props) {
       month: "short",
       year: "numeric",
     });
+  };
+
+  const addToCalendar = (item: AvailabilityItem) => {
+    const [dd, mm, yy] = item.date.split("/").map(Number);
+    const year = 2000 + yy;
+    let hh = 10, mi = 0;
+    if (item.time && /^\d{1,2}:\d{2}/.test(item.time)) {
+      const [h, m] = item.time.split(":").map(Number);
+      hh = h; mi = m;
+    }
+    const start = new Date(year, mm - 1, dd, hh, mi);
+    const end = new Date(start.getTime() + 90 * 60 * 1000);
+    const fmt = (d: Date) =>
+      d.getUTCFullYear().toString() +
+      String(d.getUTCMonth() + 1).padStart(2, "0") +
+      String(d.getUTCDate()).padStart(2, "0") + "T" +
+      String(d.getUTCHours()).padStart(2, "0") +
+      String(d.getUTCMinutes()).padStart(2, "0") + "00Z";
+    const esc = (s: string) => s.replace(/[\\,;]/g, (m) => "\\" + m).replace(/\n/g, "\\n");
+    const location = item.venue ? getDirectionsAddress(item.venue) : "";
+    const uid = `${item.key}-${Date.now()}@pafc`;
+    const ics = [
+      "BEGIN:VCALENDAR",
+      "VERSION:2.0",
+      "PRODID:-//PAFC//Hub//EN",
+      "BEGIN:VEVENT",
+      `UID:${uid}`,
+      `DTSTAMP:${fmt(new Date())}`,
+      `DTSTART:${fmt(start)}`,
+      `DTEND:${fmt(end)}`,
+      `SUMMARY:${esc(item.title)}`,
+      location ? `LOCATION:${esc(location)}` : "",
+      "END:VEVENT",
+      "END:VCALENDAR",
+    ].filter(Boolean).join("\r\n");
+    const blob = new Blob([ics], { type: "text/calendar;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${item.title.replace(/[^a-z0-9]+/gi, "-")}.ics`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    toast.success("Calendar event downloaded");
   };
 
   const { data: availability = [], isLoading: availLoading } = useQuery({
@@ -444,6 +489,16 @@ export function FixtureAvailability({ teamSlug }: Props) {
                       <Navigation className="w-2.5 h-2.5" />Directions
                     </button>
                   )}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      addToCalendar(item);
+                    }}
+                    className="text-[10px] text-primary hover:text-primary/80 flex items-center gap-0.5 transition-colors"
+                    title="Download .ics to add to your calendar"
+                  >
+                    <Calendar className="w-2.5 h-2.5" />Add to calendar
+                  </button>
                   {item.venue && (isCoach || isAdmin) && (
                     <button
                       onClick={(e) => {
