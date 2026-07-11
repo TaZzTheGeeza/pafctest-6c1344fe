@@ -93,6 +93,9 @@ export function FixtureAvailability({ teamSlug }: Props) {
   const [reminderItem, setReminderItem] = useState<AvailabilityItem | null>(null);
   const [editingVenue, setEditingVenue] = useState<string | null>(null);
   const [venueInput, setVenueInput] = useState("");
+  const [typeFilter, setTypeFilter] = useState<"all" | "fixtures" | "events">("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "available" | "maybe" | "unavailable" | "none">("all");
+  const [searchQuery, setSearchQuery] = useState("");
   const { data: teamData, isLoading: fixturesLoading, isError: fixturesError } = useTeamFixtures(teamSlug);
 
   const getFriendlyDate = (date: string) => {
@@ -455,7 +458,74 @@ export function FixtureAvailability({ teamSlug }: Props) {
         </div>
       )}
 
-      {allItems.map((item) => {
+      <div className="bg-card border border-border rounded-xl p-3 space-y-2">
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search by title, opponent or venue…"
+          className="w-full rounded-lg border border-border bg-background px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+        />
+        <div className="flex flex-wrap gap-1.5">
+          {([
+            { v: "all", l: "All" },
+            { v: "fixtures", l: "Fixtures" },
+            { v: "events", l: "Events" },
+          ] as const).map((o) => (
+            <button
+              key={o.v}
+              onClick={() => setTypeFilter(o.v)}
+              className={`px-2.5 py-1 rounded-full text-[10px] font-display tracking-wider uppercase border transition-colors ${
+                typeFilter === o.v ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {o.l}
+            </button>
+          ))}
+          <span className="w-px bg-border mx-1" />
+          {([
+            { v: "all", l: "Any status" },
+            { v: "available", l: "Available" },
+            { v: "maybe", l: "Maybe" },
+            { v: "unavailable", l: "Unavailable" },
+            { v: "none", l: "No response" },
+          ] as const).map((o) => (
+            <button
+              key={o.v}
+              onClick={() => setStatusFilter(o.v)}
+              className={`px-2.5 py-1 rounded-full text-[10px] font-display tracking-wider uppercase border transition-colors ${
+                statusFilter === o.v ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {o.l}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {(() => {
+        const q = searchQuery.trim().toLowerCase();
+        const filteredItems = allItems.filter((item) => {
+          if (typeFilter === "fixtures" && item.isCustom) return false;
+          if (typeFilter === "events" && !item.isCustom) return false;
+          if (q && !(`${item.title} ${item.opponent} ${item.venue}`.toLowerCase().includes(q))) return false;
+          if (statusFilter !== "all") {
+            const respondingFor = getSelectedRespondingFor(item.key);
+            const s = getMyStatus(item, respondingFor);
+            if (statusFilter === "none" ? s !== "pending" : s !== statusFilter) return false;
+          }
+          return true;
+        });
+
+        if (filteredItems.length === 0) {
+          return (
+            <div className="bg-card border border-border rounded-xl p-8 text-center text-sm text-muted-foreground">
+              No items match your filters.
+            </div>
+          );
+        }
+
+        return filteredItems.map((item) => {
         const selectedRespondingFor = getSelectedRespondingFor(item.key);
         const myStatus = getMyStatus(item, selectedRespondingFor);
         const summary = getTeamSummary(item);
@@ -696,7 +766,8 @@ export function FixtureAvailability({ teamSlug }: Props) {
             )}
           </div>
         );
-      })}
+      });
+      })()}
 
       {reminderItem && (
         <ReminderPreviewDialog
