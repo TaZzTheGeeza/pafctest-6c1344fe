@@ -766,7 +766,8 @@ export function FixtureAvailability({ teamSlug }: Props) {
             )}
           </div>
         );
-      })}
+      });
+      })()}
 
       {reminderItem && (
         <ReminderPreviewDialog
