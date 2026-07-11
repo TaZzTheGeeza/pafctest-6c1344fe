@@ -489,6 +489,16 @@ export function FixtureAvailability({ teamSlug }: Props) {
                       <Navigation className="w-2.5 h-2.5" />Directions
                     </button>
                   )}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      addToCalendar(item);
+                    }}
+                    className="text-[10px] text-primary hover:text-primary/80 flex items-center gap-0.5 transition-colors"
+                    title="Download .ics to add to your calendar"
+                  >
+                    <Calendar className="w-2.5 h-2.5" />Add to calendar
+                  </button>
                   {item.venue && (isCoach || isAdmin) && (
                     <button
                       onClick={(e) => {
