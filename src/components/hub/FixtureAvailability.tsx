@@ -104,6 +104,51 @@ export function FixtureAvailability({ teamSlug }: Props) {
     });
   };
 
+  const addToCalendar = (item: AvailabilityItem) => {
+    const [dd, mm, yy] = item.date.split("/").map(Number);
+    const year = 2000 + yy;
+    let hh = 10, mi = 0;
+    if (item.time && /^\d{1,2}:\d{2}/.test(item.time)) {
+      const [h, m] = item.time.split(":").map(Number);
+      hh = h; mi = m;
+    }
+    const start = new Date(year, mm - 1, dd, hh, mi);
+    const end = new Date(start.getTime() + 90 * 60 * 1000);
+    const fmt = (d: Date) =>
+      d.getUTCFullYear().toString() +
+      String(d.getUTCMonth() + 1).padStart(2, "0") +
+      String(d.getUTCDate()).padStart(2, "0") + "T" +
+      String(d.getUTCHours()).padStart(2, "0") +
+      String(d.getUTCMinutes()).padStart(2, "0") + "00Z";
+    const esc = (s: string) => s.replace(/[\\,;]/g, (m) => "\\" + m).replace(/\n/g, "\\n");
+    const location = item.venue ? getDirectionsAddress(item.venue) : "";
+    const uid = `${item.key}-${Date.now()}@pafc`;
+    const ics = [
+      "BEGIN:VCALENDAR",
+      "VERSION:2.0",
+      "PRODID:-//PAFC//Hub//EN",
+      "BEGIN:VEVENT",
+      `UID:${uid}`,
+      `DTSTAMP:${fmt(new Date())}`,
+      `DTSTART:${fmt(start)}`,
+      `DTEND:${fmt(end)}`,
+      `SUMMARY:${esc(item.title)}`,
+      location ? `LOCATION:${esc(location)}` : "",
+      "END:VEVENT",
+      "END:VCALENDAR",
+    ].filter(Boolean).join("\r\n");
+    const blob = new Blob([ics], { type: "text/calendar;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${item.title.replace(/[^a-z0-9]+/gi, "-")}.ics`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    toast.success("Calendar event downloaded");
+  };
+
   const { data: availability = [], isLoading: availLoading } = useQuery({
     queryKey: ["fixture-availability", teamSlug],
     queryFn: async () => {
