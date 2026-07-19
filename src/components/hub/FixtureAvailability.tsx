@@ -618,9 +618,33 @@ export function FixtureAvailability({ teamSlug }: Props) {
               <div className="flex flex-wrap items-center gap-2">
                 {(isCoach || isAdmin) && (
                   <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const opponentDisplay = item.isCustom
+                        ? item.title.replace(/^(vs |@ )/i, "")
+                        : item.opponent;
+                      setCoachFixture({
+                        date: item.date,
+                        time: item.time,
+                        homeTeam: item.isHome ? "Peterborough Athletic" : opponentDisplay,
+                        awayTeam: item.isHome ? opponentDisplay : "Peterborough Athletic",
+                        venue: item.venue,
+                        competition: item.isCustom ? "Friendly / Event" : "",
+                        type: "fixture",
+                      });
+                    }}
+                    title="Squad selection · Tactics whiteboard · Match report · POTM · Notes"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors text-xs font-semibold shadow-md whitespace-nowrap"
+                  >
+                    <ClipboardList className="h-3.5 w-3.5" />
+                    <span>Coach Panel</span>
+                  </button>
+                )}
+                {(isCoach || isAdmin) && (
+                  <button
                     onClick={(e) => { e.stopPropagation(); setReminderItem(item); }}
                     title="Preview & remind non-responders"
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors text-xs font-semibold shadow-md whitespace-nowrap"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-border transition-colors text-xs font-semibold whitespace-nowrap"
                   >
                     <Send className="h-3.5 w-3.5" />
                     <span>Remind</span>
