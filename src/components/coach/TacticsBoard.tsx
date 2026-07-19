@@ -227,7 +227,7 @@ export function TacticsBoard({
             id: uid(),
             kind: "home" as const,
             x: slot.x,
-            y: 65 - (slot.y * 65) / 100, // own goal (y=0) at bottom of pitch
+            y: slot.y, // portrait pitch matches Squad tab (own goal at top)
             label,
           };
         })
