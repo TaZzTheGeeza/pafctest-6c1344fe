@@ -219,7 +219,6 @@ export function TacticsBoard({
         .map((p) => {
           const slot = slotMap.get(p.slot_id);
           if (!slot) return null;
-          const player = roster.find((r) => r.id === p.player_id);
           const label = slot.label.slice(0, 3).toUpperCase();
           return {
             id: uid(),
@@ -227,8 +226,6 @@ export function TacticsBoard({
             x: slot.x,
             y: slot.y, // portrait pitch matches Squad tab (own goal at top)
             label,
-            playerId: player?.id ?? p.guest_name ?? null,
-            playerName: player?.first_name || p.guest_name || null,
           };
         })
         .filter(Boolean) as Token[];
