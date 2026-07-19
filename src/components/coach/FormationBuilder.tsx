@@ -538,9 +538,8 @@ export function FormationBuilder({
             <Plus className="h-3 w-3 mr-1" />Add fill-in
           </Button>
         </div>
+        {roster.length === 0 && rosterNotInSquad.length === 0 ? null : null}
 
-          Roster ({rosterNotInSquad.length} not selected)
-        </Label>
         {roster.length === 0 ? (
           <p className="text-xs text-amber-600 bg-amber-50 dark:bg-amber-950/30 rounded-md p-2 mt-1">
             No players in roster. Add players via the Coach Panel first.
