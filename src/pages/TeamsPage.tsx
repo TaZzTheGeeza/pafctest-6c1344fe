@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useParams, Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Clock, MapPin, Calendar, ChevronRight, Shield, Trophy, TrendingUp, BarChart3, Loader2, Navigation, ClipboardEdit, ChevronDown, Users } from "lucide-react";
@@ -10,6 +11,7 @@ import { TeamStatsTable } from "@/components/TeamStatsTable";
 import { LeagueTable } from "@/components/LeagueTable";
 import { useTeamFixtures, FAFixture } from "@/hooks/useTeamFixtures";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { CoachFixturePanel } from "@/components/CoachFixturePanel";
 import { MatchDetailPanel } from "@/components/MatchDetailPanel";
 import clubLogo from "@/assets/club-logo.jpg";
