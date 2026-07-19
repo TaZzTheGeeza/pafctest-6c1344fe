@@ -137,6 +137,22 @@ export default function TacticsRevealPage() {
   }
 
   const visibleStrokes = board.strokes.slice(0, step);
+  const positionLabelForToken = (token: Token) => {
+    if (token.kind !== "home") return token.label;
+    if (token.slotId) return slotMap.get(token.slotId)?.label ?? token.label;
+    if (slotMap.size === 0) return token.label;
+
+    const nearest = [...slotMap.values()].reduce<SlotDef | null>((best, slot) => {
+      if (!best) return slot;
+      const bestDistance = Math.hypot(token.x - best.x, token.y - best.y);
+      const slotDistance = Math.hypot(token.x - slot.x, token.y - slot.y);
+      return slotDistance < bestDistance ? slot : best;
+    }, null);
+
+    if (!nearest) return token.label;
+    const distance = Math.hypot(token.x - nearest.x, token.y - nearest.y);
+    return distance <= 6 ? nearest.label : token.label;
+  };
 
   return (
       <div className="fixed inset-0 bg-black text-white flex flex-col overflow-hidden">
@@ -265,7 +281,7 @@ export default function TacticsRevealPage() {
             {board.tokens.map((t) => {
               const fill = t.kind === "home" ? "#fbbf24" : t.kind === "away" ? "#ef4444" : "#fff";
               const fg = t.kind === "ball" ? "#000" : "#0a0a0a";
-              const label = t.kind === "home" && t.slotId ? (slotMap.get(t.slotId)?.label ?? t.label) : t.label;
+              const label = positionLabelForToken(t);
               return (
                 <motion.g
                   key={t.id}
