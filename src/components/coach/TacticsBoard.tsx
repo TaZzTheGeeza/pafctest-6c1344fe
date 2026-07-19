@@ -219,10 +219,7 @@ export function TacticsBoard({
         .map((p) => {
           const slot = slotMap.get(p.slot_id);
           if (!slot) return null;
-          const player = roster.find((r) => r.id === p.player_id);
-          const label = player?.shirt_number
-            ? `#${player.shirt_number}`
-            : (p.guest_name || player?.first_name || slot.label).slice(0, 3).toUpperCase();
+          const label = slot.label.slice(0, 3).toUpperCase();
           return {
             id: uid(),
             kind: "home" as const,
