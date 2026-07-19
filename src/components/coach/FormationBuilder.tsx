@@ -1,11 +1,16 @@
-import { useMemo, useState } from "react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useMemo, useRef, useState } from "react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { X, Star, StarHalf, ChevronsUpDown } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { X, Star, StarHalf, ChevronsUpDown, Pencil, Save, Trash2, Plus, Minus, Sparkles } from "lucide-react";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { useCustomFormations, useInvalidateCustomFormations, type CustomFormation } from "@/hooks/useCustomFormations";
 import type { RosterPlayer } from "@/hooks/useTeamRoster";
 import {
   FORMATIONS,
@@ -15,6 +20,8 @@ import {
   type Formation,
   type SlotDef,
 } from "@/lib/formations";
+
+const FORMAT_SLOT_COUNTS: Record<FormationFormat, number> = { "5v5": 5, "7v7": 7, "9v9": 9, "11v11": 11 };
 
 export interface PositionEntry {
   player_id: string;
