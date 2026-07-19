@@ -97,7 +97,6 @@ function TeamDetail({ team }: { team: TeamData }) {
   const { data: liveData, isLoading: fixturesLoading } = useTeamFixtures(team.slug);
   const { isCoach, isAdmin, isPlayer } = useAuth();
   const canManage = isCoach || isAdmin;
-  const [coachFixture, setCoachFixture] = useState<FAFixture | null>(null);
   const [expandedResult, setExpandedResult] = useState<number | null>(null);
 
   // Manual events entered via Hub → Fixtures & Events (friendlies, tournaments, etc.)
