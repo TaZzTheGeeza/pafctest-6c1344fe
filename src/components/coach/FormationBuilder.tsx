@@ -142,11 +142,27 @@ export function FormationBuilder({
   };
 
   const playerLabel = (id: string) => {
+    if (isGuestId(id)) {
+      const entry = byPlayer.get(id);
+      return entry?.guest_name || "Fill-in";
+    }
     const p = roster.find((r) => r.id === id);
     if (!p) return "?";
     return p.first_name;
   };
-  const playerNumber = (id: string) => roster.find((r) => r.id === id)?.shirt_number ?? null;
+  const playerNumber = (id: string) => {
+    if (isGuestId(id)) return "G";
+    return roster.find((r) => r.id === id)?.shirt_number ?? null;
+  };
+
+  const addGuest = () => {
+    const name = window.prompt("Fill-in player name")?.trim();
+    if (!name) return;
+    const id = `${GUEST_PREFIX}${crypto.randomUUID()}`;
+    onChange([...positions, { player_id: id, slot_id: "", role: "sub", guest_name: name }]);
+    setSelectedPlayerId(id);
+  };
+
 
   const startersOnPitch = positions.filter((p) => p.slot_id).length;
   const requiredStarters = slots.length;
