@@ -215,7 +215,7 @@ export default function HubPage() {
     setSearchParams({ tab: activeTab, team: slug });
   }
 
-  const activeTeamName = TEAMS.find((t) => t.slug === activeTeam)?.name || activeTeam;
+  const activeTeamName = activeTeam ? slugToName(activeTeam) : null;
 
     const allTabs = [
     ...tabs,
