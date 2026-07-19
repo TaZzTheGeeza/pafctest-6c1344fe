@@ -530,7 +530,15 @@ export function FormationBuilder({
 
       {/* Roster picker */}
       <div>
-        <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">
+        <div className="flex items-center justify-between">
+          <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">
+            Roster ({rosterNotInSquad.length} not selected)
+          </Label>
+          <Button type="button" size="sm" variant="outline" className="h-6 text-[11px]" onClick={addGuest}>
+            <Plus className="h-3 w-3 mr-1" />Add fill-in
+          </Button>
+        </div>
+
           Roster ({rosterNotInSquad.length} not selected)
         </Label>
         {roster.length === 0 ? (
