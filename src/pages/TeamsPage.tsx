@@ -100,8 +100,41 @@ function TeamDetail({ team }: { team: TeamData }) {
   const [coachFixture, setCoachFixture] = useState<FAFixture | null>(null);
   const [expandedResult, setExpandedResult] = useState<number | null>(null);
 
+  // Manual events entered via Hub → Fixtures & Events (friendlies, tournaments, etc.)
+  const { data: customEvents = [] } = useQuery({
+    queryKey: ["team-custom-events", team.slug],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("hub_availability_events")
+        .select("id, title, event_date, event_time, venue")
+        .eq("team_slug", team.slug);
+      if (error) throw error;
+      return data || [];
+    },
+    staleTime: 1000 * 60 * 5,
+  });
+
+  // Map custom events → FAFixture shape so they render alongside FA fixtures.
+  // Exclude pure training sessions; keep friendlies, tournaments, matches.
+  const customFixtures: FAFixture[] = customEvents
+    .filter((e) => !/^training$/i.test((e.title || "").trim()))
+    .map((e) => ({
+      date: e.event_date,
+      time: e.event_time || "TBC",
+      homeTeam: `Peterborough Ath ${team.name}`,
+      awayTeam: e.title,
+      venue: e.venue || "",
+      competition: "Friendly / Custom",
+      type: "fixture" as const,
+    }));
+
   // Determine next fixture from live data (future only) or fall back to hardcoded
-  const futureFixtures = liveData?.fixtures?.filter(isFutureFixture) || [];
+  const faFuture = liveData?.fixtures?.filter(isFutureFixture) || [];
+  const futureFixtures = [...faFuture, ...customFixtures.filter(isFutureFixture)].sort((a, b) => {
+    const da = parseFADate(a.date)?.getTime() ?? 0;
+    const db = parseFADate(b.date)?.getTime() ?? 0;
+    return da - db;
+  });
   const nextFixture = futureFixtures[0];
   const displayFixture = nextFixture
     ? {
