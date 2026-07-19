@@ -12,7 +12,7 @@ import { LeagueTable } from "@/components/LeagueTable";
 import { useTeamFixtures, FAFixture } from "@/hooks/useTeamFixtures";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { CoachFixturePanel } from "@/components/CoachFixturePanel";
+
 import { MatchDetailPanel } from "@/components/MatchDetailPanel";
 import clubLogo from "@/assets/club-logo.jpg";
 import { SEO } from "@/components/SEO";
