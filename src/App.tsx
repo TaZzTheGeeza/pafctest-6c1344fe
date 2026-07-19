@@ -64,6 +64,7 @@ import PhotoClaimPage from "./pages/PhotoClaimPage.tsx";
 import PitchBookingsPage from "./pages/PitchBookingsPage.tsx";
 import PitchBookingsAdminPage from "./pages/PitchBookingsAdminPage.tsx";
 import LineupRevealPage from "./pages/LineupRevealPage.tsx";
+import TacticsRevealPage from "./pages/TacticsRevealPage.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -154,6 +155,7 @@ function AppContent() {
         <Route path="/pitch-bookings" element={<PitchBookingsPage />} />
         <Route path="/pitch-bookings-admin" element={<PitchBookingsAdminPage />} />
         <Route path="/lineup-reveal/:id" element={<RoleGate requiredRole="coach"><LineupRevealPage /></RoleGate>} />
+        <Route path="/tactics-reveal/:id" element={<RoleGate requiredRole="coach"><TacticsRevealPage /></RoleGate>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -10,7 +11,7 @@ import {
 } from "@/components/ui/select";
 import {
   Undo2, Trash2, Save, MousePointer2, Pencil, MoveRight, Circle,
-  Users2, Loader2, BookOpen, Camera, Sun, Download,
+  Users2, Loader2, BookOpen, Camera, Sun, Download, Maximize2, Minimize2, Sparkles,
 } from "lucide-react";
 import { useTeamRoster } from "@/hooks/useTeamRoster";
 import { FORMATIONS, type SlotDef } from "@/lib/formations";
@@ -55,6 +56,7 @@ export function TacticsBoard({
 }) {
   const { data: roster = [] } = useTeamRoster(teamSlug);
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const [boardId, setBoardId] = useState<string | null>(null);
   const [name, setName] = useState<string>(`vs ${opponent}`);
@@ -64,7 +66,9 @@ export function TacticsBoard({
   const [saving, setSaving] = useState(false);
   const [highContrast, setHighContrast] = useState(false);
   const [selectedBoardId, setSelectedBoardId] = useState<string>("__new__");
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const svgRef = useRef<SVGSVGElement | null>(null);
   const drawingRef = useRef<Stroke | null>(null);
   const draggingTokenRef = useRef<string | null>(null);
@@ -99,6 +103,35 @@ export function TacticsBoard({
     el.addEventListener("touchmove", prevent, { passive: false });
     return () => el.removeEventListener("touchmove", prevent);
   }, []);
+
+  // Track native fullscreen changes (e.g. Esc key)
+  useEffect(() => {
+    const onChange = () => setIsFullscreen(document.fullscreenElement === containerRef.current);
+    document.addEventListener("fullscreenchange", onChange);
+    return () => document.removeEventListener("fullscreenchange", onChange);
+  }, []);
+
+  const toggleFullscreen = async () => {
+    try {
+      if (!document.fullscreenElement) {
+        await containerRef.current?.requestFullscreen?.();
+      } else {
+        await document.exitFullscreen?.();
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "Fullscreen not available");
+    }
+  };
+
+  const openReveal = () => {
+    if (!boardId) {
+      toast.error("Save the board first, then Reveal");
+      return;
+    }
+    navigate(`/tactics-reveal/${boardId}`);
+  };
+
+
 
   const svgToPct = (e: React.PointerEvent) => {
     const svg = svgRef.current!;
@@ -329,7 +362,10 @@ export function TacticsBoard({
   const pitchLine = highContrast ? "#fff" : "rgba(255,255,255,0.7)";
 
   return (
-    <div className="space-y-3 pt-2">
+    <div
+      ref={containerRef}
+      className={`space-y-3 pt-2 ${isFullscreen ? "bg-background p-4 h-screen overflow-auto flex flex-col" : ""}`}
+    >
       <div className="flex flex-wrap items-center gap-2">
         <Select value={selectedBoardId} onValueChange={load}>
           <SelectTrigger className="h-8 text-xs w-[180px]">
@@ -355,7 +391,14 @@ export function TacticsBoard({
         <Button size="sm" variant="ghost" onClick={() => setHighContrast((v) => !v)} title="Toggle high contrast">
           <Sun className="h-3.5 w-3.5" />
         </Button>
+        <Button size="sm" variant="ghost" onClick={toggleFullscreen} title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}>
+          {isFullscreen ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
+        </Button>
+        <Button size="sm" variant="secondary" onClick={openReveal} className="h-8 text-xs" title="Open Tactics Reveal">
+          <Sparkles className="h-3.5 w-3.5 mr-1" />Reveal
+        </Button>
       </div>
+
 
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-1 rounded-md border bg-muted/40 p-1">
@@ -382,7 +425,10 @@ export function TacticsBoard({
       </div>
 
       {/* Pitch */}
-      <div className="relative rounded-lg overflow-hidden border mx-auto" style={{ aspectRatio: "3 / 4", maxWidth: 520 }}>
+      <div
+        className={`relative rounded-lg overflow-hidden border mx-auto ${isFullscreen ? "flex-1 min-h-0 h-full" : ""}`}
+        style={isFullscreen ? { aspectRatio: "3 / 4", maxHeight: "100%" } : { aspectRatio: "3 / 4", maxWidth: 520 }}
+      >
         <svg
           ref={svgRef}
           viewBox="0 0 100 100"
