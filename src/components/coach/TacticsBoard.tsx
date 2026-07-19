@@ -104,6 +104,40 @@ export function TacticsBoard({
     return () => el.removeEventListener("touchmove", prevent);
   }, []);
 
+  // Track native fullscreen changes (e.g. Esc key)
+  useEffect(() => {
+    const onChange = () => setIsFullscreen(document.fullscreenElement === containerRef.current);
+    document.addEventListener("fullscreenchange", onChange);
+    return () => document.removeEventListener("fullscreenchange", onChange);
+  }, []);
+
+  const toggleFullscreen = async () => {
+    try {
+      if (!document.fullscreenElement) {
+        await containerRef.current?.requestFullscreen?.();
+      } else {
+        await document.exitFullscreen?.();
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "Fullscreen not available");
+    }
+  };
+
+  const openReveal = async () => {
+    let idToUse = boardId;
+    if (!idToUse) {
+      // Auto-save so we have something to reveal
+      await persist(false);
+      idToUse = boardId;
+      if (!idToUse) {
+        toast.error("Save the board first, then Reveal");
+        return;
+      }
+    }
+    navigate(`/tactics-reveal/${idToUse}`);
+  };
+
+
   const svgToPct = (e: React.PointerEvent) => {
     const svg = svgRef.current!;
     const rect = svg.getBoundingClientRect();
