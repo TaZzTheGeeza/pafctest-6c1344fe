@@ -26,6 +26,8 @@ interface Token {
   x: number; // 0-100
   y: number; // 0-100
   label?: string;
+  slotId?: string;
+  playerId?: string;
 }
 interface Stroke {
   id: string;
@@ -37,6 +39,10 @@ interface BoardData {
   tokens: Token[];
   strokes: Stroke[];
   half: "full" | "attack" | "defence";
+  lineup?: {
+    formation: string | null;
+    formation_format: string | null;
+  };
 }
 
 const emptyBoard: BoardData = { tokens: [], strokes: [], half: "full" };
@@ -123,12 +129,40 @@ export function TacticsBoard({
     }
   };
 
-  const openReveal = () => {
-    if (!boardId) {
-      toast.error("Save the board first, then Reveal");
-      return;
+  const openReveal = async () => {
+    setSaving(true);
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      const uidUser = userData.user?.id;
+      const payload: any = {
+        team_slug: teamSlug,
+        fixture_date: fixture.date,
+        opponent,
+        name: name || `vs ${opponent}`,
+        board_data: board as any,
+        is_template: false,
+        updated_at: new Date().toISOString(),
+      };
+
+      let targetId = boardId;
+      if (targetId) {
+        const { error } = await supabase.from("tactics_boards" as any).update(payload).eq("id", targetId);
+        if (error) throw error;
+      } else {
+        payload.created_by = uidUser;
+        const { data, error } = await supabase.from("tactics_boards" as any).insert(payload).select("id").single();
+        if (error) throw error;
+        targetId = (data as any)?.id ?? null;
+        setBoardId(targetId);
+      }
+
+      queryClient.invalidateQueries({ queryKey: ["tactics-boards", teamSlug, fixture.date, opponent] });
+      if (targetId) navigate(`/tactics-reveal/${targetId}`);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to open reveal");
+    } finally {
+      setSaving(false);
     }
-    navigate(`/tactics-reveal/${boardId}`);
   };
 
 
@@ -259,12 +293,18 @@ export function TacticsBoard({
             x: slot.x,
             y: slot.y, // portrait pitch matches Squad tab (own goal at top)
             label,
+            slotId: slot.id,
+            playerId: p.player_id,
           };
         })
         .filter(Boolean) as Token[];
 
       setBoard((b) => ({
         ...b,
+        lineup: {
+          formation: sel.formation,
+          formation_format: sel.formation_format,
+        },
         tokens: [...b.tokens.filter((t) => t.kind !== "home"), ...newTokens],
       }));
       toast.success(`Imported ${newTokens.length} players from lineup`);
@@ -394,7 +434,7 @@ export function TacticsBoard({
         <Button size="sm" variant="ghost" onClick={toggleFullscreen} title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}>
           {isFullscreen ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
         </Button>
-        <Button size="sm" variant="secondary" onClick={openReveal} className="h-8 text-xs" title="Open Tactics Reveal">
+        <Button size="sm" variant="secondary" onClick={openReveal} disabled={saving} className="h-8 text-xs" title="Open Tactics Reveal">
           <Sparkles className="h-3.5 w-3.5 mr-1" />Reveal
         </Button>
       </div>
