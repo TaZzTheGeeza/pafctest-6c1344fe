@@ -172,6 +172,65 @@ export function TacticsBoard({
     addToken("home", (p.shirt_number ? String(p.shirt_number) : p.first_name.slice(0, 3)).toUpperCase());
   };
 
+  const importLineup = async () => {
+    try {
+      const { data: sel, error } = await supabase
+        .from("team_selections")
+        .select("formation, formation_format, positions")
+        .eq("team_slug", teamSlug)
+        .eq("fixture_date", fixture.date)
+        .eq("opponent", opponent)
+        .maybeSingle();
+      if (error) throw error;
+      if (!sel) { toast.error("No lineup saved for this fixture yet"); return; }
+      const positions = (sel.positions as any[]) || [];
+      const starters = positions.filter((p) => p.slot_id);
+      if (starters.length === 0) { toast.error("No starters placed on the formation"); return; }
+
+      // Resolve slot definitions
+      let slots: SlotDef[] | null =
+        FORMATIONS.find((f) => f.name === sel.formation && f.format === sel.formation_format)?.slots ?? null;
+      if (!slots && sel.formation_format) {
+        const { data: custom } = await supabase
+          .from("custom_formations")
+          .select("slots")
+          .eq("team_slug", teamSlug)
+          .eq("format", sel.formation_format)
+          .eq("name", sel.formation || "")
+          .maybeSingle();
+        if (custom?.slots) slots = custom.slots as unknown as SlotDef[];
+      }
+      if (!slots) { toast.error("Formation layout not found"); return; }
+
+      const slotMap = new Map(slots.map((s) => [s.id, s]));
+      const newTokens: Token[] = starters
+        .map((p) => {
+          const slot = slotMap.get(p.slot_id);
+          if (!slot) return null;
+          const player = roster.find((r) => r.id === p.player_id);
+          const label = player?.shirt_number
+            ? `#${player.shirt_number}`
+            : (p.guest_name || player?.first_name || slot.label).slice(0, 3).toUpperCase();
+          return {
+            id: uid(),
+            kind: "home" as const,
+            x: slot.x,
+            y: 65 - (slot.y * 65) / 100, // own goal (y=0) at bottom of pitch
+            label,
+          };
+        })
+        .filter(Boolean) as Token[];
+
+      setBoard((b) => ({
+        ...b,
+        tokens: [...b.tokens.filter((t) => t.kind !== "home"), ...newTokens],
+      }));
+      toast.success(`Imported ${newTokens.length} players from lineup`);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to import lineup");
+    }
+  };
+
   const eraseAt = (strokeId?: string, tokenId?: string) => {
     if (tool !== "eraser") return;
     setBoard((b) => ({
