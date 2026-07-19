@@ -86,6 +86,8 @@ export function FormationBuilder({
 
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
   const [notesFor, setNotesFor] = useState<string | null>(null); // player_id
+  const [pickerSlotId, setPickerSlotId] = useState<string | null>(null);
+
 
   const byPlayer = useMemo(() => {
     const m = new Map<string, PositionEntry>();
@@ -401,9 +403,10 @@ export function FormationBuilder({
                 type="button"
                 onClick={() => {
                   if (editing) return;
-                  if (selectedPlayerId) setPlayerToSlot(selectedPlayerId, s.id);
-                  else if (filled) removeFromPitch(filled.player_id);
+                  if (selectedPlayerId) { setPlayerToSlot(selectedPlayerId, s.id); return; }
+                  setPickerSlotId(s.id);
                 }}
+
                 onPointerDown={(e) => onSlotPointerDown(e, s.id)}
                 onPointerMove={onSlotPointerMove}
                 onPointerUp={onSlotPointerUp}
@@ -607,6 +610,104 @@ export function FormationBuilder({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Slot player picker */}
+      <Dialog open={!!pickerSlotId} onOpenChange={(v) => !v && setPickerSlotId(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-base">
+              {pickerSlotId && bySlot.get(pickerSlotId)
+                ? `Change ${slots.find((s) => s.id === pickerSlotId)?.label ?? "position"}`
+                : `Assign ${slots.find((s) => s.id === pickerSlotId)?.label ?? "position"}`}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2">
+            {pickerSlotId && bySlot.get(pickerSlotId) && (
+              <div className="rounded-md bg-secondary/60 px-2 py-1.5 text-xs flex items-center justify-between">
+                <span>Currently: <span className="font-semibold">{playerLabel(bySlot.get(pickerSlotId)!.player_id)}</span></span>
+                <Button size="sm" variant="ghost" className="h-7 text-xs text-destructive"
+                  onClick={() => {
+                    removeFromPitch(bySlot.get(pickerSlotId!)!.player_id);
+                    setPickerSlotId(null);
+                  }}>
+                  <X className="h-3 w-3 mr-1" />Remove
+                </Button>
+              </div>
+            )}
+            <Button
+              type="button" size="sm" variant="outline" className="w-full justify-start h-8 text-xs"
+              onClick={() => {
+                const name = window.prompt("Fill-in player name")?.trim();
+                if (!name || !pickerSlotId) return;
+                const id = `${GUEST_PREFIX}${crypto.randomUUID()}`;
+                onChange([
+                  ...positions.filter((p) => p.slot_id !== pickerSlotId),
+                  { player_id: id, slot_id: pickerSlotId, role: "starter", guest_name: name },
+                ]);
+                setPickerSlotId(null);
+              }}
+            >
+              <Plus className="h-3 w-3 mr-1" />Add fill-in player…
+            </Button>
+            <div className="max-h-64 overflow-y-auto space-y-1 rounded-md border border-border p-1">
+              {roster.length === 0 && bench.length === 0 && (
+                <p className="text-[11px] text-muted-foreground italic p-2">
+                  No players in roster yet.
+                </p>
+              )}
+              {roster.map((r) => {
+                const entry = byPlayer.get(r.id);
+                const placedElsewhere = entry?.slot_id && entry.slot_id !== pickerSlotId;
+                return (
+                  <button
+                    key={r.id}
+                    type="button"
+                    onClick={() => {
+                      if (pickerSlotId) setPlayerToSlot(r.id, pickerSlotId);
+                      setPickerSlotId(null);
+                    }}
+                    className="w-full flex items-center justify-between gap-2 px-2 py-1.5 rounded hover:bg-muted text-left text-sm"
+                  >
+                    <span className="flex items-center gap-2">
+                      <span className="font-mono text-xs opacity-70 w-6 text-center">{r.shirt_number ?? "-"}</span>
+                      <span className="font-medium">{r.first_name}</span>
+                    </span>
+                    {placedElsewhere && (
+                      <span className="text-[10px] text-muted-foreground">
+                        on pitch — will swap
+                      </span>
+                    )}
+                    {entry?.slot_id === "" && (
+                      <span className="text-[10px] text-primary">on bench</span>
+                    )}
+                  </button>
+                );
+              })}
+              {bench.filter((b) => isGuestId(b.player_id)).map((b) => (
+                <button
+                  key={b.player_id}
+                  type="button"
+                  onClick={() => {
+                    if (pickerSlotId) setPlayerToSlot(b.player_id, pickerSlotId);
+                    setPickerSlotId(null);
+                  }}
+                  className="w-full flex items-center justify-between gap-2 px-2 py-1.5 rounded hover:bg-muted text-left text-sm"
+                >
+                  <span className="flex items-center gap-2">
+                    <span className="font-mono text-xs opacity-70 w-6 text-center">G</span>
+                    <span className="font-medium italic">{b.guest_name}</span>
+                  </span>
+                  <span className="text-[10px] text-primary">fill-in</span>
+                </button>
+              ))}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" size="sm" onClick={() => setPickerSlotId(null)}>Cancel</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
+
   );
 }
