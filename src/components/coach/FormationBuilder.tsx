@@ -618,7 +618,7 @@ export function FormationBuilder({
             <DialogTitle className="text-base">
               {pickerSlotId && bySlot.get(pickerSlotId)
                 ? `Change ${slots.find((s) => s.id === pickerSlotId)?.label ?? "position"}`
-                : `Assign ${slots.find((s) => s.id === pickerSlotId ?? "")?.label ?? "position"}`}
+                : `Assign ${slots.find((s) => s.id === pickerSlotId)?.label ?? "position"}`}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-2">
