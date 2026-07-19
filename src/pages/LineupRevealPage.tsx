@@ -158,12 +158,10 @@ export default function LineupRevealPage() {
       </div>
 
       {/* Pitch */}
-      <div className="flex-1 flex items-center justify-center p-4 min-h-0">
+      <div className="flex-1 min-h-0 p-4 grid place-items-center">
         <div
-          className="relative h-full max-h-full w-auto"
+          className="relative h-full aspect-[3/4] max-w-full"
           style={{
-            aspectRatio: "3 / 4",
-            maxWidth: "100%",
             background: "linear-gradient(180deg, #0d3d1a 0%, #0a2f14 100%)",
             borderRadius: "12px",
             overflow: "hidden",
