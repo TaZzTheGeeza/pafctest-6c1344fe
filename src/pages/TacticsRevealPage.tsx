@@ -285,15 +285,15 @@ export default function TacticsRevealPage() {
               return (
                 <motion.g
                   key={t.id}
-                  initial={{ opacity: 0, scale: 0.6 }}
-                  animate={{ opacity: 1, scale: 1 }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
                   transition={{ type: "spring", stiffness: 220, damping: 18 }}
-                  transform={`translate(${t.x} ${t.y})`}
                 >
-                  <circle r={t.kind === "ball" ? 1.8 : 4.2} fill={fill} stroke="#000" strokeWidth={0.35} />
+                  <circle cx={t.x} cy={t.y} r={t.kind === "ball" ? 1.8 : 4.2} fill={fill} stroke="#000" strokeWidth={0.35} />
                   {label && (
                     <text
-                      y={t.kind === "ball" ? 0.6 : 1.4}
+                      x={t.x}
+                      y={t.y + (t.kind === "ball" ? 0.6 : 1.4)}
                       textAnchor="middle"
                       fontSize={t.kind === "ball" ? 1.6 : 3.6}
                       fontWeight={800}
