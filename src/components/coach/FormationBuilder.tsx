@@ -550,6 +550,35 @@ export function FormationBuilder({
           <Button size="sm" onClick={() => setNotesFor(null)}>Done</Button>
         </DialogContent>
       </Dialog>
+
+      {/* Save custom formation dialog */}
+      <Dialog open={saveOpen} onOpenChange={(v) => !saving && setSaveOpen(v)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-base">
+              {saveMode === "update" ? "Update formation" : "Save custom formation"}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label className="text-xs">Name</Label>
+            <Input
+              value={saveName}
+              onChange={(e) => setSaveName(e.target.value)}
+              placeholder={`e.g. Diamond ${format}`}
+              maxLength={40}
+            />
+            <p className="text-[11px] text-muted-foreground">
+              Saved for {teamSlug ? `team ${teamSlug}` : "your account"} · {format}
+            </p>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="ghost" size="sm" onClick={() => setSaveOpen(false)} disabled={saving}>Cancel</Button>
+            <Button size="sm" onClick={persistFormation} disabled={saving}>
+              {saving ? "Saving…" : (saveMode === "update" ? "Update" : "Save")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
