@@ -345,16 +345,6 @@ function TeamDetail({ team }: { team: TeamData }) {
         </div>
       </main>
 
-      {/* Coach Fixture Panel */}
-      {coachFixture && (
-        <CoachFixturePanel
-          open={!!coachFixture}
-          onClose={() => setCoachFixture(null)}
-          fixture={coachFixture}
-          teamSlug={team.slug}
-          teamName={team.name}
-        />
-      )}
 
       <Footer />
     </div>
