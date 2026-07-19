@@ -415,17 +415,17 @@ export function FormationBuilder({
               >
                 {filled && !editing ? (
                   <div className="relative w-full h-full rounded-full bg-primary text-primary-foreground flex flex-col items-center justify-center shadow-lg ring-2 ring-primary/50 hover:ring-white/70">
-                    <span className="text-[10px] font-mono opacity-80 leading-none">
+                    <span className="text-[14px] sm:text-[15px] font-mono opacity-90 leading-none">
                       {playerNumber(filled.player_id) ?? s.label}
                     </span>
-                    <span className="text-[11px] font-bold leading-tight px-1 truncate max-w-full">
+                    <span className="text-[13px] sm:text-[14px] font-bold leading-tight px-1 truncate max-w-full">
                       {playerLabel(filled.player_id)}
                     </span>
                     {captainId === filled.player_id && (
-                      <Star className="absolute -top-1 -right-1 h-3.5 w-3.5 fill-yellow-400 stroke-yellow-500" />
+                      <Star className="absolute -top-1 -right-1 h-5 w-5 fill-yellow-400 stroke-yellow-500" />
                     )}
                     {viceCaptainId === filled.player_id && (
-                      <StarHalf className="absolute -top-1 -right-1 h-3.5 w-3.5 fill-yellow-300 stroke-yellow-400" />
+                      <StarHalf className="absolute -top-1 -right-1 h-5 w-5 fill-yellow-300 stroke-yellow-400" />
                     )}
                   </div>
                 ) : (
