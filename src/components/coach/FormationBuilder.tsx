@@ -271,16 +271,71 @@ export function FormationBuilder({
         </div>
         <div>
           <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Formation</Label>
-          <Select value={formationName} onValueChange={onFormationChange}>
+          <Select value={formationName} onValueChange={onFormationChange} disabled={editing}>
             <SelectTrigger className="h-9"><SelectValue placeholder="Select" /></SelectTrigger>
             <SelectContent>
-              {getFormationsForFormat(format).map((f) => (
-                <SelectItem key={f.name} value={f.name}>{f.name}</SelectItem>
-              ))}
+              <SelectGroup>
+                <SelectLabel className="text-[10px]">Standard</SelectLabel>
+                {getFormationsForFormat(format).map((f) => (
+                  <SelectItem key={f.name} value={f.name}>{f.name}</SelectItem>
+                ))}
+              </SelectGroup>
+              {customFormations.length > 0 && (
+                <SelectGroup>
+                  <SelectLabel className="text-[10px]">My custom</SelectLabel>
+                  {customFormations.map((f) => (
+                    <SelectItem key={f.id} value={`${CUSTOM_PREFIX}${f.id}`}>
+                      ★ {f.name}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              )}
             </SelectContent>
           </Select>
         </div>
       </div>
+
+      {/* Custom formation toolbar */}
+      <div className="flex flex-wrap items-center gap-1.5">
+        {!editing && (
+          <>
+            <Button type="button" size="sm" variant="outline" className="h-7 text-xs" onClick={startEditNew}>
+              <Sparkles className="h-3 w-3 mr-1" />
+              {activeCustom ? "Duplicate & edit" : "Create custom"}
+            </Button>
+            {canEditActiveCustom && (
+              <>
+                <Button type="button" size="sm" variant="outline" className="h-7 text-xs" onClick={() => { setDraftSlots(activeCustom!.slots.map((s) => ({ ...s }))); setEditing(true); }}>
+                  <Pencil className="h-3 w-3 mr-1" />Edit "{activeCustom!.name}"
+                </Button>
+                <Button type="button" size="sm" variant="ghost" className="h-7 text-xs text-destructive" onClick={deleteCustom}>
+                  <Trash2 className="h-3 w-3 mr-1" />Delete
+                </Button>
+              </>
+            )}
+          </>
+        )}
+        {editing && (
+          <>
+            <span className="text-[11px] text-muted-foreground mr-1">
+              Drag positions on the pitch · {draftSlots.length}/{maxSlots}
+            </span>
+            <Button type="button" size="sm" variant="outline" className="h-7 text-xs" onClick={addSlot} disabled={draftSlots.length >= maxSlots}>
+              <Plus className="h-3 w-3 mr-1" />Add
+            </Button>
+            {canEditActiveCustom && (
+              <Button type="button" size="sm" variant="secondary" className="h-7 text-xs" onClick={openSaveUpdate}>
+                <Save className="h-3 w-3 mr-1" />Update
+              </Button>
+            )}
+            <Button type="button" size="sm" className="h-7 text-xs" onClick={openSaveNew}>
+              <Save className="h-3 w-3 mr-1" />Save as…
+            </Button>
+            <Button type="button" size="sm" variant="ghost" className="h-7 text-xs" onClick={cancelEdit}>
+              Cancel
+            </Button>
+          </>
+        )}
 
       <div className="flex items-center justify-between text-[11px] text-muted-foreground">
         <span>{startersOnPitch} / {requiredStarters} on pitch · {bench.length} on bench</span>
