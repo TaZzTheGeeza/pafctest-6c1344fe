@@ -32,8 +32,6 @@ import SafeguardingPage from "./pages/SafeguardingPage.tsx";
 import PlayerRegistrationPage from "./pages/PlayerRegistrationPage.tsx";
 import RafflePage from "./pages/RafflePage.tsx";
 import RaffleAdminPage from "./pages/RaffleAdminPage.tsx";
-import WorldCupSweepstakePage from "./pages/WorldCupSweepstakePage.tsx";
-import WorldCupSweepstakeAdminPage from "./pages/WorldCupSweepstakeAdminPage.tsx";
 import TournamentPage from "./pages/TournamentPage.tsx";
 import TournamentAdminPage from "./pages/TournamentAdminPage.tsx";
 import TeamProfilePage from "./pages/TeamProfilePage.tsx";
@@ -122,8 +120,6 @@ function AppContent() {
         <Route path="/player-hub" element={<PlayerHubRedirect />} />
         <Route path="/raffle" element={<RafflePage />} />
         <Route path="/raffle-admin" element={<RoleGate requiredRole="admin"><RaffleAdminPage /></RoleGate>} />
-        <Route path="/world-cup-sweepstake" element={<WorldCupSweepstakePage />} />
-        <Route path="/world-cup-sweepstake-admin" element={<RoleGate requiredRole="admin"><WorldCupSweepstakeAdminPage /></RoleGate>} />
 
         <Route path="/pafc-tv" element={<PafcTvPage />} />
         <Route path="/tournament" element={<TournamentPage />} />
