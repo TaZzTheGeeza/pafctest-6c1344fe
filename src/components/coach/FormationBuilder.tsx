@@ -86,6 +86,8 @@ export function FormationBuilder({
 
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
   const [notesFor, setNotesFor] = useState<string | null>(null); // player_id
+  const [pickerSlotId, setPickerSlotId] = useState<string | null>(null);
+
 
   const byPlayer = useMemo(() => {
     const m = new Map<string, PositionEntry>();
