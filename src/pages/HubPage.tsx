@@ -31,27 +31,15 @@ const TEAMS = [
   { slug: "u8s-gold", name: "U8 Gold" },
   { slug: "u9s-black", name: "U9 Black" },
   { slug: "u9s-gold", name: "U9 Gold" },
-  { slug: "u11s-black", name: "U11 Black" },
-  { slug: "u11s-gold", name: "U11 Gold" },
+  { slug: "u10s", name: "U10" },
+  { slug: "u11s", name: "U11" },
   { slug: "u12s-black", name: "U12 Black" },
   { slug: "u12s-gold", name: "U12 Gold" },
   { slug: "u13s", name: "U13" },
-  { slug: "u13s-black", name: "U13 Black" },
-  { slug: "u13s-gold", name: "U13 Gold" },
-  { slug: "u14s", name: "U14" },
   { slug: "u14s-black", name: "U14 Black" },
   { slug: "u14s-gold", name: "U14 Gold" },
   { slug: "u15s", name: "U15" },
 ];
-
-// Fallback display name for any slug not in TEAMS
-function slugToName(slug: string): string {
-  const found = TEAMS.find((t) => t.slug === slug);
-  if (found) return found.name;
-  const [age, variant] = slug.split("-");
-  const ageLabel = age.replace(/^u/, "U").replace(/s$/, "");
-  return variant ? `${ageLabel} ${variant.charAt(0).toUpperCase()}${variant.slice(1)}` : ageLabel;
-}
 
 const tabs = [
   { id: "chat", label: "Team Chat", icon: MessageSquare },
@@ -184,15 +172,7 @@ export default function HubPage() {
     };
     const normalized = [...new Set(rawSlugs.map((s) => canonicalMap[s] || s))];
     const teamOrder = TEAMS.map((t) => t.slug);
-    // Keep every team the user is a member of — even if not in the TEAMS constant.
-    const slugs = normalized.sort((a, b) => {
-      const ai = teamOrder.indexOf(a);
-      const bi = teamOrder.indexOf(b);
-      if (ai === -1 && bi === -1) return a.localeCompare(b);
-      if (ai === -1) return 1;
-      if (bi === -1) return -1;
-      return ai - bi;
-    });
+    const slugs = normalized.filter((s) => teamOrder.includes(s)).sort((a, b) => teamOrder.indexOf(a) - teamOrder.indexOf(b));
     setMyTeams(slugs);
     if (!activeTeam && slugs.length > 0) setActiveTeam(slugs[0]);
     setLoading(false);
@@ -210,7 +190,7 @@ export default function HubPage() {
     setSearchParams({ tab: activeTab, team: slug });
   }
 
-  const activeTeamName = activeTeam ? slugToName(activeTeam) : null;
+  const activeTeamName = TEAMS.find((t) => t.slug === activeTeam)?.name || activeTeam;
 
     const allTabs = [
     ...tabs,
@@ -330,15 +310,18 @@ export default function HubPage() {
                         <div className="fixed inset-0 z-40 md:hidden" onClick={() => setShowTeamPicker(false)} />
                         <div className="fixed md:absolute left-4 right-4 md:left-0 md:right-auto top-auto md:top-full mt-1 bg-card border border-border rounded-xl shadow-xl shadow-black/20 p-2 md:min-w-[200px] z-50">
                           <p className="text-[10px] font-display tracking-wider text-muted-foreground uppercase px-2 py-1">Your Teams</p>
-                          {myTeams.map((slug) => (
-                            <button
-                              key={slug}
-                              onClick={() => selectTeam(slug)}
-                              className={`w-full text-left px-3 py-2 rounded-lg text-sm font-display tracking-wider transition-colors ${activeTeam === slug ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-secondary"}`}
-                            >
-                              {slugToName(slug)}
-                            </button>
-                          ))}
+                          {myTeams.map((slug) => {
+                            const team = TEAMS.find((t) => t.slug === slug);
+                            return (
+                              <button
+                                key={slug}
+                                onClick={() => selectTeam(slug)}
+                                className={`w-full text-left px-3 py-2 rounded-lg text-sm font-display tracking-wider transition-colors ${activeTeam === slug ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-secondary"}`}
+                              >
+                                {team?.name || slug}
+                              </button>
+                            );
+                          })}
                         </div>
                       </>
                     )}
