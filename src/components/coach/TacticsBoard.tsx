@@ -123,19 +123,14 @@ export function TacticsBoard({
     }
   };
 
-  const openReveal = async () => {
-    let idToUse = boardId;
-    if (!idToUse) {
-      // Auto-save so we have something to reveal
-      await persist(false);
-      idToUse = boardId;
-      if (!idToUse) {
-        toast.error("Save the board first, then Reveal");
-        return;
-      }
+  const openReveal = () => {
+    if (!boardId) {
+      toast.error("Save the board first, then Reveal");
+      return;
     }
-    navigate(`/tactics-reveal/${idToUse}`);
+    navigate(`/tactics-reveal/${boardId}`);
   };
+
 
 
   const svgToPct = (e: React.PointerEvent) => {
