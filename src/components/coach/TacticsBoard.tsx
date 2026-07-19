@@ -464,9 +464,9 @@ export function TacticsBoard({
                   }
                 }}
               >
-                <circle r={t.kind === "ball" ? 1.4 : 2.4} fill={fill} stroke="#000" strokeWidth={0.25} />
+                <circle r={t.kind === "ball" ? 1.6 : 3.4} fill={fill} stroke="#000" strokeWidth={0.3} />
                 {t.label && (
-                  <text y={0.9} textAnchor="middle" fontSize={2.2} fontWeight={700} fill={fg}>
+                  <text y={t.kind === "ball" ? 0.5 : 1.2} textAnchor="middle" fontSize={t.kind === "ball" ? 1.4 : 3.2} fontWeight={800} fill={fg}>
                     {t.label}
                   </text>
                 )}
