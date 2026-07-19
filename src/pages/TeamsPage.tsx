@@ -249,18 +249,6 @@ function TeamDetail({ team }: { team: TeamData }) {
                                 </div>
                               </div>
                               <div className="flex items-center gap-2 text-xs text-muted-foreground shrink-0">
-                                {canManage && (
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setCoachFixture(fix);
-                                    }}
-                                    className="text-[11px] font-display font-bold tracking-wider uppercase bg-primary text-primary-foreground hover:bg-primary/90 rounded-md px-3 py-1.5 transition-colors shadow-md whitespace-nowrap"
-                                    title="Squad selection · Tactics whiteboard · Training notes"
-                                  >
-                                    Coach Panel
-                                  </button>
-                                )}
                                 <span className={`font-bold ${isHome ? "text-green-400" : "text-blue-400"}`}>
                                   {isHome ? "H" : "A"}
                                 </span>
