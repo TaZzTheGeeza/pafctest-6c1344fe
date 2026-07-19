@@ -2123,15 +2123,9 @@ export type Database = {
           max_tickets: number | null
           number_range: number | null
           prize_description: string
-          prize_golden_boot_pence: number | null
-          prize_runner_up_pence: number | null
-          prize_third_pence: number | null
-          prize_winner_pence: number | null
           status: string
           stripe_price_id: string | null
           stripe_product_id: string | null
-          sweepstake_mode: boolean
-          teams_revealed: boolean
           ticket_price_cents: number
           title: string
           updated_at: string
@@ -2152,15 +2146,9 @@ export type Database = {
           max_tickets?: number | null
           number_range?: number | null
           prize_description: string
-          prize_golden_boot_pence?: number | null
-          prize_runner_up_pence?: number | null
-          prize_third_pence?: number | null
-          prize_winner_pence?: number | null
           status?: string
           stripe_price_id?: string | null
           stripe_product_id?: string | null
-          sweepstake_mode?: boolean
-          teams_revealed?: boolean
           ticket_price_cents: number
           title: string
           updated_at?: string
@@ -2181,15 +2169,9 @@ export type Database = {
           max_tickets?: number | null
           number_range?: number | null
           prize_description?: string
-          prize_golden_boot_pence?: number | null
-          prize_runner_up_pence?: number | null
-          prize_third_pence?: number | null
-          prize_winner_pence?: number | null
           status?: string
           stripe_price_id?: string | null
           stripe_product_id?: string | null
-          sweepstake_mode?: boolean
-          teams_revealed?: boolean
           ticket_price_cents?: number
           title?: string
           updated_at?: string
@@ -2380,50 +2362,6 @@ export type Database = {
           reason?: string
         }
         Relationships: []
-      }
-      sweepstake_team_assignments: {
-        Row: {
-          country_name: string
-          created_at: string
-          flag_emoji: string
-          group_letter: string | null
-          id: string
-          raffle_id: string
-          status: string
-          ticket_number: number
-          updated_at: string
-        }
-        Insert: {
-          country_name?: string
-          created_at?: string
-          flag_emoji?: string
-          group_letter?: string | null
-          id?: string
-          raffle_id: string
-          status?: string
-          ticket_number: number
-          updated_at?: string
-        }
-        Update: {
-          country_name?: string
-          created_at?: string
-          flag_emoji?: string
-          group_letter?: string | null
-          id?: string
-          raffle_id?: string
-          status?: string
-          ticket_number?: number
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "sweepstake_team_assignments_raffle_id_fkey"
-            columns: ["raffle_id"]
-            isOneToOne: false
-            referencedRelation: "raffles"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       tactics_boards: {
         Row: {

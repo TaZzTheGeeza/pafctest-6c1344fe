@@ -233,7 +233,7 @@ const WhatsNewAdminPage = () => {
                   <Input
                     value={b.title}
                     onChange={(e) => updateBullet(i, { title: e.target.value })}
-                    placeholder="Short title (e.g. World Cup 2026 Sweepstake)"
+                    placeholder="Short title (e.g. New Kit Reveal)"
                   />
                   <Textarea
                     value={b.desc}
