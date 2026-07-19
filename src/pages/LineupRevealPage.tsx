@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { X, Play, RotateCcw, Star, StarHalf, ChevronRight } from "lucide-react";
+import { X, Play, RotateCcw, ChevronRight } from "lucide-react";
 import { findFormation, type FormationFormat } from "@/lib/formations";
 import type { PositionEntry } from "@/components/coach/FormationBuilder";
 
@@ -194,11 +194,10 @@ export default function LineupRevealPage() {
                 return (
                   <motion.g
                     key={entry.player_id}
-                    initial={{ opacity: 0, scale: 0.45 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.45 }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
                     transition={{ type: "spring", stiffness: 260, damping: 18, delay: 0.05 }}
-                    style={{ originX: safeX, originY: safeY }}
                   >
                     <circle
                       cx={safeX}
