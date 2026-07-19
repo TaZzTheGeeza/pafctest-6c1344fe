@@ -62,10 +62,18 @@ function sortByDate(fixtures: FixtureRow[]): FixtureRow[] {
   });
 }
 
+function safeCsvField(v: string | undefined | null): string {
+  const s = String(v ?? "");
+  const escaped = s.replace(/"/g, '""');
+  // Prefix values starting with formula-triggering characters to neutralise injection
+  if (/^[=+\-@\t\r]/.test(escaped)) return `'${escaped}`;
+  return escaped;
+}
+
 function generateCSV(fixtures: FixtureRow[], from: string, to: string): string {
   const header = "Date,Time,Team/Age Group,Home Team,Away Team,Venue,Competition,Type";
   const rows = fixtures.map(
-    (f) => `"${f.date}","${f.time}","${f.team}","${f.homeTeam}","${f.awayTeam}","${f.venue}","${f.competition}","${f.type}"`
+    (f) => `"${safeCsvField(f.date)}","${safeCsvField(f.time)}","${safeCsvField(f.team)}","${safeCsvField(f.homeTeam)}","${safeCsvField(f.awayTeam)}","${safeCsvField(f.venue)}","${safeCsvField(f.competition)}","${safeCsvField(f.type)}"`
   );
   const title = `PAFC Fixtures - Council Report (${from} to ${to})`;
   return `${title}\n${header}\n${rows.join("\n")}`;
