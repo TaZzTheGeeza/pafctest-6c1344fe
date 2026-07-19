@@ -45,7 +45,7 @@ const tabs = [
   { id: "chat", label: "Team Chat", icon: MessageSquare },
   { id: "payments", label: "Payments", icon: CreditCard },
   { id: "notifications", label: "Notifications", icon: Bell },
-  { id: "availability", label: "Availability", icon: CalendarCheck },
+  { id: "availability", label: "Fixtures & Events", icon: CalendarCheck },
   { id: "carpool", label: "Carpool", icon: Car },
   { id: "attendance", label: "Attendance", icon: TrendingUp },
   { id: "guardian", label: "Guardian", icon: UserPlus },
