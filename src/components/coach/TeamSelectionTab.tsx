@@ -111,8 +111,11 @@ export function TeamSelectionTab({
   const recordAppearances = async () => {
     const [d, m, y] = fixture.date.split("/");
     const matchDate = y.length === 4 ? `${y}-${m}-${d}` : `20${y}-${m}-${d}`;
-    const appearanceStats = positions.map((p) => ({
+    const appearanceStats = positions
+      .filter((p) => !p.player_id.startsWith("guest:"))
+      .map((p) => ({
       player_stat_id: p.player_id,
+
       team_slug: teamSlug,
       match_date: matchDate,
       opponent,
