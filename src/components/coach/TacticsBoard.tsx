@@ -463,6 +463,9 @@ export function TacticsBoard({
           <span className="mr-1 inline-block h-2.5 w-2.5 rounded-full bg-[#ef4444]" />Opp
         </Button>
         <Button size="sm" variant="outline" onClick={() => addToken("ball")} className="h-7 text-xs">⚽ Ball</Button>
+        <Button size="sm" variant="secondary" onClick={importLineup} className="h-7 text-xs">
+          <Download className="h-3 w-3 mr-1" />Import lineup
+        </Button>
         {roster.length > 0 && (
           <Select onValueChange={addRosterToken}>
             <SelectTrigger className="h-7 text-xs w-[150px]">
