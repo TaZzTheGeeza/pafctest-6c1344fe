@@ -808,6 +808,16 @@ export function FixtureAvailability({ teamSlug }: Props) {
           friendlyDate={getFriendlyDate(reminderItem.date)}
         />
       )}
+
+      {coachFixture && (
+        <CoachFixturePanel
+          open={!!coachFixture}
+          onClose={() => setCoachFixture(null)}
+          fixture={coachFixture}
+          teamSlug={teamSlug}
+          teamName={teamSlug.toUpperCase().replace(/-/g, " ")}
+        />
+      )}
     </div>
   );
 }
