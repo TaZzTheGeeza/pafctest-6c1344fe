@@ -56,6 +56,7 @@ export function TacticsBoard({
 }) {
   const { data: roster = [] } = useTeamRoster(teamSlug);
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const [boardId, setBoardId] = useState<string | null>(null);
   const [name, setName] = useState<string>(`vs ${opponent}`);
@@ -65,7 +66,9 @@ export function TacticsBoard({
   const [saving, setSaving] = useState(false);
   const [highContrast, setHighContrast] = useState(false);
   const [selectedBoardId, setSelectedBoardId] = useState<string>("__new__");
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const svgRef = useRef<SVGSVGElement | null>(null);
   const drawingRef = useRef<Stroke | null>(null);
   const draggingTokenRef = useRef<string | null>(null);
