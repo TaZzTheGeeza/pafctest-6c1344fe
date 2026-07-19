@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { X, Play, Pause, RotateCcw, ChevronRight, ChevronLeft, SkipForward } from "lucide-react";
+import { FORMATIONS, type SlotDef } from "@/lib/formations";
 
 type Color = "attack" | "defence" | "neutral";
 interface Token {
@@ -12,6 +13,8 @@ interface Token {
   x: number;
   y: number;
   label?: string;
+  slotId?: string;
+  playerId?: string;
 }
 interface Stroke {
   id: string;
@@ -23,6 +26,10 @@ interface BoardData {
   tokens: Token[];
   strokes: Stroke[];
   half: "full" | "attack" | "defence";
+  lineup?: {
+    formation: string | null;
+    formation_format: string | null;
+  };
 }
 
 const colorMap: Record<Color, string> = {
@@ -31,11 +38,50 @@ const colorMap: Record<Color, string> = {
   neutral: "#f8fafc",
 };
 
+const resolveFormationSlots = async (
+  formation: string | null | undefined,
+  format: string | null | undefined,
+  teamSlug?: string | null
+) => {
+  if (!formation) return { name: null as string | null, slots: null as SlotDef[] | null };
+  if (formation.startsWith("custom:")) {
+    const { data } = await supabase
+      .from("custom_formations")
+      .select("name, slots")
+      .eq("id", formation.slice("custom:".length))
+      .maybeSingle();
+    return {
+      name: (data as any)?.name ?? "Custom formation",
+      slots: ((data as any)?.slots as SlotDef[] | undefined) ?? null,
+    };
+  }
+
+  const builtIn = FORMATIONS.find((f) => f.name === formation && f.format === format);
+  if (builtIn) return { name: builtIn.name, slots: builtIn.slots };
+
+  if (teamSlug && format) {
+    const { data } = await supabase
+      .from("custom_formations")
+      .select("name, slots")
+      .eq("team_slug", teamSlug)
+      .eq("format", format)
+      .eq("name", formation)
+      .maybeSingle();
+    if ((data as any)?.slots) {
+      return { name: (data as any).name ?? formation, slots: (data as any).slots as SlotDef[] };
+    }
+  }
+
+  return { name: formation, slots: null as SlotDef[] | null };
+};
+
 export default function TacticsRevealPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [name, setName] = useState<string>("");
   const [board, setBoard] = useState<BoardData | null>(null);
+  const [formationName, setFormationName] = useState<string | null>(null);
+  const [slotMap, setSlotMap] = useState<Map<string, SlotDef>>(new Map());
   const [loadError, setLoadError] = useState<string | null>(null);
   const [step, setStep] = useState<number>(0); // 0 = tokens only, then each stroke reveals one
   const [autoPlay, setAutoPlay] = useState(false);
@@ -45,13 +91,29 @@ export default function TacticsRevealPage() {
       if (!id) return;
       const { data, error } = await supabase
         .from("tactics_boards" as any)
-        .select("name, board_data")
+        .select("name, board_data, team_slug, fixture_date, opponent")
         .eq("id", id)
         .maybeSingle();
       if (error || !data) { setLoadError("Board not found"); return; }
       setName((data as any).name || "Tactics");
       const bd = (data as any).board_data as BoardData;
       setBoard({ tokens: bd?.tokens ?? [], strokes: bd?.strokes ?? [], half: bd?.half ?? "full" });
+
+      let lineup = bd?.lineup;
+      if (!lineup?.formation && (data as any).team_slug && (data as any).fixture_date && (data as any).opponent) {
+        const { data: selection } = await supabase
+          .from("team_selections")
+          .select("formation, formation_format")
+          .eq("team_slug", (data as any).team_slug)
+          .eq("fixture_date", (data as any).fixture_date)
+          .eq("opponent", (data as any).opponent)
+          .maybeSingle();
+        lineup = selection as any;
+      }
+
+      const resolved = await resolveFormationSlots(lineup?.formation, lineup?.formation_format, (data as any).team_slug);
+      setFormationName(resolved.name);
+      setSlotMap(new Map((resolved.slots ?? []).map((slot) => [slot.id, slot])));
     })();
   }, [id]);
 
@@ -75,20 +137,44 @@ export default function TacticsRevealPage() {
   }
 
   const visibleStrokes = board.strokes.slice(0, step);
+  const positionLabelForToken = (token: Token) => {
+    if (token.kind !== "home") return token.label;
+    if (token.slotId) return slotMap.get(token.slotId)?.label ?? token.label;
+    if (slotMap.size === 0) return token.label;
+
+    const nearest = [...slotMap.values()].reduce<SlotDef | null>((best, slot) => {
+      if (!best) return slot;
+      const bestDistance = Math.hypot(token.x - best.x, token.y - best.y);
+      const slotDistance = Math.hypot(token.x - slot.x, token.y - slot.y);
+      return slotDistance < bestDistance ? slot : best;
+    }, null);
+
+    if (!nearest) return token.label;
+    const distance = Math.hypot(token.x - nearest.x, token.y - nearest.y);
+    return distance <= 6 ? nearest.label : token.label;
+  };
 
   return (
-    <div className="fixed inset-0 bg-black text-white flex flex-col overflow-hidden">
+      <div className="fixed inset-0 bg-black text-white flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 shrink-0">
-        <div>
+      <div className="px-3 py-2 border-b border-white/10 shrink-0 space-y-2 sm:flex sm:items-center sm:justify-between sm:space-y-0 sm:px-4 sm:py-3">
+        <div className="flex min-w-0 items-center justify-between gap-3">
+          <div className="min-w-0">
           <p className="text-[10px] uppercase tracking-[0.2em] text-primary">Tactics Reveal</p>
-          <p className="text-sm font-display truncate max-w-[60vw]">{name}</p>
+            <p className="truncate text-sm font-display">
+              {name}{formationName ? ` · ${formationName}` : ""}
+            </p>
+          </div>
+          <Button className="sm:hidden" size="icon" variant="ghost" onClick={() => navigate(-1)} title="Close">
+            <X className="h-5 w-5" />
+          </Button>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex w-full items-center gap-1 overflow-x-auto pb-1 sm:w-auto sm:overflow-visible sm:pb-0">
           <span className="text-xs text-white/60 tabular-nums">
             {Math.min(step, totalSteps)}/{totalSteps}
           </span>
           <Button
+            className="h-8 w-8 shrink-0"
             size="icon"
             variant="ghost"
             onClick={() => setStep((s) => Math.max(0, s - 1))}
@@ -99,22 +185,22 @@ export default function TacticsRevealPage() {
           </Button>
           {!complete ? (
             <>
-              <Button size="sm" variant="secondary" onClick={() => setAutoPlay((a) => !a)}>
+              <Button className="h-8 shrink-0 px-2 text-xs" size="sm" variant="secondary" onClick={() => setAutoPlay((a) => !a)}>
                 {autoPlay ? <><Pause className="h-4 w-4 mr-1" />Pause</> : <><Play className="h-4 w-4 mr-1" />Auto</>}
               </Button>
-              <Button size="sm" onClick={() => setStep((s) => Math.min(totalSteps, s + 1))}>
+              <Button className="h-8 w-8 shrink-0 p-0" size="sm" onClick={() => setStep((s) => Math.min(totalSteps, s + 1))}>
                 <ChevronRight className="h-4 w-4" />
               </Button>
-              <Button size="icon" variant="ghost" onClick={() => setStep(totalSteps)} title="Show all">
+              <Button className="h-8 w-8 shrink-0" size="icon" variant="ghost" onClick={() => setStep(totalSteps)} title="Show all">
                 <SkipForward className="h-4 w-4" />
               </Button>
             </>
           ) : (
-            <Button size="icon" variant="ghost" onClick={() => { setStep(0); setAutoPlay(false); }} title="Restart">
+            <Button className="h-8 w-8 shrink-0" size="icon" variant="ghost" onClick={() => { setStep(0); setAutoPlay(false); }} title="Restart">
               <RotateCcw className="h-4 w-4" />
             </Button>
           )}
-          <Button size="icon" variant="ghost" onClick={() => navigate(-1)} title="Close">
+          <Button className="hidden sm:inline-flex" size="icon" variant="ghost" onClick={() => navigate(-1)} title="Close">
             <X className="h-5 w-5" />
           </Button>
         </div>
@@ -195,24 +281,25 @@ export default function TacticsRevealPage() {
             {board.tokens.map((t) => {
               const fill = t.kind === "home" ? "#fbbf24" : t.kind === "away" ? "#ef4444" : "#fff";
               const fg = t.kind === "ball" ? "#000" : "#0a0a0a";
+              const label = positionLabelForToken(t);
               return (
                 <motion.g
                   key={t.id}
-                  initial={{ opacity: 0, scale: 0.6 }}
-                  animate={{ opacity: 1, scale: 1 }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
                   transition={{ type: "spring", stiffness: 220, damping: 18 }}
-                  transform={`translate(${t.x} ${t.y})`}
                 >
-                  <circle r={t.kind === "ball" ? 1.8 : 4.2} fill={fill} stroke="#000" strokeWidth={0.35} />
-                  {t.label && (
+                  <circle cx={t.x} cy={t.y} r={t.kind === "ball" ? 1.8 : 4.2} fill={fill} stroke="#000" strokeWidth={0.35} />
+                  {label && (
                     <text
-                      y={t.kind === "ball" ? 0.6 : 1.4}
+                      x={t.x}
+                      y={t.y + (t.kind === "ball" ? 0.6 : 1.4)}
                       textAnchor="middle"
                       fontSize={t.kind === "ball" ? 1.6 : 3.6}
                       fontWeight={800}
                       fill={fg}
                     >
-                      {t.label}
+                      {label}
                     </text>
                   )}
                 </motion.g>
