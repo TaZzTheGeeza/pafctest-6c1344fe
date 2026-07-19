@@ -214,6 +214,18 @@ function TeamDetail({ team }: { team: TeamData }) {
                                 </div>
                               </div>
                               <div className="flex items-center gap-2 text-xs text-muted-foreground shrink-0">
+                                {canManage && (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setCoachFixture(fix);
+                                    }}
+                                    className="text-[10px] font-display text-primary hover:text-primary/80 border border-primary/30 rounded px-2 py-1 transition-colors"
+                                    title="Open coach panel (Squad, Tactics, Notes)"
+                                  >
+                                    📋 Coach
+                                  </button>
+                                )}
                                 <span className={`font-bold ${isHome ? "text-green-400" : "text-blue-400"}`}>
                                   {isHome ? "H" : "A"}
                                 </span>
