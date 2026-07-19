@@ -3,14 +3,18 @@ import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { X, Play, RotateCcw, Star, StarHalf, ChevronRight } from "lucide-react";
+import { X, Play, RotateCcw, ChevronRight } from "lucide-react";
 import { findFormation, type FormationFormat } from "@/lib/formations";
 import type { PositionEntry } from "@/components/coach/FormationBuilder";
 
-const REVEAL_TOKEN_SIZE = 18;
-const REVEAL_TOKEN_SAFE_INSET = REVEAL_TOKEN_SIZE / 2 + 1;
-const clampRevealPosition = (value: number) =>
-  Math.min(100 - REVEAL_TOKEN_SAFE_INSET, Math.max(REVEAL_TOKEN_SAFE_INSET, value));
+const REVEAL_PITCH_WIDTH = 75;
+const REVEAL_TOKEN_RADIUS = 7.2;
+const REVEAL_TOKEN_PADDING = 0.8;
+const REVEAL_SAFE_X = ((REVEAL_TOKEN_RADIUS + REVEAL_TOKEN_PADDING) / REVEAL_PITCH_WIDTH) * 100;
+const REVEAL_SAFE_Y = REVEAL_TOKEN_RADIUS + REVEAL_TOKEN_PADDING;
+const clampRevealX = (value: number) => Math.min(100 - REVEAL_SAFE_X, Math.max(REVEAL_SAFE_X, value));
+const clampRevealY = (value: number) => Math.min(100 - REVEAL_SAFE_Y, Math.max(REVEAL_SAFE_Y, value));
+const revealSvgX = (value: number) => (value / 100) * REVEAL_PITCH_WIDTH;
 
 interface Selection {
   id: string;
@@ -172,50 +176,84 @@ export default function LineupRevealPage() {
             overflow: "hidden",
           }}
         >
-          <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 w-full h-full pointer-events-none">
+          <svg viewBox="0 0 75 100" preserveAspectRatio="xMidYMid meet" className="absolute inset-0 w-full h-full pointer-events-none">
             <g stroke="rgba(255,255,255,0.35)" strokeWidth="0.3" fill="none">
-              <rect x="2" y="2" width="96" height="96" />
-              <line x1="2" y1="50" x2="98" y2="50" />
-              <circle cx="50" cy="50" r="9" />
-              <rect x="25" y="2" width="50" height="14" />
-              <rect x="38" y="2" width="24" height="6" />
-              <rect x="25" y="84" width="50" height="14" />
-              <rect x="38" y="92" width="24" height="6" />
+              <rect x="1.5" y="2" width="72" height="96" />
+              <line x1="1.5" y1="50" x2="73.5" y2="50" />
+              <circle cx="37.5" cy="50" r="9" />
+              <rect x="18.75" y="2" width="37.5" height="14" />
+              <rect x="28.5" y="2" width="18" height="6" />
+              <rect x="18.75" y="84" width="37.5" height="14" />
+              <rect x="28.5" y="92" width="18" height="6" />
             </g>
-          </svg>
+            <AnimatePresence>
+              {orderedStarters.slice(0, Math.max(shown, 0)).map(({ slot, entry }) => {
+                const isCap = selection.captain_id === entry.player_id;
+                const isVice = selection.vice_captain_id === entry.player_id;
+                const safeX = revealSvgX(clampRevealX(slot.x));
+                const safeY = clampRevealY(slot.y);
+                const numberLabel = playerNumber(entry.player_id) ?? slot.label;
+                const nameLabel = playerName(entry.player_id);
 
-          <AnimatePresence>
-            {orderedStarters.slice(0, Math.max(shown, 0)).map(({ slot, entry }, idx) => {
-              const isCap = selection.captain_id === entry.player_id;
-              const isVice = selection.vice_captain_id === entry.player_id;
-              const safeX = clampRevealPosition(slot.x);
-              const safeY = clampRevealPosition(slot.y);
-              return (
-                <motion.div
-                  key={entry.player_id}
-                  initial={{ opacity: 0, scale: 0.4, y: -20 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  transition={{ type: "spring", stiffness: 260, damping: 18, delay: 0.05 }}
-                  className="absolute -translate-x-1/2 -translate-y-1/2"
-                  style={{ left: `${safeX}%`, top: `${safeY}%`, width: `${REVEAL_TOKEN_SIZE}%` }}
-                >
-                  <div className="relative aspect-square rounded-full bg-primary text-primary-foreground flex flex-col items-center justify-center shadow-2xl ring-4 ring-primary/50">
-                    <span className="text-[14px] sm:text-[15px] font-mono opacity-90 leading-none">
-                      {playerNumber(entry.player_id) ?? slot.label}
-                    </span>
-                    <span className="text-[13px] sm:text-[14px] font-bold leading-tight px-1 truncate max-w-full">
-                      {playerName(entry.player_id)}
-                    </span>
-                    {isCap && <Star className="absolute -top-2 -right-2 h-6 w-6 fill-yellow-400 stroke-yellow-500" />}
-                    {isVice && <StarHalf className="absolute -top-2 -right-2 h-6 w-6 fill-yellow-300 stroke-yellow-400" />}
-                  </div>
-                  {entry.notes && (
-                    <p className="mt-1 text-[10px] text-center text-white/70 leading-tight">{entry.notes}</p>
-                  )}
-                </motion.div>
-              );
-            })}
-          </AnimatePresence>
+                return (
+                  <motion.g
+                    key={entry.player_id}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ type: "spring", stiffness: 260, damping: 18, delay: 0.05 }}
+                  >
+                    <circle
+                      cx={safeX}
+                      cy={safeY}
+                      r={REVEAL_TOKEN_RADIUS}
+                      fill="hsl(var(--primary))"
+                      stroke="hsl(var(--primary) / 0.5)"
+                      strokeWidth="1.1"
+                    />
+                    <text
+                      x={safeX}
+                      y={safeY - 1.6}
+                      textAnchor="middle"
+                      dominantBaseline="middle"
+                      fill="hsl(var(--primary-foreground))"
+                      fontSize="3.2"
+                      fontFamily="monospace"
+                      fontWeight="700"
+                    >
+                      {numberLabel}
+                    </text>
+                    <text
+                      x={safeX}
+                      y={safeY + 2.4}
+                      textAnchor="middle"
+                      dominantBaseline="middle"
+                      fill="hsl(var(--primary-foreground))"
+                      fontSize="2.8"
+                      fontWeight="800"
+                    >
+                      {nameLabel.length > 9 ? `${nameLabel.slice(0, 8)}…` : nameLabel}
+                    </text>
+                    {(isCap || isVice) && (
+                      <text
+                        x={safeX + 6.2}
+                        y={safeY - 6.2}
+                        textAnchor="middle"
+                        dominantBaseline="middle"
+                        fill="hsl(var(--primary))"
+                        stroke="hsl(var(--background))"
+                        strokeWidth="0.45"
+                        fontSize="4.2"
+                        fontWeight="900"
+                      >
+                        {isCap ? "★" : "◐"}
+                      </text>
+                    )}
+                  </motion.g>
+                );
+              })}
+            </AnimatePresence>
+          </svg>
 
           {revealIndex < 0 && (
             <div className="absolute inset-0 flex items-center justify-center">
