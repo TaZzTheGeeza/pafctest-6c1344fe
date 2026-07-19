@@ -2392,6 +2392,45 @@ export type Database = {
           },
         ]
       }
+      tactics_boards: {
+        Row: {
+          board_data: Json
+          created_at: string
+          created_by: string | null
+          fixture_date: string | null
+          id: string
+          is_template: boolean
+          name: string
+          opponent: string | null
+          team_slug: string
+          updated_at: string
+        }
+        Insert: {
+          board_data?: Json
+          created_at?: string
+          created_by?: string | null
+          fixture_date?: string | null
+          id?: string
+          is_template?: boolean
+          name: string
+          opponent?: string | null
+          team_slug: string
+          updated_at?: string
+        }
+        Update: {
+          board_data?: Json
+          created_at?: string
+          created_by?: string | null
+          fixture_date?: string | null
+          id?: string
+          is_template?: boolean
+          name?: string
+          opponent?: string | null
+          team_slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       team_invites: {
         Row: {
           accepted_at: string | null

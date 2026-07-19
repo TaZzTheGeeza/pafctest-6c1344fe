@@ -1,11 +1,12 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ClipboardList, Trophy, Users, FileText } from "lucide-react";
+import { ClipboardList, Trophy, Users, FileText, Presentation } from "lucide-react";
 import type { FAFixture } from "@/hooks/useTeamFixtures";
 import { MatchReportTab } from "@/components/coach/MatchReportTab";
 import { POTMTab } from "@/components/coach/POTMTab";
 import { TeamSelectionTab } from "@/components/coach/TeamSelectionTab";
 import { TrainingNotesTab } from "@/components/coach/TrainingNotesTab";
+import { TacticsBoard } from "@/components/coach/TacticsBoard";
 
 interface CoachFixturePanelProps {
   open: boolean;
@@ -22,7 +23,7 @@ export function CoachFixturePanel({ open, onClose, fixture, teamSlug, teamName }
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-display text-lg">
             <span className="text-primary">{teamName}</span> vs {opponent}
@@ -31,7 +32,7 @@ export function CoachFixturePanel({ open, onClose, fixture, teamSlug, teamName }
         </DialogHeader>
 
         <Tabs defaultValue={isResult ? "report" : "selection"} className="mt-2">
-          <TabsList className="grid grid-cols-4 w-full">
+          <TabsList className="grid grid-cols-5 w-full">
             <TabsTrigger value="report" className="text-xs gap-1">
               <ClipboardList className="h-3 w-3" />Report
             </TabsTrigger>
@@ -40,6 +41,9 @@ export function CoachFixturePanel({ open, onClose, fixture, teamSlug, teamName }
             </TabsTrigger>
             <TabsTrigger value="selection" className="text-xs gap-1">
               <Users className="h-3 w-3" />Squad
+            </TabsTrigger>
+            <TabsTrigger value="tactics" className="text-xs gap-1">
+              <Presentation className="h-3 w-3" />Tactics
             </TabsTrigger>
             <TabsTrigger value="notes" className="text-xs gap-1">
               <FileText className="h-3 w-3" />Notes
@@ -67,6 +71,14 @@ export function CoachFixturePanel({ open, onClose, fixture, teamSlug, teamName }
 
           <TabsContent value="selection" forceMount className="data-[state=inactive]:hidden">
             <TeamSelectionTab
+              teamSlug={teamSlug}
+              opponent={opponent}
+              fixture={fixture}
+            />
+          </TabsContent>
+
+          <TabsContent value="tactics" forceMount className="data-[state=inactive]:hidden">
+            <TacticsBoard
               teamSlug={teamSlug}
               opponent={opponent}
               fixture={fixture}
