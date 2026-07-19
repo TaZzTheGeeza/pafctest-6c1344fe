@@ -362,7 +362,10 @@ export function TacticsBoard({
   const pitchLine = highContrast ? "#fff" : "rgba(255,255,255,0.7)";
 
   return (
-    <div className="space-y-3 pt-2">
+    <div
+      ref={containerRef}
+      className={`space-y-3 pt-2 ${isFullscreen ? "bg-background p-4 h-screen overflow-auto flex flex-col" : ""}`}
+    >
       <div className="flex flex-wrap items-center gap-2">
         <Select value={selectedBoardId} onValueChange={load}>
           <SelectTrigger className="h-8 text-xs w-[180px]">
@@ -388,7 +391,14 @@ export function TacticsBoard({
         <Button size="sm" variant="ghost" onClick={() => setHighContrast((v) => !v)} title="Toggle high contrast">
           <Sun className="h-3.5 w-3.5" />
         </Button>
+        <Button size="sm" variant="ghost" onClick={toggleFullscreen} title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}>
+          {isFullscreen ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
+        </Button>
+        <Button size="sm" variant="secondary" onClick={openReveal} className="h-8 text-xs" title="Open Tactics Reveal">
+          <Sparkles className="h-3.5 w-3.5 mr-1" />Reveal
+        </Button>
       </div>
+
 
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-1 rounded-md border bg-muted/40 p-1">
