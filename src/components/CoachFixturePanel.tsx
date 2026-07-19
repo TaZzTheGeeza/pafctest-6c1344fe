@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ClipboardList, Trophy, Users, FileText, Presentation } from "lucide-react";
@@ -21,6 +22,14 @@ export function CoachFixturePanel({ open, onClose, fixture, teamSlug, teamName }
   const isHome = fixture.homeTeam.includes("Peterborough Ath");
   const opponent = isHome ? fixture.awayTeam : fixture.homeTeam;
 
+  const [tab, setTab] = useState<string>(isResult ? "report" : "selection");
+  const [importNonce, setImportNonce] = useState(0);
+
+  const handleSendToTactics = () => {
+    setImportNonce((n) => n + 1);
+    setTab("tactics");
+  };
+
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -31,7 +40,7 @@ export function CoachFixturePanel({ open, onClose, fixture, teamSlug, teamName }
           <p className="text-xs text-muted-foreground">{fixture.date} · {fixture.time} · {fixture.venue || "TBC"}</p>
         </DialogHeader>
 
-        <Tabs defaultValue={isResult ? "report" : "selection"} className="mt-2">
+        <Tabs value={tab} onValueChange={setTab} className="mt-2">
           <TabsList className="grid grid-cols-5 w-full">
             <TabsTrigger value="report" className="text-xs gap-1">
               <ClipboardList className="h-3 w-3" />Report
@@ -51,22 +60,11 @@ export function CoachFixturePanel({ open, onClose, fixture, teamSlug, teamName }
           </TabsList>
 
           <TabsContent value="report" forceMount className="data-[state=inactive]:hidden">
-            <MatchReportTab
-              teamSlug={teamSlug}
-              teamName={teamName}
-              opponent={opponent}
-              fixture={fixture}
-              isHome={isHome}
-            />
+            <MatchReportTab teamSlug={teamSlug} teamName={teamName} opponent={opponent} fixture={fixture} isHome={isHome} />
           </TabsContent>
 
           <TabsContent value="potm" forceMount className="data-[state=inactive]:hidden">
-            <POTMTab
-              teamSlug={teamSlug}
-              teamName={teamName}
-              opponent={opponent}
-              fixture={fixture}
-            />
+            <POTMTab teamSlug={teamSlug} teamName={teamName} opponent={opponent} fixture={fixture} />
           </TabsContent>
 
           <TabsContent value="selection" forceMount className="data-[state=inactive]:hidden">
@@ -74,6 +72,7 @@ export function CoachFixturePanel({ open, onClose, fixture, teamSlug, teamName }
               teamSlug={teamSlug}
               opponent={opponent}
               fixture={fixture}
+              onSendToTactics={handleSendToTactics}
             />
           </TabsContent>
 
@@ -82,18 +81,16 @@ export function CoachFixturePanel({ open, onClose, fixture, teamSlug, teamName }
               teamSlug={teamSlug}
               opponent={opponent}
               fixture={fixture}
+              importSignal={importNonce}
             />
           </TabsContent>
 
           <TabsContent value="notes" forceMount className="data-[state=inactive]:hidden">
-            <TrainingNotesTab
-              teamSlug={teamSlug}
-              opponent={opponent}
-              fixture={fixture}
-            />
+            <TrainingNotesTab teamSlug={teamSlug} opponent={opponent} fixture={fixture} />
           </TabsContent>
         </Tabs>
       </DialogContent>
     </Dialog>
   );
 }
+
