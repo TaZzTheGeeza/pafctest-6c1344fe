@@ -506,15 +506,15 @@ export function TacticsBoard({
       </div>
 
       {/* Save row */}
-      <div className="grid grid-cols-3 gap-2">
-        <Button size="sm" variant="outline" onClick={snapshot}>
-          <Camera className="h-3.5 w-3.5 mr-1" />Snapshot
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+        <Button size="sm" variant="outline" onClick={snapshot} className="w-full">
+          <Camera className="h-3.5 w-3.5 mr-1 flex-shrink-0" />Snapshot
         </Button>
-        <Button size="sm" variant="secondary" onClick={() => persist(true)} disabled={saving}>
-          <BookOpen className="h-3.5 w-3.5 mr-1" />Save to playbook
+        <Button size="sm" variant="secondary" onClick={() => persist(true)} disabled={saving} className="w-full">
+          <BookOpen className="h-3.5 w-3.5 mr-1 flex-shrink-0" />Save to playbook
         </Button>
-        <Button size="sm" onClick={() => persist(false)} disabled={saving}>
-          {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Save className="h-3.5 w-3.5 mr-1" />}
+        <Button size="sm" onClick={() => persist(false)} disabled={saving} className="w-full">
+          {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1 flex-shrink-0" /> : <Save className="h-3.5 w-3.5 mr-1 flex-shrink-0" />}
           Save board
         </Button>
       </div>
