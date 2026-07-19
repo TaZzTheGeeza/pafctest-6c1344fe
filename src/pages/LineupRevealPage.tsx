@@ -7,6 +7,11 @@ import { X, Play, RotateCcw, Star, StarHalf, ChevronRight } from "lucide-react";
 import { findFormation, type FormationFormat } from "@/lib/formations";
 import type { PositionEntry } from "@/components/coach/FormationBuilder";
 
+const REVEAL_TOKEN_SIZE = 18;
+const REVEAL_TOKEN_SAFE_INSET = REVEAL_TOKEN_SIZE / 2 + 1;
+const clampRevealPosition = (value: number) =>
+  Math.min(100 - REVEAL_TOKEN_SAFE_INSET, Math.max(REVEAL_TOKEN_SAFE_INSET, value));
+
 interface Selection {
   id: string;
   team_slug: string;
@@ -183,6 +188,8 @@ export default function LineupRevealPage() {
             {orderedStarters.slice(0, Math.max(shown, 0)).map(({ slot, entry }, idx) => {
               const isCap = selection.captain_id === entry.player_id;
               const isVice = selection.vice_captain_id === entry.player_id;
+              const safeX = clampRevealPosition(slot.x);
+              const safeY = clampRevealPosition(slot.y);
               return (
                 <motion.div
                   key={entry.player_id}
@@ -190,7 +197,7 @@ export default function LineupRevealPage() {
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   transition={{ type: "spring", stiffness: 260, damping: 18, delay: 0.05 }}
                   className="absolute -translate-x-1/2 -translate-y-1/2"
-                  style={{ left: `${slot.x}%`, top: `${slot.y}%`, width: "18%" }}
+                  style={{ left: `${safeX}%`, top: `${safeY}%`, width: `${REVEAL_TOKEN_SIZE}%` }}
                 >
                   <div className="relative aspect-square rounded-full bg-primary text-primary-foreground flex flex-col items-center justify-center shadow-2xl ring-4 ring-primary/50">
                     <span className="text-[14px] sm:text-[15px] font-mono opacity-90 leading-none">
