@@ -17,6 +17,26 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // --- Auth gate: require any valid JWT to prevent AI credit abuse ---
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader?.startsWith("Bearer ")) {
+    return jsonResponse({ error: "Unauthorized" }, 401);
+  }
+  try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const userClient = createClient(supabaseUrl, anonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const token = authHeader.replace("Bearer ", "");
+    const { data: claimsData, error: claimsError } = await userClient.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims?.sub) {
+      return jsonResponse({ error: "Invalid token" }, 401);
+    }
+  } catch (_e) {
+    return jsonResponse({ error: "Unauthorized" }, 401);
+  }
+
   let originalImageBase64: string | null = null;
 
   try {
