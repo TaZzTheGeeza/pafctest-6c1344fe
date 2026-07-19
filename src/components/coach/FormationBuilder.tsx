@@ -30,19 +30,6 @@ export interface PositionEntry {
   notes?: string;
 }
 
-interface Props {
-  roster: RosterPlayer[];
-  format: FormationFormat;
-  onFormatChange: (f: FormationFormat) => void;
-  formationName: string;
-  onFormationChange: (name: string) => void;
-  positions: PositionEntry[];
-  onChange: (positions: PositionEntry[]) => void;
-  captainId: string | null;
-  onCaptainChange: (id: string | null) => void;
-  viceCaptainId: string | null;
-  onViceCaptainChange: (id: string | null) => void;
-}
 
 interface Props {
   roster: RosterPlayer[];
