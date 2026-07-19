@@ -263,6 +263,39 @@ export type Database = {
         }
         Relationships: []
       }
+      custom_formations: {
+        Row: {
+          created_at: string
+          format: string
+          id: string
+          name: string
+          slots: Json
+          team_slug: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          format: string
+          id?: string
+          name: string
+          slots: Json
+          team_slug?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          format?: string
+          id?: string
+          name?: string
+          slots?: Json
+          team_slug?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       custom_roles: {
         Row: {
           color: string | null
