@@ -44,12 +44,53 @@ interface Props {
   onViceCaptainChange: (id: string | null) => void;
 }
 
+interface Props {
+  roster: RosterPlayer[];
+  format: FormationFormat;
+  onFormatChange: (f: FormationFormat) => void;
+  formationName: string;
+  onFormationChange: (name: string) => void;
+  positions: PositionEntry[];
+  onChange: (positions: PositionEntry[]) => void;
+  captainId: string | null;
+  onCaptainChange: (id: string | null) => void;
+  viceCaptainId: string | null;
+  onViceCaptainChange: (id: string | null) => void;
+  teamSlug?: string;
+}
+
+const CUSTOM_PREFIX = "custom:";
+const isCustomRef = (v: string) => v.startsWith(CUSTOM_PREFIX);
+const customIdFromRef = (v: string) => v.slice(CUSTOM_PREFIX.length);
+
 export function FormationBuilder({
   roster, format, onFormatChange, formationName, onFormationChange,
   positions, onChange, captainId, onCaptainChange, viceCaptainId, onViceCaptainChange,
+  teamSlug,
 }: Props) {
-  const formation: Formation | undefined = findFormation(formationName, format);
-  const slots: SlotDef[] = formation?.slots ?? [];
+  const { user } = useAuth();
+  const { data: customFormations = [] } = useCustomFormations(teamSlug ?? "", format);
+  const invalidateCustom = useInvalidateCustomFormations();
+
+  const activeCustom: CustomFormation | undefined = isCustomRef(formationName)
+    ? customFormations.find((c) => c.id === customIdFromRef(formationName))
+    : undefined;
+
+  const formation: Formation | undefined = activeCustom
+    ? { name: activeCustom.name, format: activeCustom.format, slots: activeCustom.slots }
+    : findFormation(formationName, format);
+
+  // ----- editor state -----
+  const [editing, setEditing] = useState(false);
+  const [draftSlots, setDraftSlots] = useState<SlotDef[]>([]);
+  const [saveOpen, setSaveOpen] = useState(false);
+  const [saveName, setSaveName] = useState("");
+  const [saveMode, setSaveMode] = useState<"new" | "update">("new");
+  const [saving, setSaving] = useState(false);
+  const pitchRef = useRef<HTMLDivElement | null>(null);
+  const dragSlotIdRef = useRef<string | null>(null);
+
+  const slots: SlotDef[] = editing ? draftSlots : (formation?.slots ?? []);
 
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
   const [notesFor, setNotesFor] = useState<string | null>(null); // player_id
