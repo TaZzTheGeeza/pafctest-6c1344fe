@@ -2493,40 +2493,61 @@ export type Database = {
       }
       team_selections: {
         Row: {
+          captain_id: string | null
           created_at: string
           created_by: string | null
           fixture_date: string
           formation: string | null
+          formation_format: string | null
           id: string
           notes: string | null
           opponent: string
+          opposition_formation: string | null
           players: Json
+          positions: Json
+          published_at: string | null
+          status: string
           team_slug: string
           updated_at: string
+          vice_captain_id: string | null
         }
         Insert: {
+          captain_id?: string | null
           created_at?: string
           created_by?: string | null
           fixture_date: string
           formation?: string | null
+          formation_format?: string | null
           id?: string
           notes?: string | null
           opponent: string
+          opposition_formation?: string | null
           players?: Json
+          positions?: Json
+          published_at?: string | null
+          status?: string
           team_slug: string
           updated_at?: string
+          vice_captain_id?: string | null
         }
         Update: {
+          captain_id?: string | null
           created_at?: string
           created_by?: string | null
           fixture_date?: string
           formation?: string | null
+          formation_format?: string | null
           id?: string
           notes?: string | null
           opponent?: string
+          opposition_formation?: string | null
           players?: Json
+          positions?: Json
+          published_at?: string | null
+          status?: string
           team_slug?: string
           updated_at?: string
+          vice_captain_id?: string | null
         }
         Relationships: []
       }
