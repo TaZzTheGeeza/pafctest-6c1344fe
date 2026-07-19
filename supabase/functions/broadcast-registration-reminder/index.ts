@@ -1,13 +1,15 @@
 // One-off broadcast: registration reminder to unregistered parents.
-// Protected by a shared secret. Iterates guardians without registrations and
-// invokes send-transactional-email for each unique email.
+// Protected by CRON_SECRET (Supabase Edge Function secret). Iterates guardians
+// without registrations and invokes send-transactional-email for each unique email.
 import { createClient } from 'npm:@supabase/supabase-js@2'
-
-const SHARED_SECRET = 'pafc-reg-reminder-2026-06-16'
 
 Deno.serve(async (req) => {
   const url = new URL(req.url)
-  if (url.searchParams.get('secret') !== SHARED_SECRET) {
+  const cronSecret = Deno.env.get('CRON_SECRET')
+  const authHeader = req.headers.get('Authorization') || ''
+  const bearer = authHeader.replace('Bearer ', '').trim()
+  const provided = url.searchParams.get('secret') || bearer
+  if (!cronSecret || !provided || provided !== cronSecret) {
     return new Response(JSON.stringify({ error: 'forbidden' }), { status: 403 })
   }
 
@@ -37,8 +39,6 @@ Thanks for getting this sorted early — it makes a huge difference to getting t
 
 Up the Lions! 🦁`
 
-  // Fetch recipients via raw SQL through PostgREST RPC? We don't have one, so
-  // query in two steps using the JS client.
   const { data: guardians, error: gErr } = await supabase
     .from('guardians')
     .select('id, player_name, parent_user_id')
@@ -72,7 +72,6 @@ Up the Lions! 🦁`
     emails.add(email)
   }
 
-  // Skip emails that already have a send attempt in the last hour (this campaign only)
   const { data: priorSent } = await supabase
     .from('email_send_log')
     .select('recipient_email, status')
@@ -102,7 +101,6 @@ Up the Lions! 🦁`
     if (sent) ok++; else { fail++; failures.push({ email, error: 'all retries failed' }) }
     await new Promise(r => setTimeout(r, 400))
   }
-
 
   return new Response(JSON.stringify({ unique_recipients: emails.size, sent: ok, failed: fail, skipped, failures }), {
     headers: { 'Content-Type': 'application/json' },
