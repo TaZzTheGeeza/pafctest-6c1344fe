@@ -223,6 +223,7 @@ export function TeamSelectionTab({
         onCaptainChange={setCaptainId}
         viceCaptainId={viceCaptainId}
         onViceCaptainChange={setViceCaptainId}
+        teamSlug={teamSlug}
       />
 
       <div>
