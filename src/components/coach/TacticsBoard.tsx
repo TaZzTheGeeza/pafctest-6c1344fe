@@ -220,15 +220,15 @@ export function TacticsBoard({
           const slot = slotMap.get(p.slot_id);
           if (!slot) return null;
           const player = roster.find((r) => r.id === p.player_id);
-          const label = player?.shirt_number
-            ? `#${player.shirt_number}`
-            : (p.guest_name || player?.first_name || slot.label).slice(0, 3).toUpperCase();
+          const label = slot.label.slice(0, 3).toUpperCase();
           return {
             id: uid(),
             kind: "home" as const,
             x: slot.x,
             y: slot.y, // portrait pitch matches Squad tab (own goal at top)
             label,
+            playerId: player?.id ?? p.guest_name ?? null,
+            playerName: player?.first_name || p.guest_name || null,
           };
         })
         .filter(Boolean) as Token[];
