@@ -72,8 +72,9 @@ export function TeamSelectionTab({
   const buildPayload = (status: "draft" | "published") => {
     // legacy `players` column: keep in sync with names of everyone in squad
     const legacyNames = positions
-      .map((p) => roster.find((r) => r.id === p.player_id)?.first_name)
+      .map((p) => p.guest_name || roster.find((r) => r.id === p.player_id)?.first_name)
       .filter(Boolean) as string[];
+
     return {
       team_slug: teamSlug,
       fixture_date: fixture.date,
