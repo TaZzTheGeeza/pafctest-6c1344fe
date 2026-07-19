@@ -28,7 +28,12 @@ export interface PositionEntry {
   slot_id: string;         // "" for bench
   role: "starter" | "sub";
   notes?: string;
+  guest_name?: string;     // for fill-in players not in the roster
 }
+
+const GUEST_PREFIX = "guest:";
+export const isGuestId = (id: string) => id.startsWith(GUEST_PREFIX);
+
 
 
 interface Props {
