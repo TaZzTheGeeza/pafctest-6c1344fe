@@ -14,9 +14,10 @@ import { FormationBuilder, type PositionEntry } from "@/components/coach/Formati
 import { formatForTeam, getFormationsForFormat, type FormationFormat } from "@/lib/formations";
 
 export function TeamSelectionTab({
-  teamSlug, opponent, fixture,
+  teamSlug, opponent, fixture, onSendToTactics,
 }: {
   teamSlug: string; opponent: string; fixture: FAFixture;
+  onSendToTactics?: () => void;
 }) {
   const { data: roster = [] } = useTeamRoster(teamSlug);
   const queryClient = useQueryClient();
