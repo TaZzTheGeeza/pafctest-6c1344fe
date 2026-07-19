@@ -227,7 +227,7 @@ export function TacticsBoard({
             id: uid(),
             kind: "home" as const,
             x: slot.x,
-            y: 65 - (slot.y * 65) / 100, // own goal (y=0) at bottom of pitch
+            y: slot.y, // portrait pitch matches Squad tab (own goal at top)
             label,
           };
         })
@@ -385,25 +385,28 @@ export function TacticsBoard({
       </div>
 
       {/* Pitch */}
-      <div className="relative rounded-lg overflow-hidden border">
+      <div className="relative rounded-lg overflow-hidden border mx-auto" style={{ aspectRatio: "3 / 4", maxWidth: 520 }}>
         <svg
           ref={svgRef}
-          viewBox="0 0 100 65"
-          className="w-full h-auto touch-none select-none"
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+          className="w-full h-full touch-none select-none"
           style={{ background: pitchFill, cursor: tool === "select" ? "default" : "crosshair" }}
           onPointerDown={startPointer}
           onPointerMove={movePointer}
           onPointerUp={endPointer}
           onPointerLeave={endPointer}
         >
-          {/* Pitch markings */}
-          <rect x="1" y="1" width="98" height="63" fill="none" stroke={pitchLine} strokeWidth="0.3" />
-          <line x1="50" y1="1" x2="50" y2="64" stroke={pitchLine} strokeWidth="0.3" />
-          <circle cx="50" cy="32.5" r="7" fill="none" stroke={pitchLine} strokeWidth="0.3" />
-          <rect x="1" y="18" width="14" height="29" fill="none" stroke={pitchLine} strokeWidth="0.3" />
-          <rect x="85" y="18" width="14" height="29" fill="none" stroke={pitchLine} strokeWidth="0.3" />
-          <rect x="1" y="26" width="5" height="13" fill="none" stroke={pitchLine} strokeWidth="0.3" />
-          <rect x="94" y="26" width="5" height="13" fill="none" stroke={pitchLine} strokeWidth="0.3" />
+          {/* Pitch markings (portrait — matches Squad tab) */}
+          <g stroke={pitchLine} strokeWidth="0.3" fill="none">
+            <rect x="2" y="2" width="96" height="96" />
+            <line x1="2" y1="50" x2="98" y2="50" />
+            <circle cx="50" cy="50" r="9" />
+            <rect x="25" y="2" width="50" height="14" />
+            <rect x="38" y="2" width="24" height="6" />
+            <rect x="25" y="84" width="50" height="14" />
+            <rect x="38" y="92" width="24" height="6" />
+          </g>
 
           {/* Arrow marker */}
           <defs>
