@@ -149,6 +149,111 @@ export function FormationBuilder({
   const bench = positions.filter((p) => !p.slot_id);
   const rosterNotInSquad = roster.filter((r) => !byPlayer.has(r.id));
 
+  const maxSlots = FORMAT_SLOT_COUNTS[format];
+  const canEditActiveCustom = !!activeCustom && !!user && activeCustom.user_id === user.id;
+
+  const startEditNew = () => {
+    const base: SlotDef[] = formation?.slots?.length
+      ? formation.slots.map((s) => ({ ...s }))
+      : [{ id: "gk", label: "GK", x: 50, y: 8 }];
+    setDraftSlots(base);
+    setEditing(true);
+  };
+  const cancelEdit = () => { setEditing(false); setDraftSlots([]); };
+
+  const addSlot = () => {
+    if (draftSlots.length >= maxSlots) { toast.error(`Max ${maxSlots} positions for ${format}`); return; }
+    const id = `s${Date.now()}${Math.floor(Math.random() * 100)}`;
+    setDraftSlots([...draftSlots, { id, label: "POS", x: 50, y: 50 }]);
+  };
+  const removeSlot = (id: string) => setDraftSlots(draftSlots.filter((s) => s.id !== id));
+  const updateSlot = (id: string, patch: Partial<SlotDef>) =>
+    setDraftSlots(draftSlots.map((s) => s.id === id ? { ...s, ...patch } : s));
+
+  const onSlotPointerDown = (e: React.PointerEvent, id: string) => {
+    if (!editing) return;
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    dragSlotIdRef.current = id;
+  };
+  const onSlotPointerMove = (e: React.PointerEvent) => {
+    const id = dragSlotIdRef.current;
+    if (!editing || !id || !pitchRef.current) return;
+    const rect = pitchRef.current.getBoundingClientRect();
+    const x = Math.max(6, Math.min(94, ((e.clientX - rect.left) / rect.width) * 100));
+    const y = Math.max(4, Math.min(96, ((e.clientY - rect.top) / rect.height) * 100));
+    updateSlot(id, { x: Math.round(x * 10) / 10, y: Math.round(y * 10) / 10 });
+  };
+  const onSlotPointerUp = () => { dragSlotIdRef.current = null; };
+
+  const openSaveNew = () => {
+    setSaveMode("new");
+    setSaveName("");
+    setSaveOpen(true);
+  };
+  const openSaveUpdate = () => {
+    if (!activeCustom) return;
+    setSaveMode("update");
+    setSaveName(activeCustom.name);
+    setSaveOpen(true);
+  };
+
+  const persistFormation = async () => {
+    if (!user) { toast.error("Sign in required"); return; }
+    const name = saveName.trim();
+    if (!name) { toast.error("Give it a name"); return; }
+    if (draftSlots.length < 2) { toast.error("Add at least 2 positions"); return; }
+    setSaving(true);
+    try {
+      if (saveMode === "update" && activeCustom) {
+        const { error } = await supabase
+          .from("custom_formations")
+          .update({ name, slots: draftSlots as any, format })
+          .eq("id", activeCustom.id);
+        if (error) throw error;
+        toast.success("Formation updated");
+        invalidateCustom();
+        setEditing(false);
+        setDraftSlots([]);
+        setSaveOpen(false);
+      } else {
+        const { data, error } = await supabase
+          .from("custom_formations")
+          .insert({
+            user_id: user.id,
+            team_slug: teamSlug ?? null,
+            name,
+            format,
+            slots: draftSlots as any,
+          })
+          .select("id")
+          .single();
+        if (error) throw error;
+        toast.success("Formation saved");
+        invalidateCustom();
+        setEditing(false);
+        setDraftSlots([]);
+        setSaveOpen(false);
+        if (data?.id) onFormationChange(`${CUSTOM_PREFIX}${data.id}`);
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Failed to save");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const deleteCustom = async () => {
+    if (!activeCustom) return;
+    if (!confirm(`Delete formation "${activeCustom.name}"?`)) return;
+    const { error } = await supabase.from("custom_formations").delete().eq("id", activeCustom.id);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Formation deleted");
+    invalidateCustom();
+    const fallback = getFormationsForFormat(format)[0]?.name ?? "";
+    onFormationChange(fallback);
+  };
+
+
   return (
     <div className="space-y-3">
       <div className="grid grid-cols-2 gap-2">
