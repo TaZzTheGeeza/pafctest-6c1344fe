@@ -159,17 +159,17 @@ export default function LineupRevealPage() {
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   transition={{ type: "spring", stiffness: 260, damping: 18, delay: 0.05 }}
                   className="absolute -translate-x-1/2 -translate-y-1/2"
-                  style={{ left: `${slot.x}%`, top: `${slot.y}%`, width: "16%" }}
+                  style={{ left: `${slot.x}%`, top: `${slot.y}%`, width: "18%" }}
                 >
                   <div className="relative aspect-square rounded-full bg-primary text-primary-foreground flex flex-col items-center justify-center shadow-2xl ring-4 ring-primary/50">
-                    <span className="text-[10px] font-mono opacity-80 leading-none">
+                    <span className="text-[14px] sm:text-[15px] font-mono opacity-90 leading-none">
                       {playerNumber(entry.player_id) ?? slot.label}
                     </span>
-                    <span className="text-xs md:text-sm font-bold leading-tight px-1 truncate max-w-full">
+                    <span className="text-[13px] sm:text-[14px] font-bold leading-tight px-1 truncate max-w-full">
                       {playerName(entry.player_id)}
                     </span>
-                    {isCap && <Star className="absolute -top-2 -right-2 h-5 w-5 fill-yellow-400 stroke-yellow-500" />}
-                    {isVice && <StarHalf className="absolute -top-2 -right-2 h-5 w-5 fill-yellow-300 stroke-yellow-400" />}
+                    {isCap && <Star className="absolute -top-2 -right-2 h-6 w-6 fill-yellow-400 stroke-yellow-500" />}
+                    {isVice && <StarHalf className="absolute -top-2 -right-2 h-6 w-6 fill-yellow-300 stroke-yellow-400" />}
                   </div>
                   {entry.notes && (
                     <p className="mt-1 text-[10px] text-center text-white/70 leading-tight">{entry.notes}</p>
