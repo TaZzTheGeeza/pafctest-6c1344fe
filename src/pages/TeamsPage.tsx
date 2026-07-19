@@ -255,10 +255,10 @@ function TeamDetail({ team }: { team: TeamData }) {
                                       e.stopPropagation();
                                       setCoachFixture(fix);
                                     }}
-                                    className="text-[10px] font-display text-primary hover:text-primary/80 border border-primary/30 rounded px-2 py-1 transition-colors"
-                                    title="Open coach panel (Squad, Tactics, Notes)"
+                                    className="text-[11px] font-display font-bold tracking-wider uppercase bg-primary text-primary-foreground hover:bg-primary/90 rounded-md px-3 py-1.5 transition-colors shadow-md whitespace-nowrap"
+                                    title="Squad selection · Tactics whiteboard · Training notes"
                                   >
-                                    📋 Coach
+                                    Coach Panel
                                   </button>
                                 )}
                                 <span className={`font-bold ${isHome ? "text-green-400" : "text-blue-400"}`}>
