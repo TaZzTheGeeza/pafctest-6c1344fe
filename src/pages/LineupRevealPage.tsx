@@ -32,6 +32,8 @@ export default function LineupRevealPage() {
   const navigate = useNavigate();
   const [selection, setSelection] = useState<Selection | null>(null);
   const [roster, setRoster] = useState<RosterPlayer[]>([]);
+  const [customFormation, setCustomFormation] = useState<{ name: string; slots: any[] } | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [revealIndex, setRevealIndex] = useState<number>(-1); // -1 = not started
   const [autoPlay, setAutoPlay] = useState(false);
 
@@ -40,7 +42,7 @@ export default function LineupRevealPage() {
       if (!id) return;
       const { data, error } = await supabase
         .from("team_selections").select("*").eq("id", id).maybeSingle();
-      if (error || !data) return;
+      if (error || !data) { setLoadError("Lineup not found"); return; }
       setSelection(data as any);
       const ids = ((data as any).positions ?? []).map((p: PositionEntry) => p.player_id);
       if (ids.length > 0) {
@@ -48,13 +50,33 @@ export default function LineupRevealPage() {
           .from("player_stats").select("id, first_name, shirt_number").in("id", ids);
         setRoster((players as any) ?? []);
       }
+
+      // Resolve custom formation reference (custom:UUID)
+      const formationRef: string = (data as any).formation ?? "";
+      if (formationRef.startsWith("custom:")) {
+        const customId = formationRef.slice("custom:".length);
+        const { data: custom } = await supabase
+          .from("custom_formations")
+          .select("name, slots")
+          .eq("id", customId)
+          .maybeSingle();
+        if (custom?.slots) {
+          setCustomFormation({ name: custom.name || "Custom", slots: custom.slots as any[] });
+        } else {
+          setLoadError("Custom formation not found");
+        }
+      }
     })();
   }, [id]);
 
   const formation = useMemo(() => {
-    if (!selection?.formation || !selection?.formation_format) return undefined;
+    if (!selection) return undefined;
+    if (customFormation) {
+      return { name: customFormation.name, slots: customFormation.slots } as any;
+    }
+    if (!selection.formation || !selection.formation_format) return undefined;
     return findFormation(selection.formation, selection.formation_format);
-  }, [selection]);
+  }, [selection, customFormation]);
 
   const orderedStarters = useMemo(() => {
     if (!selection || !formation) return [];
