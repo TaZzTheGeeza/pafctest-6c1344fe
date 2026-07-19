@@ -3,11 +3,12 @@ import { useTeamFixtures, type FAFixture } from "@/hooks/useTeamFixtures";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Check, X, HelpCircle, Loader2, MapPin, Clock, Navigation, ChevronDown, ChevronUp, Trash2, CalendarPlus, Users, Send, Pencil, Calendar } from "lucide-react";
+import { Check, X, HelpCircle, Loader2, MapPin, Clock, Navigation, ChevronDown, ChevronUp, Trash2, CalendarPlus, Users, Send, Pencil, Calendar, ClipboardList } from "lucide-react";
 
 import { toast } from "sonner";
 import { AddAvailabilityEventDialog } from "./AddAvailabilityEventDialog";
 import { ReminderPreviewDialog } from "./ReminderPreviewDialog";
+import { CoachFixturePanel } from "@/components/CoachFixturePanel";
 
 interface Props {
   teamSlug: string;
@@ -96,6 +97,7 @@ export function FixtureAvailability({ teamSlug }: Props) {
   const [typeFilter, setTypeFilter] = useState<"all" | "fixtures" | "events">("all");
   const [statusFilter, setStatusFilter] = useState<"all" | "available" | "maybe" | "unavailable" | "none">("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [coachFixture, setCoachFixture] = useState<FAFixture | null>(null);
   const { data: teamData, isLoading: fixturesLoading, isError: fixturesError } = useTeamFixtures(teamSlug);
 
   const getFriendlyDate = (date: string) => {
@@ -616,9 +618,33 @@ export function FixtureAvailability({ teamSlug }: Props) {
               <div className="flex flex-wrap items-center gap-2">
                 {(isCoach || isAdmin) && (
                   <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const opponentDisplay = item.isCustom
+                        ? item.title.replace(/^(vs |@ )/i, "")
+                        : item.opponent;
+                      setCoachFixture({
+                        date: item.date,
+                        time: item.time,
+                        homeTeam: item.isHome ? "Peterborough Athletic" : opponentDisplay,
+                        awayTeam: item.isHome ? opponentDisplay : "Peterborough Athletic",
+                        venue: item.venue,
+                        competition: item.isCustom ? "Friendly / Event" : "",
+                        type: "fixture",
+                      });
+                    }}
+                    title="Squad selection · Tactics whiteboard · Match report · POTM · Notes"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors text-xs font-semibold shadow-md whitespace-nowrap"
+                  >
+                    <ClipboardList className="h-3.5 w-3.5" />
+                    <span>Coach Panel</span>
+                  </button>
+                )}
+                {(isCoach || isAdmin) && (
+                  <button
                     onClick={(e) => { e.stopPropagation(); setReminderItem(item); }}
                     title="Preview & remind non-responders"
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors text-xs font-semibold shadow-md whitespace-nowrap"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-border transition-colors text-xs font-semibold whitespace-nowrap"
                   >
                     <Send className="h-3.5 w-3.5" />
                     <span>Remind</span>
@@ -780,6 +806,16 @@ export function FixtureAvailability({ teamSlug }: Props) {
           itemTime={reminderItem.time}
           itemVenue={reminderItem.venue}
           friendlyDate={getFriendlyDate(reminderItem.date)}
+        />
+      )}
+
+      {coachFixture && (
+        <CoachFixturePanel
+          open={!!coachFixture}
+          onClose={() => setCoachFixture(null)}
+          fixture={coachFixture}
+          teamSlug={teamSlug}
+          teamName={teamSlug.toUpperCase().replace(/-/g, " ")}
         />
       )}
     </div>

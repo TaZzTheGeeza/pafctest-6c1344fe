@@ -12,7 +12,7 @@ import { LeagueTable } from "@/components/LeagueTable";
 import { useTeamFixtures, FAFixture } from "@/hooks/useTeamFixtures";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { CoachFixturePanel } from "@/components/CoachFixturePanel";
+
 import { MatchDetailPanel } from "@/components/MatchDetailPanel";
 import clubLogo from "@/assets/club-logo.jpg";
 import { SEO } from "@/components/SEO";
@@ -97,7 +97,6 @@ function TeamDetail({ team }: { team: TeamData }) {
   const { data: liveData, isLoading: fixturesLoading } = useTeamFixtures(team.slug);
   const { isCoach, isAdmin, isPlayer } = useAuth();
   const canManage = isCoach || isAdmin;
-  const [coachFixture, setCoachFixture] = useState<FAFixture | null>(null);
   const [expandedResult, setExpandedResult] = useState<number | null>(null);
 
   // Manual events entered via Hub → Fixtures & Events (friendlies, tournaments, etc.)
@@ -249,18 +248,6 @@ function TeamDetail({ team }: { team: TeamData }) {
                                 </div>
                               </div>
                               <div className="flex items-center gap-2 text-xs text-muted-foreground shrink-0">
-                                {canManage && (
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setCoachFixture(fix);
-                                    }}
-                                    className="text-[11px] font-display font-bold tracking-wider uppercase bg-primary text-primary-foreground hover:bg-primary/90 rounded-md px-3 py-1.5 transition-colors shadow-md whitespace-nowrap"
-                                    title="Squad selection · Tactics whiteboard · Training notes"
-                                  >
-                                    Coach Panel
-                                  </button>
-                                )}
                                 <span className={`font-bold ${isHome ? "text-green-400" : "text-blue-400"}`}>
                                   {isHome ? "H" : "A"}
                                 </span>
@@ -304,17 +291,6 @@ function TeamDetail({ team }: { team: TeamData }) {
                                   </p>
                                   <p className="text-[10px] text-muted-foreground">{formatFADate(res.date)}</p>
                                 </div>
-                                {canManage && (
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setCoachFixture(res);
-                                    }}
-                                    className="text-[10px] font-display text-primary hover:text-primary/80 border border-primary/30 rounded px-2 py-1 transition-colors shrink-0"
-                                  >
-                                    📋 Report
-                                  </button>
-                                )}
                                 <span className="font-mono font-bold text-sm">{res.homeScore} - {res.awayScore}</span>
                                 <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground transition-transform ${isExpanded ? "rotate-180" : ""}`} />
                               </div>
@@ -368,16 +344,6 @@ function TeamDetail({ team }: { team: TeamData }) {
         </div>
       </main>
 
-      {/* Coach Fixture Panel */}
-      {coachFixture && (
-        <CoachFixturePanel
-          open={!!coachFixture}
-          onClose={() => setCoachFixture(null)}
-          fixture={coachFixture}
-          teamSlug={team.slug}
-          teamName={team.name}
-        />
-      )}
 
       <Footer />
     </div>
