@@ -336,6 +336,9 @@ export function FormationBuilder({
             </Button>
           </>
         )}
+      </div>
+
+
 
       <div className="flex items-center justify-between text-[11px] text-muted-foreground">
         <span>{startersOnPitch} / {requiredStarters} on pitch · {bench.length} on bench</span>
