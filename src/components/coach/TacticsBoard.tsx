@@ -425,7 +425,10 @@ export function TacticsBoard({
       </div>
 
       {/* Pitch */}
-      <div className="relative rounded-lg overflow-hidden border mx-auto" style={{ aspectRatio: "3 / 4", maxWidth: 520 }}>
+      <div
+        className={`relative rounded-lg overflow-hidden border mx-auto ${isFullscreen ? "flex-1 min-h-0 h-full" : ""}`}
+        style={isFullscreen ? { aspectRatio: "3 / 4", maxHeight: "100%" } : { aspectRatio: "3 / 4", maxWidth: 520 }}
+      >
         <svg
           ref={svgRef}
           viewBox="0 0 100 100"
