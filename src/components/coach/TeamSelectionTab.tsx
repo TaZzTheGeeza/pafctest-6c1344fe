@@ -252,7 +252,7 @@ export function TeamSelectionTab({
         />
       </div>
 
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-2 gap-2">
         <Button variant="outline" onClick={handleSaveDraft} disabled={saving || publishing} size="sm">
           {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Save className="h-3.5 w-3.5 mr-1" />}
           Save draft
@@ -261,6 +261,29 @@ export function TeamSelectionTab({
           <Presentation className="h-3.5 w-3.5 mr-1" />
           Reveal
         </Button>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        {onSendToTactics && (
+          <Button
+            variant="secondary"
+            size="sm"
+            disabled={saving || publishing || positions.filter((p) => p.slot_id).length === 0}
+            onClick={async () => {
+              setSaving(true);
+              try {
+                await persist("draft");
+                queryClient.invalidateQueries({ queryKey: ["team-selection", teamSlug, fixture.date, opponent] });
+                onSendToTactics();
+              } catch (err: any) {
+                toast.error(err.message || "Failed to send");
+              } finally {
+                setSaving(false);
+              }
+            }}
+          >
+            → Tactics Board
+          </Button>
+        )}
         <Button onClick={handlePublish} disabled={saving || publishing} size="sm">
           {publishing ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Send className="h-3.5 w-3.5 mr-1" />}
           Publish
