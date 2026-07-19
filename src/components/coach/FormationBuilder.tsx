@@ -403,9 +403,10 @@ export function FormationBuilder({
                 type="button"
                 onClick={() => {
                   if (editing) return;
-                  if (selectedPlayerId) setPlayerToSlot(selectedPlayerId, s.id);
-                  else if (filled) removeFromPitch(filled.player_id);
+                  if (selectedPlayerId) { setPlayerToSlot(selectedPlayerId, s.id); return; }
+                  setPickerSlotId(s.id);
                 }}
+
                 onPointerDown={(e) => onSlotPointerDown(e, s.id)}
                 onPointerMove={onSlotPointerMove}
                 onPointerUp={onSlotPointerUp}
