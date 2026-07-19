@@ -49,9 +49,9 @@ const colorMap: Record<Color, string> = {
 const uid = () => Math.random().toString(36).slice(2, 10);
 
 export function TacticsBoard({
-  teamSlug, opponent, fixture,
+  teamSlug, opponent, fixture, importSignal,
 }: {
-  teamSlug: string; opponent: string; fixture: FAFixture;
+  teamSlug: string; opponent: string; fixture: FAFixture; importSignal?: number;
 }) {
   const { data: roster = [] } = useTeamRoster(teamSlug);
   const queryClient = useQueryClient();
@@ -230,6 +230,13 @@ export function TacticsBoard({
       toast.error(err.message || "Failed to import lineup");
     }
   };
+
+  useEffect(() => {
+    if (importSignal && importSignal > 0) {
+      importLineup();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [importSignal]);
 
   const eraseAt = (strokeId?: string, tokenId?: string) => {
     if (tool !== "eraser") return;
