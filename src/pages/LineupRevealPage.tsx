@@ -158,11 +158,12 @@ export default function LineupRevealPage() {
       </div>
 
       {/* Pitch */}
-      <div className="flex-1 flex items-center justify-center p-4">
+      <div className="flex-1 flex items-center justify-center p-4 min-h-0">
         <div
-          className="relative h-full max-h-[80vh]"
+          className="relative h-full max-h-full w-auto"
           style={{
             aspectRatio: "3 / 4",
+            maxWidth: "100%",
             background: "linear-gradient(180deg, #0d3d1a 0%, #0a2f14 100%)",
             borderRadius: "12px",
             overflow: "hidden",
@@ -191,11 +192,7 @@ export default function LineupRevealPage() {
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   transition={{ type: "spring", stiffness: 260, damping: 18, delay: 0.05 }}
                   className="absolute -translate-x-1/2 -translate-y-1/2"
-                  style={{
-                    left: `${Math.min(93, Math.max(7, slot.x))}%`,
-                    top: `${Math.min(94, Math.max(6, slot.y))}%`,
-                    width: "13%",
-                  }}
+                  style={{ left: `${slot.x}%`, top: `${slot.y}%`, width: "18%" }}
                 >
                   <div className="relative aspect-square rounded-full bg-primary text-primary-foreground flex flex-col items-center justify-center shadow-2xl ring-4 ring-primary/50">
                     <span className="text-[14px] sm:text-[15px] font-mono opacity-90 leading-none">
