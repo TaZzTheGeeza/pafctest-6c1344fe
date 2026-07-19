@@ -10,9 +10,10 @@ import {
 } from "@/components/ui/select";
 import {
   Undo2, Trash2, Save, MousePointer2, Pencil, MoveRight, Circle,
-  Users2, Loader2, BookOpen, Camera, Sun,
+  Users2, Loader2, BookOpen, Camera, Sun, Download,
 } from "lucide-react";
 import { useTeamRoster } from "@/hooks/useTeamRoster";
+import { FORMATIONS, type SlotDef } from "@/lib/formations";
 import type { FAFixture } from "@/hooks/useTeamFixtures";
 
 type Tool = "select" | "draw" | "arrow" | "zone" | "eraser";
