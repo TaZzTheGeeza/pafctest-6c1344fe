@@ -44,11 +44,18 @@ export default function LineupRevealPage() {
         .from("team_selections").select("*").eq("id", id).maybeSingle();
       if (error || !data) { setLoadError("Lineup not found"); return; }
       setSelection(data as any);
-      const ids = ((data as any).positions ?? []).map((p: PositionEntry) => p.player_id);
-      if (ids.length > 0) {
+      const allPositions = ((data as any).positions ?? []) as PositionEntry[];
+      const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      const realIds = allPositions.map((p) => p.player_id).filter((pid) => UUID_RE.test(pid));
+      const guestRoster: RosterPlayer[] = allPositions
+        .filter((p) => !UUID_RE.test(p.player_id))
+        .map((p) => ({ id: p.player_id, first_name: (p as any).guest_name || "Guest", shirt_number: null }));
+      if (realIds.length > 0) {
         const { data: players } = await supabase
-          .from("player_stats").select("id, first_name, shirt_number").in("id", ids);
-        setRoster((players as any) ?? []);
+          .from("player_stats").select("id, first_name, shirt_number").in("id", realIds);
+        setRoster([...(players as any ?? []), ...guestRoster]);
+      } else {
+        setRoster(guestRoster);
       }
 
       // Resolve custom formation reference (custom:UUID)
@@ -184,7 +191,11 @@ export default function LineupRevealPage() {
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   transition={{ type: "spring", stiffness: 260, damping: 18, delay: 0.05 }}
                   className="absolute -translate-x-1/2 -translate-y-1/2"
-                  style={{ left: `${slot.x}%`, top: `${slot.y}%`, width: "18%" }}
+                  style={{
+                    left: `${Math.min(93, Math.max(7, slot.x))}%`,
+                    top: `${Math.min(94, Math.max(6, slot.y))}%`,
+                    width: "13%",
+                  }}
                 >
                   <div className="relative aspect-square rounded-full bg-primary text-primary-foreground flex flex-col items-center justify-center shadow-2xl ring-4 ring-primary/50">
                     <span className="text-[14px] sm:text-[15px] font-mono opacity-90 leading-none">
