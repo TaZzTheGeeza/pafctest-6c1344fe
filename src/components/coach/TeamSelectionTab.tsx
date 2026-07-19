@@ -72,8 +72,9 @@ export function TeamSelectionTab({
   const buildPayload = (status: "draft" | "published") => {
     // legacy `players` column: keep in sync with names of everyone in squad
     const legacyNames = positions
-      .map((p) => roster.find((r) => r.id === p.player_id)?.first_name)
+      .map((p) => p.guest_name || roster.find((r) => r.id === p.player_id)?.first_name)
       .filter(Boolean) as string[];
+
     return {
       team_slug: teamSlug,
       fixture_date: fixture.date,
@@ -110,8 +111,11 @@ export function TeamSelectionTab({
   const recordAppearances = async () => {
     const [d, m, y] = fixture.date.split("/");
     const matchDate = y.length === 4 ? `${y}-${m}-${d}` : `20${y}-${m}-${d}`;
-    const appearanceStats = positions.map((p) => ({
+    const appearanceStats = positions
+      .filter((p) => !p.player_id.startsWith("guest:"))
+      .map((p) => ({
       player_stat_id: p.player_id,
+
       team_slug: teamSlug,
       match_date: matchDate,
       opponent,

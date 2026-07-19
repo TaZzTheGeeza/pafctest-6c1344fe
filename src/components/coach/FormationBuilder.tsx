@@ -28,7 +28,12 @@ export interface PositionEntry {
   slot_id: string;         // "" for bench
   role: "starter" | "sub";
   notes?: string;
+  guest_name?: string;     // for fill-in players not in the roster
 }
+
+const GUEST_PREFIX = "guest:";
+export const isGuestId = (id: string) => id.startsWith(GUEST_PREFIX);
+
 
 
 interface Props {
@@ -137,11 +142,27 @@ export function FormationBuilder({
   };
 
   const playerLabel = (id: string) => {
+    if (isGuestId(id)) {
+      const entry = byPlayer.get(id);
+      return entry?.guest_name || "Fill-in";
+    }
     const p = roster.find((r) => r.id === id);
     if (!p) return "?";
     return p.first_name;
   };
-  const playerNumber = (id: string) => roster.find((r) => r.id === id)?.shirt_number ?? null;
+  const playerNumber = (id: string) => {
+    if (isGuestId(id)) return "G";
+    return roster.find((r) => r.id === id)?.shirt_number ?? null;
+  };
+
+  const addGuest = () => {
+    const name = window.prompt("Fill-in player name")?.trim();
+    if (!name) return;
+    const id = `${GUEST_PREFIX}${crypto.randomUUID()}`;
+    onChange([...positions, { player_id: id, slot_id: "", role: "sub", guest_name: name }]);
+    setSelectedPlayerId(id);
+  };
+
 
   const startersOnPitch = positions.filter((p) => p.slot_id).length;
   const requiredStarters = slots.length;
@@ -509,9 +530,16 @@ export function FormationBuilder({
 
       {/* Roster picker */}
       <div>
-        <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">
-          Roster ({rosterNotInSquad.length} not selected)
-        </Label>
+        <div className="flex items-center justify-between">
+          <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">
+            Roster ({rosterNotInSquad.length} not selected)
+          </Label>
+          <Button type="button" size="sm" variant="outline" className="h-6 text-[11px]" onClick={addGuest}>
+            <Plus className="h-3 w-3 mr-1" />Add fill-in
+          </Button>
+        </div>
+        {roster.length === 0 && rosterNotInSquad.length === 0 ? null : null}
+
         {roster.length === 0 ? (
           <p className="text-xs text-amber-600 bg-amber-50 dark:bg-amber-950/30 rounded-md p-2 mt-1">
             No players in roster. Add players via the Coach Panel first.
