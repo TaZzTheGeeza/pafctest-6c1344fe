@@ -44,11 +44,18 @@ export default function LineupRevealPage() {
         .from("team_selections").select("*").eq("id", id).maybeSingle();
       if (error || !data) { setLoadError("Lineup not found"); return; }
       setSelection(data as any);
-      const ids = ((data as any).positions ?? []).map((p: PositionEntry) => p.player_id);
-      if (ids.length > 0) {
+      const allPositions = ((data as any).positions ?? []) as PositionEntry[];
+      const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      const realIds = allPositions.map((p) => p.player_id).filter((pid) => UUID_RE.test(pid));
+      const guestRoster: RosterPlayer[] = allPositions
+        .filter((p) => !UUID_RE.test(p.player_id))
+        .map((p) => ({ id: p.player_id, first_name: (p as any).guest_name || "Guest", shirt_number: null }));
+      if (realIds.length > 0) {
         const { data: players } = await supabase
-          .from("player_stats").select("id, first_name, shirt_number").in("id", ids);
-        setRoster((players as any) ?? []);
+          .from("player_stats").select("id, first_name, shirt_number").in("id", realIds);
+        setRoster([...(players as any ?? []), ...guestRoster]);
+      } else {
+        setRoster(guestRoster);
       }
 
       // Resolve custom formation reference (custom:UUID)
