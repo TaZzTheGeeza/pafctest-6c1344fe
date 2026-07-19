@@ -187,18 +187,30 @@ export function TacticsBoard({
       const starters = positions.filter((p) => p.slot_id);
       if (starters.length === 0) { toast.error("No starters placed on the formation"); return; }
 
-      // Resolve slot definitions
-      let slots: SlotDef[] | null =
-        FORMATIONS.find((f) => f.name === sel.formation && f.format === sel.formation_format)?.slots ?? null;
-      if (!slots && sel.formation_format) {
+      // Resolve slot definitions (handles built-in and custom "custom:UUID" refs)
+      let slots: SlotDef[] | null = null;
+      const formationRef = sel.formation || "";
+      if (formationRef.startsWith("custom:")) {
+        const customId = formationRef.slice("custom:".length);
         const { data: custom } = await supabase
           .from("custom_formations")
           .select("slots")
-          .eq("team_slug", teamSlug)
-          .eq("format", sel.formation_format)
-          .eq("name", sel.formation || "")
+          .eq("id", customId)
           .maybeSingle();
         if (custom?.slots) slots = custom.slots as unknown as SlotDef[];
+      } else {
+        slots =
+          FORMATIONS.find((f) => f.name === formationRef && f.format === sel.formation_format)?.slots ?? null;
+        if (!slots && sel.formation_format) {
+          const { data: custom } = await supabase
+            .from("custom_formations")
+            .select("slots")
+            .eq("team_slug", teamSlug)
+            .eq("format", sel.formation_format)
+            .eq("name", formationRef)
+            .maybeSingle();
+          if (custom?.slots) slots = custom.slots as unknown as SlotDef[];
+        }
       }
       if (!slots) { toast.error("Formation layout not found"); return; }
 
