@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -10,7 +11,7 @@ import {
 } from "@/components/ui/select";
 import {
   Undo2, Trash2, Save, MousePointer2, Pencil, MoveRight, Circle,
-  Users2, Loader2, BookOpen, Camera, Sun, Download,
+  Users2, Loader2, BookOpen, Camera, Sun, Download, Maximize2, Minimize2, Sparkles,
 } from "lucide-react";
 import { useTeamRoster } from "@/hooks/useTeamRoster";
 import { FORMATIONS, type SlotDef } from "@/lib/formations";
