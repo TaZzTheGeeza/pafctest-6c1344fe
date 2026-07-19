@@ -189,7 +189,15 @@ export default function HubPage() {
     };
     const normalized = [...new Set(rawSlugs.map((s) => canonicalMap[s] || s))];
     const teamOrder = TEAMS.map((t) => t.slug);
-    const slugs = normalized.filter((s) => teamOrder.includes(s)).sort((a, b) => teamOrder.indexOf(a) - teamOrder.indexOf(b));
+    // Keep every team the user is a member of — even if not in the TEAMS constant.
+    const slugs = normalized.sort((a, b) => {
+      const ai = teamOrder.indexOf(a);
+      const bi = teamOrder.indexOf(b);
+      if (ai === -1 && bi === -1) return a.localeCompare(b);
+      if (ai === -1) return 1;
+      if (bi === -1) return -1;
+      return ai - bi;
+    });
     setMyTeams(slugs);
     if (!activeTeam && slugs.length > 0) setActiveTeam(slugs[0]);
     setLoading(false);
