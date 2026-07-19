@@ -109,8 +109,11 @@ export default function LineupRevealPage() {
 
   if (!selection || !formation) {
     return (
-      <div className="fixed inset-0 bg-black text-white flex items-center justify-center">
-        <p className="text-sm text-white/60">Loading lineup…</p>
+      <div className="fixed inset-0 bg-black text-white flex flex-col items-center justify-center gap-3">
+        <p className="text-sm text-white/60">{loadError ?? "Loading lineup…"}</p>
+        {loadError && (
+          <Button size="sm" variant="secondary" onClick={() => navigate(-1)}>Back</Button>
+        )}
       </div>
     );
   }
