@@ -351,8 +351,9 @@ export function FormationBuilder({
 
       {/* Pitch */}
       <div
+        ref={pitchRef}
         className="relative w-full rounded-lg overflow-hidden border border-border select-none"
-        style={{ aspectRatio: "3 / 4", background: "linear-gradient(180deg, #0d3d1a 0%, #0a2f14 100%)" }}
+        style={{ aspectRatio: "3 / 4", background: "linear-gradient(180deg, #0d3d1a 0%, #0a2f14 100%)", touchAction: editing ? "none" : "auto" }}
       >
         {/* Pitch markings */}
         <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 w-full h-full pointer-events-none">
@@ -360,58 +361,78 @@ export function FormationBuilder({
             <rect x="2" y="2" width="96" height="96" />
             <line x1="2" y1="50" x2="98" y2="50" />
             <circle cx="50" cy="50" r="9" />
-            {/* Own box */}
             <rect x="25" y="2" width="50" height="14" />
             <rect x="38" y="2" width="24" height="6" />
-            {/* Opp box */}
             <rect x="25" y="84" width="50" height="14" />
             <rect x="38" y="92" width="24" height="6" />
           </g>
         </svg>
 
-        {/* Empty slots */}
         {slots.map((s) => {
           const filled = bySlot.get(s.id);
           return (
-            <button
+            <div
               key={s.id}
-              type="button"
-              onClick={() => {
-                if (selectedPlayerId) setPlayerToSlot(selectedPlayerId, s.id);
-                else if (filled) removeFromPitch(filled.player_id);
-              }}
-              className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full flex flex-col items-center justify-center text-center transition-all"
-              style={{
-                left: `${s.x}%`,
-                top: `${s.y}%`,
-                width: "18%",
-                aspectRatio: "1 / 1",
-              }}
+              className="absolute -translate-x-1/2 -translate-y-1/2"
+              style={{ left: `${s.x}%`, top: `${s.y}%`, width: "18%", aspectRatio: "1 / 1" }}
             >
-              {filled ? (
-                <div className="relative w-full h-full rounded-full bg-primary text-primary-foreground flex flex-col items-center justify-center shadow-lg ring-2 ring-primary/50 hover:ring-white/70">
-                  <span className="text-[10px] font-mono opacity-80 leading-none">
-                    {playerNumber(filled.player_id) ?? s.label}
-                  </span>
-                  <span className="text-[11px] font-bold leading-tight px-1 truncate max-w-full">
-                    {playerLabel(filled.player_id)}
-                  </span>
-                  {captainId === filled.player_id && (
-                    <Star className="absolute -top-1 -right-1 h-3.5 w-3.5 fill-yellow-400 stroke-yellow-500" />
-                  )}
-                  {viceCaptainId === filled.player_id && (
-                    <StarHalf className="absolute -top-1 -right-1 h-3.5 w-3.5 fill-yellow-300 stroke-yellow-400" />
-                  )}
-                </div>
-              ) : (
-                <div className="w-full h-full rounded-full border-2 border-dashed border-white/40 hover:border-white/80 flex items-center justify-center">
-                  <span className="text-[10px] text-white/70 font-semibold">{s.label}</span>
-                </div>
+              <button
+                type="button"
+                onClick={() => {
+                  if (editing) return;
+                  if (selectedPlayerId) setPlayerToSlot(selectedPlayerId, s.id);
+                  else if (filled) removeFromPitch(filled.player_id);
+                }}
+                onPointerDown={(e) => onSlotPointerDown(e, s.id)}
+                onPointerMove={onSlotPointerMove}
+                onPointerUp={onSlotPointerUp}
+                onPointerCancel={onSlotPointerUp}
+                className={`w-full h-full rounded-full flex flex-col items-center justify-center text-center transition-all ${editing ? "cursor-move" : ""}`}
+              >
+                {filled && !editing ? (
+                  <div className="relative w-full h-full rounded-full bg-primary text-primary-foreground flex flex-col items-center justify-center shadow-lg ring-2 ring-primary/50 hover:ring-white/70">
+                    <span className="text-[10px] font-mono opacity-80 leading-none">
+                      {playerNumber(filled.player_id) ?? s.label}
+                    </span>
+                    <span className="text-[11px] font-bold leading-tight px-1 truncate max-w-full">
+                      {playerLabel(filled.player_id)}
+                    </span>
+                    {captainId === filled.player_id && (
+                      <Star className="absolute -top-1 -right-1 h-3.5 w-3.5 fill-yellow-400 stroke-yellow-500" />
+                    )}
+                    {viceCaptainId === filled.player_id && (
+                      <StarHalf className="absolute -top-1 -right-1 h-3.5 w-3.5 fill-yellow-300 stroke-yellow-400" />
+                    )}
+                  </div>
+                ) : (
+                  <div className={`w-full h-full rounded-full border-2 ${editing ? "border-yellow-400 bg-yellow-400/20" : "border-dashed border-white/40 hover:border-white/80"} flex items-center justify-center`}>
+                    <input
+                      type="text"
+                      value={s.label}
+                      readOnly={!editing}
+                      onChange={(e) => updateSlot(s.id, { label: e.target.value.slice(0, 4).toUpperCase() })}
+                      onPointerDown={(e) => e.stopPropagation()}
+                      onClick={(e) => e.stopPropagation()}
+                      className="w-10 bg-transparent text-center text-[10px] text-white/90 font-semibold outline-none border-0 p-0"
+                    />
+                  </div>
+                )}
+              </button>
+              {editing && (
+                <button
+                  type="button"
+                  onClick={() => removeSlot(s.id)}
+                  className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center shadow"
+                  aria-label="Remove position"
+                >
+                  <X className="h-3 w-3" />
+                </button>
               )}
-            </button>
+            </div>
           );
         })}
       </div>
+
 
       {/* Placed player toolbar */}
       {positions.some((p) => p.slot_id) && (
