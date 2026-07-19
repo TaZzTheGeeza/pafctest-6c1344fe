@@ -231,6 +231,13 @@ export function TacticsBoard({
     }
   };
 
+  useEffect(() => {
+    if (importSignal && importSignal > 0) {
+      importLineup();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [importSignal]);
+
   const eraseAt = (strokeId?: string, tokenId?: string) => {
     if (tool !== "eraser") return;
     setBoard((b) => ({
