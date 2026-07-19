@@ -7,10 +7,14 @@ import { X, Play, RotateCcw, ChevronRight } from "lucide-react";
 import { findFormation, type FormationFormat } from "@/lib/formations";
 import type { PositionEntry } from "@/components/coach/FormationBuilder";
 
-const REVEAL_TOKEN_RADIUS = 8;
-const REVEAL_TOKEN_SAFE_INSET = REVEAL_TOKEN_RADIUS + 1;
-const clampRevealPosition = (value: number) =>
-  Math.min(100 - REVEAL_TOKEN_SAFE_INSET, Math.max(REVEAL_TOKEN_SAFE_INSET, value));
+const REVEAL_PITCH_WIDTH = 75;
+const REVEAL_TOKEN_RADIUS = 7.2;
+const REVEAL_TOKEN_PADDING = 0.8;
+const REVEAL_SAFE_X = ((REVEAL_TOKEN_RADIUS + REVEAL_TOKEN_PADDING) / REVEAL_PITCH_WIDTH) * 100;
+const REVEAL_SAFE_Y = REVEAL_TOKEN_RADIUS + REVEAL_TOKEN_PADDING;
+const clampRevealX = (value: number) => Math.min(100 - REVEAL_SAFE_X, Math.max(REVEAL_SAFE_X, value));
+const clampRevealY = (value: number) => Math.min(100 - REVEAL_SAFE_Y, Math.max(REVEAL_SAFE_Y, value));
+const revealSvgX = (value: number) => (value / 100) * REVEAL_PITCH_WIDTH;
 
 interface Selection {
   id: string;
@@ -172,22 +176,22 @@ export default function LineupRevealPage() {
             overflow: "hidden",
           }}
         >
-          <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 w-full h-full pointer-events-none">
+          <svg viewBox="0 0 75 100" preserveAspectRatio="xMidYMid meet" className="absolute inset-0 w-full h-full pointer-events-none">
             <g stroke="rgba(255,255,255,0.35)" strokeWidth="0.3" fill="none">
-              <rect x="2" y="2" width="96" height="96" />
-              <line x1="2" y1="50" x2="98" y2="50" />
-              <circle cx="50" cy="50" r="9" />
-              <rect x="25" y="2" width="50" height="14" />
-              <rect x="38" y="2" width="24" height="6" />
-              <rect x="25" y="84" width="50" height="14" />
-              <rect x="38" y="92" width="24" height="6" />
+              <rect x="1.5" y="2" width="72" height="96" />
+              <line x1="1.5" y1="50" x2="73.5" y2="50" />
+              <circle cx="37.5" cy="50" r="9" />
+              <rect x="18.75" y="2" width="37.5" height="14" />
+              <rect x="28.5" y="2" width="18" height="6" />
+              <rect x="18.75" y="84" width="37.5" height="14" />
+              <rect x="28.5" y="92" width="18" height="6" />
             </g>
             <AnimatePresence>
               {orderedStarters.slice(0, Math.max(shown, 0)).map(({ slot, entry }) => {
                 const isCap = selection.captain_id === entry.player_id;
                 const isVice = selection.vice_captain_id === entry.player_id;
-                const safeX = clampRevealPosition(slot.x);
-                const safeY = clampRevealPosition(slot.y);
+                const safeX = revealSvgX(clampRevealX(slot.x));
+                const safeY = clampRevealY(slot.y);
                 const numberLabel = playerNumber(entry.player_id) ?? slot.label;
                 const nameLabel = playerName(entry.player_id);
 
