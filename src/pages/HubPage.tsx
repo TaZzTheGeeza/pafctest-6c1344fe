@@ -49,7 +49,7 @@ const tabs = [
   { id: "carpool", label: "Carpool", icon: Car },
   { id: "attendance", label: "Attendance", icon: TrendingUp },
   { id: "guardian", label: "Guardian", icon: UserPlus },
-  { id: "pitch-bookings", label: "Pitch Bookings", icon: MapPin },
+  
   { id: "meetings", label: "Meetings", icon: Video },
   { id: "awards", label: "Awards", icon: Award },
   { id: "player", label: "Player Zone", icon: User },
