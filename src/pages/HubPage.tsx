@@ -51,7 +51,6 @@ const tabs = [
   { id: "guardian", label: "Guardian", icon: UserPlus },
   { id: "meetings", label: "Meetings", icon: Video },
 
-  { id: "meetings", label: "Meetings", icon: Video },
   { id: "awards", label: "Awards", icon: Award },
   { id: "player", label: "Player Zone", icon: User },
 ];
