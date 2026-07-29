@@ -154,13 +154,14 @@ export function TeamSelectionTab({
       await recordAppearances();
       queryClient.invalidateQueries({ queryKey: ["team-roster"] });
       queryClient.invalidateQueries({ queryKey: ["team-selection", teamSlug, fixture.date, opponent] });
+      const revealLink = `/lineup-reveal/${id}`;
       notifyTeamMembers({
         teamSlug,
         notification: {
           title: "Squad Announced",
           message: `Team selection published for vs ${opponent}`,
           type: "info",
-          link: "/hub?tab=availability",
+          link: revealLink,
         },
         email: {
           templateName: "team-selection-published",
@@ -170,6 +171,7 @@ export function TeamSelectionTab({
             formation: formationName || undefined,
             teamName: teamSlug,
             playerCount: positions.length,
+            revealLink,
           },
           idempotencyPrefix: `team-sel-${teamSlug}-${fixture.date}-${opponent}`,
         },
