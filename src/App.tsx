@@ -154,7 +154,7 @@ function AppContent() {
         <Route path="/whats-new-admin" element={<RoleGate requiredRole="admin"><WhatsNewAdminPage /></RoleGate>} />
         <Route path="/pitch-bookings" element={<PitchBookingsPage />} />
         <Route path="/pitch-bookings-admin" element={<PitchBookingsAdminPage />} />
-        <Route path="/lineup-reveal/:id" element={<RoleGate requiredRole="authenticated"><LineupRevealPage /></RoleGate>} />
+        <Route path="/lineup-reveal/:id" element={<RoleGate requiredRole="coach"><LineupRevealPage /></RoleGate>} />
         <Route path="/tactics-reveal/:id" element={<RoleGate requiredRole="coach"><TacticsRevealPage /></RoleGate>} />
         <Route path="*" element={<NotFound />} />
       </Routes>

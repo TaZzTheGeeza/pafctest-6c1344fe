@@ -3,7 +3,7 @@ import { useTeamFixtures, type FAFixture } from "@/hooks/useTeamFixtures";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Check, X, HelpCircle, Loader2, MapPin, Clock, Navigation, ChevronDown, ChevronUp, Trash2, CalendarPlus, Users, Send, Pencil, Calendar, ClipboardList, Eye } from "lucide-react";
+import { Check, X, HelpCircle, Loader2, MapPin, Clock, Navigation, ChevronDown, ChevronUp, Trash2, CalendarPlus, Users, Send, Pencil, Calendar, ClipboardList } from "lucide-react";
 
 import { toast } from "sonner";
 import { AddAvailabilityEventDialog } from "./AddAvailabilityEventDialog";
@@ -207,24 +207,6 @@ export function FixtureAvailability({ teamSlug }: Props) {
     },
     staleTime: 1000 * 60 * 60,
   });
-
-  const { data: publishedSelections = [] } = useQuery({
-    queryKey: ["published-team-selections", teamSlug],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("team_selections")
-        .select("id, fixture_date, opponent, status")
-        .eq("team_slug", teamSlug)
-        .eq("status", "published");
-      if (error) throw error;
-      return (data || []) as { id: string; fixture_date: string; opponent: string; status: string }[];
-    },
-    enabled: !!user,
-  });
-
-  const publishedSelectionMap = Object.fromEntries(
-    publishedSelections.map((s) => [`${s.fixture_date}::${s.opponent}`, s.id])
-  );
 
   const venueOverrideMap = Object.fromEntries(
     venueOverrides.map((v) => [v.venue_name.toUpperCase(), v.full_address])
@@ -550,7 +532,6 @@ export function FixtureAvailability({ teamSlug }: Props) {
         const myStatus = getMyStatus(item, selectedRespondingFor);
         const summary = getTeamSummary(item);
         const isExpanded = expandedFixture === item.key;
-        const selectionId = publishedSelectionMap[`${item.date}::${item.opponent}`];
 
         return (
           <div key={item.key} className="bg-card border border-border rounded-xl p-4">
@@ -657,19 +638,6 @@ export function FixtureAvailability({ teamSlug }: Props) {
                   >
                     <ClipboardList className="h-3.5 w-3.5" />
                     <span>Coach Panel</span>
-                  </button>
-                )}
-                {selectionId && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      window.open(`/lineup-reveal/${selectionId}`, "_blank");
-                    }}
-                    title="View published squad lineup"
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary/10 text-primary hover:bg-primary/20 border border-primary/30 transition-colors text-xs font-semibold whitespace-nowrap"
-                  >
-                    <Eye className="h-3.5 w-3.5" />
-                    <span>View Lineup</span>
                   </button>
                 )}
                 {(isCoach || isAdmin) && (
