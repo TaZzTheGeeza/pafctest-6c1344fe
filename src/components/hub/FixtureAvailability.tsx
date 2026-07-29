@@ -640,6 +640,19 @@ export function FixtureAvailability({ teamSlug }: Props) {
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
+                {getPublishedLineup(item) && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      window.open(`/lineup-reveal/${getPublishedLineup(item)!.id}`, "_blank");
+                    }}
+                    title="View the published lineup for this fixture"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-accent text-accent-foreground hover:bg-accent/80 border border-primary/30 transition-colors text-xs font-semibold whitespace-nowrap"
+                  >
+                    <Eye className="h-3.5 w-3.5" />
+                    <span>View Lineup</span>
+                  </button>
+                )}
                 {(isCoach || isAdmin) && (
                   <button
                     onClick={(e) => {
