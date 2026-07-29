@@ -659,6 +659,19 @@ export function FixtureAvailability({ teamSlug }: Props) {
                     <span>Coach Panel</span>
                   </button>
                 )}
+                {selectionId && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      window.open(`/lineup-reveal/${selectionId}`, "_blank");
+                    }}
+                    title="View published squad lineup"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary/10 text-primary hover:bg-primary/20 border border-primary/30 transition-colors text-xs font-semibold whitespace-nowrap"
+                  >
+                    <Eye className="h-3.5 w-3.5" />
+                    <span>View Lineup</span>
+                  </button>
+                )}
                 {(isCoach || isAdmin) && (
                   <button
                     onClick={(e) => { e.stopPropagation(); setReminderItem(item); }}
