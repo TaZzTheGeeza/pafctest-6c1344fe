@@ -1,10 +1,11 @@
 import * as React from 'npm:react@18.3.1'
 import {
-  Body, Container, Head, Heading, Html, Preview, Text, Section, Hr,
+  Body, Container, Head, Heading, Html, Preview, Text, Section, Hr, Button,
 } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
 
 const SITE_NAME = "Peterborough Athletic FC"
+const SITE_URL = "https://www.pa-fc.uk"
 
 interface Props {
   opponent?: string
@@ -12,9 +13,10 @@ interface Props {
   formation?: string
   teamName?: string
   playerCount?: number
+  revealLink?: string
 }
 
-const TeamSelectionPublishedEmail = ({ opponent, fixtureDate, formation, teamName, playerCount }: Props) => (
+const TeamSelectionPublishedEmail = ({ opponent, fixtureDate, formation, teamName, playerCount, revealLink }: Props) => (
   <Html lang="en" dir="ltr">
     <Head />
     <Preview>Squad announced for {opponent || 'upcoming match'}</Preview>
@@ -34,6 +36,13 @@ const TeamSelectionPublishedEmail = ({ opponent, fixtureDate, formation, teamNam
           {formation && <Text style={matchDetail}>📋 Formation: {formation}</Text>}
           {playerCount && <Text style={matchDetail}>👥 {playerCount} players selected</Text>}
         </Section>
+        {revealLink && (
+          <Section style={{ textAlign: 'center' as const, margin: '0 0 20px' }}>
+            <Button href={`${SITE_URL}${revealLink}`} style={ctaButton}>
+              View the Squad Reveal
+            </Button>
+          </Section>
+        )}
         <Text style={text}>
           Check the PAFC Hub for the full squad list and notes.
         </Text>
@@ -47,7 +56,7 @@ export const template = {
   component: TeamSelectionPublishedEmail,
   subject: (data: Record<string, any>) => `Squad announced: vs ${data.opponent || 'upcoming match'}`,
   displayName: 'Team selection published',
-  previewData: { opponent: 'Yaxley FC', fixtureDate: '20/04/26', formation: '4-3-3', teamName: 'U10 Lions', playerCount: 11 },
+  previewData: { opponent: 'Yaxley FC', fixtureDate: '20/04/26', formation: '4-3-3', teamName: 'U10 Lions', playerCount: 11, revealLink: '/lineup-reveal/123' },
 } satisfies TemplateEntry
 
 const main = { backgroundColor: '#ffffff', fontFamily: "'Inter', Arial, sans-serif" }
@@ -60,4 +69,5 @@ const text = { fontSize: '14px', color: '#55575d', lineHeight: '1.6', margin: '0
 const teamBadge = { fontSize: '11px', fontWeight: '600', color: '#b8860b', backgroundColor: '#fdf6e3', padding: '4px 10px', borderRadius: '4px', display: 'inline-block' as const, margin: '0 0 16px', textTransform: 'uppercase' as const, letterSpacing: '0.05em' }
 const matchBox = { backgroundColor: '#f9f9f9', borderRadius: '8px', padding: '16px 20px', margin: '0 0 20px' }
 const matchDetail = { fontSize: '13px', color: '#555', margin: '0 0 6px' }
+const ctaButton = { backgroundColor: '#b8860b', color: '#ffffff', padding: '12px 24px', borderRadius: '6px', fontSize: '14px', fontWeight: '600', textDecoration: 'none', display: 'inline-block' as const }
 const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
