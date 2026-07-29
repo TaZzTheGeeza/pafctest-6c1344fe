@@ -3,7 +3,7 @@ import { useTeamFixtures, type FAFixture } from "@/hooks/useTeamFixtures";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Check, X, HelpCircle, Loader2, MapPin, Clock, Navigation, ChevronDown, ChevronUp, Trash2, CalendarPlus, Users, Send, Pencil, Calendar, ClipboardList } from "lucide-react";
+import { Check, X, HelpCircle, Loader2, MapPin, Clock, Navigation, ChevronDown, ChevronUp, Trash2, CalendarPlus, Users, Send, Pencil, Calendar, ClipboardList, Eye } from "lucide-react";
 
 import { toast } from "sonner";
 import { AddAvailabilityEventDialog } from "./AddAvailabilityEventDialog";
@@ -215,6 +215,30 @@ export function FixtureAvailability({ teamSlug }: Props) {
   const getDirectionsAddress = (venue: string) => {
     return venueOverrideMap[venue.toUpperCase()] || venue;
   };
+
+  // Published lineups for this team — visible to every team member
+  const { data: publishedLineups = [] } = useQuery({
+    queryKey: ["published-lineups", teamSlug],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("team_selections")
+        .select("id, fixture_date, opponent, formation, published_at")
+        .eq("team_slug", teamSlug)
+        .eq("status", "published");
+      if (error) throw error;
+      return (data ?? []) as { id: string; fixture_date: string; opponent: string; formation: string | null; published_at: string | null }[];
+    },
+    staleTime: 1000 * 30,
+  });
+
+  const opponentKeyFor = (item: AvailabilityItem) =>
+    item.isCustom ? item.title.replace(/^(vs |@ )/i, "") : item.opponent;
+
+  const getPublishedLineup = (item: AvailabilityItem) =>
+    publishedLineups.find(
+      (l) => l.fixture_date === item.date && l.opponent === opponentKeyFor(item)
+    );
+
 
   const venueOverrideMutation = useMutation({
     mutationFn: async ({ venueName, fullAddress }: { venueName: string; fullAddress: string }) => {
@@ -616,6 +640,19 @@ export function FixtureAvailability({ teamSlug }: Props) {
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
+                {getPublishedLineup(item) && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      window.open(`/lineup-reveal/${getPublishedLineup(item)!.id}`, "_blank");
+                    }}
+                    title="View the published lineup for this fixture"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-accent text-accent-foreground hover:bg-accent/80 border border-primary/30 transition-colors text-xs font-semibold whitespace-nowrap"
+                  >
+                    <Eye className="h-3.5 w-3.5" />
+                    <span>View Lineup</span>
+                  </button>
+                )}
                 {(isCoach || isAdmin) && (
                   <button
                     onClick={(e) => {
