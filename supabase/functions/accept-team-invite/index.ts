@@ -62,7 +62,12 @@ Deno.serve(async (req) => {
       );
     }
 
-    const role = invite.role || "parent";
+    // Never trust the stored role blindly: only a safe allow-list may be granted.
+    // Privileged roles (admin, treasurer, fixture_secretary, ...) are never granted here.
+    const ALLOWED_INVITE_ROLES = ["parent", "player", "coach"];
+    const rawRole = typeof invite.role === "string" ? invite.role.toLowerCase().trim() : "";
+    const role = ALLOWED_INVITE_ROLES.includes(rawRole) ? rawRole : "parent";
+
 
     // Add user to team_members (ignore if already member)
     const { error: memberError } = await admin.from("team_members").upsert(
