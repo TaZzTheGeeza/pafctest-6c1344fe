@@ -116,7 +116,7 @@ Deno.serve(async (req) => {
       JSON.stringify({
         success: true,
         team_slug: invite.team_slug,
-        role: invite.role,
+        role,
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
