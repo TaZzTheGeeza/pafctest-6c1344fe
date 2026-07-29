@@ -216,6 +216,30 @@ export function FixtureAvailability({ teamSlug }: Props) {
     return venueOverrideMap[venue.toUpperCase()] || venue;
   };
 
+  // Published lineups for this team — visible to every team member
+  const { data: publishedLineups = [] } = useQuery({
+    queryKey: ["published-lineups", teamSlug],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("team_selections")
+        .select("id, fixture_date, opponent, formation, published_at")
+        .eq("team_slug", teamSlug)
+        .eq("status", "published");
+      if (error) throw error;
+      return (data ?? []) as { id: string; fixture_date: string; opponent: string; formation: string | null; published_at: string | null }[];
+    },
+    staleTime: 1000 * 30,
+  });
+
+  const opponentKeyFor = (item: AvailabilityItem) =>
+    item.isCustom ? item.title.replace(/^(vs |@ )/i, "") : item.opponent;
+
+  const getPublishedLineup = (item: AvailabilityItem) =>
+    publishedLineups.find(
+      (l) => l.fixture_date === item.date && l.opponent === opponentKeyFor(item)
+    );
+
+
   const venueOverrideMutation = useMutation({
     mutationFn: async ({ venueName, fullAddress }: { venueName: string; fullAddress: string }) => {
       const { error } = await supabase
