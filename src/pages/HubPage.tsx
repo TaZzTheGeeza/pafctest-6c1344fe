@@ -159,20 +159,25 @@ export default function HubPage() {
     }
     const { data } = await supabase.from("team_members").select("team_slug").eq("user_id", user!.id);
     const rawSlugs = data?.map((d) => d.team_slug) || [];
-    // Normalize non-canonical slugs to canonical ones
-    const canonicalMap: Record<string, string> = {
-      "u6": "u6s", "u7": "u7s", "u8": "u8s",
-      "u8-black": "u8s-black", "u8-gold": "u8s-gold",
-      "u9-black": "u9s-black", "u9-gold": "u9s-gold",
-      "u10": "u10s", "u11": "u11s",
-      "u12-black": "u12s-black", "u12-gold": "u12s-gold",
-      "u13": "u13s",
-      "u14-black": "u14s-black", "u14-gold": "u14s-gold",
-      "u15": "u15s",
+    // Normalize non-canonical slugs to canonical ones (legacy slugs may expand to multiple teams)
+    const canonicalMap: Record<string, string[]> = {
+      "u6": ["u6s"], "u7": ["u7s"],
+      "u8": ["u8s-black", "u8s-gold"], "u8s": ["u8s-black", "u8s-gold"],
+      "u8-black": ["u8s-black"], "u8-gold": ["u8s-gold"],
+      "u9-black": ["u9s-black"], "u9-gold": ["u9s-gold"],
+      "u9": ["u9s-black", "u9s-gold"], "u9s": ["u9s-black", "u9s-gold"],
+      "u10": ["u10s"], "u11": ["u11s"],
+      "u12-black": ["u12s-black"], "u12-gold": ["u12s-gold"],
+      "u12": ["u12s-black", "u12s-gold"], "u12s": ["u12s-black", "u12s-gold"],
+      "u13": ["u13s"],
+      "u14-black": ["u14s-black"], "u14-gold": ["u14s-gold"],
+      "u14": ["u14s-black", "u14s-gold"], "u14s": ["u14s-black", "u14s-gold"],
+      "u15": ["u15s"],
     };
-    const normalized = [...new Set(rawSlugs.map((s) => canonicalMap[s] || s))];
+    const normalized = [...new Set(rawSlugs.flatMap((s) => canonicalMap[s] || [s]))];
     const teamOrder = TEAMS.map((t) => t.slug);
     const slugs = normalized.filter((s) => teamOrder.includes(s)).sort((a, b) => teamOrder.indexOf(a) - teamOrder.indexOf(b));
+
     setMyTeams(slugs);
     if (!activeTeam && slugs.length > 0) setActiveTeam(slugs[0]);
     setLoading(false);
