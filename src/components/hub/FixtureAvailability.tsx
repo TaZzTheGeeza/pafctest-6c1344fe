@@ -208,6 +208,24 @@ export function FixtureAvailability({ teamSlug }: Props) {
     staleTime: 1000 * 60 * 60,
   });
 
+  const { data: publishedSelections = [] } = useQuery({
+    queryKey: ["published-team-selections", teamSlug],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("team_selections")
+        .select("id, fixture_date, opponent, status")
+        .eq("team_slug", teamSlug)
+        .eq("status", "published");
+      if (error) throw error;
+      return (data || []) as { id: string; fixture_date: string; opponent: string; status: string }[];
+    },
+    enabled: !!user,
+  });
+
+  const publishedSelectionMap = Object.fromEntries(
+    publishedSelections.map((s) => [`${s.fixture_date}::${s.opponent}`, s.id])
+  );
+
   const venueOverrideMap = Object.fromEntries(
     venueOverrides.map((v) => [v.venue_name.toUpperCase(), v.full_address])
   );
