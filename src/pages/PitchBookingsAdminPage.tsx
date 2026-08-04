@@ -5,10 +5,11 @@ import { RoleGate } from "@/components/RoleGate";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { format, parseISO } from "date-fns";
-import { Loader2, CheckCircle2, XCircle, Hourglass, Shield, Trash2 } from "lucide-react";
+import { Loader2, CheckCircle2, XCircle, Hourglass, Shield, Trash2, AlertTriangle, History } from "lucide-react";
 import { toast } from "sonner";
 import { Textarea } from "@/components/ui/textarea";
 import { Navigate } from "react-router-dom";
+
 
 interface Booking {
   id: string;
