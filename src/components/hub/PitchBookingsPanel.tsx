@@ -706,6 +706,11 @@ export default function PitchBookingsPanel() {
 
           {isAdmin && (
             <div className="flex items-center gap-2 flex-wrap mb-2">
+              <button onClick={addPitch}
+                className="text-xs font-display tracking-wider uppercase px-3 py-1.5 rounded-lg border border-primary/60 text-primary">
+                + Add pitch
+              </button>
+
               <button onClick={() => { setLayoutEdit(v => !v); setSelectedPitchNum(null); }}
                 className={`text-xs font-display tracking-wider uppercase px-3 py-1.5 rounded-lg border ${layoutEdit ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground"}`}>
                 {layoutEdit ? "Exit layout editor" : "Edit layout"}
