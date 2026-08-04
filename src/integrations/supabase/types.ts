@@ -1395,6 +1395,8 @@ export type Database = {
           label_text: string | null
           pitch_number: number
           rot: number
+          show_label: boolean
+          show_sub_text: boolean
           sub_text: string | null
           updated_at: string
           use_status_color: boolean
@@ -1415,6 +1417,8 @@ export type Database = {
           label_text?: string | null
           pitch_number: number
           rot?: number
+          show_label?: boolean
+          show_sub_text?: boolean
           sub_text?: string | null
           updated_at?: string
           use_status_color?: boolean
@@ -1435,6 +1439,8 @@ export type Database = {
           label_text?: string | null
           pitch_number?: number
           rot?: number
+          show_label?: boolean
+          show_sub_text?: boolean
           sub_text?: string | null
           updated_at?: string
           use_status_color?: boolean
