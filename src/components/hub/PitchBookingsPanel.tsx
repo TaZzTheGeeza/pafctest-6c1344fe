@@ -915,9 +915,7 @@ export default function PitchBookingsPanel() {
                       <g transform={`translate(${cx} ${cy}) rotate(${rot})`}>
                         <rect x={-hw} y={-hh} width={w} height={h} rx={3}
                           fill={c.fill} fillOpacity={layout.fillOpacity ?? 0.3} stroke={isSel ? "#facc15" : c.stroke} strokeWidth={isSel ? 4 : 2.5}
-
                           strokeDasharray={isSel ? "10 6" : undefined}
-                          filter="url(#pitchGlow)"
                           onPointerDown={e => startDrag(e, "move", p.number)}
                           className="transition-all group-hover:brightness-150" />
 
