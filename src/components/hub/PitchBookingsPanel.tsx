@@ -40,26 +40,30 @@ const PURPOSE_OPTIONS = [
   { value: "other", label: "Other" },
 ];
 
-// Layout coordinates match the uploaded ground image
-const PITCH_LAYOUT: Record<number, { x: number; y: number; w: number; h: number }> = {
-  1: { x: 20, y: 30, w: 160, h: 180 },   // top-left 7v7
-  6: { x: 200, y: 20, w: 160, h: 240 },  // top-center 11v11
-  3: { x: 380, y: 30, w: 160, h: 180 },  // top-right 7v7
-  5: { x: 200, y: 280, w: 160, h: 240 }, // center 9v9
-  2: { x: 20, y: 340, w: 160, h: 180 },  // bottom-left 5v5
-  4: { x: 380, y: 340, w: 160, h: 180 }, // bottom-right 5v5
+// Layout coordinates match the ground map:
+// LEFT: 11v11 (Pitch 6) with a 9v9 (Pitch 5) inside it, and a 5v5 (Pitch 2) inside the 9v9.
+// RIGHT: two 7v7 (Pitches 1 & 3) and one small 5v5 (Pitch 4).
+const PITCH_LAYOUT: Record<number, { x: number; y: number; w: number; h: number; z: number; labelTop?: boolean }> = {
+  6: { x: 20,  y: 30,  w: 330, h: 500, z: 0, labelTop: true },  // 11v11 (outer)
+  5: { x: 55,  y: 80,  w: 260, h: 400, z: 1, labelTop: true },  // 9v9 (inside 11v11)
+  2: { x: 100, y: 175, w: 170, h: 210, z: 2 },                  // 5v5 (inside 9v9)
+  1: { x: 385, y: 30,  w: 215, h: 220, z: 0 },                  // 7v7
+  3: { x: 385, y: 270, w: 215, h: 220, z: 0 },                  // 7v7
+  4: { x: 385, y: 510, w: 150, h: 100, z: 0 },                  // small 5v5
 };
 
-// Physical overlap groups: 9v9 (Pitch 5) and 11v11 (Pitch 6) share space with pitches 1-4.
-// A booking on any pitch in a group blocks all other pitches in that group at the same time.
+// Physical overlap groups: the 11v11, 9v9 and small 5v5 on the left are nested inside
+// each other, so a booking on any one of them blocks the other two at the same time.
+// The two 7v7s and the right-hand 5v5 are standalone.
 const PITCH_OVERLAPS: Record<number, number[]> = {
-  1: [5, 6],
-  2: [5, 6],
-  3: [5, 6],
-  4: [5, 6],
-  5: [1, 2, 3, 4, 6],
-  6: [1, 2, 3, 4, 5],
+  6: [5, 2],
+  5: [6, 2],
+  2: [6, 5],
+  1: [],
+  3: [],
+  4: [],
 };
+
 
 function overlappingPitchIds(pitchNumber: number, pitches: Pitch[]): string[] {
   const nums = PITCH_OVERLAPS[pitchNumber] || [];
