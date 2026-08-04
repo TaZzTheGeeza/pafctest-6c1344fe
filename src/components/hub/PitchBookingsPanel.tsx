@@ -168,7 +168,7 @@ function BookingDialog({ pitch, dayBookings, overlapBookings, pitches, selectedD
     const end = new Date(`${selectedDate}T${endTime}:00`);
     if (end <= start) { toast.error("End time must be after start time"); return; }
     setSubmitting(true);
-    const { error } = await (supabase as any).from("pitch_bookings").insert({
+    const { data, error } = await (supabase as any).from("pitch_bookings").insert({
       pitch_id: pitch.id,
       requested_by: user.id,
       start_time: start.toISOString(),
@@ -178,11 +178,16 @@ function BookingDialog({ pitch, dayBookings, overlapBookings, pitches, selectedD
       opponent: opponent || null,
       notes: notes || null,
       status: "pending",
-    });
+    }).select("status, decline_reason").maybeSingle();
     setSubmitting(false);
     if (error) { toast.error(error.message); return; }
-    toast.success("Booking requested. Awaiting approval.");
+    if (data?.status === "declined") {
+      toast.error(data.decline_reason || "Automatically declined: that slot clashes with an approved booking.");
+    } else {
+      toast.success("Booking requested. Awaiting approval.");
+    }
     onCreated();
+
   }
 
   return (
