@@ -205,6 +205,22 @@ function Inner() {
                       {b.status === "declined" && b.decline_reason && (
                         <div className="text-[11px] text-red-300 mt-1">Reason: {b.decline_reason}</div>
                       )}
+                      {clashes[b.id]?.length > 0 && (
+                        <div className="mt-2 rounded-md border border-amber-700/50 bg-amber-950/30 p-2">
+                          <div className="flex items-center gap-1 text-[11px] uppercase tracking-wider text-amber-300">
+                            <AlertTriangle className="h-3 w-3" /> Clash detected
+                          </div>
+                          <ul className="mt-1 space-y-0.5">
+                            {clashes[b.id].map(c => (
+                              <li key={c.id} className="text-[11px] text-amber-200/90">
+                                {c.pitch_name} · {format(parseISO(c.start_time), "HH:mm")}–{format(parseISO(c.end_time), "HH:mm")}
+                                {c.age_group ? ` · ${c.age_group}` : ""}{c.opponent ? ` vs ${c.opponent}` : ""} (approved)
+                              </li>
+                            ))}
+                          </ul>
+                          <div className="text-[10px] text-amber-200/60 mt-1">Pitches 1, 2 and 3 share the same physical space.</div>
+                        </div>
+                      )}
                     </div>
 
                     <div className="flex gap-2 items-center">
@@ -218,6 +234,9 @@ function Inner() {
                           </button>
                         </>
                       )}
+                      <button onClick={() => loadAudit(b.id)} title="Booking history" className="text-muted-foreground hover:text-primary p-1">
+                        <History className="h-3.5 w-3.5" />
+                      </button>
                       {isAdmin && (
                         <button onClick={() => remove(b)} className="text-muted-foreground hover:text-destructive p-1">
                           <Trash2 className="h-3.5 w-3.5" />
@@ -225,6 +244,26 @@ function Inner() {
                       )}
                     </div>
                   </div>
+
+                  {openAudit === b.id && (
+                    <div className="mt-3 pt-3 border-t border-border">
+                      <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Audit log</div>
+                      {!audit[b.id] && <div className="text-[11px] text-muted-foreground">Loading…</div>}
+                      {audit[b.id]?.length === 0 && <div className="text-[11px] text-muted-foreground">No history recorded.</div>}
+                      <ul className="space-y-1">
+                        {audit[b.id]?.map(e => (
+                          <li key={e.id} className="text-[11px] text-muted-foreground">
+                            <span className="text-foreground uppercase tracking-wider">{e.action.replace("_", " ")}</span>
+                            {" · "}{format(parseISO(e.created_at), "dd MMM yyyy HH:mm")}
+                            {e.actor_id && requesters[e.actor_id] ? ` · ${requesters[e.actor_id].name}` : e.actor_id ? "" : " · system"}
+                            {e.from_status && e.to_status && e.from_status !== e.to_status ? ` · ${e.from_status} → ${e.to_status}` : ""}
+                            {e.details?.decline_reason ? ` · "${e.details.decline_reason}"` : ""}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
 
                   {declining === b.id && (
                     <div className="mt-3 pt-3 border-t border-border space-y-2">
