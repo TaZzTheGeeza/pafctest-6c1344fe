@@ -40,26 +40,30 @@ const PURPOSE_OPTIONS = [
   { value: "other", label: "Other" },
 ];
 
-// Layout coordinates match the uploaded ground image
-const PITCH_LAYOUT: Record<number, { x: number; y: number; w: number; h: number }> = {
-  1: { x: 20, y: 30, w: 160, h: 180 },   // top-left 7v7
-  6: { x: 200, y: 20, w: 160, h: 240 },  // top-center 11v11
-  3: { x: 380, y: 30, w: 160, h: 180 },  // top-right 7v7
-  5: { x: 200, y: 280, w: 160, h: 240 }, // center 9v9
-  2: { x: 20, y: 340, w: 160, h: 180 },  // bottom-left 5v5
-  4: { x: 380, y: 340, w: 160, h: 180 }, // bottom-right 5v5
+// Layout coordinates match the ground map:
+// LEFT: 11v11 (Pitch 6) with a 9v9 (Pitch 5) inside it, and a 5v5 (Pitch 2) inside the 9v9.
+// RIGHT: two 7v7 (Pitches 1 & 3) and one small 5v5 (Pitch 4).
+const PITCH_LAYOUT: Record<number, { x: number; y: number; w: number; h: number; z: number; labelTop?: boolean }> = {
+  6: { x: 20,  y: 30,  w: 330, h: 500, z: 0, labelTop: true },  // 11v11 (outer)
+  5: { x: 55,  y: 80,  w: 260, h: 400, z: 1, labelTop: true },  // 9v9 (inside 11v11)
+  2: { x: 100, y: 175, w: 170, h: 210, z: 2 },                  // 5v5 (inside 9v9)
+  1: { x: 385, y: 30,  w: 215, h: 220, z: 0 },                  // 7v7
+  3: { x: 385, y: 270, w: 215, h: 220, z: 0 },                  // 7v7
+  4: { x: 385, y: 510, w: 150, h: 100, z: 0 },                  // small 5v5
 };
 
-// Physical overlap groups: 9v9 (Pitch 5) and 11v11 (Pitch 6) share space with pitches 1-4.
-// A booking on any pitch in a group blocks all other pitches in that group at the same time.
+// Physical overlap groups: the 11v11, 9v9 and small 5v5 on the left are nested inside
+// each other, so a booking on any one of them blocks the other two at the same time.
+// The two 7v7s and the right-hand 5v5 are standalone.
 const PITCH_OVERLAPS: Record<number, number[]> = {
-  1: [5, 6],
-  2: [5, 6],
-  3: [5, 6],
-  4: [5, 6],
-  5: [1, 2, 3, 4, 6],
-  6: [1, 2, 3, 4, 5],
+  6: [5, 2],
+  5: [6, 2],
+  2: [6, 5],
+  1: [],
+  3: [],
+  4: [],
 };
+
 
 function overlappingPitchIds(pitchNumber: number, pitches: Pitch[]): string[] {
   const nums = PITCH_OVERLAPS[pitchNumber] || [];
@@ -209,7 +213,7 @@ function BookingDialog({ pitch, dayBookings, overlapBookings, pitches, selectedD
 
           {hasConflict && (
             <div className="text-xs bg-red-950/40 border border-red-800 rounded-lg p-2 text-red-300">
-              ⚠ This slot overlaps an approved booking on {pitch.name} or a physically overlapping pitch (9v9/11v11 share space with pitches 1–4). It can still be requested but is unlikely to be approved.
+              ⚠ This slot overlaps an approved booking on {pitch.name} or a pitch marked out inside it (the 11v11, 9v9 and 5v5 on the left share the same ground). It can still be requested but is unlikely to be approved.
             </div>
           )}
 
@@ -514,26 +518,34 @@ export default function PitchBookingsPanel() {
             {loading ? (
               <div className="flex items-center justify-center h-96"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
             ) : (
-              <svg viewBox="0 0 560 540" className="w-full h-auto max-h-[600px]">
-                {pitches.map(p => {
+              <svg viewBox="0 0 620 640" className="w-full h-auto max-h-[640px]">
+                {[...pitches]
+                  .filter(p => PITCH_LAYOUT[p.number])
+                  .sort((a, b) => PITCH_LAYOUT[a.number].z - PITCH_LAYOUT[b.number].z)
+                  .map(p => {
                   const layout = PITCH_LAYOUT[p.number];
-                  if (!layout) return null;
                   const { status, faLocked } = pitchPrimaryStatus(p.id);
                   const c = statusColor(status, faLocked);
+                  const cx = layout.x + layout.w / 2;
+                  const labelY = layout.labelTop ? layout.y + 26 : layout.y + layout.h / 2 - 6;
                   return (
                     <g key={p.id} onClick={() => setDialogPitch(p)} className="cursor-pointer group">
                       <rect x={layout.x} y={layout.y} width={layout.w} height={layout.h} rx={12}
                         fill={c.fill} stroke={c.stroke} strokeWidth={2}
                         className="transition-all group-hover:brightness-125" />
-                      {/* Pitch centre line */}
-                      <line x1={layout.x + 10} y1={layout.y + layout.h / 2} x2={layout.x + layout.w - 10} y2={layout.y + layout.h / 2}
-                        stroke={c.stroke} strokeOpacity={0.4} strokeWidth={1.5} />
-                      <circle cx={layout.x + layout.w / 2} cy={layout.y + layout.h / 2} r={14} fill="none" stroke={c.stroke} strokeOpacity={0.4} strokeWidth={1.5} />
-                      <text x={layout.x + layout.w / 2} y={layout.y + layout.h / 2 - 6} textAnchor="middle"
+                      {!layout.labelTop && (
+                        <>
+                          {/* Pitch centre line */}
+                          <line x1={layout.x + 10} y1={layout.y + layout.h / 2} x2={layout.x + layout.w - 10} y2={layout.y + layout.h / 2}
+                            stroke={c.stroke} strokeOpacity={0.4} strokeWidth={1.5} />
+                          <circle cx={cx} cy={layout.y + layout.h / 2} r={14} fill="none" stroke={c.stroke} strokeOpacity={0.4} strokeWidth={1.5} />
+                        </>
+                      )}
+                      <text x={cx} y={labelY} textAnchor="middle"
                         fill={c.text} className="font-display uppercase" fontSize={14} fontWeight={700}>
                         {p.name}
                       </text>
-                      <text x={layout.x + layout.w / 2} y={layout.y + layout.h / 2 + 14} textAnchor="middle"
+                      <text x={cx} y={labelY + 18} textAnchor="middle"
                         fill={c.text} className="font-display" fontSize={12} opacity={0.85}>
                         {p.format}
                       </text>
@@ -547,6 +559,7 @@ export default function PitchBookingsPanel() {
                   );
                 })}
               </svg>
+
             )}
           </div>
 
