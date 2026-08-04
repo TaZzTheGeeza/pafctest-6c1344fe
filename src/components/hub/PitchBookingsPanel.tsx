@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import groundSatellite from "@/assets/itter-park-satellite.jpg";
+
 
 interface Pitch {
   id: string;
@@ -40,17 +42,18 @@ const PURPOSE_OPTIONS = [
   { value: "other", label: "Other" },
 ];
 
-// Layout coordinates match the ground map:
+// Layout coordinates are positioned over the satellite image of Itter Park (viewBox 620 x 974).
 // LEFT: 11v11 (Pitch 6) with a 9v9 (Pitch 5) inside it, and a 5v5 (Pitch 2) inside the 9v9.
 // RIGHT: two 7v7 (Pitches 1 & 3) and one small 5v5 (Pitch 4).
 const PITCH_LAYOUT: Record<number, { x: number; y: number; w: number; h: number; z: number; labelTop?: boolean }> = {
-  6: { x: 20,  y: 30,  w: 330, h: 500, z: 0, labelTop: true },  // 11v11 (outer)
-  5: { x: 55,  y: 80,  w: 260, h: 400, z: 1, labelTop: true },  // 9v9 (inside 11v11)
-  2: { x: 100, y: 175, w: 170, h: 210, z: 2 },                  // 5v5 (inside 9v9)
-  1: { x: 385, y: 30,  w: 215, h: 220, z: 0 },                  // 7v7
-  3: { x: 385, y: 270, w: 215, h: 220, z: 0 },                  // 7v7
-  4: { x: 385, y: 510, w: 150, h: 100, z: 0 },                  // small 5v5
+  6: { x: 35,  y: 155, w: 300, h: 590, z: 0, labelTop: true },  // 11v11 (outer)
+  5: { x: 65,  y: 200, w: 240, h: 500, z: 1, labelTop: true },  // 9v9 (inside 11v11)
+  2: { x: 105, y: 300, w: 160, h: 200, z: 2 },                  // 5v5 (inside 9v9)
+  1: { x: 360, y: 155, w: 210, h: 200, z: 0 },                  // 7v7
+  3: { x: 360, y: 380, w: 210, h: 200, z: 0 },                  // 7v7
+  4: { x: 360, y: 610, w: 150, h: 110, z: 0 },                  // small 5v5
 };
+
 
 // Physical overlap groups: the 11v11, 9v9 and small 5v5 on the left are nested inside
 // each other, so a booking on any one of them blocks the other two at the same time.
@@ -518,7 +521,9 @@ export default function PitchBookingsPanel() {
             {loading ? (
               <div className="flex items-center justify-center h-96"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
             ) : (
-              <svg viewBox="0 0 620 640" className="w-full h-auto max-h-[640px]">
+              <svg viewBox="0 0 620 974" className="w-full h-auto">
+                <image href={groundSatellite} x={0} y={0} width={620} height={974} preserveAspectRatio="xMidYMid slice" />
+                <rect x={0} y={0} width={620} height={974} fill="#000" opacity={0.25} />
                 {[...pitches]
                   .filter(p => PITCH_LAYOUT[p.number])
                   .sort((a, b) => PITCH_LAYOUT[a.number].z - PITCH_LAYOUT[b.number].z)
@@ -531,8 +536,9 @@ export default function PitchBookingsPanel() {
                   return (
                     <g key={p.id} onClick={() => setDialogPitch(p)} className="cursor-pointer group">
                       <rect x={layout.x} y={layout.y} width={layout.w} height={layout.h} rx={12}
-                        fill={c.fill} stroke={c.stroke} strokeWidth={2}
+                        fill={c.fill} fillOpacity={0.55} stroke={c.stroke} strokeWidth={2.5}
                         className="transition-all group-hover:brightness-125" />
+
                       {!layout.labelTop && (
                         <>
                           {/* Pitch centre line */}
@@ -559,8 +565,12 @@ export default function PitchBookingsPanel() {
                   );
                 })}
               </svg>
-
             )}
+            <p className="text-[11px] text-muted-foreground mt-3 text-center">
+              Satellite view of Itter Park with the painted pitch positions overlaid. Tap a pitch to book it.{" "}
+              <a href="https://maps.app.goo.gl/ied9nHSnP8MW2wqq5" target="_blank" rel="noopener noreferrer" className="text-primary underline">Open in Google Maps</a>
+            </p>
+
           </div>
 
           {/* Day timeline list */}
