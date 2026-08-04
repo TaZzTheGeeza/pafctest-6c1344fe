@@ -485,7 +485,15 @@ export default function PitchBookingsPanel() {
           rot: Number(r.rot), z: Number(r.z ?? 0),
           labelDx: Number(r.label_dx ?? 0), labelDy: Number(r.label_dy ?? -60),
           labelScale: Number(r.label_scale ?? 1),
+          color: r.color ?? null,
+          useStatusColor: r.use_status_color ?? true,
+          fillOpacity: Number(r.fill_opacity ?? 0.3),
+          labelText: r.label_text ?? null,
+          subText: r.sub_text ?? null,
+          labelColor: r.label_color ?? null,
+          fontSize: Number(r.font_size ?? 17),
         };
+
       }
       return next;
     });
