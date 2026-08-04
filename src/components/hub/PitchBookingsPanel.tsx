@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { format, addDays, startOfDay, parseISO } from "date-fns";
@@ -44,16 +44,22 @@ const PURPOSE_OPTIONS = [
 
 // Layout coordinates match the aerial map of Itter Park (square viewBox 1000 x 1000).
 // Pitches are painted on a diagonal, so each one is rotated about its own centre.
-// LOWER-LEFT: 11v11 (Pitch 6) with a 9v9 (Pitch 5) inside it, and a 5v5 (Pitch 2) inside the 9v9.
-// UPPER-RIGHT: two 7v7 (Pitches 1 & 3) and one small 5v5 (Pitch 4).
-const PITCH_LAYOUT: Record<number, { cx: number; cy: number; w: number; h: number; rot: number; z: number; labelDy?: number }> = {
-  6: { cx: 400, cy: 630, w: 172, h: 232, rot: -42, z: 0, labelDy: -0.82 }, // 11v11 (outer)
-  5: { cx: 400, cy: 622, w: 134, h: 192, rot: -42, z: 1, labelDy: -0.42 }, // 9v9 (inside 11v11)
-  2: { cx: 396, cy: 614, w: 76,  h: 122, rot: -42, z: 2, labelDy: 0.18 },  // 5v5 (inside 9v9)
-  1: { cx: 431, cy: 400, w: 124, h: 160, rot: -42, z: 0 },                 // 7v7
-  3: { cx: 520, cy: 496, w: 124, h: 160, rot: -42, z: 0 },                 // 7v7
-  4: { cx: 610, cy: 584, w: 94,  h: 128, rot: -42, z: 0 },                 // small 5v5
+// These are only the DEFAULTS — admins can drag/resize pitches and labels in "Edit layout"
+// mode, and the saved positions (public.pitch_map_layout) take priority.
+export interface PitchLayout {
+  cx: number; cy: number; w: number; h: number; rot: number; z: number;
+  labelDx: number; labelDy: number; labelScale: number;
+}
+
+const DEFAULT_PITCH_LAYOUT: Record<number, PitchLayout> = {
+  6: { cx: 400, cy: 630, w: 172, h: 232, rot: -42, z: 0, labelDx: 0, labelDy: -95, labelScale: 1 }, // 11v11 (outer)
+  5: { cx: 400, cy: 622, w: 134, h: 192, rot: -42, z: 1, labelDx: 0, labelDy: -40, labelScale: 1 }, // 9v9 (inside 11v11)
+  2: { cx: 396, cy: 614, w: 76,  h: 122, rot: -42, z: 2, labelDx: 0, labelDy: 11, labelScale: 1 },  // 5v5 (inside 9v9)
+  1: { cx: 431, cy: 400, w: 124, h: 160, rot: -42, z: 0, labelDx: 0, labelDy: -44, labelScale: 1 }, // 7v7
+  3: { cx: 520, cy: 496, w: 124, h: 160, rot: -42, z: 0, labelDx: 0, labelDy: -44, labelScale: 1 }, // 7v7
+  4: { cx: 610, cy: 584, w: 94,  h: 128, rot: -42, z: 0, labelDx: 0, labelDy: -35, labelScale: 1 }, // small 5v5
 };
+
 
 
 
@@ -434,6 +440,101 @@ export default function PitchBookingsPanel() {
   const [dialogPitch, setDialogPitch] = useState<Pitch | null>(null);
   const [editBooking, setEditBooking] = useState<Booking | null>(null);
 
+  // ---- Ground map layout editing (admins) ----
+  const svgRef = useRef<SVGSVGElement | null>(null);
+  const [layouts, setLayouts] = useState<Record<number, PitchLayout>>(DEFAULT_PITCH_LAYOUT);
+  const [layoutEdit, setLayoutEdit] = useState(false);
+  const [selectedPitchNum, setSelectedPitchNum] = useState<number | null>(null);
+  const [savingLayout, setSavingLayout] = useState(false);
+  const dragRef = useRef<{ kind: "move" | "label" | "resize"; num: number; sx: number; sy: number; base: PitchLayout } | null>(null);
+
+  useEffect(() => { loadLayouts(); }, []);
+
+  async function loadLayouts() {
+    const { data } = await (supabase as any).from("pitch_map_layout").select("*");
+    if (!data?.length) return;
+    setLayouts(prev => {
+      const next = { ...prev };
+      for (const r of data as any[]) {
+        next[r.pitch_number] = {
+          cx: Number(r.cx), cy: Number(r.cy), w: Number(r.w), h: Number(r.h),
+          rot: Number(r.rot), z: Number(r.z ?? 0),
+          labelDx: Number(r.label_dx ?? 0), labelDy: Number(r.label_dy ?? -60),
+          labelScale: Number(r.label_scale ?? 1),
+        };
+      }
+      return next;
+    });
+  }
+
+  function svgPoint(e: React.PointerEvent) {
+    const svg = svgRef.current;
+    if (!svg) return { x: 0, y: 0 };
+    const ctm = svg.getScreenCTM();
+    if (!ctm) return { x: 0, y: 0 };
+    const pt = svg.createSVGPoint();
+    pt.x = e.clientX; pt.y = e.clientY;
+    const p = pt.matrixTransform(ctm.inverse());
+    return { x: p.x, y: p.y };
+  }
+
+  function startDrag(e: React.PointerEvent, kind: "move" | "label" | "resize", num: number) {
+    if (!layoutEdit) return;
+    e.stopPropagation();
+    e.preventDefault();
+    (e.target as Element).setPointerCapture?.(e.pointerId);
+    const { x, y } = svgPoint(e);
+    setSelectedPitchNum(num);
+    dragRef.current = { kind, num, sx: x, sy: y, base: { ...layouts[num] } };
+  }
+
+  function onSvgPointerMove(e: React.PointerEvent) {
+    const d = dragRef.current;
+    if (!d) return;
+    const { x, y } = svgPoint(e);
+    const dx = x - d.sx, dy = y - d.sy;
+    setLayouts(prev => {
+      const L = { ...prev[d.num] };
+      if (d.kind === "move") { L.cx = Math.round(d.base.cx + dx); L.cy = Math.round(d.base.cy + dy); }
+      if (d.kind === "label") { L.labelDx = Math.round(d.base.labelDx + dx); L.labelDy = Math.round(d.base.labelDy + dy); }
+      if (d.kind === "resize") {
+        const rad = (-d.base.rot * Math.PI) / 180;
+        const lx = dx * Math.cos(rad) - dy * Math.sin(rad);
+        const ly = dx * Math.sin(rad) + dy * Math.cos(rad);
+        L.w = Math.max(30, Math.round(d.base.w + lx * 2));
+        L.h = Math.max(30, Math.round(d.base.h + ly * 2));
+      }
+      return { ...prev, [d.num]: L };
+    });
+  }
+
+  function endDrag() { dragRef.current = null; }
+
+  function updateSelected(patch: Partial<PitchLayout>) {
+    if (selectedPitchNum == null) return;
+    setLayouts(prev => ({ ...prev, [selectedPitchNum]: { ...prev[selectedPitchNum], ...patch } }));
+  }
+
+  async function saveLayouts() {
+    setSavingLayout(true);
+    const rows = Object.entries(layouts).map(([num, L]) => ({
+      pitch_number: Number(num),
+      cx: L.cx, cy: L.cy, w: L.w, h: L.h, rot: L.rot, z: L.z,
+      label_dx: L.labelDx, label_dy: L.labelDy, label_scale: L.labelScale,
+      updated_at: new Date().toISOString(),
+    }));
+    const { error } = await (supabase as any).from("pitch_map_layout").upsert(rows, { onConflict: "pitch_number" });
+    setSavingLayout(false);
+    if (error) toast.error(error.message);
+    else { toast.success("Ground map layout saved"); setLayoutEdit(false); setSelectedPitchNum(null); }
+  }
+
+  function resetLayouts() {
+    if (!confirm("Reset all pitches back to the default positions?")) return;
+    setLayouts(DEFAULT_PITCH_LAYOUT);
+  }
+
+
   async function deleteBooking(id: string) {
     if (!confirm("Delete this booking permanently?")) return;
     const { error } = await (supabase as any).from("pitch_bookings").delete().eq("id", id);
@@ -521,11 +622,53 @@ export default function PitchBookingsPanel() {
             </div>
           </div>
 
+          {isAdmin && (
+            <div className="flex items-center gap-2 flex-wrap mb-2">
+              <button onClick={() => { setLayoutEdit(v => !v); setSelectedPitchNum(null); }}
+                className={`text-xs font-display tracking-wider uppercase px-3 py-1.5 rounded-lg border ${layoutEdit ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground"}`}>
+                {layoutEdit ? "Exit layout editor" : "Edit layout"}
+              </button>
+              {layoutEdit && (
+                <>
+                  <button onClick={saveLayouts} disabled={savingLayout}
+                    className="text-xs font-display tracking-wider uppercase px-3 py-1.5 rounded-lg bg-green-600 text-white disabled:opacity-50">
+                    {savingLayout ? "Saving…" : "Save layout"}
+                  </button>
+                  <button onClick={resetLayouts} className="text-xs font-display tracking-wider uppercase px-3 py-1.5 rounded-lg border border-border text-muted-foreground">Reset</button>
+                  <span className="text-[11px] text-muted-foreground">Drag a pitch to move it, drag the corner handle to resize, drag the label to reposition text.</span>
+                </>
+              )}
+            </div>
+          )}
+
+          {layoutEdit && selectedPitchNum != null && layouts[selectedPitchNum] && (
+            <div className="bg-card border border-border rounded-lg p-3 mb-2 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+              {([
+                { key: "w", label: "Width", min: 30, max: 500, step: 1 },
+                { key: "h", label: "Height", min: 30, max: 600, step: 1 },
+                { key: "rot", label: "Rotation", min: -180, max: 180, step: 1 },
+                { key: "labelScale", label: "Label size", min: 0.5, max: 2.5, step: 0.05 },
+                { key: "z", label: "Layer (front)", min: 0, max: 5, step: 1 },
+              ] as const).map(f => (
+                <div key={f.key}>
+                  <label className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                    {f.label} · {Number(layouts[selectedPitchNum][f.key]).toFixed(f.key === "labelScale" ? 2 : 0)}
+                  </label>
+                  <input type="range" min={f.min} max={f.max} step={f.step}
+                    value={Number(layouts[selectedPitchNum][f.key])}
+                    onChange={e => updateSelected({ [f.key]: Number(e.target.value) } as Partial<PitchLayout>)}
+                    className="w-full accent-primary" />
+                </div>
+              ))}
+            </div>
+          )}
+
           <div className="relative bg-[#05070a] border border-primary/30 rounded-xl p-4 md:p-6 overflow-hidden shadow-[0_0_40px_-12px_hsl(var(--primary)/0.5)]">
             {loading ? (
               <div className="flex items-center justify-center h-96"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
             ) : (
-              <svg viewBox="0 0 1000 1000" className="w-full h-auto rounded-lg">
+              <svg ref={svgRef} viewBox="0 0 1000 1000" className="w-full h-auto rounded-lg touch-none"
+                onPointerMove={onSvgPointerMove} onPointerUp={endDrag} onPointerLeave={endDrag}>
                 <defs>
                   <filter id="pitchGlow" x="-40%" y="-40%" width="180%" height="180%">
                     <feGaussianBlur stdDeviation="5" result="b" />
@@ -549,9 +692,11 @@ export default function PitchBookingsPanel() {
                 </g>
 
                 {/* Sweeping scan line */}
-                <rect x={0} y={0} width={1000} height={100} fill="url(#scanFade)">
-                  <animate attributeName="y" values="-100;1000" dur="6s" repeatCount="indefinite" />
-                </rect>
+                {!layoutEdit && (
+                  <rect x={0} y={0} width={1000} height={100} fill="url(#scanFade)">
+                    <animate attributeName="y" values="-100;1000" dur="6s" repeatCount="indefinite" />
+                  </rect>
+                )}
 
                 {/* HUD frame */}
                 <g stroke="#38bdf8" strokeOpacity={0.5} strokeWidth={2} fill="none">
@@ -560,10 +705,10 @@ export default function PitchBookingsPanel() {
                 </g>
 
                 {[...pitches]
-                  .filter(p => PITCH_LAYOUT[p.number])
-                  .sort((a, b) => PITCH_LAYOUT[a.number].z - PITCH_LAYOUT[b.number].z)
+                  .filter(p => layouts[p.number])
+                  .sort((a, b) => layouts[a.number].z - layouts[b.number].z)
                   .map(p => {
-                  const layout = PITCH_LAYOUT[p.number];
+                  const layout = layouts[p.number];
                   const { status, faLocked } = pitchPrimaryStatus(p.id);
                   const c = statusColor(status, faLocked);
                   const { cx, cy, w, h, rot } = layout;
@@ -571,18 +716,25 @@ export default function PitchBookingsPanel() {
                   const hh = h / 2;
                   const boxW = Math.min(w * 0.55, 120);
                   const boxH = Math.min(h * 0.16, 46);
-                  const labelDy = hh * (layout.labelDy ?? -0.55);
+                  const lx = cx + layout.labelDx;
+                  const ly = cy + layout.labelDy;
+                  const ls = layout.labelScale ?? 1;
+                  const isSel = layoutEdit && selectedPitchNum === p.number;
                   return (
-                    <g key={p.id} onClick={() => setDialogPitch(p)} className="cursor-pointer group">
-                      <title>{`${p.name} · ${p.format} — tap to book`}</title>
+                    <g key={p.id}
+                      onClick={() => { if (layoutEdit) setSelectedPitchNum(p.number); else setDialogPitch(p); }}
+                      className={layoutEdit ? "cursor-move group" : "cursor-pointer group"}>
+                      <title>{layoutEdit ? `${p.name} — drag to reposition` : `${p.name} · ${p.format} — tap to book`}</title>
                       <g transform={`translate(${cx} ${cy}) rotate(${rot})`}>
                         <rect x={-hw} y={-hh} width={w} height={h} rx={3}
-                          fill={c.fill} fillOpacity={0.3} stroke={c.stroke} strokeWidth={2.5}
+                          fill={c.fill} fillOpacity={0.3} stroke={isSel ? "#facc15" : c.stroke} strokeWidth={isSel ? 4 : 2.5}
+                          strokeDasharray={isSel ? "10 6" : undefined}
                           filter="url(#pitchGlow)"
+                          onPointerDown={e => startDrag(e, "move", p.number)}
                           className="transition-all group-hover:brightness-150" />
 
                         {/* Pitch markings */}
-                        <g stroke={c.stroke} strokeOpacity={0.55} strokeWidth={1.4} fill="none">
+                        <g stroke={c.stroke} strokeOpacity={0.55} strokeWidth={1.4} fill="none" pointerEvents="none">
                           <line x1={-hw} y1={0} x2={hw} y2={0} />
                           <circle cx={0} cy={0} r={Math.min(w, h) * 0.16} />
                           <rect x={-boxW / 2} y={-hh} width={boxW} height={boxH} />
@@ -590,7 +742,7 @@ export default function PitchBookingsPanel() {
                         </g>
 
                         {/* Corner ticks */}
-                        <g stroke={c.stroke} strokeOpacity={0.9} strokeWidth={2.5} fill="none">
+                        <g stroke={c.stroke} strokeOpacity={0.9} strokeWidth={2.5} fill="none" pointerEvents="none">
                           <path d={`M${-hw} ${-hh + 14} V${-hh} H${-hw + 14}`} />
                           <path d={`M${hw - 14} ${-hh} H${hw} V${-hh + 14}`} />
                           <path d={`M${hw} ${hh - 14} V${hh} H${hw - 14}`} />
@@ -598,24 +750,39 @@ export default function PitchBookingsPanel() {
                         </g>
 
                         {/* Status beacon */}
-                        <circle cx={-hw + 10} cy={hh - 10} r={4} fill={c.stroke}>
-                          <animate attributeName="opacity" values="1;0.2;1" dur="2s" repeatCount="indefinite" />
+                        <circle cx={-hw + 10} cy={hh - 10} r={4} fill={c.stroke} pointerEvents="none">
+                          {!layoutEdit && <animate attributeName="opacity" values="1;0.2;1" dur="2s" repeatCount="indefinite" />}
                         </circle>
+
+                        {/* Resize handle (bottom-right corner) */}
+                        {layoutEdit && (
+                          <rect x={hw - 9} y={hh - 9} width={18} height={18} rx={3}
+                            fill="#facc15" stroke="#020617" strokeWidth={1.5}
+                            className="cursor-nwse-resize"
+                            onPointerDown={e => startDrag(e, "resize", p.number)} />
+                        )}
                       </g>
 
                       {/* Labels stay upright for readability */}
-                      <text x={cx} y={cy + labelDy} textAnchor="middle"
-                        fill="#e2f5ff" className="font-display uppercase" fontSize={17} fontWeight={700}
-                        letterSpacing="1.5" style={{ paintOrder: "stroke", stroke: "#020617", strokeWidth: 4 }}>
-                        {p.name}
-                      </text>
-                      <text x={cx} y={cy + labelDy + 19} textAnchor="middle"
-                        fill={c.text} className="font-display" fontSize={13} letterSpacing="2" opacity={0.95}
-                        style={{ paintOrder: "stroke", stroke: "#020617", strokeWidth: 4 }}>
-                        {p.format}
-                      </text>
+                      <g transform={`translate(${lx} ${ly}) scale(${ls})`}
+                        onPointerDown={e => startDrag(e, "label", p.number)}
+                        className={layoutEdit ? "cursor-grab" : ""}>
+                        {layoutEdit && (
+                          <rect x={-70} y={-18} width={140} height={44} rx={4} fill="#facc15" fillOpacity={0.12} stroke="#facc15" strokeOpacity={0.6} strokeDasharray="4 4" />
+                        )}
+                        <text x={0} y={0} textAnchor="middle"
+                          fill="#e2f5ff" className="font-display uppercase" fontSize={17} fontWeight={700}
+                          letterSpacing="1.5" style={{ paintOrder: "stroke", stroke: "#020617", strokeWidth: 4 }}>
+                          {p.name}
+                        </text>
+                        <text x={0} y={19} textAnchor="middle"
+                          fill={c.text} className="font-display" fontSize={13} letterSpacing="2" opacity={0.95}
+                          style={{ paintOrder: "stroke", stroke: "#020617", strokeWidth: 4 }}>
+                          {p.format}
+                        </text>
+                      </g>
                       {faLocked && (
-                        <g transform={`translate(${cx + hw * 0.7}, ${cy - hh * 0.7})`}>
+                        <g transform={`translate(${cx + hw * 0.7}, ${cy - hh * 0.7})`} pointerEvents="none">
                           <circle r={9} fill="#020617" opacity={0.8} stroke="#fbbf24" strokeWidth={1} />
                           <text x={0} y={3} textAnchor="middle" fontSize={9} fill="#fbbf24">FA</text>
                         </g>
@@ -626,6 +793,7 @@ export default function PitchBookingsPanel() {
               </svg>
 
             )}
+
             <p className="text-[11px] text-muted-foreground mt-3 text-center">
               Live satellite HUD of Itter Park with the painted pitch positions overlaid. Tap a pitch to book it.{" "}
               <a href="https://maps.app.goo.gl/ied9nHSnP8MW2wqq5" target="_blank" rel="noopener noreferrer" className="text-primary underline">Open in Google Maps</a>

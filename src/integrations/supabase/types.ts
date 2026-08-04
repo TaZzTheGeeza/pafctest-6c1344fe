@@ -1380,6 +1380,48 @@ export type Database = {
           },
         ]
       }
+      pitch_map_layout: {
+        Row: {
+          cx: number
+          cy: number
+          h: number
+          label_dx: number
+          label_dy: number
+          label_scale: number
+          pitch_number: number
+          rot: number
+          updated_at: string
+          w: number
+          z: number
+        }
+        Insert: {
+          cx: number
+          cy: number
+          h: number
+          label_dx?: number
+          label_dy?: number
+          label_scale?: number
+          pitch_number: number
+          rot?: number
+          updated_at?: string
+          w: number
+          z?: number
+        }
+        Update: {
+          cx?: number
+          cy?: number
+          h?: number
+          label_dx?: number
+          label_dy?: number
+          label_scale?: number
+          pitch_number?: number
+          rot?: number
+          updated_at?: string
+          w?: number
+          z?: number
+        }
+        Relationships: []
+      }
       pitches: {
         Row: {
           active: boolean
