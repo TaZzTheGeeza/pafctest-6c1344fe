@@ -830,7 +830,11 @@ export default function PitchBookingsPanel() {
                   .map(p => {
                   const layout = layouts[p.number];
                   const { status, faLocked } = pitchPrimaryStatus(p.id);
-                  const c = statusColor(status, faLocked);
+                  const sc = statusColor(status, faLocked);
+                  const custom = !layout.useStatusColor && layout.color;
+                  const c = custom
+                    ? { fill: layout.color as string, stroke: layout.color as string, text: layout.color as string }
+                    : sc;
                   const { cx, cy, w, h, rot } = layout;
                   const hw = w / 2;
                   const hh = h / 2;
@@ -839,7 +843,11 @@ export default function PitchBookingsPanel() {
                   const lx = cx + layout.labelDx;
                   const ly = cy + layout.labelDy;
                   const ls = layout.labelScale ?? 1;
+                  const fs = layout.fontSize ?? 17;
+                  const mainText = layout.labelText || p.name;
+                  const subText = layout.subText ?? p.format;
                   const isSel = layoutEdit && selectedPitchNum === p.number;
+
                   return (
                     <g key={p.id}
                       onClick={() => { if (layoutEdit) setSelectedPitchNum(p.number); else setDialogPitch(p); }}
