@@ -81,16 +81,50 @@ function Inner() {
       (profs as any[])?.forEach(p => { map[p.id] = { name: p.full_name || "Unknown", email: p.email || "" }; });
       setRequesters(map);
     }
+    // Clash detection for pending requests
+    const pending = bs.filter(x => x.status === "pending");
+    const clashMap: Record<string, Clash[]> = {};
+    await Promise.all(pending.map(async x => {
+      const { data } = await (supabase as any).rpc("check_pitch_conflict", {
+        _pitch_id: x.pitch_id, _start: x.start_time, _end: x.end_time, _exclude_id: x.id,
+      });
+      if (data?.length) clashMap[x.id] = data as Clash[];
+    }));
+    setClashes(clashMap);
     setLoading(false);
   }
 
+  async function loadAudit(bookingId: string) {
+    if (openAudit === bookingId) { setOpenAudit(null); return; }
+    setOpenAudit(bookingId);
+    if (audit[bookingId]) return;
+    const { data } = await (supabase as any)
+      .from("pitch_booking_audit").select("*")
+      .eq("booking_id", bookingId).order("created_at", { ascending: false });
+    const entries = (data as AuditEntry[]) || [];
+    setAudit(prev => ({ ...prev, [bookingId]: entries }));
+    const ids = Array.from(new Set(entries.map(e => e.actor_id).filter(Boolean))) as string[];
+    const missing = ids.filter(id => !requesters[id]);
+    if (missing.length) {
+      const { data: profs } = await supabase.from("profiles").select("id, full_name, email").in("id", missing);
+      setRequesters(prev => {
+        const next = { ...prev };
+        (profs as any[])?.forEach(p => { next[p.id] = { name: p.full_name || "Unknown", email: p.email || "" }; });
+        return next;
+      });
+    }
+  }
+
   async function approve(b: Booking) {
+    const cl = clashes[b.id];
+    if (cl?.length && !confirm(`This slot clashes with ${cl.length} approved booking(s) on ${cl.map(c => c.pitch_name).join(", ")}. Approve anyway?`)) return;
     const { error } = await (supabase as any).from("pitch_bookings").update({
       status: "approved", decided_by: user?.id, decided_at: new Date().toISOString(), decline_reason: null,
     }).eq("id", b.id);
     if (error) toast.error(error.message);
-    else { toast.success("Booking approved"); load(); }
+    else { toast.success("Booking approved — the requester has been notified"); load(); }
   }
+
 
   async function decline(b: Booking) {
     if (!declineReason.trim()) { toast.error("Add a reason"); return; }
