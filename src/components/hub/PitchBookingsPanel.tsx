@@ -519,7 +519,9 @@ export default function PitchBookingsPanel() {
             {loading ? (
               <div className="flex items-center justify-center h-96"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
             ) : (
-              <svg viewBox="0 0 620 640" className="w-full h-auto max-h-[640px]">
+              <svg viewBox="0 0 620 974" className="w-full h-auto">
+                <image href={groundSatellite} x={0} y={0} width={620} height={974} preserveAspectRatio="xMidYMid slice" />
+                <rect x={0} y={0} width={620} height={974} fill="#000" opacity={0.25} />
                 {[...pitches]
                   .filter(p => PITCH_LAYOUT[p.number])
                   .sort((a, b) => PITCH_LAYOUT[a.number].z - PITCH_LAYOUT[b.number].z)
@@ -532,8 +534,9 @@ export default function PitchBookingsPanel() {
                   return (
                     <g key={p.id} onClick={() => setDialogPitch(p)} className="cursor-pointer group">
                       <rect x={layout.x} y={layout.y} width={layout.w} height={layout.h} rx={12}
-                        fill={c.fill} stroke={c.stroke} strokeWidth={2}
+                        fill={c.fill} fillOpacity={0.55} stroke={c.stroke} strokeWidth={2.5}
                         className="transition-all group-hover:brightness-125" />
+
                       {!layout.labelTop && (
                         <>
                           {/* Pitch centre line */}
