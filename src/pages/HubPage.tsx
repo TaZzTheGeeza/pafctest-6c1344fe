@@ -154,6 +154,17 @@ export default function HubPage() {
         return;
       }
 
+      // Never replace an already-resolved admin catalogue with a partial
+      // membership response when a transient role check fails during refresh.
+      if (adminCheckResult.error) {
+        console.error("Unable to verify Hub admin access", adminCheckResult.error);
+        setMyTeams((current) => current.length === ALL_CLUB_TEAM_SLUGS.length
+          ? current
+          : normalizeClubTeamSlugs((membershipsResult.data ?? []).map((membership) => membership.team_slug)));
+        setLoading(false);
+        return;
+      }
+
       if (membershipsResult.error) {
         console.error("Unable to load Hub teams", membershipsResult.error);
         setLoading(false);
