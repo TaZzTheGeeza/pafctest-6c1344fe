@@ -132,7 +132,7 @@ function Inner() {
       status: "declined", decided_by: user?.id, decided_at: new Date().toISOString(), decline_reason: declineReason,
     }).eq("id", b.id);
     if (error) toast.error(error.message);
-    else { toast.success("Declined"); setDeclining(null); setDeclineReason(""); load(); }
+    else { toast.success("Declined — the requester has been notified"); setDeclining(null); setDeclineReason(""); load(); }
   }
 
   async function remove(b: Booking) {

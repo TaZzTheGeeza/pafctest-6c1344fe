@@ -277,7 +277,7 @@ function BookingDialog({ pitch, dayBookings, overlapBookings, pitches, selectedD
   );
 }
 
-function MyBookingsTab({ userId, pitches }: { userId?: string; pitches: Pitch[] }) {
+function MyBookingsTab({ userId, pitches, isAdmin }: { userId?: string; pitches: Pitch[]; isAdmin?: boolean }) {
   const [items, setItems] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [editBooking, setEditBooking] = useState<Booking | null>(null);
@@ -327,11 +327,18 @@ function MyBookingsTab({ userId, pitches }: { userId?: string; pitches: Pitch[] 
               <div className="text-[11px] text-red-300 basis-full">Reason: {b.decline_reason}</div>
             )}
             <div className="ml-auto flex items-center gap-1">
+              {b.status === "approved" && !isAdmin && (
+                <span className="text-[11px] text-muted-foreground flex items-center gap-1"><Lock className="h-3 w-3" />Locked (approved)</span>
+              )}
               {b.status === "pending" && (
                 <button onClick={() => cancel(b.id)} title="Cancel request" className="text-[11px] text-muted-foreground hover:text-amber-300 flex items-center gap-1 px-1"><X className="h-3 w-3" />Cancel</button>
               )}
-              <button onClick={() => setEditBooking(b)} title="Edit booking" className="text-muted-foreground hover:text-primary p-1"><Pencil className="h-3.5 w-3.5" /></button>
-              <button onClick={() => remove(b.id)} title="Delete booking" className="text-muted-foreground hover:text-destructive p-1"><Trash2 className="h-3.5 w-3.5" /></button>
+              {(isAdmin || b.status !== "approved") && (
+                <>
+                  <button onClick={() => setEditBooking(b)} title="Edit booking" className="text-muted-foreground hover:text-primary p-1"><Pencil className="h-3.5 w-3.5" /></button>
+                  <button onClick={() => remove(b.id)} title="Delete booking" className="text-muted-foreground hover:text-destructive p-1"><Trash2 className="h-3.5 w-3.5" /></button>
+                </>
+              )}
             </div>
           </div>
         );
@@ -1013,7 +1020,7 @@ export default function PitchBookingsPanel() {
                   <div className="text-xs text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" />{format(parseISO(b.start_time), "HH:mm")} – {format(parseISO(b.end_time), "HH:mm")}</div>
                   <div className="text-xs text-foreground">{b.age_group ? `${b.age_group}` : ""}{b.opponent ? ` vs ${b.opponent}` : ""}</div>
                   <div className="text-[11px] text-muted-foreground ml-auto uppercase">{b.purpose}</div>
-                  {(isAdmin || (isCoach && b.requested_by === user?.id)) && (
+                  {(isAdmin || (isCoach && b.requested_by === user?.id && b.status !== "approved")) && (
                     <div className="flex items-center gap-1">
                       <button onClick={() => setEditBooking(b)} title="Edit booking" className="text-muted-foreground hover:text-primary p-1"><Pencil className="h-3.5 w-3.5" /></button>
                       <button onClick={() => deleteBooking(b.id)} title="Delete booking" className="text-muted-foreground hover:text-destructive p-1"><Trash2 className="h-3.5 w-3.5" /></button>
@@ -1026,7 +1033,7 @@ export default function PitchBookingsPanel() {
         </>
       )}
 
-      {tab === "mine" && <MyBookingsTab userId={user?.id} pitches={pitches} />}
+      {tab === "mine" && <MyBookingsTab userId={user?.id} pitches={pitches} isAdmin={isAdmin} />}
 
       {dialogPitch && (
         <BookingDialog
