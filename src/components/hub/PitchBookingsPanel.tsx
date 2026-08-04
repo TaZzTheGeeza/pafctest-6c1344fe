@@ -569,6 +569,19 @@ export default function PitchBookingsPanel() {
     setLayouts(DEFAULT_PITCH_LAYOUT);
   }
 
+  async function deletePitch(num: number) {
+    const p = pitches.find(x => x.number === num);
+    if (!confirm(`Remove ${p?.name || `Pitch ${num}`} from the ground map? Existing bookings are kept but the pitch will no longer be bookable.`)) return;
+    const { error } = await (supabase as any).from("pitches").update({ active: false }).eq("number", num);
+    if (error) { toast.error(error.message); return; }
+    await (supabase as any).from("pitch_map_layout").delete().eq("pitch_number", num);
+    setLayouts(prev => { const next = { ...prev }; delete next[num]; return next; });
+    setSelectedPitchNum(null);
+    toast.success("Pitch removed");
+    loadPitches();
+  }
+
+
 
   async function deleteBooking(id: string) {
     if (!confirm("Delete this booking permanently?")) return;
