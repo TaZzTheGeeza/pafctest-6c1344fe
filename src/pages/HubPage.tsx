@@ -134,20 +134,33 @@ export default function HubPage() {
         return;
       }
 
-      const { data, error } = await supabase
-        .from("team_members")
-        .select("team_slug")
-        .eq("user_id", user.id);
+      const [membershipsResult, adminCheckResult] = await Promise.all([
+        supabase
+          .from("team_members")
+          .select("team_slug")
+          .eq("user_id", user.id),
+        supabase.rpc("has_role", { _user_id: user.id, _role: "admin" }),
+      ]);
 
       if (cancelled) return;
 
-      if (error) {
-        console.error("Unable to load Hub teams", error);
+      // Keep the management view independent of transient client role state.
+      // The backend role check is authoritative and prevents the full catalogue
+      // being replaced by a partial membership list after auth refreshes.
+      if (adminCheckResult.data === true) {
+        setMyTeams([...ALL_CLUB_TEAM_SLUGS]);
+        setActiveTeam((current) => current && ALL_CLUB_TEAM_SLUGS.includes(current) ? current : ALL_CLUB_TEAM_SLUGS[0]);
         setLoading(false);
         return;
       }
 
-      const slugs = normalizeClubTeamSlugs((data ?? []).map((membership) => membership.team_slug));
+      if (membershipsResult.error) {
+        console.error("Unable to load Hub teams", membershipsResult.error);
+        setLoading(false);
+        return;
+      }
+
+      const slugs = normalizeClubTeamSlugs((membershipsResult.data ?? []).map((membership) => membership.team_slug));
       setMyTeams(slugs);
       setActiveTeam((current) => current && slugs.includes(current) ? current : slugs[0] ?? null);
       setLoading(false);

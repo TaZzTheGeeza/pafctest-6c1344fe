@@ -78,13 +78,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
+    let cancelled = false;
     setRolesLoading(true);
-    supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", user.id)
-      .then(({ data }) => {
-        const roles = data?.map((r) => r.role) ?? [];
+    async function loadRoles() {
+      const { data, error } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id);
+
+      if (cancelled) return;
+      if (error) {
+        console.error("Unable to load user roles", error);
+        setRolesLoading(false);
+        return;
+      }
+
+      const roles = data?.map((r) => r.role) ?? [];
         setIsAdmin(roles.includes("admin"));
         setIsCoach(roles.includes("coach") || roles.includes("admin"));
         setIsPlayer(roles.includes("player") || roles.includes("coach") || roles.includes("admin"));
@@ -92,7 +101,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setIsNewsEditor(roles.includes("news_editor") || roles.includes("admin"));
         setIsPhotographer(roles.includes("photographer") || roles.includes("admin"));
         setRolesLoading(false);
-      });
+    }
+
+    void loadRoles();
 
     supabase
       .from("profiles")
@@ -100,8 +111,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .eq("id", user.id)
       .maybeSingle()
       .then(({ data }) => {
+        if (cancelled) return;
         setMustChangePassword(Boolean((data as any)?.must_change_password));
       });
+
+    return () => {
+      cancelled = true;
+    };
   }, [user]);
 
   const signOut = async () => {
