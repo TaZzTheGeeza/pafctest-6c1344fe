@@ -46,13 +46,14 @@ const PURPOSE_OPTIONS = [
 // LEFT: 11v11 (Pitch 6) with a 9v9 (Pitch 5) inside it, and a 5v5 (Pitch 2) inside the 9v9.
 // RIGHT: two 7v7 (Pitches 1 & 3) and one small 5v5 (Pitch 4).
 const PITCH_LAYOUT: Record<number, { x: number; y: number; w: number; h: number; z: number; labelTop?: boolean }> = {
-  6: { x: 35,  y: 155, w: 300, h: 590, z: 0, labelTop: true },  // 11v11 (outer)
-  5: { x: 65,  y: 200, w: 240, h: 500, z: 1, labelTop: true },  // 9v9 (inside 11v11)
-  2: { x: 105, y: 300, w: 160, h: 200, z: 2 },                  // 5v5 (inside 9v9)
-  1: { x: 360, y: 155, w: 210, h: 200, z: 0 },                  // 7v7
-  3: { x: 360, y: 380, w: 210, h: 200, z: 0 },                  // 7v7
-  4: { x: 360, y: 610, w: 150, h: 110, z: 0 },                  // small 5v5
+  6: { x: 40,  y: 460, w: 300, h: 470, z: 0, labelTop: true },  // 11v11 (outer)
+  5: { x: 72,  y: 495, w: 236, h: 400, z: 1, labelTop: true },  // 9v9 (inside 11v11)
+  2: { x: 118, y: 620, w: 144, h: 190, z: 2 },                  // 5v5 (inside 9v9)
+  1: { x: 300, y: 110, w: 230, h: 190, z: 0 },                  // 7v7
+  3: { x: 330, y: 320, w: 230, h: 190, z: 0 },                  // 7v7
+  4: { x: 385, y: 540, w: 165, h: 130, z: 0 },                  // small 5v5
 };
+
 
 
 // Physical overlap groups: the 11v11, 9v9 and small 5v5 on the left are nested inside
