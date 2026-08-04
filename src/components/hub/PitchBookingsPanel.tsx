@@ -865,45 +865,22 @@ export default function PitchBookingsPanel() {
           })()}
 
 
-          <div className="relative bg-[#05070a] border border-primary/30 rounded-xl p-4 md:p-6 overflow-hidden shadow-[0_0_40px_-12px_hsl(var(--primary)/0.5)]">
+          <div className="relative bg-[#05070a] border border-primary/30 rounded-xl p-4 md:p-6 overflow-hidden">
             {loading ? (
               <div className="flex items-center justify-center h-96"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
             ) : (
               <svg ref={svgRef} viewBox="0 0 1000 1000" className="w-full h-auto rounded-lg touch-none"
                 onPointerMove={onSvgPointerMove} onPointerUp={endDrag} onPointerLeave={endDrag}>
                 <defs>
-                  <filter id="pitchGlow" x="-40%" y="-40%" width="180%" height="180%">
-                    <feGaussianBlur stdDeviation="5" result="b" />
-                    <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
-                  </filter>
                   <pattern id="hudGrid" width="40" height="40" patternUnits="userSpaceOnUse">
-                    <path d="M40 0H0V40" fill="none" stroke="#7dd3fc" strokeOpacity="0.1" strokeWidth="0.8" />
+                    <path d="M40 0H0V40" fill="none" stroke="#7dd3fc" strokeOpacity="0.05" strokeWidth="0.8" />
                   </pattern>
-                  <linearGradient id="scanFade" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#38bdf8" stopOpacity="0" />
-                    <stop offset="50%" stopColor="#38bdf8" stopOpacity="0.3" />
-                    <stop offset="100%" stopColor="#38bdf8" stopOpacity="0" />
-                  </linearGradient>
                 </defs>
 
-                {/* Aerial base, darkened + cooled for the HUD look */}
+                {/* Aerial base */}
                 <g>
-                  <image href={groundSatellite} x={0} y={0} width={1000} height={1000} preserveAspectRatio="xMidYMid slice" opacity={0.8} />
-                  <rect x={0} y={0} width={1000} height={1000} fill="#020617" opacity={0.5} />
+                  <image href={groundSatellite} x={0} y={0} width={1000} height={1000} preserveAspectRatio="xMidYMid slice" opacity={0.9} />
                   <rect x={0} y={0} width={1000} height={1000} fill="url(#hudGrid)" />
-                </g>
-
-                {/* Sweeping scan line */}
-                {!layoutEdit && (
-                  <rect x={0} y={0} width={1000} height={100} fill="url(#scanFade)">
-                    <animate attributeName="y" values="-100;1000" dur="6s" repeatCount="indefinite" />
-                  </rect>
-                )}
-
-                {/* HUD frame */}
-                <g stroke="#38bdf8" strokeOpacity={0.5} strokeWidth={2} fill="none">
-                  <path d="M10 44 V10 H44" /><path d="M956 10 H990 V44" />
-                  <path d="M990 956 V990 H956" /><path d="M44 990 H10 V956" />
                 </g>
 
                 {[...pitches]
@@ -938,9 +915,7 @@ export default function PitchBookingsPanel() {
                       <g transform={`translate(${cx} ${cy}) rotate(${rot})`}>
                         <rect x={-hw} y={-hh} width={w} height={h} rx={3}
                           fill={c.fill} fillOpacity={layout.fillOpacity ?? 0.3} stroke={isSel ? "#facc15" : c.stroke} strokeWidth={isSel ? 4 : 2.5}
-
                           strokeDasharray={isSel ? "10 6" : undefined}
-                          filter="url(#pitchGlow)"
                           onPointerDown={e => startDrag(e, "move", p.number)}
                           className="transition-all group-hover:brightness-150" />
 
