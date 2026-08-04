@@ -571,8 +571,6 @@ export default function PitchBookingsPanel() {
               <a href="https://maps.app.goo.gl/ied9nHSnP8MW2wqq5" target="_blank" rel="noopener noreferrer" className="text-primary underline">Open in Google Maps</a>
             </p>
 
-
-            )}
           </div>
 
           {/* Day timeline list */}
