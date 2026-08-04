@@ -23,23 +23,9 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { useIsMobile } from "@/hooks/use-mobile";
 import { usePresentationEnabled } from "@/hooks/usePresentationEnabled";
 import { registerPushSubscription, isPushSupported, isPushEnabled } from "@/lib/pushNotifications";
+import { ALL_CLUB_TEAM_SLUGS, CLUB_TEAMS, normalizeClubTeamSlugs } from "@/lib/teamConfig";
 
-const TEAMS = [
-  { slug: "u6s", name: "U6" },
-  { slug: "u7s", name: "U7" },
-  { slug: "u8s-black", name: "U8 Black" },
-  { slug: "u8s-gold", name: "U8 Gold" },
-  { slug: "u9s-black", name: "U9 Black" },
-  { slug: "u9s-gold", name: "U9 Gold" },
-  { slug: "u10s", name: "U10" },
-  { slug: "u11s", name: "U11" },
-  { slug: "u12s-black", name: "U12 Black" },
-  { slug: "u12s-gold", name: "U12 Gold" },
-  { slug: "u13s", name: "U13" },
-  { slug: "u14s-black", name: "U14 Black" },
-  { slug: "u14s-gold", name: "U14 Gold" },
-  { slug: "u15s", name: "U15" },
-];
+const TEAMS = CLUB_TEAMS;
 
 const tabs = [
   { id: "chat", label: "Team Chat", icon: MessageSquare },
@@ -128,13 +114,50 @@ export default function HubPage() {
 
   useEffect(() => {
     if (!user) {
+      setMyTeams([]);
       setLoading(false);
       return;
     }
 
     if (rolesLoading) return;
 
-    loadMyTeams();
+    let cancelled = false;
+
+    async function loadMyTeams() {
+      setLoading(true);
+
+      if (isAdmin) {
+        if (cancelled) return;
+        setMyTeams([...ALL_CLUB_TEAM_SLUGS]);
+        setActiveTeam((current) => current && ALL_CLUB_TEAM_SLUGS.includes(current) ? current : ALL_CLUB_TEAM_SLUGS[0]);
+        setLoading(false);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("team_members")
+        .select("team_slug")
+        .eq("user_id", user.id);
+
+      if (cancelled) return;
+
+      if (error) {
+        console.error("Unable to load Hub teams", error);
+        setLoading(false);
+        return;
+      }
+
+      const slugs = normalizeClubTeamSlugs((data ?? []).map((membership) => membership.team_slug));
+      setMyTeams(slugs);
+      setActiveTeam((current) => current && slugs.includes(current) ? current : slugs[0] ?? null);
+      setLoading(false);
+    }
+
+    void loadMyTeams();
+
+    return () => {
+      cancelled = true;
+    };
   }, [user, isAdmin, rolesLoading]);
 
   useEffect(() => {
@@ -148,40 +171,6 @@ export default function HubPage() {
       });
     }
   }, [user]);
-
-  async function loadMyTeams() {
-    setLoading(true);
-    if (isAdmin) {
-      setMyTeams(TEAMS.map((t) => t.slug));
-      if (!activeTeam) setActiveTeam(TEAMS[0].slug);
-      setLoading(false);
-      return;
-    }
-    const { data } = await supabase.from("team_members").select("team_slug").eq("user_id", user!.id);
-    const rawSlugs = data?.map((d) => d.team_slug) || [];
-    // Normalize non-canonical slugs to canonical ones (legacy slugs may expand to multiple teams)
-    const canonicalMap: Record<string, string[]> = {
-      "u6": ["u6s"], "u7": ["u7s"],
-      "u8": ["u8s-black", "u8s-gold"], "u8s": ["u8s-black", "u8s-gold"],
-      "u8-black": ["u8s-black"], "u8-gold": ["u8s-gold"],
-      "u9-black": ["u9s-black"], "u9-gold": ["u9s-gold"],
-      "u9": ["u9s-black", "u9s-gold"], "u9s": ["u9s-black", "u9s-gold"],
-      "u10": ["u10s"], "u11": ["u11s"],
-      "u12-black": ["u12s-black"], "u12-gold": ["u12s-gold"],
-      "u12": ["u12s-black", "u12s-gold"], "u12s": ["u12s-black", "u12s-gold"],
-      "u13": ["u13s"],
-      "u14-black": ["u14s-black"], "u14-gold": ["u14s-gold"],
-      "u14": ["u14s-black", "u14s-gold"], "u14s": ["u14s-black", "u14s-gold"],
-      "u15": ["u15s"],
-    };
-    const normalized = [...new Set(rawSlugs.flatMap((s) => canonicalMap[s] || [s]))];
-    const teamOrder = TEAMS.map((t) => t.slug);
-    const slugs = normalized.filter((s) => teamOrder.includes(s)).sort((a, b) => teamOrder.indexOf(a) - teamOrder.indexOf(b));
-
-    setMyTeams(slugs);
-    if (!activeTeam && slugs.length > 0) setActiveTeam(slugs[0]);
-    setLoading(false);
-  }
 
   function selectTab(id: string) {
     setActiveTab(id);
