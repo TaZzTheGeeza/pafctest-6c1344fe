@@ -553,8 +553,11 @@ export default function PitchBookingsPanel() {
       pitch_number: Number(num),
       cx: L.cx, cy: L.cy, w: L.w, h: L.h, rot: L.rot, z: L.z,
       label_dx: L.labelDx, label_dy: L.labelDy, label_scale: L.labelScale,
+      color: L.color, use_status_color: L.useStatusColor, fill_opacity: L.fillOpacity,
+      label_text: L.labelText, sub_text: L.subText, label_color: L.labelColor, font_size: L.fontSize,
       updated_at: new Date().toISOString(),
     }));
+
     const { error } = await (supabase as any).from("pitch_map_layout").upsert(rows, { onConflict: "pitch_number" });
     setSavingLayout(false);
     if (error) toast.error(error.message);
