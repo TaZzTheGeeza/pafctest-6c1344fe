@@ -571,7 +571,7 @@ export default function PitchBookingsPanel() {
                   const hh = h / 2;
                   const boxW = Math.min(w * 0.55, 120);
                   const boxH = Math.min(h * 0.16, 46);
-                  const labelDy = layout.labelTop ? -hh * 0.62 : 0;
+                  const labelDy = hh * (layout.labelDy ?? -0.55);
                   return (
                     <g key={p.id} onClick={() => setDialogPitch(p)} className="cursor-pointer group">
                       <title>{`${p.name} · ${p.format} — tap to book`}</title>
