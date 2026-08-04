@@ -699,10 +699,17 @@ export default function PitchBookingsPanel() {
                   <h4 className="font-display uppercase tracking-wider text-sm text-foreground">
                     Editing · {pitch?.name || `Pitch ${selectedPitchNum}`}
                   </h4>
-                  <button onClick={() => updateSelected({ ...STYLE_DEFAULTS })}
-                    className="text-[10px] uppercase tracking-wider px-2 py-1 rounded border border-border text-muted-foreground">
-                    Reset style
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => updateSelected({ ...STYLE_DEFAULTS })}
+                      className="text-[10px] uppercase tracking-wider px-2 py-1 rounded border border-border text-muted-foreground">
+                      Reset style
+                    </button>
+                    <button onClick={() => deletePitch(selectedPitchNum)}
+                      className="text-[10px] uppercase tracking-wider px-2 py-1 rounded border border-destructive/60 text-destructive">
+                      Delete pitch
+                    </button>
+                  </div>
+
                 </div>
 
                 {/* Size / rotation / layer */}
