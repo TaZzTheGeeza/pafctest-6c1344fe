@@ -58,6 +58,8 @@ export interface PitchLayout {
   subText: string | null;        // overrides format line
   labelColor: string | null;
   fontSize: number;
+  showLabel: boolean;      // show the main text on the map
+  showSubText: boolean;    // show the format/sub text on the map
 }
 
 const STYLE_DEFAULTS = {
@@ -68,6 +70,8 @@ const STYLE_DEFAULTS = {
   subText: null as string | null,
   labelColor: null as string | null,
   fontSize: 17,
+  showLabel: true,
+  showSubText: true,
 };
 
 export const PITCH_COLOR_SWATCHES = [
@@ -492,6 +496,8 @@ export default function PitchBookingsPanel() {
           subText: r.sub_text ?? null,
           labelColor: r.label_color ?? null,
           fontSize: Number(r.font_size ?? 17),
+          showLabel: r.show_label ?? true,
+          showSubText: r.show_sub_text ?? true,
         };
 
       }
@@ -555,6 +561,7 @@ export default function PitchBookingsPanel() {
       label_dx: L.labelDx, label_dy: L.labelDy, label_scale: L.labelScale,
       color: L.color, use_status_color: L.useStatusColor, fill_opacity: L.fillOpacity,
       label_text: L.labelText, sub_text: L.subText, label_color: L.labelColor, font_size: L.fontSize,
+      show_label: L.showLabel, show_sub_text: L.showSubText,
       updated_at: new Date().toISOString(),
     }));
 
@@ -605,6 +612,7 @@ export default function PitchBookingsPanel() {
       label_dx: layout.labelDx, label_dy: layout.labelDy, label_scale: layout.labelScale,
       color: layout.color, use_status_color: layout.useStatusColor, fill_opacity: layout.fillOpacity,
       label_text: layout.labelText, sub_text: layout.subText, label_color: layout.labelColor, font_size: layout.fontSize,
+      show_label: layout.showLabel, show_sub_text: layout.showSubText,
       updated_at: new Date().toISOString(),
     }, { onConflict: "pitch_number" });
 
@@ -812,6 +820,21 @@ export default function PitchBookingsPanel() {
                     <Input value={L.subText ?? ""} placeholder={pitch?.format || "Format"}
                       onChange={e => updateSelected({ subText: e.target.value || null })} className="h-9" />
                   </div>
+                  <div className="sm:col-span-2 flex items-center gap-2 flex-wrap">
+                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Show on map</span>
+                    <button onClick={() => updateSelected({ showLabel: !(L.showLabel ?? true) })}
+                      className={`text-[10px] uppercase tracking-wider px-2 py-1 rounded border ${(L.showLabel ?? true) ? "border-border text-muted-foreground" : "border-destructive/60 text-destructive"}`}>
+                      {(L.showLabel ?? true) ? "Hide main text" : "Show main text"}
+                    </button>
+                    <button onClick={() => updateSelected({ showSubText: !(L.showSubText ?? true) })}
+                      className={`text-[10px] uppercase tracking-wider px-2 py-1 rounded border ${(L.showSubText ?? true) ? "border-border text-muted-foreground" : "border-destructive/60 text-destructive"}`}>
+                      {(L.showSubText ?? true) ? "Hide sub text" : "Show sub text"}
+                    </button>
+                    <button onClick={() => updateSelected({ showLabel: false, showSubText: false })}
+                      className="text-[10px] uppercase tracking-wider px-2 py-1 rounded border border-destructive/60 text-destructive">
+                      Delete both texts
+                    </button>
+                  </div>
                   <div className="flex items-end gap-2">
                     <div>
                       <label className="text-[10px] uppercase tracking-wider text-muted-foreground block">Text colour</label>
@@ -958,16 +981,20 @@ export default function PitchBookingsPanel() {
                         {layoutEdit && (
                           <rect x={-70} y={-18} width={140} height={44} rx={4} fill="#facc15" fillOpacity={0.12} stroke="#facc15" strokeOpacity={0.6} strokeDasharray="4 4" />
                         )}
+                        {(layout.showLabel ?? true) && (
                         <text x={0} y={0} textAnchor="middle"
                           fill={layout.labelColor || "#e2f5ff"} className="font-display uppercase" fontSize={fs} fontWeight={700}
                           letterSpacing="1.5" style={{ paintOrder: "stroke", stroke: "#020617", strokeWidth: 4 }}>
                           {mainText}
                         </text>
+                        )}
+                        {(layout.showSubText ?? true) && (
                         <text x={0} y={fs + 2} textAnchor="middle"
                           fill={layout.labelColor || c.text} className="font-display" fontSize={fs * 0.76} letterSpacing="2" opacity={0.95}
                           style={{ paintOrder: "stroke", stroke: "#020617", strokeWidth: 4 }}>
                           {subText}
                         </text>
+                        )}
 
                       </g>
                       {faLocked && (
