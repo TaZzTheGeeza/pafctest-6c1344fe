@@ -676,27 +676,112 @@ export default function PitchBookingsPanel() {
             </div>
           )}
 
-          {layoutEdit && selectedPitchNum != null && layouts[selectedPitchNum] && (
-            <div className="bg-card border border-border rounded-lg p-3 mb-2 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-              {([
-                { key: "w", label: "Width", min: 30, max: 500, step: 1 },
-                { key: "h", label: "Height", min: 30, max: 600, step: 1 },
-                { key: "rot", label: "Rotation", min: -180, max: 180, step: 1 },
-                { key: "labelScale", label: "Label size", min: 0.5, max: 2.5, step: 0.05 },
-                { key: "z", label: "Layer (front)", min: 0, max: 5, step: 1 },
-              ] as const).map(f => (
-                <div key={f.key}>
-                  <label className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                    {f.label} · {Number(layouts[selectedPitchNum][f.key]).toFixed(f.key === "labelScale" ? 2 : 0)}
-                  </label>
-                  <input type="range" min={f.min} max={f.max} step={f.step}
-                    value={Number(layouts[selectedPitchNum][f.key])}
-                    onChange={e => updateSelected({ [f.key]: Number(e.target.value) } as Partial<PitchLayout>)}
-                    className="w-full accent-primary" />
+          {layoutEdit && selectedPitchNum != null && layouts[selectedPitchNum] && (() => {
+            const L = layouts[selectedPitchNum];
+            const pitch = pitches.find(p => p.number === selectedPitchNum);
+            const nudge = (dx: number, dy: number) => updateSelected({ cx: L.cx + dx, cy: L.cy + dy });
+            return (
+              <div className="bg-card border border-border rounded-lg p-4 mb-2 space-y-4">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <h4 className="font-display uppercase tracking-wider text-sm text-foreground">
+                    Editing · {pitch?.name || `Pitch ${selectedPitchNum}`}
+                  </h4>
+                  <button onClick={() => updateSelected({ ...STYLE_DEFAULTS })}
+                    className="text-[10px] uppercase tracking-wider px-2 py-1 rounded border border-border text-muted-foreground">
+                    Reset style
+                  </button>
                 </div>
-              ))}
-            </div>
-          )}
+
+                {/* Size / rotation / layer */}
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {([
+                    { key: "w", label: "Width", min: 30, max: 500, step: 1, dp: 0 },
+                    { key: "h", label: "Height", min: 30, max: 600, step: 1, dp: 0 },
+                    { key: "rot", label: "Rotation", min: -180, max: 180, step: 1, dp: 0 },
+                    { key: "labelScale", label: "Label scale", min: 0.5, max: 3, step: 0.05, dp: 2 },
+                    { key: "fontSize", label: "Text size", min: 8, max: 40, step: 1, dp: 0 },
+                    { key: "fillOpacity", label: "Fill opacity", min: 0, max: 1, step: 0.05, dp: 2 },
+                    { key: "z", label: "Layer (front)", min: 0, max: 5, step: 1, dp: 0 },
+                  ] as const).map(f => (
+                    <div key={f.key}>
+                      <label className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                        {f.label} · {Number(L[f.key]).toFixed(f.dp)}
+                      </label>
+                      <input type="range" min={f.min} max={f.max} step={f.step}
+                        value={Number(L[f.key])}
+                        onChange={e => updateSelected({ [f.key]: Number(e.target.value) } as Partial<PitchLayout>)}
+                        className="w-full accent-primary" />
+                    </div>
+                  ))}
+                </div>
+
+                {/* Colour */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Pitch colour</span>
+                    <label className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                      <input type="checkbox" checked={L.useStatusColor}
+                        onChange={e => updateSelected({ useStatusColor: e.target.checked })}
+                        className="accent-primary" />
+                      Use booking status colour
+                    </label>
+                  </div>
+                  {!L.useStatusColor && (
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {PITCH_COLOR_SWATCHES.map(sw => (
+                        <button key={sw} onClick={() => updateSelected({ color: sw })}
+                          title={sw}
+                          className={`w-6 h-6 rounded-md border-2 ${L.color === sw ? "border-primary scale-110" : "border-border"}`}
+                          style={{ background: sw }} />
+                      ))}
+                      <input type="color" value={L.color || "#22c55e"}
+                        onChange={e => updateSelected({ color: e.target.value })}
+                        className="w-9 h-8 bg-transparent border border-border rounded cursor-pointer" />
+                    </div>
+                  )}
+                </div>
+
+                {/* Text */}
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Main text</label>
+                    <Input value={L.labelText ?? ""} placeholder={pitch?.name || "Pitch name"}
+                      onChange={e => updateSelected({ labelText: e.target.value || null })} className="h-9" />
+                  </div>
+                  <div>
+                    <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Sub text</label>
+                    <Input value={L.subText ?? ""} placeholder={pitch?.format || "Format"}
+                      onChange={e => updateSelected({ subText: e.target.value || null })} className="h-9" />
+                  </div>
+                  <div className="flex items-end gap-2">
+                    <div>
+                      <label className="text-[10px] uppercase tracking-wider text-muted-foreground block">Text colour</label>
+                      <input type="color" value={L.labelColor || "#e2f5ff"}
+                        onChange={e => updateSelected({ labelColor: e.target.value })}
+                        className="w-12 h-9 bg-transparent border border-border rounded cursor-pointer" />
+                    </div>
+                    {L.labelColor && (
+                      <button onClick={() => updateSelected({ labelColor: null })}
+                        className="text-[10px] uppercase tracking-wider px-2 py-1.5 rounded border border-border text-muted-foreground">
+                        Default
+                      </button>
+                    )}
+                  </div>
+                  {/* Nudge */}
+                  <div>
+                    <label className="text-[10px] uppercase tracking-wider text-muted-foreground block mb-1">Nudge position</label>
+                    <div className="flex gap-1">
+                      {([["←", -5, 0], ["→", 5, 0], ["↑", 0, -5], ["↓", 0, 5]] as const).map(([t, dx, dy]) => (
+                        <button key={t} onClick={() => nudge(dx, dy)}
+                          className="w-9 h-9 rounded border border-border text-muted-foreground hover:text-primary hover:border-primary">{t}</button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
 
           <div className="relative bg-[#05070a] border border-primary/30 rounded-xl p-4 md:p-6 overflow-hidden shadow-[0_0_40px_-12px_hsl(var(--primary)/0.5)]">
             {loading ? (
