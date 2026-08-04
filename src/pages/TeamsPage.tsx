@@ -16,6 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { MatchDetailPanel } from "@/components/MatchDetailPanel";
 import clubLogo from "@/assets/club-logo.jpg";
 import { SEO } from "@/components/SEO";
+import { CLUB_TEAMS } from "@/lib/teamConfig";
 
 const leagueTableConfig: Record<string, { divisionSeason?: string; tableUrl?: string; faUrl: string; highlightTeams: string[] }> = {
   "u13s-black": {
@@ -48,22 +49,11 @@ interface TeamData {
   };
 }
 
-const allTeams: TeamData[] = [
-  { slug: "u6s", name: "U6", ageGroup: "Under 6", training: "TBC", nextFixture: { opponent: "TBC", venue: "Home", date: "TBC", kickoff: "TBC" } },
-  { slug: "u7s", name: "U7", ageGroup: "Under 7", training: "TBC", nextFixture: { opponent: "TBC", venue: "Home", date: "TBC", kickoff: "TBC" } },
-  { slug: "u8s-black", name: "U8 Black", ageGroup: "Under 8", training: "TBC", nextFixture: { opponent: "TBC", venue: "Home", date: "TBC", kickoff: "TBC" } },
-  { slug: "u8s-gold", name: "U8 Gold", ageGroup: "Under 8", training: "TBC", nextFixture: { opponent: "TBC", venue: "Home", date: "TBC", kickoff: "TBC" } },
-  { slug: "u9s-black", name: "U9 Black", ageGroup: "Under 9", training: "TBC", nextFixture: { opponent: "TBC", venue: "Home", date: "TBC", kickoff: "TBC" } },
-  { slug: "u9s-gold", name: "U9 Gold", ageGroup: "Under 9", training: "TBC", nextFixture: { opponent: "TBC", venue: "Home", date: "TBC", kickoff: "TBC" } },
-  { slug: "u10s", name: "U10", ageGroup: "Under 10", training: "TBC", nextFixture: { opponent: "TBC", venue: "Home", date: "TBC", kickoff: "TBC" } },
-  { slug: "u11s", name: "U11", ageGroup: "Under 11", training: "TBC", nextFixture: { opponent: "TBC", venue: "Home", date: "TBC", kickoff: "TBC" } },
-  { slug: "u12s-black", name: "U12 Black", ageGroup: "Under 12", training: "TBC", nextFixture: { opponent: "TBC", venue: "Home", date: "TBC", kickoff: "TBC" } },
-  { slug: "u12s-gold", name: "U12 Gold", ageGroup: "Under 12", training: "TBC", nextFixture: { opponent: "TBC", venue: "Home", date: "TBC", kickoff: "TBC" } },
-  { slug: "u13s", name: "U13", ageGroup: "Under 13", training: "TBC", nextFixture: { opponent: "TBC", venue: "Home", date: "TBC", kickoff: "TBC" } },
-  { slug: "u14s-black", name: "U14 Black", ageGroup: "Under 14", training: "TBC", nextFixture: { opponent: "TBC", venue: "Home", date: "TBC", kickoff: "TBC" } },
-  { slug: "u14s-gold", name: "U14 Gold", ageGroup: "Under 14", training: "TBC", nextFixture: { opponent: "TBC", venue: "Home", date: "TBC", kickoff: "TBC" } },
-  { slug: "u15s", name: "U15", ageGroup: "Under 15", training: "TBC", nextFixture: { opponent: "TBC", venue: "Home", date: "TBC", kickoff: "TBC" } },
-];
+const allTeams: TeamData[] = CLUB_TEAMS.map((team) => ({
+  ...team,
+  training: "TBC",
+  nextFixture: { opponent: "TBC", venue: "Home", date: "TBC", kickoff: "TBC" },
+}));
 
 function formatFADate(dateStr: string): string {
 // dateStr is "DD/MM/YY" or "DD/MM/YYYY" format

@@ -1,6 +1,7 @@
 export interface ClubTeam {
   slug: string;
   name: string;
+  ageGroup: string;
 }
 
 /**
@@ -8,20 +9,20 @@ export interface ClubTeam {
  * Keep team UI sourced from this catalogue rather than recreating local lists.
  */
 export const CLUB_TEAMS: readonly ClubTeam[] = [
-  { slug: "u6s", name: "U6" },
-  { slug: "u7s", name: "U7" },
-  { slug: "u8s-black", name: "U8 Black" },
-  { slug: "u8s-gold", name: "U8 Gold" },
-  { slug: "u9s-black", name: "U9 Black" },
-  { slug: "u9s-gold", name: "U9 Gold" },
-  { slug: "u10s", name: "U10" },
-  { slug: "u11s", name: "U11" },
-  { slug: "u12s-black", name: "U12 Black" },
-  { slug: "u12s-gold", name: "U12 Gold" },
-  { slug: "u13s", name: "U13" },
-  { slug: "u14s-black", name: "U14 Black" },
-  { slug: "u14s-gold", name: "U14 Gold" },
-  { slug: "u15s", name: "U15" },
+  { slug: "u6s", name: "U6", ageGroup: "Under 6" },
+  { slug: "u7s", name: "U7", ageGroup: "Under 7" },
+  { slug: "u8s-black", name: "U8 Black", ageGroup: "Under 8" },
+  { slug: "u8s-gold", name: "U8 Gold", ageGroup: "Under 8" },
+  { slug: "u9s-black", name: "U9 Black", ageGroup: "Under 9" },
+  { slug: "u9s-gold", name: "U9 Gold", ageGroup: "Under 9" },
+  { slug: "u10s", name: "U10", ageGroup: "Under 10" },
+  { slug: "u11s", name: "U11", ageGroup: "Under 11" },
+  { slug: "u12s-black", name: "U12 Black", ageGroup: "Under 12" },
+  { slug: "u12s-gold", name: "U12 Gold", ageGroup: "Under 12" },
+  { slug: "u13s", name: "U13", ageGroup: "Under 13" },
+  { slug: "u14s-black", name: "U14 Black", ageGroup: "Under 14" },
+  { slug: "u14s-gold", name: "U14 Gold", ageGroup: "Under 14" },
+  { slug: "u15s", name: "U15", ageGroup: "Under 15" },
 ] as const;
 
 const LEGACY_TEAM_SLUGS: Record<string, readonly string[]> = {
