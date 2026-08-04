@@ -5,10 +5,11 @@ import { RoleGate } from "@/components/RoleGate";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { format, parseISO } from "date-fns";
-import { Loader2, CheckCircle2, XCircle, Hourglass, Shield, Trash2 } from "lucide-react";
+import { Loader2, CheckCircle2, XCircle, Hourglass, Shield, Trash2, AlertTriangle, History } from "lucide-react";
 import { toast } from "sonner";
 import { Textarea } from "@/components/ui/textarea";
 import { Navigate } from "react-router-dom";
+
 
 interface Booking {
   id: string;
@@ -28,16 +29,30 @@ interface Booking {
 
 interface Pitch { id: string; number: number; name: string; format: string; }
 
+interface Clash {
+  id: string; start_time: string; end_time: string; opponent: string | null;
+  age_group: string | null; status: string; pitch_id: string; pitch_name: string;
+}
+
+interface AuditEntry {
+  id: string; booking_id: string; actor_id: string | null; action: string;
+  from_status: string | null; to_status: string | null; details: any; created_at: string;
+}
+
 function Inner() {
   const { user, isAdmin } = useAuth();
   const [isFixtureSec, setIsFixtureSec] = useState<boolean | null>(null);
   const [pitches, setPitches] = useState<Pitch[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [requesters, setRequesters] = useState<Record<string, { name: string; email: string }>>({});
+  const [clashes, setClashes] = useState<Record<string, Clash[]>>({});
+  const [audit, setAudit] = useState<Record<string, AuditEntry[]>>({});
+  const [openAudit, setOpenAudit] = useState<string | null>(null);
   const [tab, setTab] = useState<"pending" | "upcoming" | "history">("pending");
   const [loading, setLoading] = useState(true);
   const [declining, setDeclining] = useState<string | null>(null);
   const [declineReason, setDeclineReason] = useState("");
+
 
   useEffect(() => {
     if (!user) return;
@@ -66,16 +81,50 @@ function Inner() {
       (profs as any[])?.forEach(p => { map[p.id] = { name: p.full_name || "Unknown", email: p.email || "" }; });
       setRequesters(map);
     }
+    // Clash detection for pending requests
+    const pending = bs.filter(x => x.status === "pending");
+    const clashMap: Record<string, Clash[]> = {};
+    await Promise.all(pending.map(async x => {
+      const { data } = await (supabase as any).rpc("check_pitch_conflict", {
+        _pitch_id: x.pitch_id, _start: x.start_time, _end: x.end_time, _exclude_id: x.id,
+      });
+      if (data?.length) clashMap[x.id] = data as Clash[];
+    }));
+    setClashes(clashMap);
     setLoading(false);
   }
 
+  async function loadAudit(bookingId: string) {
+    if (openAudit === bookingId) { setOpenAudit(null); return; }
+    setOpenAudit(bookingId);
+    if (audit[bookingId]) return;
+    const { data } = await (supabase as any)
+      .from("pitch_booking_audit").select("*")
+      .eq("booking_id", bookingId).order("created_at", { ascending: false });
+    const entries = (data as AuditEntry[]) || [];
+    setAudit(prev => ({ ...prev, [bookingId]: entries }));
+    const ids = Array.from(new Set(entries.map(e => e.actor_id).filter(Boolean))) as string[];
+    const missing = ids.filter(id => !requesters[id]);
+    if (missing.length) {
+      const { data: profs } = await supabase.from("profiles").select("id, full_name, email").in("id", missing);
+      setRequesters(prev => {
+        const next = { ...prev };
+        (profs as any[])?.forEach(p => { next[p.id] = { name: p.full_name || "Unknown", email: p.email || "" }; });
+        return next;
+      });
+    }
+  }
+
   async function approve(b: Booking) {
+    const cl = clashes[b.id];
+    if (cl?.length && !confirm(`This slot clashes with ${cl.length} approved booking(s) on ${cl.map(c => c.pitch_name).join(", ")}. Approve anyway?`)) return;
     const { error } = await (supabase as any).from("pitch_bookings").update({
       status: "approved", decided_by: user?.id, decided_at: new Date().toISOString(), decline_reason: null,
     }).eq("id", b.id);
     if (error) toast.error(error.message);
-    else { toast.success("Booking approved"); load(); }
+    else { toast.success("Booking approved — the requester has been notified"); load(); }
   }
+
 
   async function decline(b: Booking) {
     if (!declineReason.trim()) { toast.error("Add a reason"); return; }
@@ -83,7 +132,7 @@ function Inner() {
       status: "declined", decided_by: user?.id, decided_at: new Date().toISOString(), decline_reason: declineReason,
     }).eq("id", b.id);
     if (error) toast.error(error.message);
-    else { toast.success("Declined"); setDeclining(null); setDeclineReason(""); load(); }
+    else { toast.success("Declined — the requester has been notified"); setDeclining(null); setDeclineReason(""); load(); }
   }
 
   async function remove(b: Booking) {
@@ -156,6 +205,22 @@ function Inner() {
                       {b.status === "declined" && b.decline_reason && (
                         <div className="text-[11px] text-red-300 mt-1">Reason: {b.decline_reason}</div>
                       )}
+                      {clashes[b.id]?.length > 0 && (
+                        <div className="mt-2 rounded-md border border-amber-700/50 bg-amber-950/30 p-2">
+                          <div className="flex items-center gap-1 text-[11px] uppercase tracking-wider text-amber-300">
+                            <AlertTriangle className="h-3 w-3" /> Clash detected
+                          </div>
+                          <ul className="mt-1 space-y-0.5">
+                            {clashes[b.id].map(c => (
+                              <li key={c.id} className="text-[11px] text-amber-200/90">
+                                {c.pitch_name} · {format(parseISO(c.start_time), "HH:mm")}–{format(parseISO(c.end_time), "HH:mm")}
+                                {c.age_group ? ` · ${c.age_group}` : ""}{c.opponent ? ` vs ${c.opponent}` : ""} (approved)
+                              </li>
+                            ))}
+                          </ul>
+                          <div className="text-[10px] text-amber-200/60 mt-1">Pitches 1, 2 and 3 share the same physical space.</div>
+                        </div>
+                      )}
                     </div>
 
                     <div className="flex gap-2 items-center">
@@ -169,6 +234,9 @@ function Inner() {
                           </button>
                         </>
                       )}
+                      <button onClick={() => loadAudit(b.id)} title="Booking history" className="text-muted-foreground hover:text-primary p-1">
+                        <History className="h-3.5 w-3.5" />
+                      </button>
                       {isAdmin && (
                         <button onClick={() => remove(b)} className="text-muted-foreground hover:text-destructive p-1">
                           <Trash2 className="h-3.5 w-3.5" />
@@ -176,6 +244,26 @@ function Inner() {
                       )}
                     </div>
                   </div>
+
+                  {openAudit === b.id && (
+                    <div className="mt-3 pt-3 border-t border-border">
+                      <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Audit log</div>
+                      {!audit[b.id] && <div className="text-[11px] text-muted-foreground">Loading…</div>}
+                      {audit[b.id]?.length === 0 && <div className="text-[11px] text-muted-foreground">No history recorded.</div>}
+                      <ul className="space-y-1">
+                        {audit[b.id]?.map(e => (
+                          <li key={e.id} className="text-[11px] text-muted-foreground">
+                            <span className="text-foreground uppercase tracking-wider">{e.action.replace("_", " ")}</span>
+                            {" · "}{format(parseISO(e.created_at), "dd MMM yyyy HH:mm")}
+                            {e.actor_id && requesters[e.actor_id] ? ` · ${requesters[e.actor_id].name}` : e.actor_id ? "" : " · system"}
+                            {e.from_status && e.to_status && e.from_status !== e.to_status ? ` · ${e.from_status} → ${e.to_status}` : ""}
+                            {e.details?.decline_reason ? ` · "${e.details.decline_reason}"` : ""}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
 
                   {declining === b.id && (
                     <div className="mt-3 pt-3 border-t border-border space-y-2">

@@ -1309,6 +1309,39 @@ export type Database = {
         }
         Relationships: []
       }
+      pitch_booking_audit: {
+        Row: {
+          action: string
+          actor_id: string | null
+          booking_id: string
+          created_at: string
+          details: Json
+          from_status: string | null
+          id: string
+          to_status: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          booking_id: string
+          created_at?: string
+          details?: Json
+          from_status?: string | null
+          id?: string
+          to_status?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          booking_id?: string
+          created_at?: string
+          details?: Json
+          from_status?: string | null
+          id?: string
+          to_status?: string | null
+        }
+        Relationships: []
+      }
       pitch_bookings: {
         Row: {
           admin_override: boolean
