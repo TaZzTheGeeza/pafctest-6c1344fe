@@ -1382,41 +1382,62 @@ export type Database = {
       }
       pitch_map_layout: {
         Row: {
+          color: string | null
           cx: number
           cy: number
+          fill_opacity: number
+          font_size: number
           h: number
+          label_color: string | null
           label_dx: number
           label_dy: number
           label_scale: number
+          label_text: string | null
           pitch_number: number
           rot: number
+          sub_text: string | null
           updated_at: string
+          use_status_color: boolean
           w: number
           z: number
         }
         Insert: {
+          color?: string | null
           cx: number
           cy: number
+          fill_opacity?: number
+          font_size?: number
           h: number
+          label_color?: string | null
           label_dx?: number
           label_dy?: number
           label_scale?: number
+          label_text?: string | null
           pitch_number: number
           rot?: number
+          sub_text?: string | null
           updated_at?: string
+          use_status_color?: boolean
           w: number
           z?: number
         }
         Update: {
+          color?: string | null
           cx?: number
           cy?: number
+          fill_opacity?: number
+          font_size?: number
           h?: number
+          label_color?: string | null
           label_dx?: number
           label_dy?: number
           label_scale?: number
+          label_text?: string | null
           pitch_number?: number
           rot?: number
+          sub_text?: string | null
           updated_at?: string
+          use_status_color?: boolean
           w?: number
           z?: number
         }
