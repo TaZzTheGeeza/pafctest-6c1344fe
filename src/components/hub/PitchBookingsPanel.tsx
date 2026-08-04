@@ -900,15 +900,16 @@ export default function PitchBookingsPanel() {
                           <rect x={-70} y={-18} width={140} height={44} rx={4} fill="#facc15" fillOpacity={0.12} stroke="#facc15" strokeOpacity={0.6} strokeDasharray="4 4" />
                         )}
                         <text x={0} y={0} textAnchor="middle"
-                          fill="#e2f5ff" className="font-display uppercase" fontSize={17} fontWeight={700}
+                          fill={layout.labelColor || "#e2f5ff"} className="font-display uppercase" fontSize={fs} fontWeight={700}
                           letterSpacing="1.5" style={{ paintOrder: "stroke", stroke: "#020617", strokeWidth: 4 }}>
-                          {p.name}
+                          {mainText}
                         </text>
-                        <text x={0} y={19} textAnchor="middle"
-                          fill={c.text} className="font-display" fontSize={13} letterSpacing="2" opacity={0.95}
+                        <text x={0} y={fs + 2} textAnchor="middle"
+                          fill={layout.labelColor || c.text} className="font-display" fontSize={fs * 0.76} letterSpacing="2" opacity={0.95}
                           style={{ paintOrder: "stroke", stroke: "#020617", strokeWidth: 4 }}>
-                          {p.format}
+                          {subText}
                         </text>
+
                       </g>
                       {faLocked && (
                         <g transform={`translate(${cx + hw * 0.7}, ${cy - hh * 0.7})`} pointerEvents="none">
