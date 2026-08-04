@@ -518,26 +518,34 @@ export default function PitchBookingsPanel() {
             {loading ? (
               <div className="flex items-center justify-center h-96"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
             ) : (
-              <svg viewBox="0 0 560 540" className="w-full h-auto max-h-[600px]">
-                {pitches.map(p => {
+              <svg viewBox="0 0 620 640" className="w-full h-auto max-h-[640px]">
+                {[...pitches]
+                  .filter(p => PITCH_LAYOUT[p.number])
+                  .sort((a, b) => PITCH_LAYOUT[a.number].z - PITCH_LAYOUT[b.number].z)
+                  .map(p => {
                   const layout = PITCH_LAYOUT[p.number];
-                  if (!layout) return null;
                   const { status, faLocked } = pitchPrimaryStatus(p.id);
                   const c = statusColor(status, faLocked);
+                  const cx = layout.x + layout.w / 2;
+                  const labelY = layout.labelTop ? layout.y + 26 : layout.y + layout.h / 2 - 6;
                   return (
                     <g key={p.id} onClick={() => setDialogPitch(p)} className="cursor-pointer group">
                       <rect x={layout.x} y={layout.y} width={layout.w} height={layout.h} rx={12}
                         fill={c.fill} stroke={c.stroke} strokeWidth={2}
                         className="transition-all group-hover:brightness-125" />
-                      {/* Pitch centre line */}
-                      <line x1={layout.x + 10} y1={layout.y + layout.h / 2} x2={layout.x + layout.w - 10} y2={layout.y + layout.h / 2}
-                        stroke={c.stroke} strokeOpacity={0.4} strokeWidth={1.5} />
-                      <circle cx={layout.x + layout.w / 2} cy={layout.y + layout.h / 2} r={14} fill="none" stroke={c.stroke} strokeOpacity={0.4} strokeWidth={1.5} />
-                      <text x={layout.x + layout.w / 2} y={layout.y + layout.h / 2 - 6} textAnchor="middle"
+                      {!layout.labelTop && (
+                        <>
+                          {/* Pitch centre line */}
+                          <line x1={layout.x + 10} y1={layout.y + layout.h / 2} x2={layout.x + layout.w - 10} y2={layout.y + layout.h / 2}
+                            stroke={c.stroke} strokeOpacity={0.4} strokeWidth={1.5} />
+                          <circle cx={cx} cy={layout.y + layout.h / 2} r={14} fill="none" stroke={c.stroke} strokeOpacity={0.4} strokeWidth={1.5} />
+                        </>
+                      )}
+                      <text x={cx} y={labelY} textAnchor="middle"
                         fill={c.text} className="font-display uppercase" fontSize={14} fontWeight={700}>
                         {p.name}
                       </text>
-                      <text x={layout.x + layout.w / 2} y={layout.y + layout.h / 2 + 14} textAnchor="middle"
+                      <text x={cx} y={labelY + 18} textAnchor="middle"
                         fill={c.text} className="font-display" fontSize={12} opacity={0.85}>
                         {p.format}
                       </text>
@@ -551,6 +559,7 @@ export default function PitchBookingsPanel() {
                   );
                 })}
               </svg>
+
             )}
           </div>
 
