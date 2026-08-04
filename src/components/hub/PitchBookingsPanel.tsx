@@ -440,6 +440,101 @@ export default function PitchBookingsPanel() {
   const [dialogPitch, setDialogPitch] = useState<Pitch | null>(null);
   const [editBooking, setEditBooking] = useState<Booking | null>(null);
 
+  // ---- Ground map layout editing (admins) ----
+  const svgRef = useRef<SVGSVGElement | null>(null);
+  const [layouts, setLayouts] = useState<Record<number, PitchLayout>>(DEFAULT_PITCH_LAYOUT);
+  const [layoutEdit, setLayoutEdit] = useState(false);
+  const [selectedPitchNum, setSelectedPitchNum] = useState<number | null>(null);
+  const [savingLayout, setSavingLayout] = useState(false);
+  const dragRef = useRef<{ kind: "move" | "label" | "resize"; num: number; sx: number; sy: number; base: PitchLayout } | null>(null);
+
+  useEffect(() => { loadLayouts(); }, []);
+
+  async function loadLayouts() {
+    const { data } = await (supabase as any).from("pitch_map_layout").select("*");
+    if (!data?.length) return;
+    setLayouts(prev => {
+      const next = { ...prev };
+      for (const r of data as any[]) {
+        next[r.pitch_number] = {
+          cx: Number(r.cx), cy: Number(r.cy), w: Number(r.w), h: Number(r.h),
+          rot: Number(r.rot), z: Number(r.z ?? 0),
+          labelDx: Number(r.label_dx ?? 0), labelDy: Number(r.label_dy ?? -60),
+          labelScale: Number(r.label_scale ?? 1),
+        };
+      }
+      return next;
+    });
+  }
+
+  function svgPoint(e: React.PointerEvent) {
+    const svg = svgRef.current;
+    if (!svg) return { x: 0, y: 0 };
+    const ctm = svg.getScreenCTM();
+    if (!ctm) return { x: 0, y: 0 };
+    const pt = svg.createSVGPoint();
+    pt.x = e.clientX; pt.y = e.clientY;
+    const p = pt.matrixTransform(ctm.inverse());
+    return { x: p.x, y: p.y };
+  }
+
+  function startDrag(e: React.PointerEvent, kind: "move" | "label" | "resize", num: number) {
+    if (!layoutEdit) return;
+    e.stopPropagation();
+    e.preventDefault();
+    (e.target as Element).setPointerCapture?.(e.pointerId);
+    const { x, y } = svgPoint(e);
+    setSelectedPitchNum(num);
+    dragRef.current = { kind, num, sx: x, sy: y, base: { ...layouts[num] } };
+  }
+
+  function onSvgPointerMove(e: React.PointerEvent) {
+    const d = dragRef.current;
+    if (!d) return;
+    const { x, y } = svgPoint(e);
+    const dx = x - d.sx, dy = y - d.sy;
+    setLayouts(prev => {
+      const L = { ...prev[d.num] };
+      if (d.kind === "move") { L.cx = Math.round(d.base.cx + dx); L.cy = Math.round(d.base.cy + dy); }
+      if (d.kind === "label") { L.labelDx = Math.round(d.base.labelDx + dx); L.labelDy = Math.round(d.base.labelDy + dy); }
+      if (d.kind === "resize") {
+        const rad = (-d.base.rot * Math.PI) / 180;
+        const lx = dx * Math.cos(rad) - dy * Math.sin(rad);
+        const ly = dx * Math.sin(rad) + dy * Math.cos(rad);
+        L.w = Math.max(30, Math.round(d.base.w + lx * 2));
+        L.h = Math.max(30, Math.round(d.base.h + ly * 2));
+      }
+      return { ...prev, [d.num]: L };
+    });
+  }
+
+  function endDrag() { dragRef.current = null; }
+
+  function updateSelected(patch: Partial<PitchLayout>) {
+    if (selectedPitchNum == null) return;
+    setLayouts(prev => ({ ...prev, [selectedPitchNum]: { ...prev[selectedPitchNum], ...patch } }));
+  }
+
+  async function saveLayouts() {
+    setSavingLayout(true);
+    const rows = Object.entries(layouts).map(([num, L]) => ({
+      pitch_number: Number(num),
+      cx: L.cx, cy: L.cy, w: L.w, h: L.h, rot: L.rot, z: L.z,
+      label_dx: L.labelDx, label_dy: L.labelDy, label_scale: L.labelScale,
+      updated_at: new Date().toISOString(),
+    }));
+    const { error } = await (supabase as any).from("pitch_map_layout").upsert(rows, { onConflict: "pitch_number" });
+    setSavingLayout(false);
+    if (error) toast.error(error.message);
+    else { toast.success("Ground map layout saved"); setLayoutEdit(false); setSelectedPitchNum(null); }
+  }
+
+  function resetLayouts() {
+    if (!confirm("Reset all pitches back to the default positions?")) return;
+    setLayouts(DEFAULT_PITCH_LAYOUT);
+  }
+
+
   async function deleteBooking(id: string) {
     if (!confirm("Delete this booking permanently?")) return;
     const { error } = await (supabase as any).from("pitch_bookings").delete().eq("id", id);
