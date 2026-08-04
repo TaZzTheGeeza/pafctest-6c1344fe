@@ -29,16 +29,30 @@ interface Booking {
 
 interface Pitch { id: string; number: number; name: string; format: string; }
 
+interface Clash {
+  id: string; start_time: string; end_time: string; opponent: string | null;
+  age_group: string | null; status: string; pitch_id: string; pitch_name: string;
+}
+
+interface AuditEntry {
+  id: string; booking_id: string; actor_id: string | null; action: string;
+  from_status: string | null; to_status: string | null; details: any; created_at: string;
+}
+
 function Inner() {
   const { user, isAdmin } = useAuth();
   const [isFixtureSec, setIsFixtureSec] = useState<boolean | null>(null);
   const [pitches, setPitches] = useState<Pitch[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [requesters, setRequesters] = useState<Record<string, { name: string; email: string }>>({});
+  const [clashes, setClashes] = useState<Record<string, Clash[]>>({});
+  const [audit, setAudit] = useState<Record<string, AuditEntry[]>>({});
+  const [openAudit, setOpenAudit] = useState<string | null>(null);
   const [tab, setTab] = useState<"pending" | "upcoming" | "history">("pending");
   const [loading, setLoading] = useState(true);
   const [declining, setDeclining] = useState<string | null>(null);
   const [declineReason, setDeclineReason] = useState("");
+
 
   useEffect(() => {
     if (!user) return;
