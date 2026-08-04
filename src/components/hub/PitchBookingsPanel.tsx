@@ -44,16 +44,22 @@ const PURPOSE_OPTIONS = [
 
 // Layout coordinates match the aerial map of Itter Park (square viewBox 1000 x 1000).
 // Pitches are painted on a diagonal, so each one is rotated about its own centre.
-// LOWER-LEFT: 11v11 (Pitch 6) with a 9v9 (Pitch 5) inside it, and a 5v5 (Pitch 2) inside the 9v9.
-// UPPER-RIGHT: two 7v7 (Pitches 1 & 3) and one small 5v5 (Pitch 4).
-const PITCH_LAYOUT: Record<number, { cx: number; cy: number; w: number; h: number; rot: number; z: number; labelDy?: number }> = {
-  6: { cx: 400, cy: 630, w: 172, h: 232, rot: -42, z: 0, labelDy: -0.82 }, // 11v11 (outer)
-  5: { cx: 400, cy: 622, w: 134, h: 192, rot: -42, z: 1, labelDy: -0.42 }, // 9v9 (inside 11v11)
-  2: { cx: 396, cy: 614, w: 76,  h: 122, rot: -42, z: 2, labelDy: 0.18 },  // 5v5 (inside 9v9)
-  1: { cx: 431, cy: 400, w: 124, h: 160, rot: -42, z: 0 },                 // 7v7
-  3: { cx: 520, cy: 496, w: 124, h: 160, rot: -42, z: 0 },                 // 7v7
-  4: { cx: 610, cy: 584, w: 94,  h: 128, rot: -42, z: 0 },                 // small 5v5
+// These are only the DEFAULTS — admins can drag/resize pitches and labels in "Edit layout"
+// mode, and the saved positions (public.pitch_map_layout) take priority.
+export interface PitchLayout {
+  cx: number; cy: number; w: number; h: number; rot: number; z: number;
+  labelDx: number; labelDy: number; labelScale: number;
+}
+
+const DEFAULT_PITCH_LAYOUT: Record<number, PitchLayout> = {
+  6: { cx: 400, cy: 630, w: 172, h: 232, rot: -42, z: 0, labelDx: 0, labelDy: -95, labelScale: 1 }, // 11v11 (outer)
+  5: { cx: 400, cy: 622, w: 134, h: 192, rot: -42, z: 1, labelDx: 0, labelDy: -40, labelScale: 1 }, // 9v9 (inside 11v11)
+  2: { cx: 396, cy: 614, w: 76,  h: 122, rot: -42, z: 2, labelDx: 0, labelDy: 11, labelScale: 1 },  // 5v5 (inside 9v9)
+  1: { cx: 431, cy: 400, w: 124, h: 160, rot: -42, z: 0, labelDx: 0, labelDy: -44, labelScale: 1 }, // 7v7
+  3: { cx: 520, cy: 496, w: 124, h: 160, rot: -42, z: 0, labelDx: 0, labelDy: -44, labelScale: 1 }, // 7v7
+  4: { cx: 610, cy: 584, w: 94,  h: 128, rot: -42, z: 0, labelDx: 0, labelDy: -35, labelScale: 1 }, // small 5v5
 };
+
 
 
 
