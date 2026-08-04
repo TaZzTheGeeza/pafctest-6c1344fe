@@ -51,16 +51,38 @@ const PURPOSE_OPTIONS = [
 export interface PitchLayout {
   cx: number; cy: number; w: number; h: number; rot: number; z: number;
   labelDx: number; labelDy: number; labelScale: number;
+  color: string | null;          // custom outline/fill colour (null = use status colour)
+  useStatusColor: boolean;
+  fillOpacity: number;
+  labelText: string | null;      // overrides pitch name
+  subText: string | null;        // overrides format line
+  labelColor: string | null;
+  fontSize: number;
 }
 
-const DEFAULT_PITCH_LAYOUT: Record<number, PitchLayout> = {
-  6: { cx: 400, cy: 630, w: 172, h: 232, rot: -42, z: 0, labelDx: 0, labelDy: -95, labelScale: 1 }, // 11v11 (outer)
-  5: { cx: 400, cy: 622, w: 134, h: 192, rot: -42, z: 1, labelDx: 0, labelDy: -40, labelScale: 1 }, // 9v9 (inside 11v11)
-  2: { cx: 396, cy: 614, w: 76,  h: 122, rot: -42, z: 2, labelDx: 0, labelDy: 11, labelScale: 1 },  // 5v5 (inside 9v9)
-  1: { cx: 431, cy: 400, w: 124, h: 160, rot: -42, z: 0, labelDx: 0, labelDy: -44, labelScale: 1 }, // 7v7
-  3: { cx: 520, cy: 496, w: 124, h: 160, rot: -42, z: 0, labelDx: 0, labelDy: -44, labelScale: 1 }, // 7v7
-  4: { cx: 610, cy: 584, w: 94,  h: 128, rot: -42, z: 0, labelDx: 0, labelDy: -35, labelScale: 1 }, // small 5v5
+const STYLE_DEFAULTS = {
+  color: null as string | null,
+  useStatusColor: true,
+  fillOpacity: 0.3,
+  labelText: null as string | null,
+  subText: null as string | null,
+  labelColor: null as string | null,
+  fontSize: 17,
 };
+
+export const PITCH_COLOR_SWATCHES = [
+  "#22c55e", "#38bdf8", "#facc15", "#f97316", "#dc2626", "#a855f7", "#ec4899", "#ffffff",
+];
+
+const DEFAULT_PITCH_LAYOUT: Record<number, PitchLayout> = {
+  6: { cx: 400, cy: 630, w: 172, h: 232, rot: -42, z: 0, labelDx: 0, labelDy: -95, labelScale: 1, ...STYLE_DEFAULTS }, // 11v11 (outer)
+  5: { cx: 400, cy: 622, w: 134, h: 192, rot: -42, z: 1, labelDx: 0, labelDy: -40, labelScale: 1, ...STYLE_DEFAULTS }, // 9v9 (inside 11v11)
+  2: { cx: 396, cy: 614, w: 76,  h: 122, rot: -42, z: 2, labelDx: 0, labelDy: 11, labelScale: 1, ...STYLE_DEFAULTS },  // 5v5 (inside 9v9)
+  1: { cx: 431, cy: 400, w: 124, h: 160, rot: -42, z: 0, labelDx: 0, labelDy: -44, labelScale: 1, ...STYLE_DEFAULTS }, // 7v7
+  3: { cx: 520, cy: 496, w: 124, h: 160, rot: -42, z: 0, labelDx: 0, labelDy: -44, labelScale: 1, ...STYLE_DEFAULTS }, // 7v7
+  4: { cx: 610, cy: 584, w: 94,  h: 128, rot: -42, z: 0, labelDx: 0, labelDy: -35, labelScale: 1, ...STYLE_DEFAULTS }, // small 5v5
+};
+
 
 
 
@@ -463,7 +485,15 @@ export default function PitchBookingsPanel() {
           rot: Number(r.rot), z: Number(r.z ?? 0),
           labelDx: Number(r.label_dx ?? 0), labelDy: Number(r.label_dy ?? -60),
           labelScale: Number(r.label_scale ?? 1),
+          color: r.color ?? null,
+          useStatusColor: r.use_status_color ?? true,
+          fillOpacity: Number(r.fill_opacity ?? 0.3),
+          labelText: r.label_text ?? null,
+          subText: r.sub_text ?? null,
+          labelColor: r.label_color ?? null,
+          fontSize: Number(r.font_size ?? 17),
         };
+
       }
       return next;
     });
@@ -523,8 +553,11 @@ export default function PitchBookingsPanel() {
       pitch_number: Number(num),
       cx: L.cx, cy: L.cy, w: L.w, h: L.h, rot: L.rot, z: L.z,
       label_dx: L.labelDx, label_dy: L.labelDy, label_scale: L.labelScale,
+      color: L.color, use_status_color: L.useStatusColor, fill_opacity: L.fillOpacity,
+      label_text: L.labelText, sub_text: L.subText, label_color: L.labelColor, font_size: L.fontSize,
       updated_at: new Date().toISOString(),
     }));
+
     const { error } = await (supabase as any).from("pitch_map_layout").upsert(rows, { onConflict: "pitch_number" });
     setSavingLayout(false);
     if (error) toast.error(error.message);
@@ -643,27 +676,112 @@ export default function PitchBookingsPanel() {
             </div>
           )}
 
-          {layoutEdit && selectedPitchNum != null && layouts[selectedPitchNum] && (
-            <div className="bg-card border border-border rounded-lg p-3 mb-2 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-              {([
-                { key: "w", label: "Width", min: 30, max: 500, step: 1 },
-                { key: "h", label: "Height", min: 30, max: 600, step: 1 },
-                { key: "rot", label: "Rotation", min: -180, max: 180, step: 1 },
-                { key: "labelScale", label: "Label size", min: 0.5, max: 2.5, step: 0.05 },
-                { key: "z", label: "Layer (front)", min: 0, max: 5, step: 1 },
-              ] as const).map(f => (
-                <div key={f.key}>
-                  <label className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                    {f.label} · {Number(layouts[selectedPitchNum][f.key]).toFixed(f.key === "labelScale" ? 2 : 0)}
-                  </label>
-                  <input type="range" min={f.min} max={f.max} step={f.step}
-                    value={Number(layouts[selectedPitchNum][f.key])}
-                    onChange={e => updateSelected({ [f.key]: Number(e.target.value) } as Partial<PitchLayout>)}
-                    className="w-full accent-primary" />
+          {layoutEdit && selectedPitchNum != null && layouts[selectedPitchNum] && (() => {
+            const L = layouts[selectedPitchNum];
+            const pitch = pitches.find(p => p.number === selectedPitchNum);
+            const nudge = (dx: number, dy: number) => updateSelected({ cx: L.cx + dx, cy: L.cy + dy });
+            return (
+              <div className="bg-card border border-border rounded-lg p-4 mb-2 space-y-4">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <h4 className="font-display uppercase tracking-wider text-sm text-foreground">
+                    Editing · {pitch?.name || `Pitch ${selectedPitchNum}`}
+                  </h4>
+                  <button onClick={() => updateSelected({ ...STYLE_DEFAULTS })}
+                    className="text-[10px] uppercase tracking-wider px-2 py-1 rounded border border-border text-muted-foreground">
+                    Reset style
+                  </button>
                 </div>
-              ))}
-            </div>
-          )}
+
+                {/* Size / rotation / layer */}
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {([
+                    { key: "w", label: "Width", min: 30, max: 500, step: 1, dp: 0 },
+                    { key: "h", label: "Height", min: 30, max: 600, step: 1, dp: 0 },
+                    { key: "rot", label: "Rotation", min: -180, max: 180, step: 1, dp: 0 },
+                    { key: "labelScale", label: "Label scale", min: 0.5, max: 3, step: 0.05, dp: 2 },
+                    { key: "fontSize", label: "Text size", min: 8, max: 40, step: 1, dp: 0 },
+                    { key: "fillOpacity", label: "Fill opacity", min: 0, max: 1, step: 0.05, dp: 2 },
+                    { key: "z", label: "Layer (front)", min: 0, max: 5, step: 1, dp: 0 },
+                  ] as const).map(f => (
+                    <div key={f.key}>
+                      <label className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                        {f.label} · {Number(L[f.key]).toFixed(f.dp)}
+                      </label>
+                      <input type="range" min={f.min} max={f.max} step={f.step}
+                        value={Number(L[f.key])}
+                        onChange={e => updateSelected({ [f.key]: Number(e.target.value) } as Partial<PitchLayout>)}
+                        className="w-full accent-primary" />
+                    </div>
+                  ))}
+                </div>
+
+                {/* Colour */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Pitch colour</span>
+                    <label className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                      <input type="checkbox" checked={L.useStatusColor}
+                        onChange={e => updateSelected({ useStatusColor: e.target.checked })}
+                        className="accent-primary" />
+                      Use booking status colour
+                    </label>
+                  </div>
+                  {!L.useStatusColor && (
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {PITCH_COLOR_SWATCHES.map(sw => (
+                        <button key={sw} onClick={() => updateSelected({ color: sw })}
+                          title={sw}
+                          className={`w-6 h-6 rounded-md border-2 ${L.color === sw ? "border-primary scale-110" : "border-border"}`}
+                          style={{ background: sw }} />
+                      ))}
+                      <input type="color" value={L.color || "#22c55e"}
+                        onChange={e => updateSelected({ color: e.target.value })}
+                        className="w-9 h-8 bg-transparent border border-border rounded cursor-pointer" />
+                    </div>
+                  )}
+                </div>
+
+                {/* Text */}
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Main text</label>
+                    <Input value={L.labelText ?? ""} placeholder={pitch?.name || "Pitch name"}
+                      onChange={e => updateSelected({ labelText: e.target.value || null })} className="h-9" />
+                  </div>
+                  <div>
+                    <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Sub text</label>
+                    <Input value={L.subText ?? ""} placeholder={pitch?.format || "Format"}
+                      onChange={e => updateSelected({ subText: e.target.value || null })} className="h-9" />
+                  </div>
+                  <div className="flex items-end gap-2">
+                    <div>
+                      <label className="text-[10px] uppercase tracking-wider text-muted-foreground block">Text colour</label>
+                      <input type="color" value={L.labelColor || "#e2f5ff"}
+                        onChange={e => updateSelected({ labelColor: e.target.value })}
+                        className="w-12 h-9 bg-transparent border border-border rounded cursor-pointer" />
+                    </div>
+                    {L.labelColor && (
+                      <button onClick={() => updateSelected({ labelColor: null })}
+                        className="text-[10px] uppercase tracking-wider px-2 py-1.5 rounded border border-border text-muted-foreground">
+                        Default
+                      </button>
+                    )}
+                  </div>
+                  {/* Nudge */}
+                  <div>
+                    <label className="text-[10px] uppercase tracking-wider text-muted-foreground block mb-1">Nudge position</label>
+                    <div className="flex gap-1">
+                      {([["←", -5, 0], ["→", 5, 0], ["↑", 0, -5], ["↓", 0, 5]] as const).map(([t, dx, dy]) => (
+                        <button key={t} onClick={() => nudge(dx, dy)}
+                          className="w-9 h-9 rounded border border-border text-muted-foreground hover:text-primary hover:border-primary">{t}</button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
 
           <div className="relative bg-[#05070a] border border-primary/30 rounded-xl p-4 md:p-6 overflow-hidden shadow-[0_0_40px_-12px_hsl(var(--primary)/0.5)]">
             {loading ? (
@@ -712,7 +830,11 @@ export default function PitchBookingsPanel() {
                   .map(p => {
                   const layout = layouts[p.number];
                   const { status, faLocked } = pitchPrimaryStatus(p.id);
-                  const c = statusColor(status, faLocked);
+                  const sc = statusColor(status, faLocked);
+                  const custom = !layout.useStatusColor && layout.color;
+                  const c = custom
+                    ? { fill: layout.color as string, stroke: layout.color as string, text: layout.color as string }
+                    : sc;
                   const { cx, cy, w, h, rot } = layout;
                   const hw = w / 2;
                   const hh = h / 2;
@@ -721,7 +843,11 @@ export default function PitchBookingsPanel() {
                   const lx = cx + layout.labelDx;
                   const ly = cy + layout.labelDy;
                   const ls = layout.labelScale ?? 1;
+                  const fs = layout.fontSize ?? 17;
+                  const mainText = layout.labelText || p.name;
+                  const subText = layout.subText ?? p.format;
                   const isSel = layoutEdit && selectedPitchNum === p.number;
+
                   return (
                     <g key={p.id}
                       onClick={() => { if (layoutEdit) setSelectedPitchNum(p.number); else setDialogPitch(p); }}
@@ -729,7 +855,8 @@ export default function PitchBookingsPanel() {
                       <title>{layoutEdit ? `${p.name} — drag to reposition` : `${p.name} · ${p.format} — tap to book`}</title>
                       <g transform={`translate(${cx} ${cy}) rotate(${rot})`}>
                         <rect x={-hw} y={-hh} width={w} height={h} rx={3}
-                          fill={c.fill} fillOpacity={0.3} stroke={isSel ? "#facc15" : c.stroke} strokeWidth={isSel ? 4 : 2.5}
+                          fill={c.fill} fillOpacity={layout.fillOpacity ?? 0.3} stroke={isSel ? "#facc15" : c.stroke} strokeWidth={isSel ? 4 : 2.5}
+
                           strokeDasharray={isSel ? "10 6" : undefined}
                           filter="url(#pitchGlow)"
                           onPointerDown={e => startDrag(e, "move", p.number)}
@@ -773,15 +900,16 @@ export default function PitchBookingsPanel() {
                           <rect x={-70} y={-18} width={140} height={44} rx={4} fill="#facc15" fillOpacity={0.12} stroke="#facc15" strokeOpacity={0.6} strokeDasharray="4 4" />
                         )}
                         <text x={0} y={0} textAnchor="middle"
-                          fill="#e2f5ff" className="font-display uppercase" fontSize={17} fontWeight={700}
+                          fill={layout.labelColor || "#e2f5ff"} className="font-display uppercase" fontSize={fs} fontWeight={700}
                           letterSpacing="1.5" style={{ paintOrder: "stroke", stroke: "#020617", strokeWidth: 4 }}>
-                          {p.name}
+                          {mainText}
                         </text>
-                        <text x={0} y={19} textAnchor="middle"
-                          fill={c.text} className="font-display" fontSize={13} letterSpacing="2" opacity={0.95}
+                        <text x={0} y={fs + 2} textAnchor="middle"
+                          fill={layout.labelColor || c.text} className="font-display" fontSize={fs * 0.76} letterSpacing="2" opacity={0.95}
                           style={{ paintOrder: "stroke", stroke: "#020617", strokeWidth: 4 }}>
-                          {p.format}
+                          {subText}
                         </text>
+
                       </g>
                       {faLocked && (
                         <g transform={`translate(${cx + hw * 0.7}, ${cy - hh * 0.7})`} pointerEvents="none">
