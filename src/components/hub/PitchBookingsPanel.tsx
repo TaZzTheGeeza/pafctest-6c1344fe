@@ -527,38 +527,38 @@ export default function PitchBookingsPanel() {
             {loading ? (
               <div className="flex items-center justify-center h-96"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
             ) : (
-              <svg viewBox="0 0 620 974" className="w-full h-auto rounded-lg">
+              <svg viewBox="0 0 1000 1000" className="w-full h-auto rounded-lg">
                 <defs>
                   <filter id="pitchGlow" x="-40%" y="-40%" width="180%" height="180%">
                     <feGaussianBlur stdDeviation="5" result="b" />
                     <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
                   </filter>
-                  <pattern id="hudGrid" width="34" height="34" patternUnits="userSpaceOnUse">
-                    <path d="M34 0H0V34" fill="none" stroke="#7dd3fc" strokeOpacity="0.12" strokeWidth="0.8" />
+                  <pattern id="hudGrid" width="40" height="40" patternUnits="userSpaceOnUse">
+                    <path d="M40 0H0V40" fill="none" stroke="#7dd3fc" strokeOpacity="0.1" strokeWidth="0.8" />
                   </pattern>
                   <linearGradient id="scanFade" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="#38bdf8" stopOpacity="0" />
-                    <stop offset="50%" stopColor="#38bdf8" stopOpacity="0.35" />
+                    <stop offset="50%" stopColor="#38bdf8" stopOpacity="0.3" />
                     <stop offset="100%" stopColor="#38bdf8" stopOpacity="0" />
                   </linearGradient>
                 </defs>
 
-                {/* Satellite base, darkened + cooled for the HUD look */}
+                {/* Aerial base, darkened + cooled for the HUD look */}
                 <g>
-                  <image href={groundSatellite} x={0} y={0} width={620} height={974} preserveAspectRatio="xMidYMid slice" opacity={0.75} />
-                  <rect x={0} y={0} width={620} height={974} fill="#020617" opacity={0.55} />
-                  <rect x={0} y={0} width={620} height={974} fill="url(#hudGrid)" />
+                  <image href={groundSatellite} x={0} y={0} width={1000} height={1000} preserveAspectRatio="xMidYMid slice" opacity={0.8} />
+                  <rect x={0} y={0} width={1000} height={1000} fill="#020617" opacity={0.5} />
+                  <rect x={0} y={0} width={1000} height={1000} fill="url(#hudGrid)" />
                 </g>
 
                 {/* Sweeping scan line */}
-                <rect x={0} y={0} width={620} height={90} fill="url(#scanFade)">
-                  <animate attributeName="y" values="-90;974" dur="6s" repeatCount="indefinite" />
+                <rect x={0} y={0} width={1000} height={100} fill="url(#scanFade)">
+                  <animate attributeName="y" values="-100;1000" dur="6s" repeatCount="indefinite" />
                 </rect>
 
                 {/* HUD frame */}
                 <g stroke="#38bdf8" strokeOpacity={0.5} strokeWidth={2} fill="none">
-                  <path d="M8 40 V8 H40" /><path d="M580 8 H612 V40" />
-                  <path d="M612 934 V966 H580" /><path d="M40 966 H8 V934" />
+                  <path d="M10 44 V10 H44" /><path d="M956 10 H990 V44" />
+                  <path d="M990 956 V990 H956" /><path d="M44 990 H10 V956" />
                 </g>
 
                 {[...pitches]
@@ -568,51 +568,56 @@ export default function PitchBookingsPanel() {
                   const layout = PITCH_LAYOUT[p.number];
                   const { status, faLocked } = pitchPrimaryStatus(p.id);
                   const c = statusColor(status, faLocked);
-                  const cx = layout.x + layout.w / 2;
-                  const cy = layout.y + layout.h / 2;
-                  const labelY = layout.labelTop ? layout.y + 28 : cy - 8;
-                  const boxW = Math.min(layout.w * 0.5, 120);
-                  const boxH = Math.min(layout.h * 0.16, 46);
+                  const { cx, cy, w, h, rot } = layout;
+                  const hw = w / 2;
+                  const hh = h / 2;
+                  const boxW = Math.min(w * 0.55, 120);
+                  const boxH = Math.min(h * 0.16, 46);
+                  const labelDy = layout.labelTop ? -hh * 0.62 : 0;
                   return (
                     <g key={p.id} onClick={() => setDialogPitch(p)} className="cursor-pointer group">
-                      <rect x={layout.x} y={layout.y} width={layout.w} height={layout.h} rx={4}
-                        fill={c.fill} fillOpacity={0.28} stroke={c.stroke} strokeWidth={2.5}
-                        filter="url(#pitchGlow)"
-                        className="transition-all group-hover:brightness-150" />
+                      <title>{`${p.name} · ${p.format} — tap to book`}</title>
+                      <g transform={`translate(${cx} ${cy}) rotate(${rot})`}>
+                        <rect x={-hw} y={-hh} width={w} height={h} rx={3}
+                          fill={c.fill} fillOpacity={0.3} stroke={c.stroke} strokeWidth={2.5}
+                          filter="url(#pitchGlow)"
+                          className="transition-all group-hover:brightness-150" />
 
-                      {/* Pitch markings */}
-                      <g stroke={c.stroke} strokeOpacity={0.55} strokeWidth={1.4} fill="none">
-                        <line x1={layout.x} y1={cy} x2={layout.x + layout.w} y2={cy} />
-                        <circle cx={cx} cy={cy} r={Math.min(layout.w, layout.h) * 0.16} />
-                        <rect x={cx - boxW / 2} y={layout.y} width={boxW} height={boxH} />
-                        <rect x={cx - boxW / 2} y={layout.y + layout.h - boxH} width={boxW} height={boxH} />
+                        {/* Pitch markings */}
+                        <g stroke={c.stroke} strokeOpacity={0.55} strokeWidth={1.4} fill="none">
+                          <line x1={-hw} y1={0} x2={hw} y2={0} />
+                          <circle cx={0} cy={0} r={Math.min(w, h) * 0.16} />
+                          <rect x={-boxW / 2} y={-hh} width={boxW} height={boxH} />
+                          <rect x={-boxW / 2} y={hh - boxH} width={boxW} height={boxH} />
+                        </g>
+
+                        {/* Corner ticks */}
+                        <g stroke={c.stroke} strokeOpacity={0.9} strokeWidth={2.5} fill="none">
+                          <path d={`M${-hw} ${-hh + 14} V${-hh} H${-hw + 14}`} />
+                          <path d={`M${hw - 14} ${-hh} H${hw} V${-hh + 14}`} />
+                          <path d={`M${hw} ${hh - 14} V${hh} H${hw - 14}`} />
+                          <path d={`M${-hw + 14} ${hh} H${-hw} V${hh - 14}`} />
+                        </g>
+
+                        {/* Status beacon */}
+                        <circle cx={-hw + 10} cy={hh - 10} r={4} fill={c.stroke}>
+                          <animate attributeName="opacity" values="1;0.2;1" dur="2s" repeatCount="indefinite" />
+                        </circle>
                       </g>
 
-                      {/* Corner ticks */}
-                      <g stroke={c.stroke} strokeOpacity={0.9} strokeWidth={2.5} fill="none">
-                        <path d={`M${layout.x} ${layout.y + 16} V${layout.y} H${layout.x + 16}`} />
-                        <path d={`M${layout.x + layout.w - 16} ${layout.y} H${layout.x + layout.w} V${layout.y + 16}`} />
-                        <path d={`M${layout.x + layout.w} ${layout.y + layout.h - 16} V${layout.y + layout.h} H${layout.x + layout.w - 16}`} />
-                        <path d={`M${layout.x + 16} ${layout.y + layout.h} H${layout.x} V${layout.y + layout.h - 16}`} />
-                      </g>
-
-                      {/* Status beacon */}
-                      <circle cx={layout.x + 14} cy={layout.y + layout.h - 14} r={4} fill={c.stroke}>
-                        <animate attributeName="opacity" values="1;0.2;1" dur="2s" repeatCount="indefinite" />
-                      </circle>
-
-                      <text x={cx} y={labelY} textAnchor="middle"
-                        fill="#e2f5ff" className="font-display uppercase" fontSize={15} fontWeight={700}
-                        letterSpacing="1.5" style={{ paintOrder: "stroke", stroke: "#020617", strokeWidth: 3 }}>
+                      {/* Labels stay upright for readability */}
+                      <text x={cx} y={cy + labelDy} textAnchor="middle"
+                        fill="#e2f5ff" className="font-display uppercase" fontSize={17} fontWeight={700}
+                        letterSpacing="1.5" style={{ paintOrder: "stroke", stroke: "#020617", strokeWidth: 4 }}>
                         {p.name}
                       </text>
-                      <text x={cx} y={labelY + 18} textAnchor="middle"
-                        fill={c.text} className="font-display" fontSize={12} letterSpacing="2" opacity={0.95}
-                        style={{ paintOrder: "stroke", stroke: "#020617", strokeWidth: 3 }}>
+                      <text x={cx} y={cy + labelDy + 19} textAnchor="middle"
+                        fill={c.text} className="font-display" fontSize={13} letterSpacing="2" opacity={0.95}
+                        style={{ paintOrder: "stroke", stroke: "#020617", strokeWidth: 4 }}>
                         {p.format}
                       </text>
                       {faLocked && (
-                        <g transform={`translate(${layout.x + layout.w - 24}, ${layout.y + 26})`}>
+                        <g transform={`translate(${cx + hw * 0.7}, ${cy - hh * 0.7})`}>
                           <circle r={9} fill="#020617" opacity={0.8} stroke="#fbbf24" strokeWidth={1} />
                           <text x={0} y={3} textAnchor="middle" fontSize={9} fill="#fbbf24">FA</text>
                         </g>
@@ -621,6 +626,7 @@ export default function PitchBookingsPanel() {
                   );
                 })}
               </svg>
+
             )}
             <p className="text-[11px] text-muted-foreground mt-3 text-center">
               Live satellite HUD of Itter Park with the painted pitch positions overlaid. Tap a pitch to book it.{" "}
