@@ -134,12 +134,16 @@ export default function HubPage() {
         return;
       }
 
-      const [membershipsResult, adminCheckResult] = await Promise.all([
+      const [membershipsResult, adminCheckResult, rolesResult] = await Promise.all([
         supabase
           .from("team_members")
           .select("team_slug")
           .eq("user_id", user.id),
         supabase.rpc("has_role", { _user_id: user.id, _role: "admin" }),
+        supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", user.id),
       ]);
 
       if (cancelled) return;
@@ -147,9 +151,22 @@ export default function HubPage() {
       // Keep the management view independent of transient client role state.
       // The backend role check is authoritative and prevents the full catalogue
       // being replaced by a partial membership list after auth refreshes.
-      if (adminCheckResult.data === true) {
+      const hasAdminRole = rolesResult.data?.some(({ role }) => role === "admin") ?? false;
+
+      if (adminCheckResult.data === true || hasAdminRole) {
         setMyTeams([...ALL_CLUB_TEAM_SLUGS]);
         setActiveTeam((current) => current && ALL_CLUB_TEAM_SLUGS.includes(current) ? current : ALL_CLUB_TEAM_SLUGS[0]);
+        setLoading(false);
+        return;
+      }
+
+      // Never replace an already-resolved admin catalogue with a partial
+      // membership response when a transient role check fails during refresh.
+      if (adminCheckResult.error || rolesResult.error) {
+        console.error("Unable to verify Hub admin access", adminCheckResult.error ?? rolesResult.error);
+        setMyTeams((current) => current.length === ALL_CLUB_TEAM_SLUGS.length
+          ? current
+          : normalizeClubTeamSlugs((membershipsResult.data ?? []).map((membership) => membership.team_slug)));
         setLoading(false);
         return;
       }
