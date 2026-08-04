@@ -51,16 +51,38 @@ const PURPOSE_OPTIONS = [
 export interface PitchLayout {
   cx: number; cy: number; w: number; h: number; rot: number; z: number;
   labelDx: number; labelDy: number; labelScale: number;
+  color: string | null;          // custom outline/fill colour (null = use status colour)
+  useStatusColor: boolean;
+  fillOpacity: number;
+  labelText: string | null;      // overrides pitch name
+  subText: string | null;        // overrides format line
+  labelColor: string | null;
+  fontSize: number;
 }
 
-const DEFAULT_PITCH_LAYOUT: Record<number, PitchLayout> = {
-  6: { cx: 400, cy: 630, w: 172, h: 232, rot: -42, z: 0, labelDx: 0, labelDy: -95, labelScale: 1 }, // 11v11 (outer)
-  5: { cx: 400, cy: 622, w: 134, h: 192, rot: -42, z: 1, labelDx: 0, labelDy: -40, labelScale: 1 }, // 9v9 (inside 11v11)
-  2: { cx: 396, cy: 614, w: 76,  h: 122, rot: -42, z: 2, labelDx: 0, labelDy: 11, labelScale: 1 },  // 5v5 (inside 9v9)
-  1: { cx: 431, cy: 400, w: 124, h: 160, rot: -42, z: 0, labelDx: 0, labelDy: -44, labelScale: 1 }, // 7v7
-  3: { cx: 520, cy: 496, w: 124, h: 160, rot: -42, z: 0, labelDx: 0, labelDy: -44, labelScale: 1 }, // 7v7
-  4: { cx: 610, cy: 584, w: 94,  h: 128, rot: -42, z: 0, labelDx: 0, labelDy: -35, labelScale: 1 }, // small 5v5
+const STYLE_DEFAULTS = {
+  color: null as string | null,
+  useStatusColor: true,
+  fillOpacity: 0.3,
+  labelText: null as string | null,
+  subText: null as string | null,
+  labelColor: null as string | null,
+  fontSize: 17,
 };
+
+export const PITCH_COLOR_SWATCHES = [
+  "#22c55e", "#38bdf8", "#facc15", "#f97316", "#dc2626", "#a855f7", "#ec4899", "#ffffff",
+];
+
+const DEFAULT_PITCH_LAYOUT: Record<number, PitchLayout> = {
+  6: { cx: 400, cy: 630, w: 172, h: 232, rot: -42, z: 0, labelDx: 0, labelDy: -95, labelScale: 1, ...STYLE_DEFAULTS }, // 11v11 (outer)
+  5: { cx: 400, cy: 622, w: 134, h: 192, rot: -42, z: 1, labelDx: 0, labelDy: -40, labelScale: 1, ...STYLE_DEFAULTS }, // 9v9 (inside 11v11)
+  2: { cx: 396, cy: 614, w: 76,  h: 122, rot: -42, z: 2, labelDx: 0, labelDy: 11, labelScale: 1, ...STYLE_DEFAULTS },  // 5v5 (inside 9v9)
+  1: { cx: 431, cy: 400, w: 124, h: 160, rot: -42, z: 0, labelDx: 0, labelDy: -44, labelScale: 1, ...STYLE_DEFAULTS }, // 7v7
+  3: { cx: 520, cy: 496, w: 124, h: 160, rot: -42, z: 0, labelDx: 0, labelDy: -44, labelScale: 1, ...STYLE_DEFAULTS }, // 7v7
+  4: { cx: 610, cy: 584, w: 94,  h: 128, rot: -42, z: 0, labelDx: 0, labelDy: -35, labelScale: 1, ...STYLE_DEFAULTS }, // small 5v5
+};
+
 
 
 
