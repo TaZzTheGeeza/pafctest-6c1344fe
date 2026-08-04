@@ -42,19 +42,19 @@ const PURPOSE_OPTIONS = [
   { value: "other", label: "Other" },
 ];
 
-// Layout coordinates are positioned over the satellite image of Itter Park (viewBox 620 x 974).
 // Layout coordinates match the aerial map of Itter Park (square viewBox 1000 x 1000).
 // Pitches are painted on a diagonal, so each one is rotated about its own centre.
 // LOWER-LEFT: 11v11 (Pitch 6) with a 9v9 (Pitch 5) inside it, and a 5v5 (Pitch 2) inside the 9v9.
 // UPPER-RIGHT: two 7v7 (Pitches 1 & 3) and one small 5v5 (Pitch 4).
-const PITCH_LAYOUT: Record<number, { cx: number; cy: number; w: number; h: number; rot: number; z: number; labelTop?: boolean }> = {
-  6: { cx: 391, cy: 616, w: 168, h: 226, rot: -42, z: 0, labelTop: true }, // 11v11 (outer)
-  5: { cx: 393, cy: 610, w: 132, h: 190, rot: -42, z: 1, labelTop: true }, // 9v9 (inside 11v11)
-  2: { cx: 391, cy: 604, w: 74,  h: 120, rot: -42, z: 2 },                 // 5v5 (inside 9v9)
-  1: { cx: 411, cy: 372, w: 122, h: 158, rot: -42, z: 0 },                 // 7v7
-  3: { cx: 500, cy: 464, w: 122, h: 158, rot: -42, z: 0 },                 // 7v7
-  4: { cx: 594, cy: 556, w: 92,  h: 126, rot: -42, z: 0 },                 // small 5v5
+const PITCH_LAYOUT: Record<number, { cx: number; cy: number; w: number; h: number; rot: number; z: number; labelDy?: number }> = {
+  6: { cx: 400, cy: 630, w: 172, h: 232, rot: -42, z: 0, labelDy: -0.82 }, // 11v11 (outer)
+  5: { cx: 400, cy: 622, w: 134, h: 192, rot: -42, z: 1, labelDy: -0.42 }, // 9v9 (inside 11v11)
+  2: { cx: 396, cy: 614, w: 76,  h: 122, rot: -42, z: 2, labelDy: 0.18 },  // 5v5 (inside 9v9)
+  1: { cx: 431, cy: 400, w: 124, h: 160, rot: -42, z: 0 },                 // 7v7
+  3: { cx: 520, cy: 496, w: 124, h: 160, rot: -42, z: 0 },                 // 7v7
+  4: { cx: 610, cy: 584, w: 94,  h: 128, rot: -42, z: 0 },                 // small 5v5
 };
+
 
 
 
