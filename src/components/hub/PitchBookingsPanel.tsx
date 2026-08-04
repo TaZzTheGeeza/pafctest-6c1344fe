@@ -581,6 +581,40 @@ export default function PitchBookingsPanel() {
     loadPitches();
   }
 
+  async function addPitch() {
+    const name = window.prompt("Pitch name (e.g. Pitch 7)")?.trim();
+    if (!name) return;
+    const fmt = window.prompt("Format (e.g. 5v5, 7v7, 9v9, 11v11)", "7v7")?.trim() || "7v7";
+
+    const { data: all } = await (supabase as any).from("pitches").select("number").order("number", { ascending: false }).limit(1);
+    const nextNum = Number(all?.[0]?.number ?? 0) + 1;
+
+    const { error } = await (supabase as any).from("pitches").insert({
+      number: nextNum, name, format: fmt, active: true, suggested_age_groups: [],
+    });
+    if (error) { toast.error(error.message); return; }
+
+    const layout: PitchLayout = {
+      cx: 500, cy: 500, w: 120, h: 160, rot: -42, z: 3,
+      labelDx: 0, labelDy: -44, labelScale: 1, ...STYLE_DEFAULTS,
+    };
+    setLayouts(prev => ({ ...prev, [nextNum]: layout }));
+    await (supabase as any).from("pitch_map_layout").upsert({
+      pitch_number: nextNum,
+      cx: layout.cx, cy: layout.cy, w: layout.w, h: layout.h, rot: layout.rot, z: layout.z,
+      label_dx: layout.labelDx, label_dy: layout.labelDy, label_scale: layout.labelScale,
+      color: layout.color, use_status_color: layout.useStatusColor, fill_opacity: layout.fillOpacity,
+      label_text: layout.labelText, sub_text: layout.subText, label_color: layout.labelColor, font_size: layout.fontSize,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: "pitch_number" });
+
+    await loadPitches();
+    setLayoutEdit(true);
+    setSelectedPitchNum(nextNum);
+    toast.success(`${name} added — drag it into place, then Save layout`);
+  }
+
+
 
 
   async function deleteBooking(id: string) {
