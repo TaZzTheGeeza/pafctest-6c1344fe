@@ -33,7 +33,7 @@ type AppRole = string;
 
 const ALL_AGE_GROUPS = [
   "U6", "U7", "U8", "U9 Black", "U9 Gold", "U10", "U11",
-  "U12 Black", "U12 Gold", "U13", "U14 Black", "U14 Gold", "U15",
+  "U12 Black", "U12 Gold", "U12 White", "U13", "U14 Black", "U14 Gold", "U15",
 ];
 
 interface UserWithRoles {
@@ -281,7 +281,7 @@ export default function DashboardPage() {
 
   const AGE_GROUP_TO_TEAM_SLUG: Record<string, string> = {
     "U6": "u6s", "U7": "u7s", "U8": "u8s", "U8 Black": "u8s-black", "U8 Gold": "u8s-gold", "U9 Black": "u9s-black", "U9 Gold": "u9s-gold", "U10": "u10s", "U11": "u11s",
-    "U12 Black": "u12s-black", "U12 Gold": "u12s-gold", "U13": "u13s", "U14 Black": "u14s-black", "U14 Gold": "u14s-gold", "U15": "u15s",
+    "U12 Black": "u12s-black", "U12 Gold": "u12s-gold", "U12 White": "u12s-white", "U13": "u13s", "U14 Black": "u14s-black", "U14 Gold": "u14s-gold", "U15": "u15s",
   };
 
   async function addRole(userId: string, role: AppRole) {
@@ -878,14 +878,14 @@ export default function DashboardPage() {
 
 const TEAM_SLUGS = [
   "u6s", "u7s", "u8s-black", "u8s-gold", "u9s-black", "u9s-gold", "u10s", "u11s",
-  "u12s-black", "u12s-gold", "u13s", "u14s-black", "u14s-gold", "u15s",
+  "u12s-black", "u12s-gold", "u12s-white", "u13s", "u14s-black", "u14s-gold", "u15s",
 ];
 
 const TEAM_LABELS: Record<string, string> = {
   "u6s": "U6", "u7s": "U7", "u8s": "U8", "u8s-black": "U8 Black", "u8s-gold": "U8 Gold", "u9s-black": "U9 Black", "u9s-gold": "U9 Gold", "u10s": "U10", "u11s": "U11",
-  "u12s-black": "U12 Black", "u12s-gold": "U12 Gold", "u13s": "U13", "u14s-black": "U14 Black", "u14s-gold": "U14 Gold", "u15s": "U15",
+  "u12s-black": "U12 Black", "u12s-gold": "U12 Gold", "u12s-white": "U12 White", "u13s": "U13", "u14s-black": "U14 Black", "u14s-gold": "U14 Gold", "u15s": "U15",
   "u6": "U6", "u7": "U7", "u8": "U8", "u8-black": "U8 Black", "u8-gold": "U8 Gold", "u9": "U9", "u9-black": "U9 Black", "u9-gold": "U9 Gold", "u10": "U10", "u11": "U11",
-  "u11-black": "U11 Black", "u11-gold": "U11 Gold", "u12-black": "U12 Black", "u12-gold": "U12 Gold", "u13": "U13", "u13-black": "U13 Black", "u13-gold": "U13 Gold",
+  "u11-black": "U11 Black", "u11-gold": "U11 Gold", "u12-black": "U12 Black", "u12-gold": "U12 Gold", "u12-white": "U12 White", "u13": "U13", "u13-black": "U13 Black", "u13-gold": "U13 Gold",
   "u13s-black": "U13 Black", "u13s-gold": "U13 Gold", "u14": "U14", "u14-black": "U14 Black", "u14-gold": "U14 Gold", "u15": "U15",
 };
 
@@ -894,7 +894,7 @@ const CANONICAL_TEAM_SLUGS: Record<string, string> = {
   "u8-black": "u8s-black", "u8s-black": "u8s-black", "u8-gold": "u8s-gold", "u8s-gold": "u8s-gold",
   "u9": "u9s", "u9s": "u9s", "u9-black": "u9s-black", "u9s-black": "u9s-black", "u9-gold": "u9s-gold", "u9s-gold": "u9s-gold",
   "u10": "u10s", "u10s": "u10s", "u11": "u11s", "u11s": "u11s", "u11-black": "u11s-black", "u11s-black": "u11s-black", "u11-gold": "u11s-gold", "u11s-gold": "u11s-gold",
-  "u12-black": "u12s-black", "u12s-black": "u12s-black", "u12-gold": "u12s-gold", "u12s-gold": "u12s-gold",
+  "u12-black": "u12s-black", "u12s-black": "u12s-black", "u12-gold": "u12s-gold", "u12s-gold": "u12s-gold", "u12-white": "u12s-white", "u12s-white": "u12s-white",
   "u13": "u13s", "u13s": "u13s", "u13-black": "u13s-black", "u13s-black": "u13s-black", "u13-gold": "u13s-gold", "u13s-gold": "u13s-gold",
   "u14": "u14s", "u14s": "u14s", "u14-black": "u14s-black", "u14s-black": "u14s-black", "u14-gold": "u14s-gold", "u14s-gold": "u14s-gold", "u15": "u15s", "u15s": "u15s",
 };

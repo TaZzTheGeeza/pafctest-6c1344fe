@@ -11,7 +11,7 @@ const SLUG_VARIANTS: Record<string, string> = {
   "u6": "U6", "u7": "U7", "u8": "U8",
   "u9-black": "U9 Black", "u9-gold": "U9 Gold",
   "u10": "U10", "u11": "U11",
-  "u12-black": "U12 Black", "u12-gold": "U12 Gold",
+  "u12-black": "U12 Black", "u12-gold": "U12 Gold", "u12-white": "U12 White", "u12s-white": "U12 White",
   "u13": "U13", "u13s": "U13",
   "u14-black": "U14 Black", "u14-gold": "U14 Gold",
   "u15": "U15",

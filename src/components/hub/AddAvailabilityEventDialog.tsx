@@ -23,6 +23,7 @@ const AVAILABILITY_TEAMS: { team: string; slug: string }[] = [
   { team: "U11", slug: "u11s" },
   { team: "U12 Black", slug: "u12s-black" },
   { team: "U12 Gold", slug: "u12s-gold" },
+  { team: "U12 White", slug: "u12s-white" },
   { team: "U13", slug: "u13s" },
   { team: "U14 Black", slug: "u14s-black" },
   { team: "U14 Gold", slug: "u14s-gold" },
