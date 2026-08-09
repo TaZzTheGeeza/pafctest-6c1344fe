@@ -215,6 +215,11 @@ export default function HubPage() {
   }
 
   const activeTeamName = TEAMS.find((t) => t.slug === activeTeam)?.name || activeTeam;
+  // Admins always see the full club catalogue in club order; others see their teams
+  // ordered the same way, so the picker never renders a partial/odd-ordered list.
+  const visibleTeams = isAdmin
+    ? [...ALL_CLUB_TEAM_SLUGS]
+    : ALL_CLUB_TEAM_SLUGS.filter((slug) => myTeams.includes(slug));
 
     const allTabs = [
     ...tabs,
@@ -336,7 +341,7 @@ export default function HubPage() {
                         <div className="fixed inset-0 z-40 md:hidden" onClick={() => setShowTeamPicker(false)} />
                         <div className="fixed md:absolute left-4 right-4 md:left-0 md:right-auto top-auto md:top-full mt-1 max-h-[70vh] overflow-y-auto bg-card border border-border rounded-xl shadow-xl shadow-black/20 p-2 md:min-w-[200px] z-50">
                           <p className="text-[10px] font-display tracking-wider text-muted-foreground uppercase px-2 py-1">Your Teams</p>
-                          {myTeams.map((slug) => {
+                          {visibleTeams.map((slug) => {
                             const team = TEAMS.find((t) => t.slug === slug);
                             return (
                               <button
