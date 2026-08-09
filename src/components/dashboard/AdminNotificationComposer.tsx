@@ -18,7 +18,7 @@ import { Bell, Mail, Smartphone, Send, Loader2, Users, Megaphone, User } from "l
 
 const TEAM_SLUGS = [
   "u6s", "u7s", "u8s-black", "u8s-gold", "u9s-black", "u9s-gold", "u10s", "u11s",
-  "u12s-black", "u12s-gold", "u13s", "u14s-black", "u14s-gold", "u15s",
+  "u12s-black", "u12s-gold", "u12s-white", "u13s", "u14s-black", "u14s-gold", "u15s",
 ];
 
 const TEAM_LABELS: Record<string, string> = {

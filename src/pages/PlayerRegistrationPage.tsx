@@ -20,7 +20,7 @@ const teamSlugToLabel: Record<string, string> = {
   "u6s": "U6", "u7s": "U7", "u8s": "U8", "u8s-black": "U8 Black", "u8s-gold": "U8 Gold",
   "u9s": "U9", "u9s-black": "U9 Black", "u9s-gold": "U9 Gold",
   "u10s": "U10", "u11s": "U11", "u11s-black": "U11 Black", "u11s-gold": "U11 Gold",
-  "u12s-black": "U12 Black", "u12s-gold": "U12 Gold",
+  "u12s-black": "U12 Black", "u12s-gold": "U12 Gold", "u12s-white": "U12 White",
   "u13s": "U13", "u13s-black": "U13 Black", "u13s-gold": "U13 Gold",
   "u14s": "U14", "u14s-black": "U14 Black", "u14s-gold": "U14 Gold",
   "u15s": "U15",
