@@ -215,6 +215,11 @@ export default function HubPage() {
   }
 
   const activeTeamName = TEAMS.find((t) => t.slug === activeTeam)?.name || activeTeam;
+  // Admins always see the full club catalogue in club order; others see their teams
+  // ordered the same way, so the picker never renders a partial/odd-ordered list.
+  const visibleTeams = isAdmin
+    ? [...ALL_CLUB_TEAM_SLUGS]
+    : ALL_CLUB_TEAM_SLUGS.filter((slug) => myTeams.includes(slug));
 
     const allTabs = [
     ...tabs,
