@@ -173,6 +173,36 @@ Deno.serve(async (req) => {
     const teams: TeamInput[] = Array.isArray(body?.teams) ? body.teams : [];
     const dryRun = Boolean(body?.dryRun);
 
+    // Manual booking mode: the admin picked pitches / times in the UI
+    if (body?.action === "book" && Array.isArray(body?.items)) {
+      const admin2 = admin;
+      const booked: any[] = [];
+      const failed: any[] = [];
+      for (const it of body.items) {
+        if (!it?.pitchId || !it?.startIso || !it?.endIso) {
+          failed.push({ faId: it?.faId, reason: "Missing pitch or time" });
+          continue;
+        }
+        const { error: insErr } = await admin2.from("pitch_bookings").insert({
+          pitch_id: it.pitchId,
+          requested_by: userId,
+          start_time: it.startIso,
+          end_time: it.endIso,
+          purpose: "match",
+          age_group: it.team,
+          team_slug: it.slug,
+          opponent: it.opponent,
+          notes: `Auto-synced from FA Full-Time${it.competition ? ` — ${it.competition}` : ""}`,
+          fa_fixture_id: it.faId,
+        });
+        if (insErr) failed.push({ faId: it.faId, team: it.team, opponent: it.opponent, reason: insErr.message });
+        else booked.push({ faId: it.faId, team: it.team, opponent: it.opponent });
+      }
+      return new Response(JSON.stringify({ success: true, action: "book", booked, failed }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     if (teams.length === 0) {
       return new Response(JSON.stringify({ success: false, error: "teams is required" }), {
         status: 400,
