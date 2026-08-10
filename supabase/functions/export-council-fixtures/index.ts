@@ -24,35 +24,55 @@ interface TeamConfig {
   resultUrl?: string;
 }
 
-const season = "233257866";
+const season = "585452548";
 const base = "https://fulltime.thefa.com";
+const CLUB = "726869064";
 
-function buildUrl(page: "fixtures" | "results", params: Record<string, string>): string {
-  const defaults: Record<string, string> = {
+function buildUrl(page: "fixtures" | "results", ageGroup: string, teamId: string): string {
+  const params: Record<string, string> = {
     selectedSeason: season,
+    selectedFixtureGroupAgeGroup: ageGroup,
+    selectedFixtureGroupKey: "",
     selectedDateCode: "all",
+    selectedClub: CLUB,
+    selectedTeam: teamId,
     selectedRelatedFixtureOption: "3",
     selectedFixtureDateStatus: "",
     selectedFixtureStatus: "",
+    previousSelectedFixtureGroupAgeGroup: ageGroup,
+    previousSelectedFixtureGroupKey: "",
+    previousSelectedClub: CLUB,
     itemsPerPage: "100",
   };
-  const merged = { ...defaults, ...params };
-  const qs = Object.entries(merged).map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join("&");
+  const qs = Object.entries(params).map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join("&");
   return `${base}/${page}.html?${qs}`;
 }
 
+function team(name: string, slug: string, ageGroup: string, teamId: string): TeamConfig {
+  return {
+    team: name,
+    slug,
+    fixtureUrl: buildUrl("fixtures", ageGroup, teamId),
+    resultUrl: buildUrl("results", ageGroup, teamId),
+  };
+}
+
 const faTeamConfigs: TeamConfig[] = [
-  { team: "U7", slug: "u7s", fixtureUrl: buildUrl("fixtures", { selectedFixtureGroupAgeGroup: "0", selectedFixtureGroupKey: "1_496367219", selectedClub: "726869064", selectedTeam: "", previousSelectedFixtureGroupAgeGroup: "", previousSelectedFixtureGroupKey: "1_496367219", previousSelectedClub: "" }) },
-  { team: "U8 Black", slug: "u8s-black", fixtureUrl: buildUrl("fixtures", { selectedFixtureGroupAgeGroup: "15", selectedFixtureGroupKey: "", selectedClub: "", selectedTeam: "451067648", previousSelectedFixtureGroupAgeGroup: "15", previousSelectedFixtureGroupKey: "", previousSelectedClub: "726869064" }) },
-  { team: "U8 Gold", slug: "u8s-gold", fixtureUrl: buildUrl("fixtures", { selectedFixtureGroupAgeGroup: "15", selectedFixtureGroupKey: "", selectedClub: "", selectedTeam: "665211326", previousSelectedFixtureGroupAgeGroup: "15", previousSelectedFixtureGroupKey: "", previousSelectedClub: "726869064" }) },
-  { team: "U9", slug: "u9s", fixtureUrl: buildUrl("fixtures", { selectedFixtureGroupAgeGroup: "14", selectedFixtureGroupKey: "", selectedClub: "", selectedTeam: "795452180", previousSelectedFixtureGroupAgeGroup: "14", previousSelectedFixtureGroupKey: "", previousSelectedClub: "726869064" }) },
-  { team: "U10", slug: "u10s", fixtureUrl: buildUrl("fixtures", { selectedFixtureGroupAgeGroup: "13", selectedFixtureGroupKey: "", selectedClub: "", selectedTeam: "522060339", previousSelectedFixtureGroupAgeGroup: "13", previousSelectedFixtureGroupKey: "", previousSelectedClub: "726869064" }) },
-  { team: "U11 Gold", slug: "u11s-gold", fixtureUrl: buildUrl("fixtures", { selectedFixtureGroupAgeGroup: "12", selectedFixtureGroupKey: "", selectedClub: "", selectedTeam: "50394118", previousSelectedFixtureGroupAgeGroup: "12", previousSelectedFixtureGroupKey: "", previousSelectedClub: "726869064" }) },
-  { team: "U11 Black", slug: "u11s-black", fixtureUrl: buildUrl("fixtures", { selectedFixtureGroupAgeGroup: "12", selectedFixtureGroupKey: "", selectedClub: "", selectedTeam: "335339841", previousSelectedFixtureGroupAgeGroup: "12", previousSelectedFixtureGroupKey: "", previousSelectedClub: "726869064" }) },
-  { team: "U13 Gold", slug: "u13s-gold", fixtureUrl: buildUrl("fixtures", { selectedFixtureGroupAgeGroup: "10", selectedFixtureGroupKey: "", selectedClub: "", selectedTeam: "997093003", previousSelectedFixtureGroupAgeGroup: "10", previousSelectedFixtureGroupKey: "", previousSelectedClub: "726869064" }), resultUrl: buildUrl("results", { selectedFixtureGroupAgeGroup: "10", selectedFixtureGroupKey: "", selectedClub: "", selectedTeam: "997093003", previousSelectedFixtureGroupAgeGroup: "10", previousSelectedFixtureGroupKey: "", previousSelectedClub: "726869064" }) },
-  { team: "U13 Black", slug: "u13s-black", fixtureUrl: buildUrl("fixtures", { selectedFixtureGroupAgeGroup: "10", selectedFixtureGroupKey: "", selectedClub: "", selectedTeam: "979694431", previousSelectedFixtureGroupAgeGroup: "10", previousSelectedFixtureGroupKey: "", previousSelectedClub: "726869064" }), resultUrl: buildUrl("results", { selectedFixtureGroupAgeGroup: "10", selectedFixtureGroupKey: "", selectedClub: "", selectedTeam: "979694431", previousSelectedFixtureGroupAgeGroup: "10", previousSelectedFixtureGroupKey: "", previousSelectedClub: "726869064" }) },
-  { team: "U14", slug: "u14s", fixtureUrl: buildUrl("fixtures", { selectedFixtureGroupAgeGroup: "9", selectedFixtureGroupKey: "", selectedClub: "", selectedTeam: "65147458", previousSelectedFixtureGroupAgeGroup: "9", previousSelectedFixtureGroupKey: "", previousSelectedClub: "726869064" }), resultUrl: buildUrl("results", { selectedFixtureGroupAgeGroup: "9", selectedFixtureGroupKey: "", selectedClub: "", selectedTeam: "65147458", previousSelectedFixtureGroupAgeGroup: "9", previousSelectedFixtureGroupKey: "", previousSelectedClub: "726869064" }) },
+  team("U7", "u7s", "16", ""),
+  team("U8 Black", "u8s-black", "15", "345191842"),
+  team("U8 Gold", "u8s-gold", "15", "56750923"),
+  team("U9 Black", "u9s-black", "14", "451067648"),
+  team("U9 Gold", "u9s-gold", "14", "665211326"),
+  team("U10", "u10s", "13", "795452180"),
+  team("U11", "u11s", "12", "522060339"),
+  team("U12 Black", "u12s-black", "11", "335339841"),
+  team("U12 Gold", "u12s-gold", "11", "50394118"),
+  team("U12 White", "u12s-white", "11", "560859193"),
+  team("U13", "u13s", "10", "104052800"),
+  team("U14 Black", "u14s-black", "9", "979694431"),
+  team("U14 Gold", "u14s-gold", "9", "997093003"),
 ];
+
 
 function parseFixturesPage(html: string): Fixture[] {
   const fixtures: Fixture[] = [];
