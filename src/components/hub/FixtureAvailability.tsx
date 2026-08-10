@@ -382,25 +382,35 @@ export function FixtureAvailability({ teamSlug }: Props) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
+  const toDate = (value: string): Date | null => {
+    if (!value) return null;
+    const cleaned = value.trim().replace(/^[A-Za-z]{3,9}\s+/, "");
+    const iso = cleaned.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+    const dmy = cleaned.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+    let y: number, m: number, d: number;
+    if (iso) { y = +iso[1]; m = +iso[2]; d = +iso[3]; }
+    else if (dmy) { d = +dmy[1]; m = +dmy[2]; y = dmy[3].length === 2 ? 2000 + +dmy[3] : +dmy[3]; }
+    else return null;
+    const date = new Date(y, m - 1, d);
+    return isNaN(date.getTime()) ? null : date;
+  };
+  const isUpcoming = (value: string) => {
+    const d = toDate(value);
+    return d ? d >= today : false;
+  };
+
   const faItems: AvailabilityItem[] = (teamData?.fixtures || [])
-    .filter((f) => {
-      const [dd, mm, yy] = f.date.split("/").map(Number);
-      return new Date(2000 + yy, mm - 1, dd) >= today;
-    })
+    .filter((f) => isUpcoming(f.date))
     .map(fixtureToItem);
 
   const customItems: AvailabilityItem[] = customEvents
-    .filter((e) => {
-      const [dd, mm, yy] = e.event_date.split("/").map(Number);
-      return new Date(2000 + yy, mm - 1, dd) >= today;
-    })
+    .filter((e) => isUpcoming(e.event_date))
     .map(customEventToItem);
 
-  const allItems = [...faItems, ...customItems].sort((a, b) => {
-    const [ad, am, ay] = a.date.split("/").map(Number);
-    const [bd, bm, by] = b.date.split("/").map(Number);
-    return new Date(2000 + ay, am - 1, ad).getTime() - new Date(2000 + by, bm - 1, bd).getTime();
-  });
+  const allItems = [...faItems, ...customItems].sort(
+    (a, b) => (toDate(a.date)?.getTime() ?? 0) - (toDate(b.date)?.getTime() ?? 0),
+  );
+
 
   // Only block on fixtures while the FA scrape is actually loading; if it errors,
   // continue so users can still see/manage custom events.
