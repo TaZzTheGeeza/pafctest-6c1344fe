@@ -239,6 +239,38 @@ export function FixtureAvailability({ teamSlug }: Props) {
       (l) => l.fixture_date === item.date && l.opponent === opponentKeyFor(item)
     );
 
+  // Approved pitch allocations for this team's home fixtures
+  const { data: pitchAllocations = [] } = useQuery({
+    queryKey: ["approved-pitch-allocations", teamSlug],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any).rpc("get_approved_pitch_allocations", {
+        _team_slug: teamSlug,
+      });
+      if (error) throw error;
+      return (data ?? []) as {
+        fa_fixture_id: string;
+        opponent: string | null;
+        start_time: string;
+        pitch_number: number;
+        pitch_name: string;
+        pitch_format: string;
+      }[];
+    },
+    enabled: !!user,
+    staleTime: 1000 * 60,
+  });
+
+  const getPitchAllocation = (item: AvailabilityItem) => {
+    if (item.isCustom || !item.isHome) return undefined;
+    const norm = (s: string) => s.toLowerCase().replace(/\s+/g, " ").trim();
+    return pitchAllocations.find((a) => {
+      const parts = (a.fa_fixture_id || "").split("|");
+      return parts[1] === item.date && norm(parts[3] || a.opponent || "") === norm(item.opponent);
+    });
+  };
+
+
+
 
   const venueOverrideMutation = useMutation({
     mutationFn: async ({ venueName, fullAddress }: { venueName: string; fullAddress: string }) => {
@@ -556,6 +588,8 @@ export function FixtureAvailability({ teamSlug }: Props) {
         const myStatus = getMyStatus(item, selectedRespondingFor);
         const summary = getTeamSummary(item);
         const isExpanded = expandedFixture === item.key;
+        const pitchAllocation = getPitchAllocation(item);
+
 
         return (
           <div key={item.key} className="bg-card border border-border rounded-xl p-4">
@@ -570,7 +604,14 @@ export function FixtureAvailability({ teamSlug }: Props) {
                   <p className="font-display text-sm font-bold text-foreground">
                     {item.title}
                   </p>
+                  {pitchAllocation && (
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-display tracking-wider uppercase bg-primary/15 text-primary">
+                      <MapPin className="h-2.5 w-2.5" />
+                      Pitch {pitchAllocation.pitch_number} · {pitchAllocation.pitch_format}
+                    </span>
+                  )}
                 </div>
+
                 <div className="flex flex-wrap items-center gap-3 mt-1 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{item.date} · {item.time}</span>
                   {item.venue && <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{item.venue}</span>}
