@@ -274,30 +274,10 @@ Deno.serve(async (req) => {
     const fetchTeam = async (t: TeamInput) => {
       if (!t.fixtureUrl) return { t, fixtures: [] as FAFixture[], error: null as string | null };
       let lastError = "fetch failed";
-      for (let attempt = 0; attempt < 3; attempt++) {
+      for (let attempt = 0; attempt < 2; attempt++) {
         if (attempt > 0) await sleep(800 * attempt);
-        const controller = new AbortController();
-        const id = setTimeout(() => controller.abort(), 20000);
         try {
-          const res = await fetch(t.fixtureUrl, {
-            signal: controller.signal,
-            redirect: "follow",
-            headers: {
-              "User-Agent":
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
-              Accept:
-                "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-              "Accept-Language": "en-GB,en;q=0.9",
-              "Cache-Control": "no-cache",
-              Referer: "https://fulltime.thefa.com/",
-              "Upgrade-Insecure-Requests": "1",
-            },
-          });
-          if (!res.ok) {
-            lastError = `FA returned ${res.status}`;
-            continue;
-          }
-          const html = await res.text();
+          const html = await fetchFaHtml(t.fixtureUrl);
           const fixtures = parseFixturesPage(html);
           if (fixtures.length === 0 && !/fixtures-table/.test(html)) {
             lastError = "FA page had no fixtures table (blocked or empty)";
@@ -306,10 +286,9 @@ Deno.serve(async (req) => {
           return { t, fixtures, error: null };
         } catch (e) {
           lastError = e instanceof Error ? e.message : "fetch failed";
-        } finally {
-          clearTimeout(id);
         }
       }
+
       return { t, fixtures: [] as FAFixture[], error: lastError };
     };
 
