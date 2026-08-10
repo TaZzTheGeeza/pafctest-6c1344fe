@@ -386,6 +386,11 @@ Deno.serve(async (req) => {
           format: c.format,
           reason: `No active ${c.format} pitch configured`,
           conflictsWith: [],
+          faId: c.faId,
+          slug: c.slug,
+          startIso: c.start.toISOString(),
+          durationMins: durationMinutes(c.format),
+          competition: c.competition,
         });
         continue;
       }
@@ -414,6 +419,11 @@ Deno.serve(async (req) => {
           format: c.format,
           reason: "No free pitch of the required size at this kick-off time",
           conflictsWith: Array.from(new Set(conflictLabels)),
+          faId: c.faId,
+          slug: c.slug,
+          startIso: c.start.toISOString(),
+          durationMins: durationMinutes(c.format),
+          competition: c.competition,
         });
         continue;
       }
@@ -425,6 +435,13 @@ Deno.serve(async (req) => {
           kickOff: c.start.toISOString(),
           pitch: chosen.name,
           format: c.format,
+          faId: c.faId,
+          slug: c.slug,
+          pitchId: chosen.id,
+          startIso: c.start.toISOString(),
+          endIso: c.end.toISOString(),
+          durationMins: durationMinutes(c.format),
+          competition: c.competition,
         });
         occupancy.push({
           number: chosen.number,
@@ -466,6 +483,11 @@ Deno.serve(async (req) => {
         kickOff: c.start.toISOString(),
         pitch: chosen.name,
         format: c.format,
+        faId: c.faId,
+        slug: c.slug,
+        pitchId: chosen.id,
+        startIso: c.start.toISOString(),
+        endIso: c.end.toISOString(),
       });
       occupancy.push({
         number: chosen.number,
@@ -484,6 +506,7 @@ Deno.serve(async (req) => {
         alreadySynced,
         clashes,
         skipped,
+        pitches: pitches || [],
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
