@@ -3447,6 +3447,18 @@ export type Database = {
         Returns: number
       }
       expire_pending_raffle_tickets: { Args: never; Returns: number }
+      get_approved_pitch_allocations: {
+        Args: { _team_slug: string }
+        Returns: {
+          end_time: string
+          fa_fixture_id: string
+          opponent: string
+          pitch_format: string
+          pitch_name: string
+          pitch_number: number
+          start_time: string
+        }[]
+      }
       get_safe_profile: {
         Args: { _user_id: string }
         Returns: {
