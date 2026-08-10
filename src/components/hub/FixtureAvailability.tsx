@@ -239,6 +239,38 @@ export function FixtureAvailability({ teamSlug }: Props) {
       (l) => l.fixture_date === item.date && l.opponent === opponentKeyFor(item)
     );
 
+  // Approved pitch allocations for this team's home fixtures
+  const { data: pitchAllocations = [] } = useQuery({
+    queryKey: ["approved-pitch-allocations", teamSlug],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any).rpc("get_approved_pitch_allocations", {
+        _team_slug: teamSlug,
+      });
+      if (error) throw error;
+      return (data ?? []) as {
+        fa_fixture_id: string;
+        opponent: string | null;
+        start_time: string;
+        pitch_number: number;
+        pitch_name: string;
+        pitch_format: string;
+      }[];
+    },
+    enabled: !!user,
+    staleTime: 1000 * 60,
+  });
+
+  const getPitchAllocation = (item: AvailabilityItem) => {
+    if (item.isCustom || !item.isHome) return undefined;
+    const norm = (s: string) => s.toLowerCase().replace(/\s+/g, " ").trim();
+    return pitchAllocations.find((a) => {
+      const parts = (a.fa_fixture_id || "").split("|");
+      return parts[1] === item.date && norm(parts[3] || a.opponent || "") === norm(item.opponent);
+    });
+  };
+
+
+
 
   const venueOverrideMutation = useMutation({
     mutationFn: async ({ venueName, fullAddress }: { venueName: string; fullAddress: string }) => {
