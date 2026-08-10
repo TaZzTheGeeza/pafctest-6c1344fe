@@ -604,7 +604,14 @@ export function FixtureAvailability({ teamSlug }: Props) {
                   <p className="font-display text-sm font-bold text-foreground">
                     {item.title}
                   </p>
+                  {pitchAllocation && (
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-display tracking-wider uppercase bg-primary/15 text-primary">
+                      <MapPin className="h-2.5 w-2.5" />
+                      Pitch {pitchAllocation.pitch_number} · {pitchAllocation.pitch_format}
+                    </span>
+                  )}
                 </div>
+
                 <div className="flex flex-wrap items-center gap-3 mt-1 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{item.date} · {item.time}</span>
                   {item.venue && <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{item.venue}</span>}
