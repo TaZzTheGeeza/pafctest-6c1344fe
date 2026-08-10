@@ -9,6 +9,8 @@ import { Loader2, CheckCircle2, XCircle, Hourglass, Shield, Trash2, AlertTriangl
 import { toast } from "sonner";
 import { Textarea } from "@/components/ui/textarea";
 import { Navigate } from "react-router-dom";
+import { FaPitchSyncPanel } from "@/components/pitch/FaPitchSyncPanel";
+
 
 
 interface Booking {
@@ -169,7 +171,10 @@ function Inner() {
             <p className="text-sm text-muted-foreground">Approve, decline or manage all pitch booking requests.</p>
           </div>
 
+          <FaPitchSyncPanel onSynced={load} />
+
           <div className="flex gap-2 mb-4">
+
             <TabBtn active={tab === "pending"} onClick={() => setTab("pending")} label={`Pending${pendingCount ? ` (${pendingCount})` : ""}`} />
             <TabBtn active={tab === "upcoming"} onClick={() => setTab("upcoming")} label="Upcoming" />
             <TabBtn active={tab === "history"} onClick={() => setTab("history")} label="History" />
