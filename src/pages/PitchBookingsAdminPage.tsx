@@ -169,7 +169,10 @@ function Inner() {
             <p className="text-sm text-muted-foreground">Approve, decline or manage all pitch booking requests.</p>
           </div>
 
+          <FaPitchSyncPanel onSynced={load} />
+
           <div className="flex gap-2 mb-4">
+
             <TabBtn active={tab === "pending"} onClick={() => setTab("pending")} label={`Pending${pendingCount ? ` (${pendingCount})` : ""}`} />
             <TabBtn active={tab === "upcoming"} onClick={() => setTab("upcoming")} label="Upcoming" />
             <TabBtn active={tab === "history"} onClick={() => setTab("history")} label="History" />
