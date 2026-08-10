@@ -55,32 +55,47 @@ const allTeams: TeamData[] = CLUB_TEAMS.map((team) => ({
   nextFixture: { opponent: "TBC", venue: "Home", date: "TBC", kickoff: "TBC" },
 }));
 
+function parseFADate(dateStr: string, timeStr?: string): Date | null {
+  if (!dateStr) return null;
+  // Strip any weekday prefix e.g. "Sat 28/03/26"
+  const cleaned = dateStr.trim().replace(/^[A-Za-z]{3,9}\s+/, "");
+
+  let y: number | null = null, m: number | null = null, d: number | null = null;
+
+  const iso = cleaned.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  const dmy = cleaned.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+  if (iso) {
+    y = Number(iso[1]); m = Number(iso[2]); d = Number(iso[3]);
+  } else if (dmy) {
+    d = Number(dmy[1]); m = Number(dmy[2]);
+    y = dmy[3].length === 2 ? 2000 + Number(dmy[3]) : Number(dmy[3]);
+  } else {
+    return null;
+  }
+
+  let hh = 0, mm = 0;
+  const t = (timeStr || "").match(/(\d{1,2}):(\d{2})/);
+  if (t) { hh = Number(t[1]); mm = Number(t[2]); }
+
+  const date = new Date(y, m - 1, d, hh, mm);
+  return isNaN(date.getTime()) ? null : date;
+}
+
 function formatFADate(dateStr: string): string {
-// dateStr is "DD/MM/YY" or "DD/MM/YYYY" format
-  const [d, m, y] = dateStr.split("/");
-  const fullYear = y.length === 2 ? 2000 + parseInt(y) : parseInt(y);
-  const date = new Date(fullYear, parseInt(m) - 1, parseInt(d));
-  return date.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
+  const date = parseFADate(dateStr);
+  if (!date) return dateStr;
+  return date.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
 }
 
-function parseFADate(dateStr: string): Date | null {
-  try {
-    const parts = dateStr.split("/");
-    if (parts.length === 3) {
-      const year = parts[2].length === 2 ? 2000 + Number(parts[2]) : Number(parts[2]);
-      return new Date(year, Number(parts[1]) - 1, Number(parts[0]));
-    }
-  } catch {}
-  return null;
+function isFutureFixture(f: { date: string; time?: string }): boolean {
+  const fixDate = parseFADate(f.date, f.time);
+  // Never show fixtures we can't confidently date in the future
+  if (!fixDate) return false;
+  const cutoff = new Date();
+  cutoff.setHours(0, 0, 0, 0);
+  return fixDate >= cutoff;
 }
 
-function isFutureFixture(f: { date: string }): boolean {
-  const fixDate = parseFADate(f.date);
-  if (!fixDate) return true;
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  return fixDate >= today;
-}
 
 function TeamDetail({ team }: { team: TeamData }) {
   const f = team.nextFixture;
