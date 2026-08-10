@@ -9,6 +9,8 @@ import { Loader2, CheckCircle2, XCircle, Hourglass, Shield, Trash2, AlertTriangl
 import { toast } from "sonner";
 import { Textarea } from "@/components/ui/textarea";
 import { Navigate } from "react-router-dom";
+import { FaPitchSyncPanel } from "@/components/pitch/FaPitchSyncPanel";
+
 
 
 interface Booking {
