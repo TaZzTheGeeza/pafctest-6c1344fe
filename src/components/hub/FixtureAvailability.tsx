@@ -588,6 +588,8 @@ export function FixtureAvailability({ teamSlug }: Props) {
         const myStatus = getMyStatus(item, selectedRespondingFor);
         const summary = getTeamSummary(item);
         const isExpanded = expandedFixture === item.key;
+        const pitchAllocation = getPitchAllocation(item);
+
 
         return (
           <div key={item.key} className="bg-card border border-border rounded-xl p-4">
