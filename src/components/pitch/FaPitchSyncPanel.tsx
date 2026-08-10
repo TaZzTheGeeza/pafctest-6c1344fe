@@ -129,8 +129,16 @@ export function FaPitchSyncPanel({ onSynced }: { onSynced?: () => void }) {
           )}
 
           {result.skipped.length > 0 && (
-            <div className="text-muted-foreground">
-              Skipped: {result.skipped.map((s) => `${s.team} (${s.reason})`).join(", ")}
+            <div className="border border-border rounded-lg p-3">
+              <div className="font-display uppercase tracking-wider mb-2 text-muted-foreground">Skipped</div>
+              <ul className="space-y-1">
+                {result.skipped.map((s, i) => (
+                  <li key={i} className="text-muted-foreground">
+                    <span className="text-foreground font-medium">{s.team}</span> — {s.reason}
+                    {s.detail ? `: ${s.detail}` : ""}
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
         </div>
