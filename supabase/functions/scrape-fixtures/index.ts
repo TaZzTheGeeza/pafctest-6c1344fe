@@ -158,68 +158,22 @@ Deno.serve(async (req) => {
       );
     }
 
-    const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
-    // FA Full-Time throttles / 403s plain requests — use browser-like headers and retry
-    const fetchWithTimeout = async (url: string, timeoutMs = 20000) => {
-      let last: Response | null = null;
-      for (let attempt = 0; attempt < 3; attempt++) {
-        if (attempt > 0) await sleep(800 * attempt);
-        const controller = new AbortController();
-        const id = setTimeout(() => controller.abort(), timeoutMs);
-        try {
-          const res = await fetch(url, {
-            signal: controller.signal,
-            redirect: 'follow',
-            headers: {
-              'User-Agent':
-                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
-              'Accept':
-                'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-              'Accept-Language': 'en-GB,en;q=0.9',
-              'Cache-Control': 'no-cache',
-              'Referer': 'https://fulltime.thefa.com/',
-              'Upgrade-Insecure-Requests': '1',
-            },
-          });
-          last = res;
-          if (res.ok) return res;
-        } catch (_e) {
-          // retry
-        } finally {
-          clearTimeout(id);
-        }
-      }
-      if (last) return last;
-      throw new Error('fetch failed');
-    };
-
-    // Fetch fixtures then results sequentially — parallel bursts get blocked by FA
-    const fixtureSettled = await Promise.allSettled([fetchWithTimeout(fixtureUrl)]).then((r) => r[0]);
-    await sleep(250);
-    const resultSettled = await Promise.allSettled([
-      resultUrl ? fetchWithTimeout(resultUrl) : Promise.resolve(null),
-    ]).then((r) => r[0]);
-
-
     let fixtures: Fixture[] = [];
-    if (fixtureSettled.status === 'fulfilled' && fixtureSettled.value && fixtureSettled.value.ok) {
-      const fixtureHtml = await fixtureSettled.value.text();
-      fixtures = parseFixturesPage(fixtureHtml);
-    } else {
-      const reason = fixtureSettled.status === 'rejected'
-        ? (fixtureSettled.reason?.message || 'fetch failed')
-        : `FA site returned ${fixtureSettled.value?.status}`;
-      console.warn(`Fixtures fetch failed for ${team || 'unknown'}: ${reason}`);
+    try {
+      fixtures = parseFixturesPage(await fetchFaHtml(fixtureUrl));
+    } catch (e) {
+      console.warn(`Fixtures fetch failed for ${team || 'unknown'}: ${e instanceof Error ? e.message : e}`);
     }
 
     let results: Fixture[] = [];
-    if (resultSettled.status === 'fulfilled' && resultSettled.value && resultSettled.value.ok) {
-      const resultHtml = await resultSettled.value.text();
-      results = parseResultsPage(resultHtml);
-    } else if (resultSettled.status === 'rejected') {
-      console.warn(`Results fetch failed for ${team || 'unknown'}: ${resultSettled.reason?.message || 'fetch failed'}`);
+    if (resultUrl) {
+      try {
+        results = parseResultsPage(await fetchFaHtml(resultUrl));
+      } catch (e) {
+        console.warn(`Results fetch failed for ${team || 'unknown'}: ${e instanceof Error ? e.message : e}`);
+      }
     }
+
 
     console.log(`Parsed ${fixtures.length} fixtures and ${results.length} results for ${team || 'unknown'}`);
 
