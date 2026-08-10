@@ -238,29 +238,56 @@ Deno.serve(async (req) => {
       });
     };
 
-    // Scrape each team
+    // Scrape each team — sequentially with retries; FA Full-Time throttles bursts of parallel hits
+    const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
     const fetchTeam = async (t: TeamInput) => {
       if (!t.fixtureUrl) return { t, fixtures: [] as FAFixture[], error: null as string | null };
-      const controller = new AbortController();
-      const id = setTimeout(() => controller.abort(), 15000);
-      try {
-        const res = await fetch(t.fixtureUrl, {
-          signal: controller.signal,
-          headers: {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-            Accept: "text/html,application/xhtml+xml",
-          },
-        });
-        if (!res.ok) return { t, fixtures: [], error: `FA returned ${res.status}` };
-        return { t, fixtures: parseFixturesPage(await res.text()), error: null };
-      } catch (e) {
-        return { t, fixtures: [], error: e instanceof Error ? e.message : "fetch failed" };
-      } finally {
-        clearTimeout(id);
+      let lastError = "fetch failed";
+      for (let attempt = 0; attempt < 3; attempt++) {
+        if (attempt > 0) await sleep(800 * attempt);
+        const controller = new AbortController();
+        const id = setTimeout(() => controller.abort(), 20000);
+        try {
+          const res = await fetch(t.fixtureUrl, {
+            signal: controller.signal,
+            redirect: "follow",
+            headers: {
+              "User-Agent":
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+              Accept:
+                "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+              "Accept-Language": "en-GB,en;q=0.9",
+              "Cache-Control": "no-cache",
+              Referer: "https://fulltime.thefa.com/",
+              "Upgrade-Insecure-Requests": "1",
+            },
+          });
+          if (!res.ok) {
+            lastError = `FA returned ${res.status}`;
+            continue;
+          }
+          const html = await res.text();
+          const fixtures = parseFixturesPage(html);
+          if (fixtures.length === 0 && !/fixtures-table/.test(html)) {
+            lastError = "FA page had no fixtures table (blocked or empty)";
+            continue;
+          }
+          return { t, fixtures, error: null };
+        } catch (e) {
+          lastError = e instanceof Error ? e.message : "fetch failed";
+        } finally {
+          clearTimeout(id);
+        }
       }
+      return { t, fixtures: [] as FAFixture[], error: lastError };
     };
 
-    const scraped = await Promise.all(teams.map(fetchTeam));
+    const scraped: { t: TeamInput; fixtures: FAFixture[]; error: string | null }[] = [];
+    for (const t of teams) {
+      scraped.push(await fetchTeam(t));
+      await sleep(250);
+    }
 
     interface Candidate {
       team: string;
