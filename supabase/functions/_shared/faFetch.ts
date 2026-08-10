@@ -10,7 +10,8 @@ export async function fetchFaHtml(url: string): Promise<string> {
   }
 
   let lastError = "fetch failed";
-  for (let attempt = 0; attempt < 2; attempt++) {
+  const MAX_ATTEMPTS = 5;
+  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
     if (attempt > 0) await new Promise((r) => setTimeout(r, 1000));
     try {
       const res = await fetch(`${FIRECRAWL_GATEWAY}/scrape`, {
@@ -29,6 +30,22 @@ export async function fetchFaHtml(url: string): Promise<string> {
       });
 
       const raw = await res.text();
+      if (res.status === 429) {
+        // Firecrawl rate limit — wait for the advertised window and retry.
+        const headerWait = Number(res.headers.get("retry-after"));
+        const bodyWait = Number(raw.match(/retry after (\d+)/i)?.[1]);
+        const waitSec = Number.isFinite(headerWait) && headerWait > 0
+          ? headerWait
+          : Number.isFinite(bodyWait) && bodyWait > 0
+            ? bodyWait
+            : 20;
+        lastError = `Firecrawl rate limit — retrying in ${waitSec}s`;
+        console.warn(`Rate limited fetching ${url}; waiting ${waitSec}s`);
+        if (attempt < MAX_ATTEMPTS - 1) {
+          await new Promise((r) => setTimeout(r, Math.min(waitSec + 2, 45) * 1000));
+        }
+        continue;
+      }
       if (!res.ok) {
         lastError = `Firecrawl returned ${res.status}: ${raw.slice(0, 200)}`;
         continue;
@@ -46,3 +63,4 @@ export async function fetchFaHtml(url: string): Promise<string> {
   }
   throw new Error(lastError);
 }
+

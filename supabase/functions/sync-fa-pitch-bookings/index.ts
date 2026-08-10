@@ -296,8 +296,10 @@ Deno.serve(async (req) => {
     const scraped: { t: TeamInput; fixtures: FAFixture[]; error: string | null }[] = [];
     for (const t of teams) {
       scraped.push(await fetchTeam(t));
-      await sleep(250);
+      // Pace requests — Firecrawl enforces a per-minute rate limit across all teams.
+      await sleep(3000);
     }
+
 
     interface Candidate {
       team: string;
