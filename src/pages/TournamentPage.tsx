@@ -28,7 +28,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { CheckForUpdatesButton } from "@/components/CheckForUpdatesButton";
 
 const TournamentPage = () => {
+  const { enabled: tournamentEnabled, loading: tournamentLoading } = useTournamentEnabled();
+  const { isAdmin } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
+
   const [verifying, setVerifying] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [activeSection, setActiveSection] = useState("overview");
