@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useSearchParams, Link } from "react-router-dom";
+import { useSearchParams, Link, Navigate } from "react-router-dom";
+import { useTournamentEnabled } from "@/hooks/useTournamentEnabled";
+import { useAuth } from "@/contexts/AuthContext";
+
 import { supabase } from "@/integrations/supabase/client";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -25,7 +28,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { CheckForUpdatesButton } from "@/components/CheckForUpdatesButton";
 
 const TournamentPage = () => {
+  const { enabled: tournamentEnabled, loading: tournamentLoading } = useTournamentEnabled();
+  const { isAdmin } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
+
   const [verifying, setVerifying] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [activeSection, setActiveSection] = useState("overview");
@@ -208,7 +214,12 @@ const TournamentPage = () => {
     "U14": { date: "Sunday 21st June", format: "7v7" },
   };
 
+  if (!tournamentLoading && !tournamentEnabled && !isAdmin) {
+    return <Navigate to="/" replace />;
+  }
+
   return (
+
     <div className="min-h-screen flex flex-col">
       <SEO title="PAFC Tournament 2026 | Peterborough Junior Football Tournament" description="The PAFC Tournament — Peterborough's premier junior football tournament. Team entry, fixtures, results and information." keywords="Peterborough football tournament, PAFC tournament 2026, junior football tournament Peterborough, kids football tournament Cambridgeshire, summer football tournament Peterborough" path="/tournament" />
       <Navbar />
