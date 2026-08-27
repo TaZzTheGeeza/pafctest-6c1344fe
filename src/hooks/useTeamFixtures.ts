@@ -46,7 +46,7 @@ async function fetchTeamFixtures(
     ? config.resultUrl ?? deriveResultUrl(config.fixtureUrl)
     : config.resultUrl;
 
-  const { data, error } = await supabase.functions.invoke("scrape-fixtures", {
+  const invocation = supabase.functions.invoke("scrape-fixtures", {
     body: {
       team: config.team,
       fixtureUrl: config.fixtureUrl,
@@ -54,10 +54,19 @@ async function fetchTeamFixtures(
     },
   });
 
+  // Hard client timeout — better to show an error than buffer indefinitely.
+  const { data, error } = await Promise.race([
+    invocation,
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error("Fixtures are taking too long to load. Please try again.")), 45000),
+    ),
+  ]);
+
   if (error) {
     console.error("Error fetching fixtures for", slug, error);
     throw error;
   }
+
 
   if (!data?.success) {
     throw new Error(data?.error || "Failed to fetch fixtures");
