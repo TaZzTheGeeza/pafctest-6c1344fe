@@ -124,11 +124,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .then(({ data }) => {
         if (cancelled) return;
         setMustChangePassword(Boolean((data as any)?.must_change_password));
-      });
+      }, () => {});
 
     return () => {
       cancelled = true;
+      clearTimeout(rolesTimeout);
     };
+
   }, [user]);
 
   const signOut = async () => {
