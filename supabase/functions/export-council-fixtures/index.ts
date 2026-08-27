@@ -28,9 +28,9 @@ const season = "585452548";
 const base = "https://fulltime.thefa.com";
 const CLUB = "726869064";
 
-function buildUrl(page: "fixtures" | "results", ageGroup: string, teamId: string): string {
+function buildUrl(page: "fixtures" | "results", ageGroup: string, teamId: string, seasonId: string = season): string {
   const params: Record<string, string> = {
-    selectedSeason: season,
+    selectedSeason: seasonId,
     selectedFixtureGroupAgeGroup: ageGroup,
     selectedFixtureGroupKey: "",
     selectedDateCode: "all",
@@ -48,12 +48,12 @@ function buildUrl(page: "fixtures" | "results", ageGroup: string, teamId: string
   return `${base}/${page}.html?${qs}`;
 }
 
-function team(name: string, slug: string, ageGroup: string, teamId: string): TeamConfig {
+function team(name: string, slug: string, ageGroup: string, teamId: string, seasonId: string = season): TeamConfig {
   return {
     team: name,
     slug,
-    fixtureUrl: buildUrl("fixtures", ageGroup, teamId),
-    resultUrl: buildUrl("results", ageGroup, teamId),
+    fixtureUrl: buildUrl("fixtures", ageGroup, teamId, seasonId),
+    resultUrl: buildUrl("results", ageGroup, teamId, seasonId),
   };
 }
 
@@ -71,6 +71,7 @@ const faTeamConfigs: TeamConfig[] = [
   team("U13", "u13s", "10", "104052800"),
   team("U14 Black", "u14s-black", "9", "979694431"),
   team("U14 Gold", "u14s-gold", "9", "997093003"),
+  team("U15", "u15s", "8", "796957227", "816327485"),
 ];
 
 
