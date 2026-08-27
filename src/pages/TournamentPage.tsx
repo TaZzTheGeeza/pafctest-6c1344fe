@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useSearchParams, Link } from "react-router-dom";
+import { useSearchParams, Link, Navigate } from "react-router-dom";
+import { useTournamentEnabled } from "@/hooks/useTournamentEnabled";
+import { useAuth } from "@/contexts/AuthContext";
+
 import { supabase } from "@/integrations/supabase/client";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
