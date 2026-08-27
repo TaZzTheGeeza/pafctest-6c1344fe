@@ -67,5 +67,13 @@ export const faTeamConfigs: FAFixtureConfig[] = [
   team("U13", "u13s", "10", "104052800"),
   team("U14 Black", "u14s-black", "9", "979694431"),
   team("U14 Gold", "u14s-gold", "9", "997093003"),
-  team("U15", "u15s", "8", "796957227", "816327485"),
+  // U15 — league uses a different FA season ID and no club filter
+  {
+    team: "U15",
+    slug: "u15s",
+    fixtureUrl:
+      "https://fulltime.thefa.com/fixtures.html?selectedSeason=816327485&selectedFixtureGroupAgeGroup=8&selectedFixtureGroupKey=&selectedDateCode=all&selectedClub=&selectedTeam=796957227&selectedRelatedFixtureOption=3&selectedFixtureDateStatus=&selectedFixtureStatus=&previousSelectedFixtureGroupAgeGroup=8&previousSelectedFixtureGroupKey=&previousSelectedClub=&itemsPerPage=100",
+    resultUrl:
+      "https://fulltime.thefa.com/results.html?selectedSeason=816327485&selectedFixtureGroupAgeGroup=8&selectedFixtureGroupKey=&selectedDateCode=all&selectedClub=&selectedTeam=796957227&selectedRelatedFixtureOption=3&selectedFixtureDateStatus=&selectedFixtureStatus=&previousSelectedFixtureGroupAgeGroup=8&previousSelectedFixtureGroupKey=&previousSelectedClub=&itemsPerPage=100",
+  },
 ];
