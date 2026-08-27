@@ -501,6 +501,30 @@ export type Database = {
           },
         ]
       }
+      fa_fixture_cache: {
+        Row: {
+          cache_key: string
+          fixtures: Json
+          results: Json
+          team: string | null
+          updated_at: string
+        }
+        Insert: {
+          cache_key: string
+          fixtures?: Json
+          results?: Json
+          team?: string | null
+          updated_at?: string
+        }
+        Update: {
+          cache_key?: string
+          fixtures?: Json
+          results?: Json
+          team?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       fixture_availability: {
         Row: {
           created_at: string
