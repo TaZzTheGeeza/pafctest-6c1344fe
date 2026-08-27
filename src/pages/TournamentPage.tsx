@@ -208,7 +208,12 @@ const TournamentPage = () => {
     "U14": { date: "Sunday 21st June", format: "7v7" },
   };
 
+  if (!tournamentLoading && !tournamentEnabled && !isAdmin) {
+    return <Navigate to="/" replace />;
+  }
+
   return (
+
     <div className="min-h-screen flex flex-col">
       <SEO title="PAFC Tournament 2026 | Peterborough Junior Football Tournament" description="The PAFC Tournament — Peterborough's premier junior football tournament. Team entry, fixtures, results and information." keywords="Peterborough football tournament, PAFC tournament 2026, junior football tournament Peterborough, kids football tournament Cambridgeshire, summer football tournament Peterborough" path="/tournament" />
       <Navbar />
