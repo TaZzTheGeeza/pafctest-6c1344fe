@@ -13,9 +13,10 @@ function buildUrl(
   page: "fixtures" | "results",
   ageGroup: string,
   teamId: string,
+  seasonId: string = season,
 ): string {
   const params: Record<string, string> = {
-    selectedSeason: season,
+    selectedSeason: seasonId,
     selectedFixtureGroupAgeGroup: ageGroup,
     selectedFixtureGroupKey: "",
     selectedDateCode: "all",
@@ -40,12 +41,13 @@ function team(
   slug: string,
   ageGroup: string,
   teamId: string,
+  seasonId: string = season,
 ): FAFixtureConfig {
   return {
     team: name,
     slug,
-    fixtureUrl: buildUrl("fixtures", ageGroup, teamId),
-    resultUrl: buildUrl("results", ageGroup, teamId),
+    fixtureUrl: buildUrl("fixtures", ageGroup, teamId, seasonId),
+    resultUrl: buildUrl("results", ageGroup, teamId, seasonId),
   };
 }
 
@@ -65,6 +67,5 @@ export const faTeamConfigs: FAFixtureConfig[] = [
   team("U13", "u13s", "10", "104052800"),
   team("U14 Black", "u14s-black", "9", "979694431"),
   team("U14 Gold", "u14s-gold", "9", "997093003"),
-  // U15 fixtures not released yet
-  { team: "U15", slug: "u15s", fixtureUrl: "" },
+  team("U15", "u15s", "8", "796957227", "816327485"),
 ];
