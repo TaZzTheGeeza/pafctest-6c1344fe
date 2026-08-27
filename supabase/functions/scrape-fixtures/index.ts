@@ -159,22 +159,69 @@ Deno.serve(async (req) => {
       );
     }
 
+    const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const admin = createClient(supabaseUrl, serviceKey);
+    const cacheKey = `${fixtureUrl}::${resultUrl ?? ''}`;
+    const FRESH_MS = 1000 * 60 * 60 * 6; // 6 hours
+
+    const { data: cached } = await admin
+      .from('fa_fixture_cache')
+      .select('fixtures, results, updated_at')
+      .eq('cache_key', cacheKey)
+      .maybeSingle();
+
+    const cacheAge = cached?.updated_at ? Date.now() - new Date(cached.updated_at).getTime() : Infinity;
+    if (cached && cacheAge < FRESH_MS) {
+      return new Response(
+        JSON.stringify({ success: true, team, fixtures: cached.fixtures ?? [], results: cached.results ?? [], cached: true }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Keep the whole scrape well inside the platform request timeout so the UI
+    // never hangs waiting on the FA site / Firecrawl rate limits.
+    const budgetMs = 40_000;
+    const started = Date.now();
+
     let fixtures: Fixture[] = [];
+    let fetchFailed = false;
     try {
-      fixtures = parseFixturesPage(await fetchFaHtml(fixtureUrl));
+      fixtures = parseFixturesPage(await fetchFaHtml(fixtureUrl, { budgetMs }));
     } catch (e) {
+      fetchFailed = true;
       console.warn(`Fixtures fetch failed for ${team || 'unknown'}: ${e instanceof Error ? e.message : e}`);
     }
 
     let results: Fixture[] = [];
     if (resultUrl) {
-      try {
-        results = parseResultsPage(await fetchFaHtml(resultUrl));
-      } catch (e) {
-        console.warn(`Results fetch failed for ${team || 'unknown'}: ${e instanceof Error ? e.message : e}`);
+      const remaining = budgetMs - (Date.now() - started);
+      if (remaining > 5_000) {
+        try {
+          results = parseResultsPage(await fetchFaHtml(resultUrl, { budgetMs: remaining }));
+        } catch (e) {
+          fetchFailed = true;
+          console.warn(`Results fetch failed for ${team || 'unknown'}: ${e instanceof Error ? e.message : e}`);
+        }
       }
     }
 
+    // Live fetch failed entirely — serve whatever we last had rather than an error.
+    if (fetchFailed && fixtures.length === 0 && results.length === 0 && cached) {
+      return new Response(
+        JSON.stringify({ success: true, team, fixtures: cached.fixtures ?? [], results: cached.results ?? [], cached: true, stale: true }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (!fetchFailed || fixtures.length > 0 || results.length > 0) {
+      await admin.from('fa_fixture_cache').upsert({
+        cache_key: cacheKey,
+        team: team ?? null,
+        fixtures,
+        results,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'cache_key' });
+    }
 
     console.log(`Parsed ${fixtures.length} fixtures and ${results.length} results for ${team || 'unknown'}`);
 
@@ -190,3 +237,4 @@ Deno.serve(async (req) => {
     );
   }
 });
+
