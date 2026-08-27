@@ -171,64 +171,68 @@ Deno.serve(async (req) => {
       .maybeSingle();
 
     const cacheAge = cached?.updated_at ? Date.now() - new Date(cached.updated_at).getTime() : Infinity;
-    if (cached && cacheAge < FRESH_MS) {
-      return new Response(
-        JSON.stringify({ success: true, team, fixtures: cached.fixtures ?? [], results: cached.results ?? [], cached: true }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
 
-    // Keep the whole scrape well inside the platform request timeout so the UI
-    // never hangs waiting on the FA site / Firecrawl rate limits.
-    const budgetMs = 40_000;
-    const started = Date.now();
+    const refresh = async (budgetMs: number) => {
+      const started = Date.now();
+      let fixtures: Fixture[] = [];
+      let fetchFailed = false;
+      try {
+        fixtures = parseFixturesPage(await fetchFaHtml(fixtureUrl, { budgetMs }));
+      } catch (e) {
+        fetchFailed = true;
+        console.warn(`Fixtures fetch failed for ${team || 'unknown'}: ${e instanceof Error ? e.message : e}`);
+      }
 
-    let fixtures: Fixture[] = [];
-    let fetchFailed = false;
-    try {
-      fixtures = parseFixturesPage(await fetchFaHtml(fixtureUrl, { budgetMs }));
-    } catch (e) {
-      fetchFailed = true;
-      console.warn(`Fixtures fetch failed for ${team || 'unknown'}: ${e instanceof Error ? e.message : e}`);
-    }
-
-    let results: Fixture[] = [];
-    if (resultUrl) {
-      const remaining = budgetMs - (Date.now() - started);
-      if (remaining > 5_000) {
-        try {
-          results = parseResultsPage(await fetchFaHtml(resultUrl, { budgetMs: remaining }));
-        } catch (e) {
-          fetchFailed = true;
-          console.warn(`Results fetch failed for ${team || 'unknown'}: ${e instanceof Error ? e.message : e}`);
+      let results: Fixture[] = [];
+      if (resultUrl) {
+        const remaining = budgetMs - (Date.now() - started);
+        if (remaining > 5_000) {
+          try {
+            results = parseResultsPage(await fetchFaHtml(resultUrl, { budgetMs: remaining }));
+          } catch (e) {
+            fetchFailed = true;
+            console.warn(`Results fetch failed for ${team || 'unknown'}: ${e instanceof Error ? e.message : e}`);
+          }
         }
       }
-    }
 
-    // Live fetch failed entirely — serve whatever we last had rather than an error.
-    if (fetchFailed && fixtures.length === 0 && results.length === 0 && cached) {
+      if (!fetchFailed || fixtures.length > 0 || results.length > 0) {
+        await admin.from('fa_fixture_cache').upsert({
+          cache_key: cacheKey,
+          team: team ?? null,
+          fixtures,
+          // Never wipe previously scraped results with an empty failed fetch.
+          results: results.length === 0 && fetchFailed ? (cached?.results ?? []) : results,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'cache_key' });
+      }
+
+      console.log(`Parsed ${fixtures.length} fixtures and ${results.length} results for ${team || 'unknown'}`);
+      return { fixtures, results, fetchFailed };
+    };
+
+    // Any cached copy is served instantly. If it is stale we refresh in the
+    // background so the user never waits on the FA site / Firecrawl.
+    if (cached) {
+      const stale = cacheAge >= FRESH_MS;
+      if (stale) {
+        // @ts-ignore EdgeRuntime is provided by the edge runtime
+        EdgeRuntime.waitUntil(refresh(60_000).catch((e) => console.warn('Background refresh failed:', e)));
+      }
       return new Response(
-        JSON.stringify({ success: true, team, fixtures: cached.fixtures ?? [], results: cached.results ?? [], cached: true, stale: true }),
+        JSON.stringify({ success: true, team, fixtures: cached.fixtures ?? [], results: cached.results ?? [], cached: true, stale }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    if (!fetchFailed || fixtures.length > 0 || results.length > 0) {
-      await admin.from('fa_fixture_cache').upsert({
-        cache_key: cacheKey,
-        team: team ?? null,
-        fixtures,
-        results,
-        updated_at: new Date().toISOString(),
-      }, { onConflict: 'cache_key' });
-    }
-
-    console.log(`Parsed ${fixtures.length} fixtures and ${results.length} results for ${team || 'unknown'}`);
+    // No cache at all — scrape inline with a tight budget so the UI never hangs.
+    const { fixtures, results } = await refresh(30_000);
 
     return new Response(
       JSON.stringify({ success: true, team, fixtures, results }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
+
   } catch (error) {
     console.error('Error scraping fixtures:', error);
     return new Response(
