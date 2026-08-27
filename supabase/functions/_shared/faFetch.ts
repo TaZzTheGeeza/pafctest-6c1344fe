@@ -2,7 +2,15 @@
 // returns 403 to plain server-side requests, so we route through Firecrawl (gateway-backed).
 const FIRECRAWL_GATEWAY = "https://connector-gateway.lovable.dev/firecrawl/v2";
 
-export async function fetchFaHtml(url: string): Promise<string> {
+interface FetchOpts {
+  /** Hard time budget in ms. Once exceeded we stop retrying and throw. */
+  budgetMs?: number;
+}
+
+export async function fetchFaHtml(url: string, opts: FetchOpts = {}): Promise<string> {
+  const budgetMs = opts.budgetMs ?? 120_000;
+  const deadline = Date.now() + budgetMs;
+
   const lovableKey = Deno.env.get("LOVABLE_API_KEY");
   const firecrawlKey = Deno.env.get("FIRECRAWL_API_KEY");
   if (!lovableKey || !firecrawlKey) {
@@ -12,8 +20,11 @@ export async function fetchFaHtml(url: string): Promise<string> {
   let lastError = "fetch failed";
   const MAX_ATTEMPTS = 5;
   for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+    if (Date.now() >= deadline) break;
     if (attempt > 0) await new Promise((r) => setTimeout(r, 1000));
     try {
+      const remaining = deadline - Date.now();
+      if (remaining <= 0) break;
       const res = await fetch(`${FIRECRAWL_GATEWAY}/scrape`, {
         method: "POST",
         headers: {
@@ -27,11 +38,12 @@ export async function fetchFaHtml(url: string): Promise<string> {
           onlyMainContent: false,
           waitFor: 2000,
         }),
+        signal: AbortSignal.timeout(Math.max(5_000, Math.min(remaining, 45_000))),
       });
 
       const raw = await res.text();
       if (res.status === 429) {
-        // Firecrawl rate limit — wait for the advertised window and retry.
+        // Firecrawl rate limit — wait for the advertised window and retry, but never past the deadline.
         const headerWait = Number(res.headers.get("retry-after"));
         const bodyWait = Number(raw.match(/retry after (\d+)/i)?.[1]);
         const waitSec = Number.isFinite(headerWait) && headerWait > 0
@@ -41,9 +53,9 @@ export async function fetchFaHtml(url: string): Promise<string> {
             : 20;
         lastError = `Firecrawl rate limit — retrying in ${waitSec}s`;
         console.warn(`Rate limited fetching ${url}; waiting ${waitSec}s`);
-        if (attempt < MAX_ATTEMPTS - 1) {
-          await new Promise((r) => setTimeout(r, Math.min(waitSec + 2, 45) * 1000));
-        }
+        const waitMs = Math.min((waitSec + 2) * 1000, 45_000, deadline - Date.now());
+        if (waitMs <= 0) break;
+        if (attempt < MAX_ATTEMPTS - 1) await new Promise((r) => setTimeout(r, waitMs));
         continue;
       }
       if (!res.ok) {
@@ -63,4 +75,3 @@ export async function fetchFaHtml(url: string): Promise<string> {
   }
   throw new Error(lastError);
 }
-

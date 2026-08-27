@@ -80,6 +80,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     let cancelled = false;
     setRolesLoading(true);
+
+    // Safety net: never leave the app stuck on a loading spinner if the roles
+    // request hangs (flaky mobile networks / slow backend).
+    const rolesTimeout = setTimeout(() => {
+      if (!cancelled) setRolesLoading(false);
+    }, 8000);
+
     async function loadRoles() {
       const { data, error } = await supabase
         .from("user_roles")
@@ -103,7 +110,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setRolesLoading(false);
     }
 
-    void loadRoles();
+    void loadRoles().catch((e) => {
+      console.error("Roles lookup failed", e);
+      if (!cancelled) setRolesLoading(false);
+    });
+
 
     supabase
       .from("profiles")
@@ -113,11 +124,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .then(({ data }) => {
         if (cancelled) return;
         setMustChangePassword(Boolean((data as any)?.must_change_password));
-      });
+      }, () => {});
 
     return () => {
       cancelled = true;
+      clearTimeout(rolesTimeout);
     };
+
   }, [user]);
 
   const signOut = async () => {

@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.4"
+    PostgrestVersion: "14.17"
   }
   public: {
     Tables: {
@@ -500,6 +500,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      fa_fixture_cache: {
+        Row: {
+          cache_key: string
+          fixtures: Json
+          results: Json
+          team: string | null
+          updated_at: string
+        }
+        Insert: {
+          cache_key: string
+          fixtures?: Json
+          results?: Json
+          team?: string | null
+          updated_at?: string
+        }
+        Update: {
+          cache_key?: string
+          fixtures?: Json
+          results?: Json
+          team?: string | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       fixture_availability: {
         Row: {
