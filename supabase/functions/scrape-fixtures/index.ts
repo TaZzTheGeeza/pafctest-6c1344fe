@@ -175,41 +175,51 @@ Deno.serve(async (req) => {
     const refresh = async (budgetMs: number) => {
       const started = Date.now();
       let fixtures: Fixture[] = [];
-      let fetchFailed = false;
+      let fixturesFailed = false;
       try {
         fixtures = parseFixturesPage(await fetchFaHtml(fixtureUrl, { budgetMs }));
       } catch (e) {
-        fetchFailed = true;
+        fixturesFailed = true;
         console.warn(`Fixtures fetch failed for ${team || 'unknown'}: ${e instanceof Error ? e.message : e}`);
       }
 
       let results: Fixture[] = [];
+      let resultsFailed = false;
       if (resultUrl) {
         const remaining = budgetMs - (Date.now() - started);
         if (remaining > 5_000) {
           try {
             results = parseResultsPage(await fetchFaHtml(resultUrl, { budgetMs: remaining }));
           } catch (e) {
-            fetchFailed = true;
+            resultsFailed = true;
             console.warn(`Results fetch failed for ${team || 'unknown'}: ${e instanceof Error ? e.message : e}`);
           }
+        } else {
+          // Ran out of budget before results — treat as "not fetched", never as empty.
+          resultsFailed = true;
         }
       }
 
-      if (!fetchFailed || fixtures.length > 0 || results.length > 0) {
+      // Never overwrite good cached data with an empty array from a failed/skipped fetch.
+      const cachedFixtures = (cached?.fixtures as Fixture[] | null) ?? [];
+      const cachedResults = (cached?.results as Fixture[] | null) ?? [];
+      const nextFixtures = fixturesFailed && fixtures.length === 0 ? cachedFixtures : fixtures;
+      const nextResults = resultsFailed && results.length === 0 ? cachedResults : results;
+
+      if (!fixturesFailed || !resultsFailed || fixtures.length > 0 || results.length > 0) {
         await admin.from('fa_fixture_cache').upsert({
           cache_key: cacheKey,
           team: team ?? null,
-          fixtures,
-          // Never wipe previously scraped results with an empty failed fetch.
-          results: results.length === 0 && fetchFailed ? (cached?.results ?? []) : results,
+          fixtures: nextFixtures,
+          results: nextResults,
           updated_at: new Date().toISOString(),
         }, { onConflict: 'cache_key' });
       }
 
       console.log(`Parsed ${fixtures.length} fixtures and ${results.length} results for ${team || 'unknown'}`);
-      return { fixtures, results, fetchFailed };
+      return { fixtures: nextFixtures, results: nextResults, fetchFailed: fixturesFailed || resultsFailed };
     };
+
 
     // Any cached copy is served instantly. If it is stale we refresh in the
     // background so the user never waits on the FA site / Firecrawl.
