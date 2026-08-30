@@ -674,7 +674,7 @@ export default function DashboardPage() {
                         <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${shopOpen ? "translate-x-6" : "translate-x-1"}`} />
                       </button>
                     </div>
-                    <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="grid gap-3 grid-cols-1 md:grid-cols-2">
                       <div>
                         <label className="text-[10px] font-display uppercase tracking-wider text-muted-foreground block mb-1">
                           Orders close
