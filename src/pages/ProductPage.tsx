@@ -12,6 +12,8 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { useShopWindow } from "@/hooks/useShopWindow";
 import { ShopWindowBanner } from "@/components/shop/ShopWindowBanner";
+import { SizeGuideDialog, detectSizeGuide } from "@/components/shop/SizeGuideDialog";
+
 
 export default function ProductPage() {
   const { handle } = useParams<{ handle: string }>();
