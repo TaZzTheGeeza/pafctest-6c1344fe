@@ -91,6 +91,10 @@ export default function DashboardPage() {
   const [announcingReg, setAnnouncingReg] = useState(false);
   const [shopOpen, setShopOpen] = useState(true);
   const [togglingShop, setTogglingShop] = useState(false);
+  const [shopClosesAt, setShopClosesAt] = useState("");
+  const [shopReadyDays, setShopReadyDays] = useState("10");
+  const [savingShopWindow, setSavingShopWindow] = useState(false);
+
   const [presentationOpen, setPresentationOpen] = useState(false);
   const [togglingPresentation, setTogglingPresentation] = useState(false);
   const [tournamentEnabled, setTournamentEnabled] = useState(false);
