@@ -12,6 +12,8 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { useShopWindow } from "@/hooks/useShopWindow";
 import { ShopWindowBanner } from "@/components/shop/ShopWindowBanner";
+import { SizeGuideDialog, detectSizeGuide } from "@/components/shop/SizeGuideDialog";
+
 
 export default function ProductPage() {
   const { handle } = useParams<{ handle: string }>();
@@ -43,6 +45,8 @@ export default function ProductPage() {
   }, [handle]);
 
   const canPersonalise = product ? isPersonalisable(product.title) : false;
+  const sizeGuideKind = product ? detectSizeGuide(product.options || [], product.title) : null;
+
 
   const handleAddToCart = async () => {
     if (!product) return;
@@ -151,7 +155,10 @@ export default function ProductPage() {
               {product.options.map((option, oi) => (
                 option.values.length > 1 && (
                   <div key={oi} className="mb-6">
-                    <label className="font-display text-sm font-bold mb-2 block">{option.name}</label>
+                    <div className="flex items-center justify-between gap-3 mb-2">
+                      <label className="font-display text-sm font-bold block">{option.name}</label>
+                      {/size/i.test(option.name) && <SizeGuideDialog kind={sizeGuideKind} />}
+                    </div>
                     <div className="flex flex-wrap gap-2">
                       {option.values.map((value) => {
                         const variantIndex = variants.findIndex(v =>
@@ -172,6 +179,7 @@ export default function ProductPage() {
                   </div>
                 )
               ))}
+
 
               {canPersonalise && (
                 <div className="mb-6">
