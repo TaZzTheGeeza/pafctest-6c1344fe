@@ -237,15 +237,28 @@ export default function DashboardPage() {
   async function toggleShop() {
     setTogglingShop(true);
     const newVal = !shopOpen;
+    const nowIso = new Date().toISOString();
+    // Re-opening with a deadline already in the past would leave shoppers blocked,
+    // so clear the stale deadline at the same time.
+    const deadlinePassed = !!shopClosesAt && new Date(shopClosesAt).getTime() <= Date.now();
+    const clearStale = newVal && deadlinePassed;
     const { error } = await supabase
       .from("site_settings" as any)
-      .update({ value: newVal ? "true" : "false", updated_at: new Date().toISOString() } as any)
+      .update({ value: newVal ? "true" : "false", updated_at: nowIso } as any)
       .eq("key", "shop_open");
     if (error) {
       toast.error("Failed to update shop setting");
     } else {
+      if (clearStale) {
+        await supabase
+          .from("site_settings" as any)
+          .upsert({ key: "shop_closes_at", value: "", updated_at: nowIso } as any, { onConflict: "key" });
+        setShopClosesAt("");
+      }
       setShopOpen(newVal);
-      toast.success(`Club Shop ${newVal ? "opened" : "closed"}`);
+      toast.success(`Club Shop ${newVal ? "opened" : "closed"}`, {
+        description: clearStale ? "Past closing deadline cleared — set a new one if needed" : undefined,
+      });
     }
     setTogglingShop(false);
   }
@@ -662,7 +675,11 @@ export default function DashboardPage() {
                         <div>
                           <p className="text-sm font-display font-semibold text-foreground">Club Shop</p>
                           <p className="text-[10px] text-muted-foreground">
-                            {shopOpen ? "Shop is currently OPEN" : "Shop is CLOSED (browse only)"}
+                            {!shopOpen
+                              ? "Shop is CLOSED (browse only)"
+                              : shopClosesAt && new Date(shopClosesAt).getTime() <= Date.now()
+                                ? "Shop is CLOSED — ordering deadline has passed"
+                                : "Shop is currently OPEN"}
                           </p>
                         </div>
                       </div>

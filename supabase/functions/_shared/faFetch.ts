@@ -53,11 +53,11 @@ export async function fetchFaHtml(url: string, opts: FetchOpts = {}): Promise<st
             : 20;
         lastError = `Firecrawl rate limit — retrying in ${waitSec}s`;
         console.warn(`Rate limited fetching ${url}; advertised wait ${waitSec}s`);
-        // Never burn the whole budget sleeping: cap the wait and require enough
-        // remaining time to actually perform the retry fetch afterwards.
-        const waitMs = Math.min((waitSec + 1) * 1000, 8_000);
+        // Honour the advertised rate-limit window (capped), but never sleep past
+        // the deadline or without enough time left to perform the retry fetch.
+        const waitMs = Math.min((waitSec + 2) * 1000, 45_000, Math.max(0, deadline - Date.now()));
         if (attempt >= MAX_ATTEMPTS - 1) break;
-        if (deadline - Date.now() < waitMs + 8_000) break;
+        if (deadline - Date.now() < waitMs + 5_000) break;
         await new Promise((r) => setTimeout(r, waitMs));
         continue;
 

@@ -206,7 +206,9 @@ Deno.serve(async (req) => {
       const nextFixtures = fixturesFailed && fixtures.length === 0 ? cachedFixtures : fixtures;
       const nextResults = resultsFailed && results.length === 0 ? cachedResults : results;
 
-      if (!fixturesFailed || !resultsFailed || fixtures.length > 0 || results.length > 0) {
+      // Only stamp the cache as fresh when nothing failed, or when we actually
+      // fetched new data — otherwise stale data would look fresh for 6 hours.
+      if ((!fixturesFailed && !resultsFailed) || fixtures.length > 0 || results.length > 0) {
         await admin.from('fa_fixture_cache').upsert({
           cache_key: cacheKey,
           team: team ?? null,
