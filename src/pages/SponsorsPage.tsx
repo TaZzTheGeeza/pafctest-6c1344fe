@@ -5,18 +5,31 @@ import { Handshake, Mail } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { SEO } from "@/components/SEO";
+import tclarkeAsset from "@/assets/sponsors/tclarke.png.asset.json";
+import totalHoistAsset from "@/assets/sponsors/total-hoist-services.png.asset.json";
+import lcFencingAsset from "@/assets/sponsors/lc-fencing.png.asset.json";
+
 
 interface Sponsor {
   name: string;
   logo: string;
   url: string;
+  secondaryUrl?: string;
+  secondaryLabel?: string;
 }
 
 const mainSponsors: Sponsor[] = [
-  { name: "New Theatre Peterborough", logo: "https://mcp-cdn-fja5bvhth4eqercf.z01.azurefd.net/images/Sponsors/1611/109952/sponsor.jpg", url: "https://newtheatre-peterborough.com/" },
-  { name: "Dyno-Rod", logo: "https://mcp-cdn-fja5bvhth4eqercf.z01.azurefd.net/images/Sponsors/1611/109950/sponsor.jpg", url: "https://www.dyno.com/" },
-  { name: "Preim", logo: "https://mcp-cdn-fja5bvhth4eqercf.z01.azurefd.net/images/Sponsors/1611/109951/sponsor.jpg", url: "https://www.preim.co.uk/" },
+  { name: "TClarke", logo: tclarkeAsset.url, url: "https://www.tclarke.com" },
+  { name: "Total Hoist Services Ltd", logo: totalHoistAsset.url, url: "" },
+  {
+    name: "L.C Fencing",
+    logo: lcFencingAsset.url,
+    url: "https://lcfencing.co.uk",
+    secondaryUrl: "https://www.facebook.com/share/19GXGy4xr4/",
+    secondaryLabel: "Facebook",
+  },
 ];
+
 
 
 export default function SponsorsPage() {
@@ -41,19 +54,34 @@ export default function SponsorsPage() {
             </h2>
             <div className="flex flex-wrap items-center justify-center gap-6 mb-16">
               {mainSponsors.map((sponsor, i) => (
-                <motion.a
+                <motion.div
                   key={sponsor.name}
-                  href={sponsor.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.4, delay: i * 0.1 }}
-                  className="bg-card border border-border rounded-lg p-6 hover:border-primary transition-colors"
+                  className="bg-card border border-border rounded-lg p-6 hover:border-primary transition-colors flex flex-col items-center gap-3"
                 >
-                  <img src={sponsor.logo} alt={sponsor.name} className="h-20 w-auto object-contain" loading="lazy" />
-                </motion.a>
+                  {sponsor.url ? (
+                    <a href={sponsor.url} target="_blank" rel="noopener noreferrer">
+                      <img src={sponsor.logo} alt={`${sponsor.name} logo`} className="h-20 w-auto object-contain" loading="lazy" />
+                    </a>
+                  ) : (
+                    <img src={sponsor.logo} alt={`${sponsor.name} logo`} className="h-20 w-auto object-contain" loading="lazy" />
+                  )}
+                  <p className="font-display text-xs tracking-wider text-foreground">{sponsor.name}</p>
+                  {sponsor.secondaryUrl && (
+                    <a
+                      href={sponsor.secondaryUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-primary hover:underline"
+                    >
+                      {sponsor.secondaryLabel}
+                    </a>
+                  )}
+                </motion.div>
               ))}
+
             </div>
 
 
