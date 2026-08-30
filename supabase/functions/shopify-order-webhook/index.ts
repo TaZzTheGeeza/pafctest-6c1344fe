@@ -199,7 +199,8 @@ Deno.serve(async (req) => {
     const adminIds = [...new Set((adminRoles ?? []).map((r: any) => r.user_id))];
 
 
-    if (adminIds.length > 0) {
+    const isPaid = body.financial_status === "paid";
+    if (adminIds.length > 0 && isPaid) {
       const notifications = adminIds.map((uid: string) => ({
         user_id: uid,
         title,
