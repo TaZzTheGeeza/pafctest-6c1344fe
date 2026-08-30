@@ -607,26 +607,76 @@ export default function DashboardPage() {
                       </button>
                     </div>
                   </div>
-                  <div className="bg-card border border-border rounded-xl p-5 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-primary/10">
-                        <ShoppingBag className="h-4 w-4 text-primary" />
+                  <div className="bg-card border border-border rounded-xl p-5 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-primary/10">
+                          <ShoppingBag className="h-4 w-4 text-primary" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-display font-semibold text-foreground">Club Shop</p>
+                          <p className="text-[10px] text-muted-foreground">
+                            {shopOpen ? "Shop is currently OPEN" : "Shop is CLOSED (browse only)"}
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={toggleShop}
+                        disabled={togglingShop}
+                        className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${shopOpen ? "bg-primary" : "bg-muted"}`}
+                      >
+                        <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${shopOpen ? "translate-x-6" : "translate-x-1"}`} />
+                      </button>
+                    </div>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <div>
+                        <label className="text-[10px] font-display uppercase tracking-wider text-muted-foreground block mb-1">
+                          Orders close
+                        </label>
+                        <input
+                          type="datetime-local"
+                          value={shopClosesAt}
+                          onChange={(e) => setShopClosesAt(e.target.value)}
+                          className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm"
+                        />
                       </div>
                       <div>
-                        <p className="text-sm font-display font-semibold text-foreground">Club Shop</p>
-                        <p className="text-[10px] text-muted-foreground">
-                          {shopOpen ? "Shop is currently OPEN" : "Shop is CLOSED (browse only)"}
-                        </p>
+                        <label className="text-[10px] font-display uppercase tracking-wider text-muted-foreground block mb-1">
+                          Days to prepare orders
+                        </label>
+                        <input
+                          type="number"
+                          min={0}
+                          max={90}
+                          value={shopReadyDays}
+                          onChange={(e) => setShopReadyDays(e.target.value)}
+                          className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm"
+                        />
                       </div>
                     </div>
-                    <button
-                      onClick={toggleShop}
-                      disabled={togglingShop}
-                      className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${shopOpen ? "bg-primary" : "bg-muted"}`}
-                    >
-                      <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${shopOpen ? "translate-x-6" : "translate-x-1"}`} />
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={saveShopWindow}
+                        disabled={savingShopWindow}
+                        className="text-[11px] font-display tracking-wider uppercase px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-40"
+                      >
+                        {savingShopWindow ? "Saving..." : "Save window"}
+                      </button>
+                      {shopClosesAt && (
+                        <button
+                          onClick={() => { setShopClosesAt(""); }}
+                          className="text-[11px] font-display tracking-wider uppercase px-3 py-1.5 rounded-md border border-border hover:border-primary"
+                        >
+                          Clear deadline
+                        </button>
+                      )}
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">
+                      Shoppers see a live countdown and a note that orders will be ready around {shopReadyDays || 0} days
+                      after closure. Ordering stops automatically once the deadline passes.
+                    </p>
                   </div>
+
                   <div className="bg-card border border-border rounded-xl p-5 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="p-2 rounded-lg bg-primary/10">
