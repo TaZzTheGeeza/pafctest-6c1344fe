@@ -5,6 +5,10 @@ import { Handshake, Mail } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { SEO } from "@/components/SEO";
+import tclarkeAsset from "@/assets/sponsors/tclarke.png.asset.json";
+import totalHoistAsset from "@/assets/sponsors/total-hoist-services.png.asset.json";
+import lcFencingAsset from "@/assets/sponsors/lc-fencing.png.asset.json";
+
 
 interface Sponsor {
   name: string;
