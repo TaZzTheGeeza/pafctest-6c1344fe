@@ -22,20 +22,11 @@ export default function ShopPage() {
   const [products, setProducts] = useState<ShopifyProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
-  const [shopOpen, setShopOpen] = useState(true);
+  const shopWindow = useShopWindow();
+  const shopOpen = shopWindow.isOpen;
   const addItem = useCartStore(state => state.addItem);
   const isCartLoading = useCartStore(state => state.isLoading);
 
-  useEffect(() => {
-    supabase
-      .from("site_settings" as any)
-      .select("value")
-      .eq("key", "shop_open")
-      .single()
-      .then(({ data }) => {
-        if (data) setShopOpen((data as any).value === "true");
-      });
-  }, []);
 
   useEffect(() => {
     async function fetchProducts() {
