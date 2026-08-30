@@ -38,9 +38,10 @@ export function SponsorsSection() {
           {sponsors.map((sponsor, i) => (
             <motion.a
               key={sponsor.name}
-              href={sponsor.url}
-              target="_blank"
-              rel="noopener noreferrer"
+              href={sponsor.url || undefined}
+              target={sponsor.url ? "_blank" : undefined}
+              rel={sponsor.url ? "noopener noreferrer" : undefined}
+
               initial={{ opacity: 0, scale: 0.9 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
