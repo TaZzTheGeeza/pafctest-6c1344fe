@@ -675,7 +675,11 @@ export default function DashboardPage() {
                         <div>
                           <p className="text-sm font-display font-semibold text-foreground">Club Shop</p>
                           <p className="text-[10px] text-muted-foreground">
-                            {shopOpen ? "Shop is currently OPEN" : "Shop is CLOSED (browse only)"}
+                            {!shopOpen
+                              ? "Shop is CLOSED (browse only)"
+                              : shopClosesAt && new Date(shopClosesAt).getTime() <= Date.now()
+                                ? "Shop is CLOSED — ordering deadline has passed"
+                                : "Shop is currently OPEN"}
                           </p>
                         </div>
                       </div>
