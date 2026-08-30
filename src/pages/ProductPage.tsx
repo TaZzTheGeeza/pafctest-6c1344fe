@@ -45,6 +45,8 @@ export default function ProductPage() {
   }, [handle]);
 
   const canPersonalise = product ? isPersonalisable(product.title) : false;
+  const sizeGuideKind = product ? detectSizeGuide(product.options || [], product.title) : null;
+
 
   const handleAddToCart = async () => {
     if (!product) return;
