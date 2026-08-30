@@ -200,14 +200,8 @@ export default function ProductPage() {
                 >
                   {isCartLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : !selectedVariant?.availableForSale ? "Sold Out" : "Add to Cart"}
                 </Button>
-              ) : (
+              ) : null}
 
-              ) : (
-                <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 flex items-center gap-2">
-                  <AlertTriangle className="h-4 w-4 text-amber-400 shrink-0" />
-                  <p className="text-xs text-amber-200 font-display">Shop is currently closed for orders.</p>
-                </div>
-              )}
             </div>
           </motion.div>
         </div>
