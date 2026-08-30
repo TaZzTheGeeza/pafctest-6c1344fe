@@ -10,13 +10,22 @@ interface Sponsor {
   name: string;
   logo: string;
   url: string;
+  secondaryUrl?: string;
+  secondaryLabel?: string;
 }
 
 const mainSponsors: Sponsor[] = [
-  { name: "New Theatre Peterborough", logo: "https://mcp-cdn-fja5bvhth4eqercf.z01.azurefd.net/images/Sponsors/1611/109952/sponsor.jpg", url: "https://newtheatre-peterborough.com/" },
-  { name: "Dyno-Rod", logo: "https://mcp-cdn-fja5bvhth4eqercf.z01.azurefd.net/images/Sponsors/1611/109950/sponsor.jpg", url: "https://www.dyno.com/" },
-  { name: "Preim", logo: "https://mcp-cdn-fja5bvhth4eqercf.z01.azurefd.net/images/Sponsors/1611/109951/sponsor.jpg", url: "https://www.preim.co.uk/" },
+  { name: "TClarke", logo: tclarkeAsset.url, url: "https://www.tclarke.com" },
+  { name: "Total Hoist Services Ltd", logo: totalHoistAsset.url, url: "" },
+  {
+    name: "L.C Fencing",
+    logo: lcFencingAsset.url,
+    url: "https://lcfencing.co.uk",
+    secondaryUrl: "https://www.facebook.com/share/19GXGy4xr4/",
+    secondaryLabel: "Facebook",
+  },
 ];
+
 
 
 export default function SponsorsPage() {
