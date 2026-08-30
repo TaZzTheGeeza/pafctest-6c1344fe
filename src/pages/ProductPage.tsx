@@ -12,7 +12,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { useShopWindow } from "@/hooks/useShopWindow";
 import { ShopWindowBanner } from "@/components/shop/ShopWindowBanner";
-import { SizeGuideDialog, detectSizeGuide } from "@/components/shop/SizeGuideDialog";
+import { SizeGuideDialog, detectSizeGuide, getSizeValues } from "@/components/shop/SizeGuideDialog";
 
 
 export default function ProductPage() {
@@ -46,6 +46,7 @@ export default function ProductPage() {
 
   const canPersonalise = product ? isPersonalisable(product.title) : false;
   const sizeGuideKind = product ? detectSizeGuide(product.options || [], product.title) : null;
+  const sizeGuideValues = product ? getSizeValues(product.options || []) : [];
 
 
   const handleAddToCart = async () => {
@@ -157,7 +158,7 @@ export default function ProductPage() {
                   <div key={oi} className="mb-6">
                     <div className="flex items-center justify-between gap-3 mb-2">
                       <label className="font-display text-sm font-bold block">{option.name}</label>
-                      {/size/i.test(option.name) && <SizeGuideDialog kind={sizeGuideKind} />}
+                      {/size/i.test(option.name) && <SizeGuideDialog kind={sizeGuideKind} sizeValues={sizeGuideValues} />}
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {option.values.map((value) => {

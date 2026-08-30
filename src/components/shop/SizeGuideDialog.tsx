@@ -58,11 +58,92 @@ const KIDS_ROWS: Array<[string, string, string, string, string, string]> = [
   ["XS", "13–14", "153–164", "80–87", "69–72", "81–86"],
 ];
 
+const KIDS_AGE_RANGES: Array<[string, number, number]> = [
+  ["6XS", 3, 5],
+  ["5XS", 5, 6],
+  ["4XS", 7, 8],
+  ["3XS", 9, 10],
+  ["2XS", 11, 12],
+  ["XS", 13, 14],
+];
+
+const KIDS_HEIGHT_RANGES: Array<[string, number, number]> = [
+  ["6XS", 100, 108],
+  ["5XS", 109, 117],
+  ["4XS", 118, 128],
+  ["3XS", 129, 140],
+  ["2XS", 141, 152],
+  ["XS", 153, 164],
+];
+
 const SIZE_OPTION_NAMES = ["size", "sizes", "shirt size", "kit size", "age"];
 
 function isSizeOption(name: string) {
   const n = name.trim().toLowerCase();
   return SIZE_OPTION_NAMES.includes(n) || n.includes("size");
+}
+
+/** Pull the product's own size values out of its options. */
+export function getSizeValues(options: Array<{ name: string; values: string[] }>): string[] {
+  const sizeOption = options.find((o) => isSizeOption(o.name));
+  return sizeOption?.values ?? [];
+}
+
+/**
+ * Map a store size label ("5-6 Years", "YM", "128cm", "M") onto a Joma chart row key.
+ * Returns { chart: "kids" | "adult", key } or null when it can't be matched.
+ */
+export function mapSizeLabel(raw: string): { chart: "kids" | "adult"; key: string } | null {
+  const v = raw.trim().toLowerCase().replace(/\s+/g, " ");
+
+  // Explicit Joma junior codes
+  const jomaKid = v.match(/^([2-6])\s*xs$/);
+  if (jomaKid) return { chart: "kids", key: `${jomaKid[1]}XS` };
+
+  // Height labels, e.g. "128cm" / "128 cm" / "140"
+  const height = v.match(/(\d{3})\s*cm/);
+  if (height) {
+    const h = parseInt(height[1], 10);
+    const row = KIDS_HEIGHT_RANGES.find(([, lo, hi]) => h >= lo && h <= hi);
+    if (row) return { chart: "kids", key: row[0] };
+  }
+
+  // Age labels, e.g. "5-6 years", "9/10 yrs", "age 11-12", "7-8"
+  const ages = v.match(/(\d{1,2})\s*[-/–]\s*(\d{1,2})/);
+  if (ages && parseInt(ages[2], 10) <= 16) {
+    const lo = parseInt(ages[1], 10);
+    const hi = parseInt(ages[2], 10);
+    const mid = (lo + hi) / 2;
+    const row =
+      KIDS_AGE_RANGES.find(([, a, b]) => mid >= a && mid <= b) ||
+      KIDS_AGE_RANGES.find(([, a, b]) => lo >= a && lo <= b);
+    if (row) return { chart: "kids", key: row[0] };
+  }
+  const singleAge = v.match(/^(?:age\s*)?(\d{1,2})\s*(?:yrs?|years?)?$/);
+  if (singleAge) {
+    const a = parseInt(singleAge[1], 10);
+    if (a >= 3 && a <= 16) {
+      const row = KIDS_AGE_RANGES.find(([, lo, hi]) => a >= lo && a <= hi);
+      if (row) return { chart: "kids", key: row[0] };
+    }
+  }
+
+  // Youth letter sizes
+  const youth = v.match(/^(?:y|junior |jnr |kids? )?(xs|s|m|l|xl)b?$/);
+  if (youth && /^(y|junior|jnr|kid)/.test(v)) {
+    const map: Record<string, string> = { xs: "6XS", s: "5XS", m: "4XS", l: "3XS", xl: "2XS" };
+    return { chart: "kids", key: map[youth[1]] };
+  }
+
+  // Adult letter sizes
+  const adult = v.match(/^(xs|s|m|l|xl|xxl|2xl|xxxl|3xl)$/);
+  if (adult) {
+    const key = adult[1];
+    if (key === "xxl" || key === "2xl" || key === "xxxl" || key === "3xl") return { chart: "adult", key: "XXL–3XL" };
+    return { chart: "adult", key: key.toUpperCase() };
+  }
+
+  return null;
 }
 
 /** Work out which chart(s) apply from the product's own size values. Clothing only. */
@@ -74,14 +155,13 @@ export function detectSizeGuide(
   // Footwear / socks / accessories are not covered by the Joma clothing guide.
   if (title.includes("sock") || title.includes("boot") || title.includes("shoe")) return null;
 
-  const sizeOption = options.find((o) => isSizeOption(o.name));
-  if (!sizeOption || sizeOption.values.length === 0) return null;
+  const values = getSizeValues(options);
+  if (values.length === 0) return null;
+  if (values.some((v) => /\b(shoe|uk)\b/i.test(v))) return null;
 
-  const values = sizeOption.values.map((v) => v.toLowerCase());
-  if (values.some((v) => /\b(shoe|uk)\b/.test(v))) return null;
-
-  const hasJunior = values.some((v) => /\d\s*[-/–]\s*\d|\byrs?\b|\byears?\b|\bjnr\b|\bjunior\b|\bkids?\b|\b(sb|mb|lb|xlb|xsb)\b|^[2-6]xs$/.test(v));
-  const hasAdult = values.some((v) => /^(xs|s|m|l|xl|2xl|3xl|xxl|xxxl)$/.test(v.trim()));
+  const mapped = values.map(mapSizeLabel).filter(Boolean) as Array<{ chart: "kids" | "adult" }>;
+  const hasJunior = mapped.some((m) => m.chart === "kids");
+  const hasAdult = mapped.some((m) => m.chart === "adult");
 
   if (hasJunior && hasAdult) return "mixed";
   if (hasJunior) return "junior";
@@ -89,23 +169,36 @@ export function detectSizeGuide(
   return null;
 }
 
-function Table({ headers, rows }: { headers: string[]; rows: string[][] }) {
+function Table({
+  headers,
+  rows,
+  labels,
+}: {
+  headers: string[];
+  rows: string[][];
+  labels?: Record<string, string>;
+}) {
+  const showLabels = !!labels;
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-border text-left font-display text-xs uppercase tracking-wider text-muted-foreground">
-            {headers.map((h, i) => (
-              <th key={h} className={i < headers.length - 1 ? "py-2 pr-3" : "py-2"}>{h}</th>
+            {showLabels && <th className="py-2 pr-3">Shop size</th>}
+            {headers.map((h) => (
+              <th key={h} className="py-2 pr-3">{h}</th>
             ))}
           </tr>
         </thead>
         <tbody>
           {rows.map((r) => (
             <tr key={r[0]} className="border-b border-border/50">
+              {showLabels && (
+                <td className="py-2 pr-3 font-medium text-primary">{labels?.[r[0]] ?? "—"}</td>
+              )}
               <td className="py-2 pr-3 font-medium">{r[0]}</td>
               {r.slice(1).map((cell, i) => (
-                <td key={i} className={i < r.length - 2 ? "py-2 pr-3 text-muted-foreground" : "py-2 text-muted-foreground"}>{cell}</td>
+                <td key={i} className="py-2 pr-3 text-muted-foreground">{cell}</td>
               ))}
             </tr>
           ))}
@@ -126,12 +219,40 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 interface SizeGuideDialogProps {
   kind: GuideKind;
+  /** The exact size values offered for this product, so the guide matches what's buyable. */
+  sizeValues?: string[];
   className?: string;
 }
 
-export function SizeGuideDialog({ kind, className }: SizeGuideDialogProps) {
+export function SizeGuideDialog({ kind, sizeValues = [], className }: SizeGuideDialogProps) {
   const [open, setOpen] = useState(false);
   if (!kind) return null;
+
+  // Map each purchasable size onto a chart row so the guide only shows what's for sale.
+  const kidsLabels: Record<string, string> = {};
+  const adultLabels: Record<string, string> = {};
+  const unmatched: string[] = [];
+  sizeValues.forEach((value) => {
+    const m = mapSizeLabel(value);
+    if (!m) {
+      unmatched.push(value);
+      return;
+    }
+    const target = m.chart === "kids" ? kidsLabels : adultLabels;
+    target[m.key] = target[m.key] ? `${target[m.key]}, ${value}` : value;
+  });
+
+  const hasMapping = Object.keys(kidsLabels).length > 0 || Object.keys(adultLabels).length > 0;
+  const kidsRows = hasMapping
+    ? KIDS_ROWS.filter((r) => kidsLabels[r[0]])
+    : KIDS_ROWS;
+  const filterAdult = (rows: Array<[string, string, string, string]>) =>
+    hasMapping ? rows.filter((r) => adultLabels[r[0]]) : rows;
+
+  const showKids = (kind === "junior" || kind === "mixed") && kidsRows.length > 0;
+  const showAdult =
+    (kind === "adult" || kind === "mixed") &&
+    (!hasMapping || Object.keys(adultLabels).length > 0);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -149,34 +270,65 @@ export function SizeGuideDialog({ kind, className }: SizeGuideDialogProps) {
         <DialogHeader>
           <DialogTitle className="font-display">Joma Size Guide</DialogTitle>
           <DialogDescription>
-            Official Joma measurements (cm). If between sizes, size up.
+            Official Joma measurements (cm) for the sizes available on this product. If between sizes, size up.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">
-          {(kind === "junior" || kind === "mixed") && (
+          {showKids && (
             <Section title="Kids — Top &amp; Bottom">
               <Table
-                headers={["Size", "Age", "Height", "Chest", "Waist", "Hip"]}
-                rows={KIDS_ROWS}
+                headers={["Joma size", "Age", "Height", "Chest", "Waist", "Hip"]}
+                rows={kidsRows}
+                labels={hasMapping ? kidsLabels : undefined}
               />
             </Section>
           )}
-          {(kind === "adult" || kind === "mixed") && (
+          {showAdult && (
             <>
-              <Section title="Men's Top">
-                <Table headers={["Size", "Chest", "Waist", "Hip"]} rows={MENS_TOP} />
-              </Section>
-              <Section title="Men's Bottom">
-                <Table headers={["Size", "Waist", "Hip", "Inseam"]} rows={MENS_BOTTOM} />
-              </Section>
-              <Section title="Women's Top">
-                <Table headers={["Size", "Chest", "Waist", "Hip"]} rows={WOMENS_TOP} />
-              </Section>
-              <Section title="Women's Bottom">
-                <Table headers={["Size", "Waist", "Hip", "Inseam"]} rows={WOMENS_BOTTOM} />
-              </Section>
+              {filterAdult(MENS_TOP).length > 0 && (
+                <Section title="Men's Top">
+                  <Table
+                    headers={["Joma size", "Chest", "Waist", "Hip"]}
+                    rows={filterAdult(MENS_TOP)}
+                    labels={hasMapping ? adultLabels : undefined}
+                  />
+                </Section>
+              )}
+              {filterAdult(MENS_BOTTOM).length > 0 && (
+                <Section title="Men's Bottom">
+                  <Table
+                    headers={["Joma size", "Waist", "Hip", "Inseam"]}
+                    rows={filterAdult(MENS_BOTTOM)}
+                    labels={hasMapping ? adultLabels : undefined}
+                  />
+                </Section>
+              )}
+              {filterAdult(WOMENS_TOP).length > 0 && (
+                <Section title="Women's Top">
+                  <Table
+                    headers={["Joma size", "Chest", "Waist", "Hip"]}
+                    rows={filterAdult(WOMENS_TOP)}
+                    labels={hasMapping ? adultLabels : undefined}
+                  />
+                </Section>
+              )}
+              {filterAdult(WOMENS_BOTTOM).length > 0 && (
+                <Section title="Women's Bottom">
+                  <Table
+                    headers={["Joma size", "Waist", "Hip", "Inseam"]}
+                    rows={filterAdult(WOMENS_BOTTOM)}
+                    labels={hasMapping ? adultLabels : undefined}
+                  />
+                </Section>
+              )}
             </>
+          )}
+
+          {unmatched.length > 0 && (
+            <p className="text-xs text-muted-foreground">
+              Not covered by the chart: {unmatched.join(", ")}
+            </p>
           )}
 
           <div className="rounded-md bg-muted/40 p-3 text-xs text-muted-foreground">
