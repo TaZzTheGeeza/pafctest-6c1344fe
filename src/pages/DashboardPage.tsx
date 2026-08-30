@@ -202,16 +202,35 @@ export default function DashboardPage() {
   }
 
   async function saveShopWindow() {
+    if (!shopClosesAt) {
+      toast.error("Pick a closing date & time first (or use Clear deadline to remove it)");
+      return;
+    }
     setSavingShopWindow(true);
-    const iso = shopClosesAt ? new Date(shopClosesAt).toISOString() : "";
+    const iso = new Date(shopClosesAt).toISOString();
     const now = new Date().toISOString();
+    const days = String(parseInt(shopReadyDays || "0", 10) || 0);
     const [a, b] = await Promise.all([
-      supabase.from("site_settings" as any).update({ value: iso, updated_at: now } as any).eq("key", "shop_closes_at"),
-      supabase.from("site_settings" as any).update({ value: String(parseInt(shopReadyDays || "0", 10) || 0), updated_at: now } as any).eq("key", "shop_ready_days"),
+      supabase.from("site_settings" as any).upsert({ key: "shop_closes_at", value: iso, updated_at: now } as any, { onConflict: "key" }),
+      supabase.from("site_settings" as any).upsert({ key: "shop_ready_days", value: days, updated_at: now } as any, { onConflict: "key" }),
     ]);
-    if (a.error || b.error) toast.error("Failed to save shop window");
-    else toast.success("Shop window saved");
+    if (a.error || b.error) {
+      toast.error("Failed to save shop window");
+    } else {
+      toast.success("Shop window saved", {
+        description: `Orders close ${new Date(iso).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}`,
+      });
+    }
     setSavingShopWindow(false);
+  }
+
+  async function clearShopDeadline() {
+    setShopClosesAt("");
+    const { error } = await supabase
+      .from("site_settings" as any)
+      .upsert({ key: "shop_closes_at", value: "", updated_at: new Date().toISOString() } as any, { onConflict: "key" });
+    if (error) toast.error("Failed to clear deadline");
+    else toast.success("Deadline cleared — shop stays open until manually closed");
   }
 
 
