@@ -186,11 +186,34 @@ export default function DashboardPage() {
   async function loadShopSetting() {
     const { data } = await supabase
       .from("site_settings" as any)
-      .select("value")
-      .eq("key", "shop_open")
-      .single();
-    if (data) setShopOpen((data as any).value === "true");
+      .select("key, value")
+      .in("key", ["shop_open", "shop_closes_at", "shop_ready_days"]);
+    for (const row of ((data as any[]) ?? [])) {
+      if (row.key === "shop_open") setShopOpen(row.value === "true");
+      if (row.key === "shop_closes_at" && row.value) {
+        const d = new Date(row.value);
+        if (!isNaN(d.getTime())) {
+          const pad = (n: number) => String(n).padStart(2, "0");
+          setShopClosesAt(`${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`);
+        }
+      }
+      if (row.key === "shop_ready_days" && row.value) setShopReadyDays(row.value);
+    }
   }
+
+  async function saveShopWindow() {
+    setSavingShopWindow(true);
+    const iso = shopClosesAt ? new Date(shopClosesAt).toISOString() : "";
+    const now = new Date().toISOString();
+    const [a, b] = await Promise.all([
+      supabase.from("site_settings" as any).update({ value: iso, updated_at: now } as any).eq("key", "shop_closes_at"),
+      supabase.from("site_settings" as any).update({ value: String(parseInt(shopReadyDays || "0", 10) || 0), updated_at: now } as any).eq("key", "shop_ready_days"),
+    ]);
+    if (a.error || b.error) toast.error("Failed to save shop window");
+    else toast.success("Shop window saved");
+    setSavingShopWindow(false);
+  }
+
 
   async function toggleShop() {
     setTogglingShop(true);
