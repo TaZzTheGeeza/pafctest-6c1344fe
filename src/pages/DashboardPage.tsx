@@ -91,6 +91,10 @@ export default function DashboardPage() {
   const [announcingReg, setAnnouncingReg] = useState(false);
   const [shopOpen, setShopOpen] = useState(true);
   const [togglingShop, setTogglingShop] = useState(false);
+  const [shopClosesAt, setShopClosesAt] = useState("");
+  const [shopReadyDays, setShopReadyDays] = useState("10");
+  const [savingShopWindow, setSavingShopWindow] = useState(false);
+
   const [presentationOpen, setPresentationOpen] = useState(false);
   const [togglingPresentation, setTogglingPresentation] = useState(false);
   const [tournamentEnabled, setTournamentEnabled] = useState(false);
@@ -182,11 +186,34 @@ export default function DashboardPage() {
   async function loadShopSetting() {
     const { data } = await supabase
       .from("site_settings" as any)
-      .select("value")
-      .eq("key", "shop_open")
-      .single();
-    if (data) setShopOpen((data as any).value === "true");
+      .select("key, value")
+      .in("key", ["shop_open", "shop_closes_at", "shop_ready_days"]);
+    for (const row of ((data as any[]) ?? [])) {
+      if (row.key === "shop_open") setShopOpen(row.value === "true");
+      if (row.key === "shop_closes_at" && row.value) {
+        const d = new Date(row.value);
+        if (!isNaN(d.getTime())) {
+          const pad = (n: number) => String(n).padStart(2, "0");
+          setShopClosesAt(`${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`);
+        }
+      }
+      if (row.key === "shop_ready_days" && row.value) setShopReadyDays(row.value);
+    }
   }
+
+  async function saveShopWindow() {
+    setSavingShopWindow(true);
+    const iso = shopClosesAt ? new Date(shopClosesAt).toISOString() : "";
+    const now = new Date().toISOString();
+    const [a, b] = await Promise.all([
+      supabase.from("site_settings" as any).update({ value: iso, updated_at: now } as any).eq("key", "shop_closes_at"),
+      supabase.from("site_settings" as any).update({ value: String(parseInt(shopReadyDays || "0", 10) || 0), updated_at: now } as any).eq("key", "shop_ready_days"),
+    ]);
+    if (a.error || b.error) toast.error("Failed to save shop window");
+    else toast.success("Shop window saved");
+    setSavingShopWindow(false);
+  }
+
 
   async function toggleShop() {
     setTogglingShop(true);
@@ -607,26 +634,76 @@ export default function DashboardPage() {
                       </button>
                     </div>
                   </div>
-                  <div className="bg-card border border-border rounded-xl p-5 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-primary/10">
-                        <ShoppingBag className="h-4 w-4 text-primary" />
+                  <div className="bg-card border border-border rounded-xl p-5 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-primary/10">
+                          <ShoppingBag className="h-4 w-4 text-primary" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-display font-semibold text-foreground">Club Shop</p>
+                          <p className="text-[10px] text-muted-foreground">
+                            {shopOpen ? "Shop is currently OPEN" : "Shop is CLOSED (browse only)"}
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={toggleShop}
+                        disabled={togglingShop}
+                        className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${shopOpen ? "bg-primary" : "bg-muted"}`}
+                      >
+                        <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${shopOpen ? "translate-x-6" : "translate-x-1"}`} />
+                      </button>
+                    </div>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <div>
+                        <label className="text-[10px] font-display uppercase tracking-wider text-muted-foreground block mb-1">
+                          Orders close
+                        </label>
+                        <input
+                          type="datetime-local"
+                          value={shopClosesAt}
+                          onChange={(e) => setShopClosesAt(e.target.value)}
+                          className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm"
+                        />
                       </div>
                       <div>
-                        <p className="text-sm font-display font-semibold text-foreground">Club Shop</p>
-                        <p className="text-[10px] text-muted-foreground">
-                          {shopOpen ? "Shop is currently OPEN" : "Shop is CLOSED (browse only)"}
-                        </p>
+                        <label className="text-[10px] font-display uppercase tracking-wider text-muted-foreground block mb-1">
+                          Days to prepare orders
+                        </label>
+                        <input
+                          type="number"
+                          min={0}
+                          max={90}
+                          value={shopReadyDays}
+                          onChange={(e) => setShopReadyDays(e.target.value)}
+                          className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm"
+                        />
                       </div>
                     </div>
-                    <button
-                      onClick={toggleShop}
-                      disabled={togglingShop}
-                      className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${shopOpen ? "bg-primary" : "bg-muted"}`}
-                    >
-                      <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${shopOpen ? "translate-x-6" : "translate-x-1"}`} />
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={saveShopWindow}
+                        disabled={savingShopWindow}
+                        className="text-[11px] font-display tracking-wider uppercase px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-40"
+                      >
+                        {savingShopWindow ? "Saving..." : "Save window"}
+                      </button>
+                      {shopClosesAt && (
+                        <button
+                          onClick={() => { setShopClosesAt(""); }}
+                          className="text-[11px] font-display tracking-wider uppercase px-3 py-1.5 rounded-md border border-border hover:border-primary"
+                        >
+                          Clear deadline
+                        </button>
+                      )}
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">
+                      Shoppers see a live countdown and a note that orders will be ready around {shopReadyDays || 0} days
+                      after closure. Ordering stops automatically once the deadline passes.
+                    </p>
                   </div>
+
                   <div className="bg-card border border-border rounded-xl p-5 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="p-2 rounded-lg bg-primary/10">

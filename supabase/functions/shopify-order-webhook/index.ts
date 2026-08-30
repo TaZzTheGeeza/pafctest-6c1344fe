@@ -179,14 +179,28 @@ Deno.serve(async (req) => {
     const title = `🛒 New Order ${orderName}`;
     const message = `${customerName} placed an order for ${itemCount} item${itemCount !== 1 ? "s" : ""} — ${currency} ${totalPrice}`;
 
+    // Roles that get notified about shop orders (configurable via site_settings)
+    let notifyRoles = ["admin", "treasurer"];
+    const { data: roleSetting } = await supabase
+      .from("site_settings")
+      .select("value")
+      .eq("key", "shop_order_notify_roles")
+      .maybeSingle();
+    if (roleSetting?.value) {
+      const parsed = String(roleSetting.value).split(",").map((r: string) => r.trim()).filter(Boolean);
+      if (parsed.length > 0) notifyRoles = parsed;
+    }
+
     const { data: adminRoles } = await supabase
       .from("user_roles")
       .select("user_id")
-      .eq("role", "admin");
+      .in("role", notifyRoles);
 
     const adminIds = [...new Set((adminRoles ?? []).map((r: any) => r.user_id))];
 
-    if (adminIds.length > 0) {
+
+    const isPaid = body.financial_status === "paid";
+    if (adminIds.length > 0 && isPaid) {
       const notifications = adminIds.map((uid: string) => ({
         user_id: uid,
         title,

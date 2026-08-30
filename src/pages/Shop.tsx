@@ -8,8 +8,10 @@ import { useCartStore } from "@/stores/cartStore";
 import { toast } from "sonner";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { supabase } from "@/integrations/supabase/client";
 import { SEO } from "@/components/SEO";
+import { useShopWindow } from "@/hooks/useShopWindow";
+import { ShopWindowBanner } from "@/components/shop/ShopWindowBanner";
+
 
 const CATEGORIES = [
   { label: "All", tag: null },
@@ -22,20 +24,11 @@ export default function ShopPage() {
   const [products, setProducts] = useState<ShopifyProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
-  const [shopOpen, setShopOpen] = useState(true);
+  const shopWindow = useShopWindow();
+  const shopOpen = shopWindow.isOpen;
   const addItem = useCartStore(state => state.addItem);
   const isCartLoading = useCartStore(state => state.isLoading);
 
-  useEffect(() => {
-    supabase
-      .from("site_settings" as any)
-      .select("value")
-      .eq("key", "shop_open")
-      .single()
-      .then(({ data }) => {
-        if (data) setShopOpen((data as any).value === "true");
-      });
-  }, []);
 
   useEffect(() => {
     async function fetchProducts() {
@@ -90,14 +83,8 @@ export default function ShopPage() {
             </p>
           </motion.div>
 
-          {!shopOpen && (
-            <div className="max-w-lg mx-auto mb-8 bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 flex items-center gap-3">
-              <AlertTriangle className="h-5 w-5 text-amber-400 shrink-0" />
-              <p className="text-sm text-amber-200 font-display">
-                The club shop is currently closed for orders. You can still browse our products.
-              </p>
-            </div>
-          )}
+          <ShopWindowBanner window={shopWindow} className="max-w-xl mx-auto mb-8" />
+
 
           <div className="flex justify-center gap-2 mb-10 flex-wrap">
             {CATEGORIES.map((cat) => (

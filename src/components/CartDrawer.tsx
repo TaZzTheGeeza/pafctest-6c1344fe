@@ -2,12 +2,15 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { ShoppingCart, Minus, Plus, Trash2, ExternalLink, Loader2 } from "lucide-react";
+import { ShoppingCart, Minus, Plus, Trash2, ExternalLink, Loader2, PackageCheck } from "lucide-react";
 import { useCartStore, getItemKey } from "@/stores/cartStore";
+import { useShopWindow, formatUkDate } from "@/hooks/useShopWindow";
 
 export const CartDrawer = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const shopWindow = useShopWindow();
   const { items, isLoading, isSyncing, updateQuantity, removeItem, getCheckoutUrl, syncCart } = useCartStore();
+
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
   const totalPrice = items.reduce((sum, item) => sum + (parseFloat(item.price.amount) * item.quantity), 0);
 
@@ -95,10 +98,19 @@ export const CartDrawer = () => {
                   <span className="text-lg font-display">Total</span>
                   <span className="text-xl font-bold text-primary">{items[0]?.price.currencyCode || '£'} {totalPrice.toFixed(2)}</span>
                 </div>
+                <div className="flex items-start gap-2 rounded-lg bg-muted/40 p-3">
+                  <PackageCheck className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                  <p className="text-xs text-muted-foreground">
+                    All kit is printed in-house. Please allow {shopWindow.readyDays} days after the shop closes for your
+                    order to be ready
+                    {shopWindow.readyBy ? <> (approx. <span className="text-foreground">{formatUkDate(shopWindow.readyBy)}</span>)</> : null}.
+                  </p>
+                </div>
                 <Button onClick={handleCheckout} className="w-full bg-gold-gradient text-primary-foreground font-display" size="lg" disabled={items.length === 0 || isLoading || isSyncing}>
                   {isLoading || isSyncing ? <Loader2 className="w-4 h-4 animate-spin" /> : <><ExternalLink className="w-4 h-4 mr-2" />Checkout</>}
                 </Button>
               </div>
+
             </>
           )}
         </div>

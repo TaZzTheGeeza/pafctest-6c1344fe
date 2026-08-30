@@ -10,7 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { supabase } from "@/integrations/supabase/client";
+import { useShopWindow } from "@/hooks/useShopWindow";
+import { ShopWindowBanner } from "@/components/shop/ShopWindowBanner";
 
 export default function ProductPage() {
   const { handle } = useParams<{ handle: string }>();
@@ -21,18 +22,9 @@ export default function ProductPage() {
   const [initials, setInitials] = useState("");
   const addItem = useCartStore(state => state.addItem);
   const isCartLoading = useCartStore(state => state.isLoading);
-  const [shopOpen, setShopOpen] = useState(true);
+  const shopWindow = useShopWindow();
+  const shopOpen = shopWindow.isOpen;
 
-  useEffect(() => {
-    supabase
-      .from("site_settings" as any)
-      .select("value")
-      .eq("key", "shop_open")
-      .single()
-      .then(({ data }) => {
-        if (data) setShopOpen((data as any).value === "true");
-      });
-  }, []);
 
   useEffect(() => {
     async function fetchProduct() {
@@ -197,6 +189,8 @@ export default function ProductPage() {
                 </div>
               )}
 
+              <ShopWindowBanner window={shopWindow} className="mb-4" />
+
               {shopOpen ? (
                 <Button
                   onClick={handleAddToCart}
@@ -206,12 +200,8 @@ export default function ProductPage() {
                 >
                   {isCartLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : !selectedVariant?.availableForSale ? "Sold Out" : "Add to Cart"}
                 </Button>
-              ) : (
-                <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 flex items-center gap-2">
-                  <AlertTriangle className="h-4 w-4 text-amber-400 shrink-0" />
-                  <p className="text-xs text-amber-200 font-display">Shop is currently closed for orders.</p>
-                </div>
-              )}
+              ) : null}
+
             </div>
           </motion.div>
         </div>
