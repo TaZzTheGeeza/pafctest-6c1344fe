@@ -683,7 +683,7 @@ export default function DashboardPage() {
                           type="datetime-local"
                           value={shopClosesAt}
                           onChange={(e) => setShopClosesAt(e.target.value)}
-                          className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm"
+                          className="w-full min-w-0 bg-background border border-border rounded-md px-2 py-2 text-[13px] [color-scheme:dark]"
                         />
                       </div>
                       <div>
