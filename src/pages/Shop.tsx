@@ -8,8 +8,10 @@ import { useCartStore } from "@/stores/cartStore";
 import { toast } from "sonner";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { supabase } from "@/integrations/supabase/client";
 import { SEO } from "@/components/SEO";
+import { useShopWindow } from "@/hooks/useShopWindow";
+import { ShopWindowBanner } from "@/components/shop/ShopWindowBanner";
+
 
 const CATEGORIES = [
   { label: "All", tag: null },
