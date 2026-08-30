@@ -10,56 +10,77 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
-type GuideKind = "junior" | "adult" | "footwear" | "mixed" | null;
+type GuideKind = "junior" | "adult" | "mixed" | null;
 
-const JUNIOR_ROWS: Array<[string, string, string, string]> = [
-  ["3/4 (SB)", "3–4 yrs", "98–104", "56–58"],
-  ["5/6 (SB)", "5–6 yrs", "110–116", "60–62"],
-  ["7/8 (MB)", "7–8 yrs", "122–128", "64–66"],
-  ["9/10 (LB)", "9–10 yrs", "134–140", "68–71"],
-  ["11/12 (XLB)", "11–12 yrs", "146–152", "73–76"],
-  ["13/14 (XXLB)", "13–14 yrs", "158–164", "79–82"],
+// Official Joma size guide figures (cm).
+const MENS_TOP: Array<[string, string, string, string]> = [
+  ["S", "87–94", "75–82", "86–93"],
+  ["M", "95–101", "83–90", "94–100"],
+  ["L", "102–108", "91–97", "101–108"],
+  ["XL", "109–114", "98–103", "109–113"],
+  ["XXL–3XL", "115–143", "104–134", "114–138"],
 ];
 
-const ADULT_ROWS: Array<[string, string, string]> = [
-  ["XS", "32–34", "81–86"],
-  ["S", "35–37", "89–94"],
-  ["M", "38–40", "97–102"],
-  ["L", "41–43", "104–109"],
-  ["XL", "44–46", "112–117"],
-  ["2XL", "47–49", "119–124"],
-  ["3XL", "50–52", "127–132"],
+const WOMENS_TOP: Array<[string, string, string, string]> = [
+  ["XS", "76–82", "61–68", "86–90"],
+  ["S", "83–89", "69–73", "91–95"],
+  ["M", "90–94", "74–78", "96–100"],
+  ["L", "95–98", "79–82", "101–104"],
+  ["XL", "99–102", "83–86", "105–108"],
+  ["XXL–3XL", "103–106", "87–90", "109–112"],
 ];
 
-const FOOTWEAR_ROWS: Array<[string, string]> = [
-  ["Junior 8–11", "26–29"],
-  ["Junior 12–2", "30–34"],
-  ["Junior 3–6", "35–39"],
-  ["Adult 7–11", "40–46"],
-  ["Adult 12–14", "47–49"],
+const MENS_BOTTOM: Array<[string, string, string, string]> = [
+  ["XS", "68–74", "80–85", "81"],
+  ["S", "75–82", "86–93", "81.5"],
+  ["M", "83–90", "94–100", "82"],
+  ["L", "91–97", "101–108", "82.5"],
+  ["XL", "98–103", "109–113", "83"],
+  ["XXL–3XL", "104–134", "114–138", "83.5"],
 ];
 
-const SIZE_OPTION_NAMES = ["size", "sizes", "shirt size", "kit size", "sock size", "age"];
+const WOMENS_BOTTOM: Array<[string, string, string, string]> = [
+  ["XS", "61–68", "86–91", "78"],
+  ["S", "69–73", "92–95", "78.5"],
+  ["M", "74–78", "96–100", "79"],
+  ["L", "79–82", "101–104", "79.5"],
+  ["XL", "83–86", "105–108", "80"],
+  ["XXL–3XL", "87–90", "109–112", "80.5"],
+];
+
+// Kids top & bottom: size, age, height, chest, waist, hip (cm)
+const KIDS_ROWS: Array<[string, string, string, string, string, string]> = [
+  ["6XS", "4–5", "100–108", "56–57", "54–55", "60–62"],
+  ["5XS", "5–6", "109–117", "58–61", "56–57", "63–65"],
+  ["4XS", "7–8", "118–128", "62–66", "58–60", "66–68"],
+  ["3XS", "9–10", "129–140", "67–72", "61–64", "69–74"],
+  ["2XS", "11–12", "141–152", "73–79", "65–68", "75–80"],
+  ["XS", "13–14", "153–164", "80–87", "69–72", "81–86"],
+];
+
+const SIZE_OPTION_NAMES = ["size", "sizes", "shirt size", "kit size", "age"];
 
 function isSizeOption(name: string) {
   const n = name.trim().toLowerCase();
   return SIZE_OPTION_NAMES.includes(n) || n.includes("size");
 }
 
-/** Work out which chart(s) apply from the product's own size values. */
+/** Work out which chart(s) apply from the product's own size values. Clothing only. */
 export function detectSizeGuide(
   options: Array<{ name: string; values: string[] }>,
   productTitle = ""
 ): GuideKind {
+  const title = productTitle.toLowerCase();
+  // Footwear / socks / accessories are not covered by the Joma clothing guide.
+  if (title.includes("sock") || title.includes("boot") || title.includes("shoe")) return null;
+
   const sizeOption = options.find((o) => isSizeOption(o.name));
   if (!sizeOption || sizeOption.values.length === 0) return null;
 
   const values = sizeOption.values.map((v) => v.toLowerCase());
-  const title = productTitle.toLowerCase();
+  if (values.some((v) => /\b(shoe|uk)\b/.test(v))) return null;
 
-  if (title.includes("sock") || values.some((v) => /\b(shoe|uk)\b/.test(v))) return "footwear";
-
-  const hasJunior = values.some((v) => /\d\s*[-/–]\s*\d|\byrs?\b|\byears?\b|\bjnr\b|\bjunior\b|\bkids?\b|\b(sb|mb|lb|xlb|xsb)\b/.test(v));
+  const hasJunior = values.some((v) => /\d\s*[-/–]\s*\d|\byrs?\b|\byears?\b|\bjnr\b|\bjunior\b|\bkids?\b|\b(sb|mb|lb|xlb|xsb)\b|^[2-6]xs$/.test(v));
   const hasAdult = values.some((v) => /^(xs|s|m|l|xl|2xl|3xl|xxl|xxxl)$/.test(v.trim()));
 
   if (hasJunior && hasAdult) return "mixed";
@@ -68,25 +89,24 @@ export function detectSizeGuide(
   return null;
 }
 
-function JuniorTable() {
+function Table({ headers, rows }: { headers: string[]; rows: string[][] }) {
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-border text-left font-display text-xs uppercase tracking-wider text-muted-foreground">
-            <th className="py-2 pr-3">Size</th>
-            <th className="py-2 pr-3">Age</th>
-            <th className="py-2 pr-3">Height (cm)</th>
-            <th className="py-2">Chest (cm)</th>
+            {headers.map((h, i) => (
+              <th key={h} className={i < headers.length - 1 ? "py-2 pr-3" : "py-2"}>{h}</th>
+            ))}
           </tr>
         </thead>
         <tbody>
-          {JUNIOR_ROWS.map((r) => (
+          {rows.map((r) => (
             <tr key={r[0]} className="border-b border-border/50">
               <td className="py-2 pr-3 font-medium">{r[0]}</td>
-              <td className="py-2 pr-3 text-muted-foreground">{r[1]}</td>
-              <td className="py-2 pr-3 text-muted-foreground">{r[2]}</td>
-              <td className="py-2 text-muted-foreground">{r[3]}</td>
+              {r.slice(1).map((cell, i) => (
+                <td key={i} className={i < r.length - 2 ? "py-2 pr-3 text-muted-foreground" : "py-2 text-muted-foreground"}>{cell}</td>
+              ))}
             </tr>
           ))}
         </tbody>
@@ -95,51 +115,12 @@ function JuniorTable() {
   );
 }
 
-function AdultTable() {
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b border-border text-left font-display text-xs uppercase tracking-wider text-muted-foreground">
-            <th className="py-2 pr-3">Size</th>
-            <th className="py-2 pr-3">Chest (in)</th>
-            <th className="py-2">Chest (cm)</th>
-          </tr>
-        </thead>
-        <tbody>
-          {ADULT_ROWS.map((r) => (
-            <tr key={r[0]} className="border-b border-border/50">
-              <td className="py-2 pr-3 font-medium">{r[0]}</td>
-              <td className="py-2 pr-3 text-muted-foreground">{r[1]}</td>
-              <td className="py-2 text-muted-foreground">{r[2]}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-function FootwearTable() {
-  return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b border-border text-left font-display text-xs uppercase tracking-wider text-muted-foreground">
-            <th className="py-2 pr-3">UK shoe size</th>
-            <th className="py-2">EU</th>
-          </tr>
-        </thead>
-        <tbody>
-          {FOOTWEAR_ROWS.map((r) => (
-            <tr key={r[0]} className="border-b border-border/50">
-              <td className="py-2 pr-3 font-medium">{r[0]}</td>
-              <td className="py-2 text-muted-foreground">{r[1]}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <section>
+      <h3 className="mb-2 font-display text-sm font-bold uppercase tracking-wider">{title}</h3>
+      {children}
+    </section>
   );
 }
 
@@ -166,36 +147,43 @@ export function SizeGuideDialog({ kind, className }: SizeGuideDialogProps) {
       </DialogTrigger>
       <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle className="font-display">Size Guide</DialogTitle>
+          <DialogTitle className="font-display">Joma Size Guide</DialogTitle>
           <DialogDescription>
-            Measurements are a guide only and can vary slightly by garment. If between sizes, size up.
+            Official Joma measurements (cm). If between sizes, size up.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">
           {(kind === "junior" || kind === "mixed") && (
-            <section>
-              <h3 className="mb-2 font-display text-sm font-bold uppercase tracking-wider">Junior</h3>
-              <JuniorTable />
-            </section>
+            <Section title="Kids — Top &amp; Bottom">
+              <Table
+                headers={["Size", "Age", "Height", "Chest", "Waist", "Hip"]}
+                rows={KIDS_ROWS}
+              />
+            </Section>
           )}
           {(kind === "adult" || kind === "mixed") && (
-            <section>
-              <h3 className="mb-2 font-display text-sm font-bold uppercase tracking-wider">Adult</h3>
-              <AdultTable />
-            </section>
-          )}
-          {kind === "footwear" && (
-            <section>
-              <h3 className="mb-2 font-display text-sm font-bold uppercase tracking-wider">Socks / Footwear</h3>
-              <FootwearTable />
-            </section>
+            <>
+              <Section title="Men's Top">
+                <Table headers={["Size", "Chest", "Waist", "Hip"]} rows={MENS_TOP} />
+              </Section>
+              <Section title="Men's Bottom">
+                <Table headers={["Size", "Waist", "Hip", "Inseam"]} rows={MENS_BOTTOM} />
+              </Section>
+              <Section title="Women's Top">
+                <Table headers={["Size", "Chest", "Waist", "Hip"]} rows={WOMENS_TOP} />
+              </Section>
+              <Section title="Women's Bottom">
+                <Table headers={["Size", "Waist", "Hip", "Inseam"]} rows={WOMENS_BOTTOM} />
+              </Section>
+            </>
           )}
 
           <div className="rounded-md bg-muted/40 p-3 text-xs text-muted-foreground">
             <p className="mb-1 font-medium text-foreground">How to measure</p>
             <p>
               Chest: measure under the arms around the fullest part of the chest, keeping the tape level.
+              Waist: measure around the natural waistline. Hip: measure around the fullest part of the hips.
               Height: measure without shoes, standing straight against a wall.
             </p>
           </div>
