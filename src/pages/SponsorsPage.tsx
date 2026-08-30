@@ -54,19 +54,34 @@ export default function SponsorsPage() {
             </h2>
             <div className="flex flex-wrap items-center justify-center gap-6 mb-16">
               {mainSponsors.map((sponsor, i) => (
-                <motion.a
+                <motion.div
                   key={sponsor.name}
-                  href={sponsor.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.4, delay: i * 0.1 }}
-                  className="bg-card border border-border rounded-lg p-6 hover:border-primary transition-colors"
+                  className="bg-card border border-border rounded-lg p-6 hover:border-primary transition-colors flex flex-col items-center gap-3"
                 >
-                  <img src={sponsor.logo} alt={sponsor.name} className="h-20 w-auto object-contain" loading="lazy" />
-                </motion.a>
+                  {sponsor.url ? (
+                    <a href={sponsor.url} target="_blank" rel="noopener noreferrer">
+                      <img src={sponsor.logo} alt={`${sponsor.name} logo`} className="h-20 w-auto object-contain" loading="lazy" />
+                    </a>
+                  ) : (
+                    <img src={sponsor.logo} alt={`${sponsor.name} logo`} className="h-20 w-auto object-contain" loading="lazy" />
+                  )}
+                  <p className="font-display text-xs tracking-wider text-foreground">{sponsor.name}</p>
+                  {sponsor.secondaryUrl && (
+                    <a
+                      href={sponsor.secondaryUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-primary hover:underline"
+                    >
+                      {sponsor.secondaryLabel}
+                    </a>
+                  )}
+                </motion.div>
               ))}
+
             </div>
 
 
