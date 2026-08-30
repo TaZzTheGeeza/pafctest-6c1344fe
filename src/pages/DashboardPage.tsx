@@ -710,7 +710,7 @@ export default function DashboardPage() {
                       </button>
                       {shopClosesAt && (
                         <button
-                          onClick={() => { setShopClosesAt(""); }}
+                          onClick={clearShopDeadline}
                           className="text-[11px] font-display tracking-wider uppercase px-3 py-1.5 rounded-md border border-border hover:border-primary"
                         >
                           Clear deadline
