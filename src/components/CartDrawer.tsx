@@ -95,10 +95,19 @@ export const CartDrawer = () => {
                   <span className="text-lg font-display">Total</span>
                   <span className="text-xl font-bold text-primary">{items[0]?.price.currencyCode || '£'} {totalPrice.toFixed(2)}</span>
                 </div>
+                <div className="flex items-start gap-2 rounded-lg bg-muted/40 p-3">
+                  <PackageCheck className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                  <p className="text-xs text-muted-foreground">
+                    All kit is printed in-house. Please allow {shopWindow.readyDays} days after the shop closes for your
+                    order to be ready
+                    {shopWindow.readyBy ? <> (approx. <span className="text-foreground">{formatUkDate(shopWindow.readyBy)}</span>)</> : null}.
+                  </p>
+                </div>
                 <Button onClick={handleCheckout} className="w-full bg-gold-gradient text-primary-foreground font-display" size="lg" disabled={items.length === 0 || isLoading || isSyncing}>
                   {isLoading || isSyncing ? <Loader2 className="w-4 h-4 animate-spin" /> : <><ExternalLink className="w-4 h-4 mr-2" />Checkout</>}
                 </Button>
               </div>
+
             </>
           )}
         </div>
