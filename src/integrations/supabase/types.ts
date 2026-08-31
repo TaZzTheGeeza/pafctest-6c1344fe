@@ -1637,6 +1637,7 @@ export type Database = {
           known_to_social_services: boolean | null
           medical_conditions: string | null
           paid_at: string | null
+          parent_dob: string | null
           parent_name: string
           payment_status: string
           phone: string
@@ -1669,6 +1670,7 @@ export type Database = {
           known_to_social_services?: boolean | null
           medical_conditions?: string | null
           paid_at?: string | null
+          parent_dob?: string | null
           parent_name: string
           payment_status?: string
           phone: string
@@ -1701,6 +1703,7 @@ export type Database = {
           known_to_social_services?: boolean | null
           medical_conditions?: string | null
           paid_at?: string | null
+          parent_dob?: string | null
           parent_name?: string
           payment_status?: string
           phone?: string
