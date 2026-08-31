@@ -428,6 +428,32 @@ export default function DashboardPage() {
     }
   }
 
+  async function deleteUserAccount(targetUserId: string, fullName: string | null, email: string | null) {
+    if (targetUserId === user?.id) {
+      toast.error("You can't delete your own account here");
+      return;
+    }
+    const label = fullName || email || "this user";
+    if (!window.confirm(`Permanently delete the account for ${label}?\n\nThis removes their login, profile, roles and Hub memberships. This cannot be undone.`)) return;
+    if (email) {
+      const typed = window.prompt(`To confirm, type the user's email exactly:\n\n${email}`);
+      if (!typed) return;
+      if (typed.trim().toLowerCase() !== email.trim().toLowerCase()) {
+        toast.error("Email did not match — deletion cancelled");
+        return;
+      }
+    }
+    const { data, error } = await supabase.functions.invoke("admin-delete-user", {
+      body: { target_user_id: targetUserId, confirm_email: email ?? undefined },
+    });
+    if (error || (data as any)?.error) {
+      toast.error(`Failed: ${error?.message ?? (data as any)?.error}`);
+    } else {
+      toast.success(`Account deleted${email ? ` (${email})` : ""}`);
+      loadUsers();
+    }
+  }
+
   const allTeamSlugs = Array.from(new Set(Object.values(teamMemberships).flat())).sort();
 
   const filteredUsers = users.filter((u) => {
