@@ -540,12 +540,12 @@ export default function PlayerRegistrationAdminPage() {
   const exportCsv = () => {
     const rows = [
       [
-        "Child Name", "DOB", "Age Group", "Parent", "Relationship", "Email", "Phone",
+        "Child Name", "DOB", "Age Group", "Parent", "Parent DOB", "Relationship", "Email", "Phone",
         "Address", "FA Fan #", "Previous Club", "Medical", "Emergency Contact",
         "Emergency Phone", "Photo Consent", "Medical Consent", "Declaration", "Submitted",
       ],
       ...filteredPaid.map((r) => [
-        r.child_name, r.child_dob, r.preferred_age_group, r.parent_name,
+        r.child_name, r.child_dob, r.preferred_age_group, r.parent_name, r.parent_dob || "",
         r.relationship_to_child || "", r.email, r.phone, (r.address || "").replace(/\n/g, " "),
         r.fa_fan_number || "", r.previous_club || "", (r.medical_conditions || "").replace(/\n/g, " "),
         r.emergency_contact_name || "", r.emergency_contact_phone || "",
