@@ -152,6 +152,8 @@ export default function PlayerRegistrationPage() {
     faFanNumber: "",
     hasFaFanNumber: "" as "" | "yes" | "no",
     parentName: "",
+    parentDob: "",
+
     relationshipToChild: "",
     email: "",
     phone: "",
