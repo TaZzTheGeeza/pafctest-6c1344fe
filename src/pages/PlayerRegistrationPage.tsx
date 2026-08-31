@@ -569,13 +569,20 @@ export default function PlayerRegistrationPage() {
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                           <label className="text-xs text-muted-foreground mb-1 block">Full Name *</label>
-                          <Input name="parentName" value={form.parentName} onChange={handleChange} required placeholder="Parent/carer name" maxLength={100} />
+                          <Input name="parentName" value={form.parentName} onChange={handleChange} required placeholder="Parent/carer full name" maxLength={100} />
                         </div>
+                        <div>
+                          <label className="text-xs text-muted-foreground mb-1 block">Date of Birth *</label>
+                          <DateInput value={form.parentDob} onChange={(val) => setForm(f => ({ ...f, parentDob: val }))} placeholder="Select date of birth" required dropdownNav fromYear={1930} toYear={new Date().getFullYear() - 16} />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                           <label className="text-xs text-muted-foreground mb-1 block">Relationship to Child *</label>
                           <Input name="relationshipToChild" value={form.relationshipToChild} onChange={handleChange} required placeholder="e.g. Mother, Father, Guardian" maxLength={50} />
                         </div>
                       </div>
+
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                           <label className="text-xs text-muted-foreground mb-1 block">Contact Number *</label>
