@@ -241,6 +241,8 @@ export default function PlayerRegistrationPage() {
         preferred_age_group: form.preferredAgeGroup,
         fa_fan_number: form.faFanNumber || null,
         parent_name: form.parentName,
+        parent_dob: form.parentDob,
+
         relationship_to_child: form.relationshipToChild || null,
         email: form.email,
         phone: form.phone,
