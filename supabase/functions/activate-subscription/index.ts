@@ -25,8 +25,13 @@ async function gcPost(path: string, body: Record<string, unknown>, token: string
     body: JSON.stringify(body),
   });
   const data = await res.json();
-  if (!res.ok) throw new Error(JSON.stringify(data));
+  if (!res.ok) {
+    console.error(`GoCardless POST ${path} failed`, res.status, JSON.stringify(data));
+    const detail = data?.error?.message || data?.error?.errors?.[0]?.message;
+    throw new Error(detail ? `GoCardless: ${detail}` : "GoCardless rejected the subscription request");
+  }
   return data;
+
 }
 
 serve(async (req) => {
