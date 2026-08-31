@@ -1391,6 +1391,20 @@ function UserRow({
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+
+            {user.id !== currentUserId && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDeleteUser(user.id, user.full_name, user.email);
+                }}
+                className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-display border border-dashed border-destructive/50 text-destructive hover:bg-destructive/10 transition-colors"
+                title="Permanently delete this account"
+              >
+                <Trash2 className="h-3 w-3" />
+                Delete
+              </button>
+            )}
           </div>
         </div>
       </div>
