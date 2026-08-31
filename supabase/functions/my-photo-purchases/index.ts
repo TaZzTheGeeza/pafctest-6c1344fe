@@ -59,7 +59,6 @@ async function syncFromShopify(
     const { orders, error: shopifyError } = await fetchShopifyOrders(email);
     if (shopifyError) return { synced: 0, error: shopifyError };
 
-    const { orders } = await ordersRes.json();
     let synced = 0;
     for (const order of orders || []) {
       if (order.financial_status !== "paid") continue;
@@ -84,12 +83,13 @@ async function syncFromShopify(
         if (!error) synced++;
       }
     }
-    return synced;
+    return { synced, error: null as string | null };
   } catch (e) {
     console.error("syncFromShopify error:", e);
-    return 0;
+    return { synced: 0, error: "Could not reach Shopify to sync recent orders" };
   }
 }
+
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
