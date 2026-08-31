@@ -928,6 +928,7 @@ export default function DashboardPage() {
                         onRemoveRole={removeRole}
                         onSendReset={sendPasswordReset}
                         onSetPassword={setUserPassword}
+                        onDeleteUser={deleteUserAccount}
                       />
                     ))
                   )}
