@@ -1052,6 +1052,7 @@ function UserRow({
   onRemoveRole,
   onSendReset,
   onSetPassword,
+  onDeleteUser,
 }: {
   user: UserWithRoles;
   currentUserId?: string;
