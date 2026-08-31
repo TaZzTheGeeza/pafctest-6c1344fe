@@ -210,7 +210,18 @@ export default function PlayerRegistrationPage() {
       return;
     }
 
+    if (!form.parentName.trim()) {
+      toast.error("Please enter the parent/carer full name.");
+      return;
+    }
+
+    if (!form.parentDob) {
+      toast.error("Please enter the parent/carer date of birth.");
+      return;
+    }
+
     if (!form.hasMedicalConditions) {
+
       toast.error("Please indicate whether the player has any medical conditions.");
       return;
     }
