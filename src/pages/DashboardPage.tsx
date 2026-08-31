@@ -1061,6 +1061,7 @@ function UserRow({
   onRemoveRole: (userId: string, role: AppRole) => void;
   onSendReset: (email: string | null) => void | Promise<void>;
   onSetPassword: (targetUserId: string, fullName: string | null) => void | Promise<void>;
+  onDeleteUser: (targetUserId: string, fullName: string | null, email: string | null) => void | Promise<void>;
 }) {
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [sendingReset, setSendingReset] = useState(false);
