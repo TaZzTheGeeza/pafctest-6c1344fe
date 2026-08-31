@@ -25,8 +25,13 @@ async function gcPost(path: string, body: Record<string, unknown>, token: string
     body: JSON.stringify(body),
   });
   const data = await res.json();
-  if (!res.ok) throw new Error(JSON.stringify(data));
+  if (!res.ok) {
+    console.error(`GoCardless POST ${path} failed`, res.status, JSON.stringify(data));
+    const detail = data?.error?.message || data?.error?.errors?.[0]?.message;
+    throw new Error(detail ? `GoCardless: ${detail}` : "GoCardless rejected the subscription request");
+  }
   return data;
+
 }
 
 serve(async (req) => {
@@ -63,15 +68,29 @@ serve(async (req) => {
       },
     });
     const brData = await brRes.json();
-    if (!brRes.ok) throw new Error(JSON.stringify(brData));
+    if (!brRes.ok) {
+      console.error("GoCardless billing_request fetch failed", brRes.status, JSON.stringify(brData));
+      throw new Error("Could not read your Direct Debit setup from GoCardless. Please try again.");
+    }
 
     const br = brData.billing_requests;
     if (br.status !== "fulfilled") {
-      throw new Error("Mandate setup not yet completed");
+      // Not an error: the mandate is still being confirmed by the bank.
+      console.log(`Billing request ${br_id} not yet fulfilled (status: ${br.status})`);
+      return new Response(
+        JSON.stringify({
+          success: false,
+          pending: true,
+          status: br.status,
+          message: "Your Direct Debit is still being confirmed. This can take a few moments — please try again shortly.",
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 202 },
+      );
     }
 
     const mandateId = br.links?.mandate;
     if (!mandateId) throw new Error("No mandate found on billing request");
+
 
     // Check if subscription already exists for this mandate
     const existSubRes = await fetch(`${GC_API}/subscriptions?mandate=${mandateId}&status=active`, {
@@ -122,9 +141,12 @@ serve(async (req) => {
     });
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
+    console.error("activate-subscription failed:", msg);
+    const isClientError = /required|Invalid tier|not authenticated|No mandate/i.test(msg);
     return new Response(JSON.stringify({ error: msg }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 500,
+      status: isClientError ? 400 : 500,
     });
+
   }
 });

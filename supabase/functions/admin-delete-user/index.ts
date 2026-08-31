@@ -51,6 +51,16 @@ Deno.serve(async (req) => {
       return json({ error: "Confirmation email does not match this user" });
     }
 
+    // Detach content that references auth.users without a cascade rule,
+    // so the delete isn't blocked by a foreign key violation.
+    const detach: { table: string; column: string }[] = [
+      { table: "team_selections", column: "created_by" },
+      { table: "training_notes", column: "created_by" },
+    ];
+    for (const d of detach) {
+      await admin.from(d.table).update({ [d.column]: null }).eq(d.column, targetUserId);
+    }
+
     // Clear app-side rows that don't cascade from auth.users
     const cleanup: { table: string; column: string }[] = [
       { table: "user_roles", column: "user_id" },
@@ -64,6 +74,7 @@ Deno.serve(async (req) => {
     for (const c of cleanup) {
       await admin.from(c.table).delete().eq(c.column, targetUserId);
     }
+
 
     const { error: delErr } = await admin.auth.admin.deleteUser(targetUserId);
     if (delErr) return json({ error: delErr.message });

@@ -9,32 +9,56 @@ const corsHeaders = {
 
 const SHOPIFY_STORE = "peterborough-athletic-hub-7u7sl.myshopify.com";
 
+function shopifyTokens(): string[] {
+  const tokens: string[] = [];
+  const push = (v?: string | null) => { if (v && !tokens.includes(v)) tokens.push(v); };
+  push(Deno.env.get("SHOPIFY_ACCESS_TOKEN"));
+  push(Deno.env.get("SHOPIFY_ONLINE_ACCESS_TOKEN"));
+  for (const [key, value] of Object.entries(Deno.env.toObject())) {
+    if (key.startsWith("SHOPIFY_ONLINE_ACCESS_TOKEN")) push(value);
+  }
+  return tokens;
+}
+
+async function fetchShopifyOrders(email: string): Promise<{ orders: any[]; error: string | null }> {
+  const tokens = shopifyTokens();
+  if (tokens.length === 0) {
+    return { orders: [], error: "Shopify is not configured" };
+  }
+  let lastError = "Shopify request failed";
+  for (const token of tokens) {
+    const res = await fetch(
+      `https://${SHOPIFY_STORE}/admin/api/2025-07/orders.json?email=${encodeURIComponent(email)}&status=any&limit=50`,
+      {
+        headers: {
+          "X-Shopify-Access-Token": token,
+          "Content-Type": "application/json",
+        },
+      },
+    );
+    if (res.ok) {
+      const data = await res.json();
+      return { orders: data.orders || [], error: null };
+    }
+    const body = await res.text();
+    console.error("Shopify orders API error:", res.status, body);
+    lastError = res.status === 401
+      ? "Shopify store credentials were rejected — reconnect the store to sync new orders"
+      : `Shopify API error (${res.status})`;
+    if (res.status !== 401 && res.status !== 403) break;
+  }
+  return { orders: [], error: lastError };
+}
+
 async function syncFromShopify(
   adminClient: any,
   userId: string,
   email: string,
 ) {
-  const shopifyToken = Deno.env.get("SHOPIFY_ACCESS_TOKEN");
-  if (!shopifyToken) {
-    console.warn("SHOPIFY_ACCESS_TOKEN not set, skipping sync");
-    return 0;
-  }
-
   try {
-    const ordersRes = await fetch(
-      `https://${SHOPIFY_STORE}/admin/api/2025-07/orders.json?email=${encodeURIComponent(email)}&status=any&limit=50`,
-      {
-        headers: {
-          "X-Shopify-Access-Token": shopifyToken,
-          "Content-Type": "application/json",
-        },
-      },
-    );
-    if (!ordersRes.ok) {
-      console.error("Shopify orders API error:", ordersRes.status, await ordersRes.text());
-      return 0;
-    }
-    const { orders } = await ordersRes.json();
+    const { orders, error: shopifyError } = await fetchShopifyOrders(email);
+    if (shopifyError) return { synced: 0, error: shopifyError };
+
     let synced = 0;
     for (const order of orders || []) {
       if (order.financial_status !== "paid") continue;
@@ -59,12 +83,13 @@ async function syncFromShopify(
         if (!error) synced++;
       }
     }
-    return synced;
+    return { synced, error: null as string | null };
   } catch (e) {
     console.error("syncFromShopify error:", e);
-    return 0;
+    return { synced: 0, error: "Could not reach Shopify to sync recent orders" };
   }
 }
+
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -90,9 +115,11 @@ serve(async (req) => {
 
     if (action === "list") {
       // Pull latest paid orders from Shopify and upsert any photo purchases first
+      let syncWarning: string | null = null;
       if (user.email) {
-        const synced = await syncFromShopify(adminClient, user.id, user.email);
+        const { synced, error: syncErr } = await syncFromShopify(adminClient, user.id, user.email);
         if (synced > 0) console.log(`Synced ${synced} photo purchase(s) for ${user.email}`);
+        syncWarning = syncErr;
       }
 
       const { data: purchases, error } = await adminClient
@@ -104,10 +131,11 @@ serve(async (req) => {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return new Response(JSON.stringify({ purchases: purchases || [] }), {
+      return new Response(JSON.stringify({ purchases: purchases || [], sync_warning: syncWarning }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
 
     if (action === "download" && photo_id) {
       const { data: purchase } = await adminClient
