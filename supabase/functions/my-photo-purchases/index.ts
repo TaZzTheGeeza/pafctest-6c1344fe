@@ -9,18 +9,32 @@ const corsHeaders = {
 
 const SHOPIFY_STORE = "peterborough-athletic-hub-7u7sl.myshopify.com";
 
+function resolveShopifyToken(): string | null {
+  let token = Deno.env.get("SHOPIFY_ACCESS_TOKEN") || Deno.env.get("SHOPIFY_ONLINE_ACCESS_TOKEN");
+  if (!token) {
+    for (const [key, value] of Object.entries(Deno.env.toObject())) {
+      if (key.startsWith("SHOPIFY_ONLINE_ACCESS_TOKEN") && value) {
+        token = value;
+        break;
+      }
+    }
+  }
+  return token || null;
+}
+
 async function syncFromShopify(
   adminClient: any,
   userId: string,
   email: string,
 ) {
-  const shopifyToken = Deno.env.get("SHOPIFY_ACCESS_TOKEN");
+  const shopifyToken = resolveShopifyToken();
   if (!shopifyToken) {
-    console.warn("SHOPIFY_ACCESS_TOKEN not set, skipping sync");
+    console.warn("No Shopify access token available, skipping sync");
     return 0;
   }
 
   try {
+
     const ordersRes = await fetch(
       `https://${SHOPIFY_STORE}/admin/api/2025-07/orders.json?email=${encodeURIComponent(email)}&status=any&limit=50`,
       {
