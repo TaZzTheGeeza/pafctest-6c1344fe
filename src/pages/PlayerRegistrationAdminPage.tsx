@@ -45,6 +45,7 @@ interface Registration {
   child_name: string;
   child_dob: string;
   parent_name: string;
+  parent_dob: string | null;
   email: string;
   phone: string;
   preferred_age_group: string;
@@ -539,12 +540,12 @@ export default function PlayerRegistrationAdminPage() {
   const exportCsv = () => {
     const rows = [
       [
-        "Child Name", "DOB", "Age Group", "Parent", "Relationship", "Email", "Phone",
+        "Child Name", "DOB", "Age Group", "Parent", "Parent DOB", "Relationship", "Email", "Phone",
         "Address", "FA Fan #", "Previous Club", "Medical", "Emergency Contact",
         "Emergency Phone", "Photo Consent", "Medical Consent", "Declaration", "Submitted",
       ],
       ...filteredPaid.map((r) => [
-        r.child_name, r.child_dob, r.preferred_age_group, r.parent_name,
+        r.child_name, r.child_dob, r.preferred_age_group, r.parent_name, r.parent_dob || "",
         r.relationship_to_child || "", r.email, r.phone, (r.address || "").replace(/\n/g, " "),
         r.fa_fan_number || "", r.previous_club || "", (r.medical_conditions || "").replace(/\n/g, " "),
         r.emergency_contact_name || "", r.emergency_contact_phone || "",
@@ -967,6 +968,7 @@ function RegistrationDetail({ registration: r, onClose, onDelete, onSaved }: {
       fa_fan_number: form.fa_fan_number,
       address: form.address,
       parent_name: form.parent_name,
+      parent_dob: form.parent_dob || null,
       relationship_to_child: form.relationship_to_child,
       email: form.email,
       phone: form.phone,
@@ -1079,6 +1081,7 @@ function RegistrationDetail({ registration: r, onClose, onDelete, onSaved }: {
 
                 <Section title="Parent / Guardian">
                   <label className="block"><span className="text-[10px] uppercase tracking-wider text-muted-foreground font-display">Name</span><input className={inputCls} value={form.parent_name} onChange={(e) => set("parent_name", e.target.value)} /></label>
+                  <label className="block"><span className="text-[10px] uppercase tracking-wider text-muted-foreground font-display">Date of Birth</span><input type="date" className={inputCls} value={form.parent_dob || ""} onChange={(e) => set("parent_dob", e.target.value)} /></label>
                   <label className="block"><span className="text-[10px] uppercase tracking-wider text-muted-foreground font-display">Relationship</span><input className={inputCls} value={form.relationship_to_child || ""} onChange={(e) => set("relationship_to_child", e.target.value)} /></label>
                   <label className="block"><span className="text-[10px] uppercase tracking-wider text-muted-foreground font-display">Email</span><input type="email" className={inputCls} value={form.email} onChange={(e) => set("email", e.target.value)} /></label>
                   <label className="block"><span className="text-[10px] uppercase tracking-wider text-muted-foreground font-display">Phone</span><input className={inputCls} value={form.phone} onChange={(e) => set("phone", e.target.value)} /></label>
@@ -1122,6 +1125,7 @@ function RegistrationDetail({ registration: r, onClose, onDelete, onSaved }: {
 
                 <Section title="Parent / Guardian">
                   <Field icon={UserIcon} label="Name" value={r.parent_name} />
+                  <Field icon={Calendar} label="Date of Birth" value={r.parent_dob ? format(new Date(r.parent_dob), "dd/MM/yyyy") : "—"} />
                   <Field icon={UserIcon} label="Relationship" value={r.relationship_to_child || "—"} />
                   <Field icon={Mail} label="Email" value={r.email} />
                   <Field icon={Phone} label="Phone" value={r.phone} />
