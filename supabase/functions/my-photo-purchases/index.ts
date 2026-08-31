@@ -115,9 +115,11 @@ serve(async (req) => {
 
     if (action === "list") {
       // Pull latest paid orders from Shopify and upsert any photo purchases first
+      let syncWarning: string | null = null;
       if (user.email) {
-        const synced = await syncFromShopify(adminClient, user.id, user.email);
+        const { synced, error: syncErr } = await syncFromShopify(adminClient, user.id, user.email);
         if (synced > 0) console.log(`Synced ${synced} photo purchase(s) for ${user.email}`);
+        syncWarning = syncErr;
       }
 
       const { data: purchases, error } = await adminClient
@@ -129,10 +131,11 @@ serve(async (req) => {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return new Response(JSON.stringify({ purchases: purchases || [] }), {
+      return new Response(JSON.stringify({ purchases: purchases || [], sync_warning: syncWarning }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
 
     if (action === "download" && photo_id) {
       const { data: purchase } = await adminClient
