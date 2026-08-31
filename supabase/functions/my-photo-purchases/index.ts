@@ -9,17 +9,45 @@ const corsHeaders = {
 
 const SHOPIFY_STORE = "peterborough-athletic-hub-7u7sl.myshopify.com";
 
-function resolveShopifyToken(): string | null {
-  let token = Deno.env.get("SHOPIFY_ACCESS_TOKEN") || Deno.env.get("SHOPIFY_ONLINE_ACCESS_TOKEN");
-  if (!token) {
-    for (const [key, value] of Object.entries(Deno.env.toObject())) {
-      if (key.startsWith("SHOPIFY_ONLINE_ACCESS_TOKEN") && value) {
-        token = value;
-        break;
-      }
-    }
+function shopifyTokens(): string[] {
+  const tokens: string[] = [];
+  const push = (v?: string | null) => { if (v && !tokens.includes(v)) tokens.push(v); };
+  push(Deno.env.get("SHOPIFY_ACCESS_TOKEN"));
+  push(Deno.env.get("SHOPIFY_ONLINE_ACCESS_TOKEN"));
+  for (const [key, value] of Object.entries(Deno.env.toObject())) {
+    if (key.startsWith("SHOPIFY_ONLINE_ACCESS_TOKEN")) push(value);
   }
-  return token || null;
+  return tokens;
+}
+
+async function fetchShopifyOrders(email: string): Promise<{ orders: any[]; error: string | null }> {
+  const tokens = shopifyTokens();
+  if (tokens.length === 0) {
+    return { orders: [], error: "Shopify is not configured" };
+  }
+  let lastError = "Shopify request failed";
+  for (const token of tokens) {
+    const res = await fetch(
+      `https://${SHOPIFY_STORE}/admin/api/2025-07/orders.json?email=${encodeURIComponent(email)}&status=any&limit=50`,
+      {
+        headers: {
+          "X-Shopify-Access-Token": token,
+          "Content-Type": "application/json",
+        },
+      },
+    );
+    if (res.ok) {
+      const data = await res.json();
+      return { orders: data.orders || [], error: null };
+    }
+    const body = await res.text();
+    console.error("Shopify orders API error:", res.status, body);
+    lastError = res.status === 401
+      ? "Shopify store credentials were rejected — reconnect the store to sync new orders"
+      : `Shopify API error (${res.status})`;
+    if (res.status !== 401 && res.status !== 403) break;
+  }
+  return { orders: [], error: lastError };
 }
 
 async function syncFromShopify(
@@ -27,27 +55,10 @@ async function syncFromShopify(
   userId: string,
   email: string,
 ) {
-  const shopifyToken = resolveShopifyToken();
-  if (!shopifyToken) {
-    console.warn("No Shopify access token available, skipping sync");
-    return 0;
-  }
-
   try {
+    const { orders, error: shopifyError } = await fetchShopifyOrders(email);
+    if (shopifyError) return { synced: 0, error: shopifyError };
 
-    const ordersRes = await fetch(
-      `https://${SHOPIFY_STORE}/admin/api/2025-07/orders.json?email=${encodeURIComponent(email)}&status=any&limit=50`,
-      {
-        headers: {
-          "X-Shopify-Access-Token": shopifyToken,
-          "Content-Type": "application/json",
-        },
-      },
-    );
-    if (!ordersRes.ok) {
-      console.error("Shopify orders API error:", ordersRes.status, await ordersRes.text());
-      return 0;
-    }
     const { orders } = await ordersRes.json();
     let synced = 0;
     for (const order of orders || []) {
