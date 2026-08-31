@@ -428,6 +428,32 @@ export default function DashboardPage() {
     }
   }
 
+  async function deleteUserAccount(targetUserId: string, fullName: string | null, email: string | null) {
+    if (targetUserId === user?.id) {
+      toast.error("You can't delete your own account here");
+      return;
+    }
+    const label = fullName || email || "this user";
+    if (!window.confirm(`Permanently delete the account for ${label}?\n\nThis removes their login, profile, roles and Hub memberships. This cannot be undone.`)) return;
+    if (email) {
+      const typed = window.prompt(`To confirm, type the user's email exactly:\n\n${email}`);
+      if (!typed) return;
+      if (typed.trim().toLowerCase() !== email.trim().toLowerCase()) {
+        toast.error("Email did not match — deletion cancelled");
+        return;
+      }
+    }
+    const { data, error } = await supabase.functions.invoke("admin-delete-user", {
+      body: { target_user_id: targetUserId, confirm_email: email ?? undefined },
+    });
+    if (error || (data as any)?.error) {
+      toast.error(`Failed: ${error?.message ?? (data as any)?.error}`);
+    } else {
+      toast.success(`Account deleted${email ? ` (${email})` : ""}`);
+      loadUsers();
+    }
+  }
+
   const allTeamSlugs = Array.from(new Set(Object.values(teamMemberships).flat())).sort();
 
   const filteredUsers = users.filter((u) => {
@@ -902,6 +928,7 @@ export default function DashboardPage() {
                         onRemoveRole={removeRole}
                         onSendReset={sendPasswordReset}
                         onSetPassword={setUserPassword}
+                        onDeleteUser={deleteUserAccount}
                       />
                     ))
                   )}
@@ -1025,6 +1052,7 @@ function UserRow({
   onRemoveRole,
   onSendReset,
   onSetPassword,
+  onDeleteUser,
 }: {
   user: UserWithRoles;
   currentUserId?: string;
@@ -1033,6 +1061,7 @@ function UserRow({
   onRemoveRole: (userId: string, role: AppRole) => void;
   onSendReset: (email: string | null) => void | Promise<void>;
   onSetPassword: (targetUserId: string, fullName: string | null) => void | Promise<void>;
+  onDeleteUser: (targetUserId: string, fullName: string | null, email: string | null) => void | Promise<void>;
 }) {
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [sendingReset, setSendingReset] = useState(false);
@@ -1362,6 +1391,20 @@ function UserRow({
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+
+            {user.id !== currentUserId && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDeleteUser(user.id, user.full_name, user.email);
+                }}
+                className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-display border border-dashed border-destructive/50 text-destructive hover:bg-destructive/10 transition-colors"
+                title="Permanently delete this account"
+              >
+                <Trash2 className="h-3 w-3" />
+                Delete
+              </button>
+            )}
           </div>
         </div>
       </div>
