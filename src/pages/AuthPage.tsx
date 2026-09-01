@@ -39,6 +39,7 @@ export default function AuthPage() {
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({ email: "", password: "", fullName: "" });
   const [processingInvite, setProcessingInvite] = useState(false);
+  const [confirmPending, setConfirmPending] = useState(false);
   const inviteProcessed = useRef(false);
   const [inviteTeamName, setInviteTeamName] = useState<string | null>(fallbackInviteTeamName);
 
