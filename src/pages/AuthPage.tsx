@@ -39,6 +39,7 @@ export default function AuthPage() {
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({ email: "", password: "", fullName: "" });
   const [processingInvite, setProcessingInvite] = useState(false);
+  const [confirmPending, setConfirmPending] = useState(false);
   const inviteProcessed = useRef(false);
   const [inviteTeamName, setInviteTeamName] = useState<string | null>(fallbackInviteTeamName);
 
@@ -116,7 +117,7 @@ export default function AuthPage() {
     setSubmitting(true);
 
     if (mode === "signup") {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email: form.email,
         password: form.password,
         options: {
@@ -127,8 +128,13 @@ export default function AuthPage() {
       setSubmitting(false);
       if (error) {
         toast.error(error.message);
+      } else if (data.session) {
+        toast.success("Account created — you're signed in.");
       } else {
-        toast.success("Account created — you can sign in right away.");
+        setConfirmPending(true);
+        toast.success("Almost there — check your inbox to confirm your email address.", {
+          duration: 8000,
+        });
         setMode("login");
         setForm((current) => ({ ...current, password: "" }));
       }
@@ -139,8 +145,32 @@ export default function AuthPage() {
       });
       setSubmitting(false);
       if (error) {
-        toast.error(error.message);
+        if (/email not confirmed/i.test(error.message)) {
+          setConfirmPending(true);
+          toast.error("Please confirm your email address first — check your inbox for the link.");
+        } else {
+          toast.error(error.message);
+        }
       }
+    }
+  };
+
+  const handleResendConfirmation = async () => {
+    if (!form.email) {
+      toast.error("Please enter your email address first");
+      return;
+    }
+    setSubmitting(true);
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email: form.email,
+      options: { emailRedirectTo: window.location.origin },
+    });
+    setSubmitting(false);
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success("Confirmation email sent — check your inbox (and spam folder).");
     }
   };
 
@@ -173,6 +203,24 @@ export default function AuthPage() {
                 {mode === "login" ? "Sign In" : "Create Account"}
               </h1>
             </div>
+
+            {confirmPending && (
+              <div className="mb-6 rounded-lg border border-primary/30 bg-primary/10 p-4 text-center">
+                <p className="text-sm text-foreground">
+                  Confirm your email address to finish setting up your account. The link expires and can only be used once — if it no longer works, send a fresh one.
+                </p>
+                <button
+                  type="button"
+                  disabled={submitting}
+                  onClick={handleResendConfirmation}
+                  className="mt-3 text-xs font-display tracking-wider text-primary hover:underline disabled:opacity-50"
+                >
+                  Resend confirmation email
+                </button>
+              </div>
+            )}
+
+
 
             <form onSubmit={handleSubmit} className="space-y-4">
               {mode === "signup" && (
