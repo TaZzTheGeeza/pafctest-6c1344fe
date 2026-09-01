@@ -116,7 +116,7 @@ export default function AuthPage() {
     setSubmitting(true);
 
     if (mode === "signup") {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email: form.email,
         password: form.password,
         options: {
@@ -127,8 +127,13 @@ export default function AuthPage() {
       setSubmitting(false);
       if (error) {
         toast.error(error.message);
+      } else if (data.session) {
+        toast.success("Account created — you're signed in.");
       } else {
-        toast.success("Account created — you can sign in right away.");
+        setConfirmPending(true);
+        toast.success("Almost there — check your inbox to confirm your email address.", {
+          duration: 8000,
+        });
         setMode("login");
         setForm((current) => ({ ...current, password: "" }));
       }
@@ -139,8 +144,32 @@ export default function AuthPage() {
       });
       setSubmitting(false);
       if (error) {
-        toast.error(error.message);
+        if (/email not confirmed/i.test(error.message)) {
+          setConfirmPending(true);
+          toast.error("Please confirm your email address first — check your inbox for the link.");
+        } else {
+          toast.error(error.message);
+        }
       }
+    }
+  };
+
+  const handleResendConfirmation = async () => {
+    if (!form.email) {
+      toast.error("Please enter your email address first");
+      return;
+    }
+    setSubmitting(true);
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email: form.email,
+      options: { emailRedirectTo: window.location.origin },
+    });
+    setSubmitting(false);
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success("Confirmation email sent — check your inbox (and spam folder).");
     }
   };
 
