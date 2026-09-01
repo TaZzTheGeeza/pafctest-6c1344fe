@@ -204,6 +204,24 @@ export default function AuthPage() {
               </h1>
             </div>
 
+            {confirmPending && (
+              <div className="mb-6 rounded-lg border border-primary/30 bg-primary/10 p-4 text-center">
+                <p className="text-sm text-foreground">
+                  Confirm your email address to finish setting up your account. The link expires and can only be used once — if it no longer works, send a fresh one.
+                </p>
+                <button
+                  type="button"
+                  disabled={submitting}
+                  onClick={handleResendConfirmation}
+                  className="mt-3 text-xs font-display tracking-wider text-primary hover:underline disabled:opacity-50"
+                >
+                  Resend confirmation email
+                </button>
+              </div>
+            )}
+
+
+
             <form onSubmit={handleSubmit} className="space-y-4">
               {mode === "signup" && (
                 <div>
