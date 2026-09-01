@@ -92,12 +92,28 @@ export function PaymentCenter({ teamSlug }: { teamSlug: string }) {
       (async () => {
         try {
           toast.info("Setting up your Direct Debit subscription...");
-          const { data, error } = await supabase.functions.invoke("activate-subscription", {
-            body: { br_id: brId, tier: tier || "standard" },
-          });
-          if (error) throw error;
-          if (data?.error) throw new Error(data.error);
-          toast.success("Subscription setup successful! Welcome aboard 🎉");
+          // The bank mandate can take a few moments to confirm — retry a few times.
+          const attempts = 4;
+          let pendingMessage: string | null = null;
+          for (let i = 0; i < attempts; i++) {
+            const { data, error } = await supabase.functions.invoke("activate-subscription", {
+              body: { br_id: brId, tier: tier || "standard" },
+            });
+            if (error) throw error;
+            if (data?.error) throw new Error(data.error);
+            if (data?.success) {
+              toast.success("Subscription setup successful! Welcome aboard 🎉");
+              pendingMessage = null;
+              break;
+            }
+            pendingMessage =
+              data?.message ||
+              "Your Direct Debit is still being confirmed by your bank. It will activate shortly.";
+            if (i < attempts - 1) await new Promise((r) => setTimeout(r, 5000));
+          }
+          if (pendingMessage) {
+            toast.warning(pendingMessage, { duration: 10000 });
+          }
         } catch (e: any) {
           toast.error(e.message || "Failed to activate subscription. Please contact the club.");
         }
