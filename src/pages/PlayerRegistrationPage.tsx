@@ -272,14 +272,31 @@ export default function PlayerRegistrationPage() {
       };
 
 
-      // Upload photo first
-      const fileExt = photoFile.name.split(".").pop();
+      // Make sure the session is still valid — an expired token silently breaks uploads.
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!sessionData.session) {
+        toast.error("Your session has expired. Please sign in again and resubmit.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Upload photo first (sanitise the extension — some phone cameras give odd file names)
+      const rawExt = (photoFile.name.split(".").pop() || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+      const fileExt = rawExt && rawExt.length <= 5 ? rawExt : (photoFile.type.split("/")[1] || "jpg");
       const filePath = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
       const { error: uploadError } = await supabase.storage
         .from("registration-photos")
-        .upload(filePath, photoFile);
+        .upload(filePath, photoFile, {
+          contentType: photoFile.type || "image/jpeg",
+          upsert: true,
+        });
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error("Registration photo upload failed", uploadError);
+        toast.error(`Photo upload failed: ${uploadError.message}. Try a smaller photo or a different image.`);
+        setIsSubmitting(false);
+        return;
+      }
 
       // Store the file path (bucket is private; admins use signed URLs to view)
       insertData.photo_url = filePath;
@@ -290,7 +307,12 @@ export default function PlayerRegistrationPage() {
         .select("id")
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Registration insert failed", error);
+        toast.error(`Could not save registration: ${error.message}`);
+        setIsSubmitting(false);
+        return;
+      }
       const newRegistrationId = (insertedRows as any)?.id as string | undefined;
 
       // Redirect to GoCardless for £40 payment — registration is NOT complete until payment is confirmed.
@@ -301,17 +323,23 @@ export default function PlayerRegistrationPage() {
       );
 
       if (checkoutError || !checkoutData?.url) {
-        throw new Error(checkoutError?.message || "Failed to create payment session");
+        console.error("Registration checkout failed", checkoutError, checkoutData);
+        toast.error(
+          `Your details were saved, but we couldn't open the payment page (${checkoutError?.message || checkoutData?.error || "unknown error"}). Please contact the club.`
+        );
+        setIsSubmitting(false);
+        return;
       }
 
       window.location.href = checkoutData.url;
-    } catch (err) {
-      toast.error("Something went wrong. Please try again.");
-      console.error(err);
+    } catch (err: any) {
+      console.error("Registration submit failed", err);
+      toast.error(err?.message ? `Something went wrong: ${err.message}` : "Something went wrong. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
   };
+
 
   const selectClass = "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2";
 
