@@ -26,11 +26,46 @@ const teamSlugToLabel: Record<string, string> = {
   "u15s": "U15",
 };
 
+// Downscale a photo to a sensible size/JPEG so slow phone connections don't fail the upload.
+// Returns null when the browser can't decode the file (e.g. some HEIC images) so we upload the original.
+async function compressImage(file: File, maxDim = 1400, quality = 0.85): Promise<Blob | null> {
+  try {
+    const bitmapUrl = URL.createObjectURL(file);
+    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const image = new Image();
+      image.onload = () => resolve(image);
+      image.onerror = () => reject(new Error("decode failed"));
+      image.src = bitmapUrl;
+    });
+    URL.revokeObjectURL(bitmapUrl);
+
+    let { width, height } = img;
+    if (!width || !height) return null;
+    if (width > maxDim || height > maxDim) {
+      const scale = maxDim / Math.max(width, height);
+      width = Math.round(width * scale);
+      height = Math.round(height * scale);
+    }
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return null;
+    ctx.drawImage(img, 0, 0, width, height);
+    return await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob((blob) => resolve(blob), "image/jpeg", quality),
+    );
+  } catch {
+    return null;
+  }
+}
+
 interface LinkedChild {
   id: string;
   player_name: string;
   team_slug: string;
 }
+
 
 export default function PlayerRegistrationPage() {
   const { user, loading: authLoading } = useAuth();
@@ -179,17 +214,22 @@ export default function PlayerRegistrationPage() {
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      toast.error("Please upload an image file.");
+    // Some phones report an empty or non-standard type (HEIC etc). Fall back to the extension.
+    const looksLikeImage =
+      file.type.startsWith("image/") ||
+      /\.(jpe?g|png|heic|heif|webp|gif|bmp|tiff?)$/i.test(file.name);
+    if (!looksLikeImage) {
+      toast.error("Please upload a photo (JPG, PNG or HEIC).");
       return;
     }
-    if (file.size > 20 * 1024 * 1024) {
-      toast.error("Image must be under 20MB.");
+    if (file.size > 50 * 1024 * 1024) {
+      toast.error("That photo is very large. Please choose one under 50MB.");
       return;
     }
     setPhotoFile(file);
     setPhotoPreview(URL.createObjectURL(file));
   };
+
 
   const removePhoto = () => {
     setPhotoFile(null);
@@ -280,23 +320,37 @@ export default function PlayerRegistrationPage() {
         return;
       }
 
-      // Upload photo first (sanitise the extension — some phone cameras give odd file names)
-      const rawExt = (photoFile.name.split(".").pop() || "").toLowerCase().replace(/[^a-z0-9]/g, "");
-      const fileExt = rawExt && rawExt.length <= 5 ? rawExt : (photoFile.type.split("/")[1] || "jpg");
+      // Shrink big phone photos before upload — large files are the main cause of failures.
+      let uploadBody: Blob = photoFile;
+      let uploadType = photoFile.type || "image/jpeg";
+      let fileExt = (photoFile.name.split(".").pop() || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+      try {
+        const compressed = await compressImage(photoFile);
+        if (compressed) {
+          uploadBody = compressed;
+          uploadType = "image/jpeg";
+          fileExt = "jpg";
+        }
+      } catch (compressErr) {
+        console.warn("Photo compression skipped", compressErr);
+      }
+      if (!fileExt || fileExt.length > 5) fileExt = (uploadType.split("/")[1] || "jpg");
+
       const filePath = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
       const { error: uploadError } = await supabase.storage
         .from("registration-photos")
-        .upload(filePath, photoFile, {
-          contentType: photoFile.type || "image/jpeg",
+        .upload(filePath, uploadBody, {
+          contentType: uploadType,
           upsert: true,
         });
 
       if (uploadError) {
         console.error("Registration photo upload failed", uploadError);
-        toast.error(`Photo upload failed: ${uploadError.message}. Try a smaller photo or a different image.`);
+        toast.error(`Photo upload failed: ${uploadError.message}. Please try again or use a different photo.`);
         setIsSubmitting(false);
         return;
       }
+
 
       // Store the file path (bucket is private; admins use signed URLs to view)
       insertData.photo_url = filePath;
