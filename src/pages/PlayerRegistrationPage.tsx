@@ -285,23 +285,37 @@ export default function PlayerRegistrationPage() {
         return;
       }
 
-      // Upload photo first (sanitise the extension — some phone cameras give odd file names)
-      const rawExt = (photoFile.name.split(".").pop() || "").toLowerCase().replace(/[^a-z0-9]/g, "");
-      const fileExt = rawExt && rawExt.length <= 5 ? rawExt : (photoFile.type.split("/")[1] || "jpg");
+      // Shrink big phone photos before upload — large files are the main cause of failures.
+      let uploadBody: Blob = photoFile;
+      let uploadType = photoFile.type || "image/jpeg";
+      let fileExt = (photoFile.name.split(".").pop() || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+      try {
+        const compressed = await compressImage(photoFile);
+        if (compressed) {
+          uploadBody = compressed;
+          uploadType = "image/jpeg";
+          fileExt = "jpg";
+        }
+      } catch (compressErr) {
+        console.warn("Photo compression skipped", compressErr);
+      }
+      if (!fileExt || fileExt.length > 5) fileExt = (uploadType.split("/")[1] || "jpg");
+
       const filePath = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
       const { error: uploadError } = await supabase.storage
         .from("registration-photos")
-        .upload(filePath, photoFile, {
-          contentType: photoFile.type || "image/jpeg",
+        .upload(filePath, uploadBody, {
+          contentType: uploadType,
           upsert: true,
         });
 
       if (uploadError) {
         console.error("Registration photo upload failed", uploadError);
-        toast.error(`Photo upload failed: ${uploadError.message}. Try a smaller photo or a different image.`);
+        toast.error(`Photo upload failed: ${uploadError.message}. Please try again or use a different photo.`);
         setIsSubmitting(false);
         return;
       }
+
 
       // Store the file path (bucket is private; admins use signed URLs to view)
       insertData.photo_url = filePath;
