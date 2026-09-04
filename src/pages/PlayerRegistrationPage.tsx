@@ -336,13 +336,23 @@ export default function PlayerRegistrationPage() {
       }
       if (!fileExt || fileExt.length > 5) fileExt = (uploadType.split("/")[1] || "jpg");
 
-      const filePath = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
+      // Ask the backend for a short-lived upload link tied to the verified account.
+      // This avoids mobile browsers occasionally sending a stale token directly to Storage.
+      const { data: uploadLink, error: uploadLinkError } = await supabase.functions.invoke(
+        "create-registration-photo-upload",
+        { body: { extension: fileExt } },
+      );
+      if (uploadLinkError || !uploadLink?.path || !uploadLink?.token) {
+        console.error("Registration photo upload link failed", uploadLinkError, uploadLink);
+        toast.error(uploadLink?.error || "Could not prepare the photo upload. Please sign in again and retry.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      const filePath = uploadLink.path as string;
       const { error: uploadError } = await supabase.storage
         .from("registration-photos")
-        .upload(filePath, uploadBody, {
-          contentType: uploadType,
-          upsert: false,
-        });
+        .uploadToSignedUrl(filePath, uploadLink.token as string, uploadBody, { contentType: uploadType });
 
       if (uploadError) {
         console.error("Registration photo upload failed", uploadError);
