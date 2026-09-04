@@ -341,7 +341,7 @@ export default function PlayerRegistrationPage() {
         .from("registration-photos")
         .upload(filePath, uploadBody, {
           contentType: uploadType,
-          upsert: true,
+          upsert: false,
         });
 
       if (uploadError) {
