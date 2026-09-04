@@ -179,17 +179,22 @@ export default function PlayerRegistrationPage() {
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      toast.error("Please upload an image file.");
+    // Some phones report an empty or non-standard type (HEIC etc). Fall back to the extension.
+    const looksLikeImage =
+      file.type.startsWith("image/") ||
+      /\.(jpe?g|png|heic|heif|webp|gif|bmp|tiff?)$/i.test(file.name);
+    if (!looksLikeImage) {
+      toast.error("Please upload a photo (JPG, PNG or HEIC).");
       return;
     }
-    if (file.size > 20 * 1024 * 1024) {
-      toast.error("Image must be under 20MB.");
+    if (file.size > 50 * 1024 * 1024) {
+      toast.error("That photo is very large. Please choose one under 50MB.");
       return;
     }
     setPhotoFile(file);
     setPhotoPreview(URL.createObjectURL(file));
   };
+
 
   const removePhoto = () => {
     setPhotoFile(null);
