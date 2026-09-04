@@ -26,11 +26,46 @@ const teamSlugToLabel: Record<string, string> = {
   "u15s": "U15",
 };
 
+// Downscale a photo to a sensible size/JPEG so slow phone connections don't fail the upload.
+// Returns null when the browser can't decode the file (e.g. some HEIC images) so we upload the original.
+async function compressImage(file: File, maxDim = 1400, quality = 0.85): Promise<Blob | null> {
+  try {
+    const bitmapUrl = URL.createObjectURL(file);
+    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const image = new Image();
+      image.onload = () => resolve(image);
+      image.onerror = () => reject(new Error("decode failed"));
+      image.src = bitmapUrl;
+    });
+    URL.revokeObjectURL(bitmapUrl);
+
+    let { width, height } = img;
+    if (!width || !height) return null;
+    if (width > maxDim || height > maxDim) {
+      const scale = maxDim / Math.max(width, height);
+      width = Math.round(width * scale);
+      height = Math.round(height * scale);
+    }
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return null;
+    ctx.drawImage(img, 0, 0, width, height);
+    return await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob((blob) => resolve(blob), "image/jpeg", quality),
+    );
+  } catch {
+    return null;
+  }
+}
+
 interface LinkedChild {
   id: string;
   player_name: string;
   team_slug: string;
 }
+
 
 export default function PlayerRegistrationPage() {
   const { user, loading: authLoading } = useAuth();
