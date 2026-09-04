@@ -88,8 +88,45 @@ serve(async (req) => {
       );
     }
 
-    const mandateId = br.links?.mandate;
-    if (!mandateId) throw new Error("No mandate found on billing request");
+    const gcGet = async (path: string) => {
+      const r = await fetch(`${GC_API}${path}`, {
+        headers: { Authorization: `Bearer ${gcToken}`, "GoCardless-Version": "2015-07-06" },
+      });
+      const d = await r.json();
+      return r.ok ? d : null;
+    };
+
+    // GoCardless exposes the mandate in different places depending on the flow.
+    let mandateId: string | undefined =
+      br.links?.mandate || br.links?.mandate_request_mandate;
+
+    // Fallback 1: read the mandate_request resource
+    if (!mandateId && br.links?.mandate_request) {
+      const mr = await gcGet(`/mandate_requests/${br.links.mandate_request}`);
+      mandateId = mr?.mandate_requests?.links?.mandate;
+    }
+
+    // Fallback 2: list mandates for the customer on this billing request
+    if (!mandateId && br.links?.customer) {
+      const list = await gcGet(`/mandates?customer=${br.links.customer}&limit=10`);
+      const mandates = (list?.mandates ?? []).filter(
+        (m: { status: string }) => !["cancelled", "failed", "expired"].includes(m.status)
+      );
+      mandateId = mandates[0]?.id;
+    }
+
+    if (!mandateId) {
+      console.log(`Billing request ${br_id} fulfilled but no mandate available yet`, JSON.stringify(br.links ?? {}));
+      return new Response(
+        JSON.stringify({
+          success: false,
+          pending: true,
+          status: br.status,
+          message: "Your Direct Debit is still being confirmed by your bank. Please try again shortly.",
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 202 },
+      );
+    }
 
 
     // Check if subscription already exists for this mandate
