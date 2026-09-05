@@ -65,6 +65,7 @@ export function MatchReportCard({
   });
   const scorers = parseStatEntries(report.goal_scorers);
   const assists = parseStatEntries(report.assists);
+  const [fullScreenPhoto, setFullScreenPhoto] = useState<{ url: string; name: string } | null>(null);
 
   return (
     <motion.div
