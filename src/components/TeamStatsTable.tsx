@@ -178,9 +178,6 @@ export function TeamStatsTable({ ageGroup }: { ageGroup: string }) {
                 <Users className="h-3 w-3 mx-auto" />
               </th>
               <th className="text-center px-2 py-3">
-                <BarChart3 className="h-3 w-3 mx-auto" />
-              </th>
-              <th className="text-center px-2 py-3">
                 <Award className="h-3 w-3 mx-auto" />
               </th>
             </tr>
