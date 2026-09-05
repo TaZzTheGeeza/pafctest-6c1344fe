@@ -34,6 +34,7 @@ const tabs = [
   { id: "notifications", label: "Notifications", icon: Bell },
   { id: "availability", label: "Fixtures & Events", icon: CalendarCheck },
   { id: "reports", label: "Match Reports", icon: ClipboardList },
+  { id: "stats", label: "Stats", icon: BarChart3 },
   { id: "carpool", label: "Carpool", icon: Car },
   { id: "attendance", label: "Attendance", icon: TrendingUp },
   { id: "guardian", label: "Guardian", icon: UserPlus },
