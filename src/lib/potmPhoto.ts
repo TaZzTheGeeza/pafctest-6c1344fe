@@ -77,7 +77,7 @@ export async function uploadPotmPhoto(
 
   const outputType = file.type === "image/png" ? "image/png" : "image/jpeg";
   const fileExtension = outputType === "image/png" ? "png" : "jpg";
-  const finalBase64 = await resizeImageToBase64(file, 1024, outputType, 0.9);
+  const finalBase64 = await resizeImageToBase64(file, 2048, outputType, 0.95);
 
   const uploadVersion = Date.now();
   const datePrefix = options.awardDate || new Date().toISOString().split("T")[0];
