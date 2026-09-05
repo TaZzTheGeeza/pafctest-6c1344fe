@@ -18,6 +18,8 @@ import { HubMeetingsEmbed } from "@/components/hub/HubMeetingsEmbed";
 import { TeamAccessRequest } from "@/components/hub/TeamAccessRequest";
 import PitchBookingsPanel from "@/components/hub/PitchBookingsPanel";
 import { HubMatchReports } from "@/components/hub/HubMatchReports";
+import { TeamStatsTable } from "@/components/TeamStatsTable";
+import { getAgeGroup } from "@/hooks/useTeamRoster";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
