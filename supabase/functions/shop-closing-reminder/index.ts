@@ -27,8 +27,11 @@ Deno.serve(async (req) => {
   const bearer = (req.headers.get('Authorization') || '').replace('Bearer ', '').trim()
   const provided = url.searchParams.get('secret') || req.headers.get('x-cron-secret') || bearer
 
+  const shopSecret = Deno.env.get('SHOP_REMINDER_SECRET')
+
   let authorized = false
   if (cronSecret && provided && provided === cronSecret) authorized = true
+  if (shopSecret && provided && provided === shopSecret) authorized = true
   if (bearer && bearer === serviceKey) authorized = true
 
   const admin = createClient(supabaseUrl, serviceKey)
