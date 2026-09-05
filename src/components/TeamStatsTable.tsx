@@ -205,9 +205,6 @@ export function TeamStatsTable({ ageGroup }: { ageGroup: string }) {
                 <td className={`text-center px-2 py-3 text-sm font-bold ${sortBy === "assists" ? "text-primary" : "text-foreground"}`}>
                   {player.assists}
                 </td>
-                <td className={`text-center px-2 py-3 text-sm font-bold ${sortBy === "appearances" ? "text-primary" : "text-foreground"}`}>
-                  {player.appearances}
-                </td>
                 <td className={`text-center px-2 py-3 text-sm font-bold ${sortBy === "potm_awards" ? "text-primary" : "text-foreground"}`}>
                   {player.potm_awards}
                 </td>
