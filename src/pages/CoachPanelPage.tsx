@@ -383,53 +383,8 @@ export function POTMForm({
     }
   };
 
+  if (submitted && !embedded) {
 
-    try {
-      for (const entry of validEntries) {
-        let photo_url: string | null = null;
-        const fileToUpload = entry.croppedBlob
-          ? new File([entry.croppedBlob], "potm-cropped.png", { type: "image/png" })
-          : entry.photoFile;
-
-        if (fileToUpload) {
-          photo_url = await uploadPotmPhoto(fileToUpload, {
-            playerName: entry.player_name.trim(),
-            awardDate: matchDate || new Date().toISOString().split("T")[0],
-            teamSlug: AGE_GROUP_TO_SLUG[ageGroup],
-            onStatus: (status) => {
-              if (status === "processing") toast.info("Preparing photo...");
-              if (status === "processed") toast.success("Photo ready");
-              if (status === "fallback") toast.warning("Using original photo");
-            },
-          });
-        }
-
-        const { error } = await supabase.from("player_of_the_match").insert({
-          player_name: entry.player_name.trim(),
-          shirt_number: entry.shirt_number ? parseInt(entry.shirt_number) : null,
-          team_name: `Peterborough Athletic ${ageGroup}`,
-          age_group: ageGroup,
-          match_description: matchDescription.trim() || null,
-          reason: entry.reason.trim() || null,
-          photo_url,
-          award_date: matchDate || new Date().toISOString().split("T")[0],
-        });
-        if (error) throw error;
-      }
-
-      entries.forEach((en) => {
-        if (en.photoPreview) URL.revokeObjectURL(en.photoPreview);
-      });
-      toast.success(`${validEntries.length} POTM award${validEntries.length > 1 ? "s" : ""} submitted!`);
-      setSubmitted(true);
-    } catch (err: any) {
-      toast.error(err.message || "Failed to submit POTM");
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  if (submitted) {
     return (
       <div className="bg-card border border-border rounded-xl p-8 text-center">
         <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
