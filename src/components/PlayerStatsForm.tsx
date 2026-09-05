@@ -2,11 +2,9 @@ import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Users, Plus, Trash2, Save, Loader2, BarChart3, Camera, X } from "lucide-react";
 import { toast } from "sonner";
+import { CLUB_TEAMS } from "@/lib/teamConfig";
 
-const ageGroups = [
-  "U6", "U7", "U8", "U9 Black", "U9 Gold", "U10", "U11",
-  "U12 Black", "U12 Gold", "U12 White", "U13", "U14 Black", "U14 Gold", "U15",
-];
+const ageGroups = CLUB_TEAMS.map((t) => t.name);
 
 const POSITIONS = ["Goalkeeper", "Defender", "Midfielder", "Forward"];
 
