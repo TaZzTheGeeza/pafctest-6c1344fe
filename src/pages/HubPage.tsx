@@ -17,6 +17,7 @@ import { GuardianManager } from "@/components/hub/GuardianManager";
 import { HubMeetingsEmbed } from "@/components/hub/HubMeetingsEmbed";
 import { TeamAccessRequest } from "@/components/hub/TeamAccessRequest";
 import PitchBookingsPanel from "@/components/hub/PitchBookingsPanel";
+import { HubMatchReports } from "@/components/hub/HubMatchReports";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -32,6 +33,7 @@ const tabs = [
   { id: "payments", label: "Payments", icon: CreditCard },
   { id: "notifications", label: "Notifications", icon: Bell },
   { id: "availability", label: "Fixtures & Events", icon: CalendarCheck },
+  { id: "reports", label: "Match Reports", icon: ClipboardList },
   { id: "carpool", label: "Carpool", icon: Car },
   { id: "attendance", label: "Attendance", icon: TrendingUp },
   { id: "guardian", label: "Guardian", icon: UserPlus },
@@ -234,6 +236,7 @@ export default function HubPage() {
       {activeTab === "payments" && activeTeam && <PaymentCenter teamSlug={activeTeam} />}
       {activeTab === "notifications" && <NotificationCenter />}
       {activeTab === "availability" && activeTeam && <FixtureAvailability teamSlug={activeTeam} />}
+      {activeTab === "reports" && activeTeam && <HubMatchReports teamSlug={activeTeam} />}
       {activeTab === "carpool" && activeTeam && <CarpoolBoard teamSlug={activeTeam} />}
       {activeTab === "attendance" && activeTeam && (isCoach || isAdmin) && <AttendanceStats teamSlug={activeTeam} />}
       {activeTab === "guardian" && activeTeam && <GuardianManager teamSlug={activeTeam} teamName={activeTeamName || ""} />}
