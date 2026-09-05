@@ -63,3 +63,38 @@ export function normalizeClubTeamSlugs(slugs: readonly string[]): string[] {
     .filter((slug) => allowed.has(slug))
     .sort((a, b) => (order.get(a) ?? 0) - (order.get(b) ?? 0));
 }
+const LEGACY_TEAM_NAMES: Record<string, readonly string[]> = {
+  U6: ["U6"],
+  U7: ["U7"],
+  U8: ["U8 Black", "U8 Gold"],
+  "U8 Black": ["U8 Black"],
+  "U8 Gold": ["U8 Gold"],
+  U9: ["U9 Black", "U9 Gold"],
+  "U9 Black": ["U9 Black"],
+  "U9 Gold": ["U9 Gold"],
+  U10: ["U10"],
+  U11: ["U11"],
+  U12: ["U12 Black", "U12 Gold", "U12 White"],
+  "U12 Black": ["U12 Black"],
+  "U12 Gold": ["U12 Gold"],
+  "U12 White": ["U12 White"],
+  U13: ["U13"],
+  U14: ["U14 Black", "U14 Gold"],
+  "U14 Black": ["U14 Black"],
+  "U14 Gold": ["U14 Gold"],
+  U15: ["U15"],
+};
+
+/**
+ * Normalize stored display names (which may be legacy values like "U8")
+ * into the canonical CLUB_TEAMS names, in Hub order.
+ */
+export function normalizeClubTeamNames(names: readonly string[]): string[] {
+  const allowed = new Set(CLUB_TEAMS.map((t) => t.name));
+  const order = new Map(CLUB_TEAMS.map((t, i) => [t.name, i]));
+  const normalized = names.flatMap((name) => LEGACY_TEAM_NAMES[name] ?? [name]);
+
+  return [...new Set(normalized)]
+    .filter((name) => allowed.has(name))
+    .sort((a, b) => (order.get(a) ?? 0) - (order.get(b) ?? 0));
+}
