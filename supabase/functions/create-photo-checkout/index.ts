@@ -161,7 +161,7 @@ serve(async (req) => {
         .in("id", finalIds);
       const refs = (photoRows || []).map((p: any) => p.photo_ref).filter(Boolean).join(", ");
       const claimUrl = `${origin}/photos/claim?token=${claimToken}`;
-      const { error: emailErr } = await adminClient.functions.invoke("send-transactional-email", {
+      const { error: emailErr } = await adminClient.functions.invoke("send-app-email", {
         body: {
           templateName: "photo-claim-link",
           recipientEmail: buyerEmail,

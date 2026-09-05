@@ -159,7 +159,7 @@ Deno.serve(async (req) => {
             Deno.env.get("PUBLIC_SITE_URL") ||
             "https://www.pa-fc.uk";
           const claimUrl = `${origin.replace(/\/$/, "")}/photos/claim?token=${token}`;
-          await supabase.functions.invoke("send-transactional-email", {
+          await supabase.functions.invoke("send-app-email", {
             body: {
               templateName: "photo-claim-link",
               recipientEmail: buyerEmail,
@@ -218,7 +218,7 @@ Deno.serve(async (req) => {
           .single();
 
         if (profile?.email) {
-          await supabase.functions.invoke("send-transactional-email", {
+          await supabase.functions.invoke("send-app-email", {
             body: {
               templateName: "shop-order-notification",
               recipientEmail: profile.email,

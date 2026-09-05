@@ -54,7 +54,7 @@ async function handlePaidSession(stripe: Stripe, admin: ReturnType<typeof create
   }
 
   const claimUrl = `${origin.replace(/\/$/, "")}/photos/claim?token=${token}`;
-  await admin.functions.invoke("send-transactional-email", {
+  await admin.functions.invoke("send-app-email", {
     body: {
       templateName: "photo-claim-link",
       recipientEmail: email,

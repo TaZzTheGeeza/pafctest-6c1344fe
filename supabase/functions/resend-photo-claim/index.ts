@@ -56,7 +56,7 @@ Deno.serve(async (req) => {
     const origin = req.headers.get("origin") || "https://www.pa-fc.uk";
     const claimUrl = `${origin}/photos/claim?token=${token}`;
 
-    const { error: emailError } = await admin.functions.invoke("send-transactional-email", {
+    const { error: emailError } = await admin.functions.invoke("send-app-email", {
       body: {
         templateName: "photo-claim-link",
         recipientEmail: existing.email,

@@ -156,7 +156,7 @@ export function ReminderPreviewDialog({
       for (const r of chosen) {
         if (!r.email) continue;
         supabase.functions
-          .invoke("send-transactional-email", {
+          .invoke("send-app-email", {
             body: {
               templateName: "availability-event-added",
               recipientEmail: r.email,

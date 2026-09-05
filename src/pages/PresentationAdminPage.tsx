@@ -1387,7 +1387,7 @@ async function sendSeatNotification(params: {
           .map((t) => `${t.id}:${t.table_id ?? "_"}:${t.seat_number ?? "_"}`)
           .sort()
           .join("|")}`;
-        await supabase.functions.invoke("send-transactional-email", {
+        await supabase.functions.invoke("send-app-email", {
           body: {
             templateName: "presentation-seats-allocated",
             recipientEmail: profile.email,

@@ -55,7 +55,7 @@ export async function notifyMeetingInvitees({
       for (const profile of profiles) {
         if (!profile.email) continue;
         supabase.functions
-          .invoke("send-transactional-email", {
+          .invoke("send-app-email", {
             body: {
               templateName: "meeting-invite",
               recipientEmail: profile.email,

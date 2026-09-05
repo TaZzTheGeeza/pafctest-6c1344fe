@@ -200,7 +200,7 @@ export function AdminNotificationComposer() {
           } else {
             const emailResults = await Promise.all(
               emailRecipients.map(async (profile) => {
-                const { error } = await supabase.functions.invoke("send-transactional-email", {
+                const { error } = await supabase.functions.invoke("send-app-email", {
                   body: {
                     templateName: "admin-broadcast",
                     recipientEmail: profile.email,
