@@ -6,6 +6,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { CalendarDays, MapPin, Clock, Download, Filter } from "lucide-react";
+import { useVenueAddresses } from "@/hooks/useVenueAddresses";
 import { EventRSVP } from "@/components/EventRSVP";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths, parse } from "date-fns";
 import { faTeamConfigs } from "@/lib/faFixtureConfig";
@@ -73,8 +74,8 @@ END:VEVENT
 END:VCALENDAR`;
 }
 
-function downloadICS(event: ClubEvent) {
-  const blob = new Blob([generateICS(event)], { type: "text/calendar" });
+function downloadICS(event: ClubEvent, fullLocation?: string) {
+  const blob = new Blob([generateICS(fullLocation ? { ...event, location: fullLocation } : event)], { type: "text/calendar" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
@@ -187,6 +188,10 @@ export default function CalendarPage() {
     return () => { cancelled = true; };
   }, []);
 
+  const { getDirectionsAddress } = useVenueAddresses(
+    [...events, ...fixtureEvents].map((e) => e.location),
+  );
+
   const allEvents = useMemo(() => {
     return [...events, ...fixtureEvents].sort(
       (a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime()
@@ -295,7 +300,7 @@ export default function CalendarPage() {
                           </div>
                           {e.team && <p className="text-xs text-primary mt-2">{e.team}</p>}
                           <button
-                            onClick={() => downloadICS(e)}
+                            onClick={() => downloadICS(e, e.location ? getDirectionsAddress(e.location) : undefined)}
                             className="mt-3 inline-flex items-center gap-1 text-xs text-primary hover:text-gold-light transition-colors"
                           >
                             <Download className="h-3 w-3" /> Add to Calendar

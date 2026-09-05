@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { AddAvailabilityEventDialog } from "./AddAvailabilityEventDialog";
 import { ReminderPreviewDialog } from "./ReminderPreviewDialog";
 import { CoachFixturePanel } from "@/components/CoachFixturePanel";
+import { useVenueAddresses } from "@/hooks/useVenueAddresses";
 
 interface Props {
   teamSlug: string;
@@ -196,25 +197,11 @@ export function FixtureAvailability({ teamSlug }: Props) {
     enabled: !!user,
   });
 
-  const { data: venueOverrides = [] } = useQuery({
-    queryKey: ["venue-overrides"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("venue_address_overrides")
-        .select("venue_name, full_address");
-      if (error) throw error;
-      return data as { venue_name: string; full_address: string }[];
-    },
-    staleTime: 1000 * 60 * 60,
-  });
+  const { addressMap: venueOverrideMap, getDirectionsAddress } = useVenueAddresses([
+    ...(teamData?.fixtures ?? []).map((f) => f.venue),
+    ...customEvents.map((e) => e.venue),
+  ]);
 
-  const venueOverrideMap = Object.fromEntries(
-    venueOverrides.map((v) => [v.venue_name.toUpperCase(), v.full_address])
-  );
-
-  const getDirectionsAddress = (venue: string) => {
-    return venueOverrideMap[venue.toUpperCase()] || venue;
-  };
 
   // Published lineups for this team — visible to every team member
   const { data: publishedLineups = [] } = useQuery({
@@ -276,7 +263,7 @@ export function FixtureAvailability({ teamSlug }: Props) {
     mutationFn: async ({ venueName, fullAddress }: { venueName: string; fullAddress: string }) => {
       const { error } = await supabase
         .from("venue_address_overrides")
-        .upsert({ venue_name: venueName, full_address: fullAddress, updated_at: new Date().toISOString() }, { onConflict: "venue_name" });
+        .upsert({ venue_name: venueName, full_address: fullAddress, source: "manual", updated_at: new Date().toISOString() }, { onConflict: "venue_name" });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -651,7 +638,7 @@ export function FixtureAvailability({ teamSlug }: Props) {
                       onClick={(e) => {
                         e.stopPropagation();
                         setEditingVenue(item.key);
-                        setVenueInput(venueOverrideMap[item.venue.toUpperCase()] || "");
+                        setVenueInput(venueOverrideMap[item.venue.replace(/\s+/g, " ").trim().toUpperCase()] || "");
                       }}
                       title="Edit venue address for directions"
                       className="text-[10px] text-muted-foreground hover:text-primary flex items-center gap-0.5 transition-colors"
