@@ -42,7 +42,6 @@ export function ShowcaseMeetTheTeam({ teamName, players, coaches }: ShowcaseProp
 
             {/* Mini stat bar */}
             <div className="flex justify-center gap-3 mt-2 text-[10px] text-muted-foreground">
-              <span>{player.appearances ?? 0} apps</span>
               <span className="text-foreground font-medium">{player.goals ?? 0}G</span>
               <span>{player.assists ?? 0}A</span>
             </div>

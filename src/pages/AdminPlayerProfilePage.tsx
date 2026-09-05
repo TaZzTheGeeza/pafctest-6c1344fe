@@ -374,9 +374,8 @@ export default function AdminPlayerProfilePage() {
                           <p className="text-xs text-muted-foreground">{s.age_group} {s.shirt_number ? `• #${s.shirt_number}` : ""}</p>
                         </div>
                       </div>
-                      <div className="grid grid-cols-4 gap-3">
+                      <div className="grid grid-cols-3 gap-3">
                         {[
-                          { label: "Apps", value: s.appearances },
                           { label: "Goals", value: s.goals },
                           { label: "Assists", value: s.assists },
                           { label: "POTM", value: s.potm_awards },
