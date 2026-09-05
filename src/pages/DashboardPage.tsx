@@ -31,6 +31,8 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 
 type AppRole = string;
 
+import { CLUB_TEAMS } from "@/lib/teamConfig";
+
 const ALL_AGE_GROUPS = CLUB_TEAMS.map((t) => t.name);
 
 interface UserWithRoles {
