@@ -7,7 +7,7 @@ import { TeamChat } from "@/components/hub/TeamChat";
 import { PaymentCenter } from "@/components/hub/PaymentCenter";
 import { NotificationCenter } from "@/components/hub/NotificationCenter";
 import { TeamMemberManager } from "@/components/hub/TeamMemberManager";
-import { MessageSquare, CreditCard, Bell, CalendarCheck, Users, Shield, ChevronDown, Car, TrendingUp, UserPlus, User, FileText, ChevronRight, ChevronLeft, Video, Sparkles, Award, ClipboardList, MapPin } from "lucide-react";
+import { MessageSquare, CreditCard, Bell, CalendarCheck, Users, Shield, ChevronDown, Car, TrendingUp, UserPlus, User, FileText, ChevronRight, ChevronLeft, Video, Sparkles, Award, ClipboardList, MapPin, BarChart3 } from "lucide-react";
 import { PlayerRosterManager } from "@/components/hub/PlayerRosterManager";
 import { AwardsVoting } from "@/components/hub/AwardsVoting";
 import { FixtureAvailability } from "@/components/hub/FixtureAvailability";
