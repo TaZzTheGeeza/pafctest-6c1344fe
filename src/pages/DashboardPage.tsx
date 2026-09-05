@@ -31,10 +31,7 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 
 type AppRole = string;
 
-const ALL_AGE_GROUPS = [
-  "U6", "U7", "U8", "U9 Black", "U9 Gold", "U10", "U11",
-  "U12 Black", "U12 Gold", "U12 White", "U13", "U14 Black", "U14 Gold", "U15",
-];
+const ALL_AGE_GROUPS = CLUB_TEAMS.map((t) => t.name);
 
 interface UserWithRoles {
   id: string;
