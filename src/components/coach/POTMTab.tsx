@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, forwardRef, useImperativeHandle } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -20,11 +20,20 @@ interface POTMEntry {
   croppedBlob: Blob | null;
 }
 
-export function POTMTab({
-  teamSlug, teamName, opponent, fixture,
-}: {
+export interface POTMHandle {
+  /** Saves all valid POTM entries. Returns how many awards were saved. */
+  save: () => Promise<number>;
+}
+
+interface POTMTabProps {
   teamSlug: string; teamName: string; opponent: string; fixture: FAFixture;
-}) {
+  /** Hide the internal save button when embedded inside the match report. */
+  hideSaveButton?: boolean;
+}
+
+export const POTMTab = forwardRef<POTMHandle, POTMTabProps>(function POTMTab({
+  teamSlug, teamName, opponent, fixture, hideSaveButton,
+}, ref) {
   const { data: roster = [] } = useTeamRoster(teamSlug);
   const queryClient = useQueryClient();
   const [entries, setEntries] = useState<POTMEntry[]>([
@@ -72,9 +81,9 @@ export function POTMTab({
 
   const selectedIds = entries.map(e => e.playerId).filter(Boolean);
 
-  const handleSave = async () => {
+  const saveAll = async (): Promise<number> => {
     const validEntries = entries.filter(e => e.playerId);
-    if (validEntries.length === 0) { toast.error("Select at least one player"); return; }
+    if (validEntries.length === 0) return 0;
     setSaving(true);
     try {
       const [d, m, y] = fixture.date.split("/");
@@ -133,11 +142,21 @@ export function POTMTab({
       // Reset
       entries.forEach(e => { if (e.photoPreview) URL.revokeObjectURL(e.photoPreview); });
       setEntries([{ playerId: "", reason: "", photoFile: null, photoPreview: null, croppedBlob: null }]);
-      toast.success(`${validEntries.length} POTM award${validEntries.length > 1 ? "s" : ""} saved!`);
-    } catch (err: any) {
-      toast.error(err.message || "Failed to save POTM");
+      return validEntries.length;
     } finally {
       setSaving(false);
+    }
+  };
+
+  useImperativeHandle(ref, () => ({ save: saveAll }));
+
+  const handleSave = async () => {
+    if (entries.filter(e => e.playerId).length === 0) { toast.error("Select at least one player"); return; }
+    try {
+      const count = await saveAll();
+      toast.success(`${count} POTM award${count > 1 ? "s" : ""} saved!`);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to save POTM");
     }
   };
 
@@ -260,10 +279,12 @@ export function POTMTab({
         </p>
       )}
 
-      <Button onClick={handleSave} disabled={saving || roster.length === 0} className="w-full">
-        {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trophy className="h-4 w-4 mr-2" />}
-        Save POTM Award{entries.filter(e => e.playerId).length > 1 ? "s" : ""}
-      </Button>
+      {!hideSaveButton && (
+        <Button onClick={handleSave} disabled={saving || roster.length === 0} className="w-full">
+          {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trophy className="h-4 w-4 mr-2" />}
+          Save POTM Award{entries.filter(e => e.playerId).length > 1 ? "s" : ""}
+        </Button>
+      )}
     </div>
   );
-}
+});
