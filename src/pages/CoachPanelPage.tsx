@@ -407,36 +407,46 @@ export function POTMForm({
     );
   }
 
-  return (
-    <form onSubmit={handleSubmit} className="bg-card border border-border rounded-xl p-6 space-y-5">
+  const content = (
+    <>
       <div className="flex items-center gap-3 mb-2">
         <Star className="h-5 w-5 text-primary" />
         <h3 className="font-display text-lg font-bold text-foreground">Player of the Match</h3>
       </div>
 
-      <div>
-        <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Team *</label>
-        <select value={ageGroup} onChange={(e) => setAgeGroup(e.target.value)} className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground">
-          <option value="">Select team</option>
-          {ageGroups.map((g) => <option key={g} value={g}>{g}</option>)}
-        </select>
-      </div>
+      {embedded ? (
+        !ageGroup ? (
+          <p className="text-xs text-muted-foreground italic">Select a team and fixture above to add a Player of the Match.</p>
+        ) : null
+      ) : (
+        <>
+          <div>
+            <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Team *</label>
+            <select value={ageGroup} onChange={(e) => setAgeGroup(e.target.value)} className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground">
+              <option value="">Select team</option>
+              {ageGroups.map((g) => <option key={g} value={g}>{g}</option>)}
+            </select>
+          </div>
 
-      <FixtureSelect
-        ageGroup={ageGroup}
-        value={fixtureKey}
-        onChange={(opponent, date) => {
-          setFixtureKey(`${date}|${opponent}`);
-          setMatchDescription(opponent);
-          if (date.includes("-")) {
-            setMatchDate(date);
-          } else if (date.includes("/")) {
-            const [dd, mm, yy] = date.split("/");
-            const fullYear = yy.length === 4 ? yy : `20${yy}`;
-            setMatchDate(`${fullYear}-${mm}-${dd}`);
-          }
-        }}
-      />
+          <FixtureSelect
+            ageGroup={ageGroup}
+            value={fixtureKey}
+            onChange={(opponent, date) => {
+              setFixtureKey(`${date}|${opponent}`);
+              setMatchDescription(opponent);
+              if (date.includes("-")) {
+                setMatchDate(date);
+              } else if (date.includes("/")) {
+                const [dd, mm, yy] = date.split("/");
+                const fullYear = yy.length === 4 ? yy : `20${yy}`;
+                setMatchDate(`${fullYear}-${mm}-${dd}`);
+              }
+            }}
+          />
+        </>
+      )}
+
+
 
       {entries.map((entry, i) => (
         <div key={i} className="border border-border rounded-lg p-4 space-y-4 relative">
