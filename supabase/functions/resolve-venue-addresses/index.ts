@@ -59,18 +59,32 @@ async function searchPlace(query: string, lovableKey: string, mapsKey: string): 
     : address;
 }
 
+/** How much of the venue name appears in a candidate address (0-1). */
+function matchScore(venue: string, candidate: string): number {
+  const words = venue.toUpperCase().match(/[A-Z]{3,}/g) ?? [];
+  if (!words.length) return 0;
+  const hay = candidate.toUpperCase();
+  const hits = words.filter((w) => hay.includes(w.replace(/S$/, ""))).length;
+  return hits / words.length;
+}
+
 async function lookupAddress(venue: string): Promise<string | null> {
   const lovableKey = Deno.env.get("LOVABLE_API_KEY");
   const mapsKey = Deno.env.get("GOOGLE_MAPS_API_KEY");
   if (!lovableKey || !mapsKey) return null;
 
-  // Sports context first — it reliably picks the playing field / ground rather
-  // than a similarly named business elsewhere.
-  return (
-    (await searchPlace(`${venue} football ground`, lovableKey, mapsKey)) ??
-    (await searchPlace(`${venue}, United Kingdom`, lovableKey, mapsKey))
-  );
+  // Try a sports-context query and a plain one, then keep whichever result
+  // matches the venue name best — sports context finds grounds, the plain
+  // query wins for named schools and parks.
+  const [sporty, plain] = await Promise.all([
+    searchPlace(`${venue} football ground`, lovableKey, mapsKey),
+    searchPlace(`${venue}, United Kingdom`, lovableKey, mapsKey),
+  ]);
+  if (!sporty) return plain;
+  if (!plain) return sporty;
+  return matchScore(venue, plain) > matchScore(venue, sporty) ? plain : sporty;
 }
+
 
 
 Deno.serve(async (req) => {
