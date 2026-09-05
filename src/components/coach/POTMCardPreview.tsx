@@ -91,11 +91,15 @@ export function POTMCardPreview({
       const img = new Image();
       img.crossOrigin = "anonymous";
       img.onload = () => {
-        // Export at 3x the card size so uploads stay sharp on high-density screens
-        const EXPORT_SCALE = 3;
+        // Export at high resolution so uploads stay sharp full-screen.
+        // Scale up to 6x the card size, but never beyond the source photo's own detail.
+        const containScaleForExport = Math.min(CARD_W / img.naturalWidth, CARD_H / img.naturalHeight);
+        const sourceLimited = containScaleForExport > 0 ? Math.max(1, 1 / containScaleForExport) : 1;
+        const EXPORT_SCALE = Math.max(3, Math.min(6, Math.round(sourceLimited * zoom * 10) / 10));
         const canvas = document.createElement("canvas");
-        canvas.width = CARD_W * EXPORT_SCALE;
-        canvas.height = CARD_H * EXPORT_SCALE;
+        canvas.width = Math.round(CARD_W * EXPORT_SCALE);
+        canvas.height = Math.round(CARD_H * EXPORT_SCALE);
+
 
         const ctx = canvas.getContext("2d");
         if (!ctx) return;
