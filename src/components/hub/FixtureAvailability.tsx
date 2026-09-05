@@ -263,7 +263,7 @@ export function FixtureAvailability({ teamSlug }: Props) {
     mutationFn: async ({ venueName, fullAddress }: { venueName: string; fullAddress: string }) => {
       const { error } = await supabase
         .from("venue_address_overrides")
-        .upsert({ venue_name: venueName, full_address: fullAddress, updated_at: new Date().toISOString() }, { onConflict: "venue_name" });
+        .upsert({ venue_name: venueName, full_address: fullAddress, source: "manual", updated_at: new Date().toISOString() }, { onConflict: "venue_name" });
       if (error) throw error;
     },
     onSuccess: () => {
