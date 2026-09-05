@@ -16,8 +16,10 @@ interface Notification {
   type: string;
   is_read: boolean;
   link: string | null;
+  team_slug?: string | null;
   created_at: string;
 }
+
 
 const typeIcons: Record<string, any> = {
   info: Info,
