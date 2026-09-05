@@ -16,7 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Trophy, Star, ChevronDown, ChevronUp, Pencil, Loader2, Save } from "lucide-react";
+import { Trophy, Star, ChevronDown, ChevronUp, Pencil, Loader2, Save, Target, Sparkles, FileText } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -157,6 +157,16 @@ const ResultsPage = () => {
         p.award_date === report.match_date
     ) || [];
 
+  const parseStatEntries = (raw: string | null): { name: string; count: number | null }[] =>
+    (raw || "")
+      .split(/[,;]\s*/)
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .map((entry) => {
+        const m = entry.match(/^(.*?)\s*[x×]\s*(\d+)$/i);
+        return m ? { name: m[1].trim(), count: parseInt(m[2], 10) } : { name: entry, count: null };
+      });
+
   return (
     <div className="min-h-screen flex flex-col">
       <SEO title="Results & Match Reports | Peterborough Athletic FC" description="Latest match results, reports and Player of the Match awards from Peterborough Athletic FC teams U6–U16." keywords="Peterborough Athletic FC results, PAFC match reports, Peterborough junior football results, player of the match Peterborough" path="/results" />
@@ -209,12 +219,6 @@ const ResultsPage = () => {
                 const potmPlayers = findPOTM(report);
                 const isWin = report.home_score > report.away_score;
                 const isDraw = report.home_score === report.away_score;
-                const resultLabel = isWin ? "W" : isDraw ? "D" : "L";
-                const resultColor = isWin
-                  ? "bg-green-600"
-                  : isDraw
-                  ? "bg-yellow-600"
-                  : "bg-red-600";
 
                 const matchDate = new Date(report.match_date).toLocaleDateString("en-GB", {
                   day: "numeric",
