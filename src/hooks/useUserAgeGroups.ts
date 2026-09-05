@@ -50,7 +50,8 @@ export function useUserAgeGroups() {
         }
       }
 
-      return Array.from(ageGroups);
+      // Normalize legacy stored values (e.g. "U8") to the canonical Hub team names
+      return normalizeClubTeamNames(Array.from(ageGroups));
     },
     enabled: !!user,
   });
