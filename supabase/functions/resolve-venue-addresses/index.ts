@@ -10,7 +10,7 @@ const GATEWAY_URL = "https://connector-gateway.lovable.dev/google_maps";
 
 // Bias venue lookups to the club's catchment area (Peterborough / South Lincs / Cambs).
 const BIAS_CENTRE = { latitude: 52.5695, longitude: -0.2405 };
-const BIAS_RADIUS_M = 60000;
+const BIAS_RADIUS_M = 50000;
 
 const norm = (s: string) => s.replace(/\s+/g, " ").trim().toUpperCase();
 
