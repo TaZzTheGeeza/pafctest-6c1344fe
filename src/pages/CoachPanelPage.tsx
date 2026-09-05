@@ -913,15 +913,7 @@ export default function CoachPanelPage() {
             {/* Tabs */}
             <div className="flex gap-2 mb-6">
               <button
-                onClick={() => setActiveTab("potm")}
-                className={`flex-1 flex items-center justify-center gap-2 font-display text-sm tracking-wider py-3 rounded-lg border transition-all ${
-                  activeTab === "potm" ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:text-foreground hover:border-primary/50"
-                }`}
-              >
-                <Star className="h-4 w-4" />
-                POTM
-              </button>
-              <button
+
                 onClick={() => setActiveTab("report")}
                 className={`flex-1 flex items-center justify-center gap-2 font-display text-sm tracking-wider py-3 rounded-lg border transition-all ${
                   activeTab === "report" ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:text-foreground hover:border-primary/50"
