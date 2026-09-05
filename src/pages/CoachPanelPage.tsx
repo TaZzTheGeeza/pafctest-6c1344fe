@@ -946,10 +946,9 @@ export default function CoachPanelPage() {
               <NoAgeGroupsWarning />
             ) : (
               <>
-                {activeTab === "potm" ? (
-                  <POTMForm ageGroups={effectiveAgeGroups} />
-                ) : activeTab === "report" ? (
+                {activeTab === "report" ? (
                   <MatchReportForm ageGroups={effectiveAgeGroups} />
+
                 ) : activeTab === "stats" ? (
                   <PlayerStatsForm allowedAgeGroups={effectiveAgeGroups} />
                 ) : (
