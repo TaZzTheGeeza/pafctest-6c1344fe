@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useTeamRoster, getAgeGroup, type RosterPlayer } from "@/hooks/useTeamRoster";
 import type { FAFixture } from "@/hooks/useTeamFixtures";
 import { POTMTab, type POTMHandle } from "./POTMTab";
+import { notifyTeamMembers } from "@/lib/notifyTeamMembers";
 
 interface GoalEntry { playerId: string; count: number; }
 interface AssistEntry { playerId: string; count: number; }
@@ -170,6 +171,17 @@ export function MatchReportTab({
           match_date: matchDate,
         });
         if (reportError) throw reportError;
+
+        // Alert parents/team members that the result & report are live
+        notifyTeamMembers({
+          teamSlug,
+          notification: {
+            title: `Full Time: ${teamName} ${parseInt(homeScore) || 0}-${parseInt(awayScore) || 0} ${opponent}`,
+            message: "The match report is now live — tap to view the score, scorers and coach's report.",
+            type: "match_report",
+            link: "/results",
+          },
+        });
       }
 
       // Save per-match player stats (goals & assists)

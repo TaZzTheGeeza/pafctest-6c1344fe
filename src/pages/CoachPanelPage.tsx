@@ -14,6 +14,7 @@ import { useTeamFixtures, type FAFixture } from "@/hooks/useTeamFixtures";
 import { useTeamRoster } from "@/hooks/useTeamRoster";
 import { faTeamConfigs } from "@/lib/faFixtureConfig";
 import { uploadPotmPhoto } from "@/lib/potmPhoto";
+import { notifyTeamMembers } from "@/lib/notifyTeamMembers";
 import { DateInput } from "@/components/ui/date-input";
 import { POTMCardPreview } from "@/components/coach/POTMCardPreview";
 
@@ -649,6 +650,17 @@ export function MatchReportForm({ ageGroups }: { ageGroups: string[] }) {
         match_date: normalizedMatchDate,
       });
       if (reportError) throw reportError;
+
+      // Alert parents/team members that the result & report are live
+      notifyTeamMembers({
+        teamSlug: slug,
+        notification: {
+          title: `Full Time: Peterborough Athletic ${ageGroup} ${parseInt(homeScore) || 0}-${parseInt(awayScore) || 0} ${trimmedOpponent}`,
+          message: "The match report is now live — tap to view the score, scorers and coach's report.",
+          type: "match_report",
+          link: "/results",
+        },
+      });
 
       const playerMap = new Map<string, { goals: number; assists: number }>();
 
