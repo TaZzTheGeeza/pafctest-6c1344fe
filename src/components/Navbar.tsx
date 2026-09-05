@@ -13,8 +13,6 @@ const communityItems = [
   { label: "News", path: "/news", icon: Newspaper, desc: "Latest club updates" },
   { label: "Events & Calendar", path: "/events", icon: CalendarDays, desc: "Events & full schedule" },
   { label: "Gallery", path: "/gallery", icon: Image, desc: "Photos & media" },
-  
-  { label: "Results", path: "/results", icon: ClipboardList, desc: "Match reports & POTM" },
   { label: "Player of the Match", path: "/player-of-the-match", icon: Award, desc: "Weekly awards" },
 ];
 
