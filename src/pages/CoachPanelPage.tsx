@@ -14,6 +14,7 @@ import { useTeamFixtures, type FAFixture } from "@/hooks/useTeamFixtures";
 import { useTeamRoster } from "@/hooks/useTeamRoster";
 import { faTeamConfigs } from "@/lib/faFixtureConfig";
 import { uploadPotmPhoto } from "@/lib/potmPhoto";
+import { notifyTeamMembers } from "@/lib/notifyTeamMembers";
 import { DateInput } from "@/components/ui/date-input";
 import { POTMCardPreview } from "@/components/coach/POTMCardPreview";
 
