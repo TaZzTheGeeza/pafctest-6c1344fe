@@ -826,10 +826,20 @@ export function MatchReportForm({ ageGroups }: { ageGroups: string[] }) {
         <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Any additional notes about the match..." rows={3} className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground resize-none" />
       </div>
 
+      <POTMForm
+        ageGroups={ageGroups}
+        embedded
+        saveRef={potmRef}
+        lockedAgeGroup={ageGroup}
+        lockedMatchDate={matchDate}
+        lockedOpponent={opponent}
+      />
+
       <button type="submit" disabled={submitting} className="w-full bg-primary text-primary-foreground font-display tracking-wider py-3 rounded-lg hover:bg-gold-light transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
         {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
-        {submitting ? "Submitting..." : "Submit Match Report"}
+        {submitting ? "Submitting..." : "Submit Match Report & POTM"}
       </button>
+
     </form>
   );
 }
