@@ -3464,15 +3464,6 @@ export type Database = {
           status: string
         }[]
       }
-      delete_email: {
-        Args: { message_id: number; queue_name: string }
-        Returns: boolean
-      }
-      email_queue_dispatch: { Args: never; Returns: undefined }
-      enqueue_email: {
-        Args: { payload: Json; queue_name: string }
-        Returns: number
-      }
       expire_pending_raffle_tickets: { Args: never; Returns: number }
       get_approved_pitch_allocations: {
         Args: { _team_slug: string }
@@ -3521,28 +3512,11 @@ export type Database = {
         Returns: boolean
       }
       lookup_invite_team_slug: { Args: { _token: string }; Returns: string }
-      move_to_dlq: {
-        Args: {
-          dlq_name: string
-          message_id: number
-          payload: Json
-          source_queue: string
-        }
-        Returns: number
-      }
       pitch_numbers_overlap: {
         Args: { _a: number; _b: number }
         Returns: boolean
       }
       prune_tournament_audit_log: { Args: never; Returns: number }
-      read_email_batch: {
-        Args: { batch_size: number; queue_name: string; vt: number }
-        Returns: {
-          message: Json
-          msg_id: number
-          read_ct: number
-        }[]
-      }
       recalc_potm_awards: {
         Args: { _player_stat_id: string }
         Returns: undefined
