@@ -2,7 +2,9 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Bell, Check, CheckCheck, Info, AlertTriangle, Calendar, CreditCard, BellRing } from "lucide-react";
+import { Bell, Check, CheckCheck, Info, AlertTriangle, Calendar, CreditCard, BellRing, ChevronRight } from "lucide-react";
+import { resolveNotificationLink } from "@/lib/notificationLinks";
+
 import { format } from "date-fns";
 import { Switch } from "@/components/ui/switch";
 import { isPushSupported, isPushEnabled, registerPushSubscription } from "@/lib/pushNotifications";
@@ -16,8 +18,10 @@ interface Notification {
   type: string;
   is_read: boolean;
   link: string | null;
+  team_slug?: string | null;
   created_at: string;
 }
+
 
 const typeIcons: Record<string, any> = {
   info: Info,
@@ -187,8 +191,9 @@ export function NotificationCenter() {
         <div className="space-y-2">
           {filtered.map((n) => {
             const Icon = typeIcons[n.type] || Info;
+            const target = resolveNotificationLink(n);
             return (
-              <div key={n.id} onClick={() => { if (!n.is_read) markAsRead(n.id); if (n.link) navigate(n.link); }} className={`bg-card border rounded-xl p-4 transition-colors cursor-pointer ${n.is_read ? "border-border opacity-70" : "border-primary/30 hover:border-primary/50"}`}>
+              <div key={n.id} role="link" tabIndex={0} onClick={() => { if (!n.is_read) markAsRead(n.id); navigate(target); }} onKeyDown={(e) => { if (e.key === "Enter") { if (!n.is_read) markAsRead(n.id); navigate(target); } }} className={`bg-card border rounded-xl p-4 transition-colors cursor-pointer ${n.is_read ? "border-border opacity-70" : "border-primary/30 hover:border-primary/50"}`}>
                 <div className="flex items-start gap-3">
                   <div className={`flex items-center justify-center w-8 h-8 rounded-lg shrink-0 ${n.is_read ? "bg-secondary" : "bg-primary/20"}`}>
                     <Icon className={`h-4 w-4 ${n.is_read ? "text-muted-foreground" : "text-primary"}`} />
@@ -199,12 +204,16 @@ export function NotificationCenter() {
                       {!n.is_read && <span className="w-2 h-2 bg-primary rounded-full shrink-0" />}
                     </div>
                     <p className="text-xs text-muted-foreground mt-0.5">{n.message}</p>
-                    <p className="text-[10px] text-muted-foreground mt-1">{format(new Date(n.created_at), "dd MMM yyyy, HH:mm")}</p>
+                    <div className="flex items-center justify-between gap-2 mt-1">
+                      <p className="text-[10px] text-muted-foreground">{format(new Date(n.created_at), "dd MMM yyyy, HH:mm")}</p>
+                      <span className="text-[10px] text-primary font-display tracking-wider flex items-center gap-0.5 shrink-0">View <ChevronRight className="h-3 w-3" /></span>
+                    </div>
                   </div>
                 </div>
               </div>
             );
           })}
+
         </div>
       )}
     </div>

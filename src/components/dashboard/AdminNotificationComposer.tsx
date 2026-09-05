@@ -163,13 +163,16 @@ export function AdminNotificationComposer() {
 
       // 1. In-app notifications
       if (sendInApp) {
+        const broadcastTeam = audience === "team" && selectedTeams.length === 1 ? selectedTeams[0] : null;
         const notifications = targetUserIds.map((uid) => ({
           user_id: uid,
           title: trimmedTitle,
           message: trimmedMessage,
           type: "admin_broadcast",
-          team_slug: audience === "team" && selectedTeams.length === 1 ? selectedTeams[0] : null,
+          team_slug: broadcastTeam,
+          link: broadcastTeam ? `/hub?tab=notifications&team=${broadcastTeam}` : "/hub?tab=notifications",
         }));
+
         const { error } = await supabase.from("hub_notifications").insert(notifications);
         if (error) {
           console.error("In-app notification insert error:", error);
