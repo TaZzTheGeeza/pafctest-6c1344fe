@@ -23,11 +23,7 @@ interface PlaceResult {
   displayName?: { text?: string };
 }
 
-async function lookupAddress(venue: string): Promise<string | null> {
-  const lovableKey = Deno.env.get("LOVABLE_API_KEY");
-  const mapsKey = Deno.env.get("GOOGLE_MAPS_API_KEY");
-  if (!lovableKey || !mapsKey) return null;
-
+async function searchPlace(query: string, lovableKey: string, mapsKey: string): Promise<string | null> {
   const res = await fetch(`${GATEWAY_URL}/places/v1/places:searchText`, {
     method: "POST",
     headers: {
@@ -37,7 +33,7 @@ async function lookupAddress(venue: string): Promise<string | null> {
       "X-Goog-FieldMask": "places.formattedAddress,places.shortFormattedAddress,places.displayName",
     },
     body: JSON.stringify({
-      textQuery: `${venue}, United Kingdom`,
+      textQuery: query,
       regionCode: "GB",
       maxResultCount: 1,
       locationRestriction: { rectangle: SEARCH_AREA },
@@ -46,7 +42,7 @@ async function lookupAddress(venue: string): Promise<string | null> {
 
   if (!res.ok) {
     const body = await res.text();
-    console.error(`Places lookup failed for "${venue}" [${res.status}]: ${body.slice(0, 300)}`);
+    console.error(`Places lookup failed for "${query}" [${res.status}]: ${body.slice(0, 300)}`);
     return null;
   }
 
@@ -58,11 +54,24 @@ async function lookupAddress(venue: string): Promise<string | null> {
   const name = place?.displayName?.text?.trim();
   // Prefix the place name when the address doesn't already carry it — keeps
   // "Itter Park" style ground names attached to the postal address.
-  const full = name && !address.toUpperCase().includes(name.toUpperCase())
+  return name && !address.toUpperCase().includes(name.toUpperCase())
     ? `${name}, ${address}`
     : address;
-  return full;
 }
+
+async function lookupAddress(venue: string): Promise<string | null> {
+  const lovableKey = Deno.env.get("LOVABLE_API_KEY");
+  const mapsKey = Deno.env.get("GOOGLE_MAPS_API_KEY");
+  if (!lovableKey || !mapsKey) return null;
+
+  // Sports context first — it reliably picks the playing field / ground rather
+  // than a similarly named business elsewhere.
+  return (
+    (await searchPlace(`${venue} football ground`, lovableKey, mapsKey)) ??
+    (await searchPlace(`${venue}, United Kingdom`, lovableKey, mapsKey))
+  );
+}
+
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
