@@ -196,25 +196,11 @@ export function FixtureAvailability({ teamSlug }: Props) {
     enabled: !!user,
   });
 
-  const { data: venueOverrides = [] } = useQuery({
-    queryKey: ["venue-overrides"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("venue_address_overrides")
-        .select("venue_name, full_address");
-      if (error) throw error;
-      return data as { venue_name: string; full_address: string }[];
-    },
-    staleTime: 1000 * 60 * 60,
-  });
+  const { addressMap: venueOverrideMap, getDirectionsAddress } = useVenueAddresses([
+    ...(teamData?.fixtures ?? []).map((f) => f.venue),
+    ...customEvents.map((e) => e.venue),
+  ]);
 
-  const venueOverrideMap = Object.fromEntries(
-    venueOverrides.map((v) => [v.venue_name.toUpperCase(), v.full_address])
-  );
-
-  const getDirectionsAddress = (venue: string) => {
-    return venueOverrideMap[venue.toUpperCase()] || venue;
-  };
 
   // Published lineups for this team — visible to every team member
   const { data: publishedLineups = [] } = useQuery({
