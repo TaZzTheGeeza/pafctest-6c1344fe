@@ -7,7 +7,7 @@ import { TeamChat } from "@/components/hub/TeamChat";
 import { PaymentCenter } from "@/components/hub/PaymentCenter";
 import { NotificationCenter } from "@/components/hub/NotificationCenter";
 import { TeamMemberManager } from "@/components/hub/TeamMemberManager";
-import { MessageSquare, CreditCard, Bell, CalendarCheck, Users, Shield, ChevronDown, Car, TrendingUp, UserPlus, User, FileText, ChevronRight, ChevronLeft, Video, Sparkles, Award, ClipboardList, MapPin } from "lucide-react";
+import { MessageSquare, CreditCard, Bell, CalendarCheck, Users, Shield, ChevronDown, Car, TrendingUp, UserPlus, User, FileText, ChevronRight, ChevronLeft, Video, Sparkles, Award, ClipboardList, MapPin, BarChart3 } from "lucide-react";
 import { PlayerRosterManager } from "@/components/hub/PlayerRosterManager";
 import { AwardsVoting } from "@/components/hub/AwardsVoting";
 import { FixtureAvailability } from "@/components/hub/FixtureAvailability";
@@ -18,6 +18,8 @@ import { HubMeetingsEmbed } from "@/components/hub/HubMeetingsEmbed";
 import { TeamAccessRequest } from "@/components/hub/TeamAccessRequest";
 import PitchBookingsPanel from "@/components/hub/PitchBookingsPanel";
 import { HubMatchReports } from "@/components/hub/HubMatchReports";
+import { TeamStatsTable } from "@/components/TeamStatsTable";
+import { getAgeGroup } from "@/hooks/useTeamRoster";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -34,6 +36,7 @@ const tabs = [
   { id: "notifications", label: "Notifications", icon: Bell },
   { id: "availability", label: "Fixtures & Events", icon: CalendarCheck },
   { id: "reports", label: "Match Reports", icon: ClipboardList },
+  { id: "stats", label: "Stats", icon: BarChart3 },
   { id: "carpool", label: "Carpool", icon: Car },
   { id: "attendance", label: "Attendance", icon: TrendingUp },
   { id: "guardian", label: "Guardian", icon: UserPlus },
@@ -237,6 +240,7 @@ export default function HubPage() {
       {activeTab === "notifications" && <NotificationCenter />}
       {activeTab === "availability" && activeTeam && <FixtureAvailability teamSlug={activeTeam} />}
       {activeTab === "reports" && activeTeam && <HubMatchReports teamSlug={activeTeam} />}
+      {activeTab === "stats" && activeTeam && <TeamStatsTable ageGroup={getAgeGroup(activeTeam)} />}
       {activeTab === "carpool" && activeTeam && <CarpoolBoard teamSlug={activeTeam} />}
       {activeTab === "attendance" && activeTeam && (isCoach || isAdmin) && <AttendanceStats teamSlug={activeTeam} />}
       {activeTab === "guardian" && activeTeam && <GuardianManager teamSlug={activeTeam} teamName={activeTeamName || ""} />}
