@@ -323,6 +323,21 @@ export function MatchReportCard({
           )}
         </AnimatePresence>
       </Card>
+
+      <Dialog open={!!fullScreenPhoto} onOpenChange={(open) => !open && setFullScreenPhoto(null)}>
+        <DialogContent className="max-w-4xl p-1 bg-black/90 border-none">
+          <DialogTitle className="sr-only">
+            {fullScreenPhoto ? `Photo of ${fullScreenPhoto.name}` : "Player photo"}
+          </DialogTitle>
+          {fullScreenPhoto && (
+            <img
+              src={fullScreenPhoto.url}
+              alt={fullScreenPhoto.name}
+              className="w-full max-h-[80vh] object-contain rounded-lg"
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </motion.div>
   );
 }
