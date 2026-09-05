@@ -2,7 +2,9 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Bell, Check, CheckCheck, Info, AlertTriangle, Calendar, CreditCard, BellRing } from "lucide-react";
+import { Bell, Check, CheckCheck, Info, AlertTriangle, Calendar, CreditCard, BellRing, ChevronRight } from "lucide-react";
+import { resolveNotificationLink } from "@/lib/notificationLinks";
+
 import { format } from "date-fns";
 import { Switch } from "@/components/ui/switch";
 import { isPushSupported, isPushEnabled, registerPushSubscription } from "@/lib/pushNotifications";
