@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Save, Loader2, Plus, Trash2 } from "lucide-react";
+import { Save, Loader2, Plus, Trash2, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useTeamRoster, getAgeGroup, type RosterPlayer } from "@/hooks/useTeamRoster";
 import type { FAFixture } from "@/hooks/useTeamFixtures";
+import { POTMTab, type POTMHandle } from "./POTMTab";
 
 interface GoalEntry { playerId: string; count: number; }
 interface AssistEntry { playerId: string; count: number; }
@@ -22,6 +23,7 @@ export function MatchReportTab({
 }) {
   const { data: roster = [] } = useTeamRoster(teamSlug);
   const queryClient = useQueryClient();
+  const potmRef = useRef<POTMHandle>(null);
 
   const parseMatchDate = () => {
     const [d, m, y] = fixture.date.split("/");
@@ -210,9 +212,16 @@ export function MatchReportTab({
         console.warn("No player entries to save - playerMap is empty");
       }
 
+      // Save any Player of the Match awards entered in the same report
+      const potmCount = (await potmRef.current?.save()) ?? 0;
+
       queryClient.invalidateQueries({ queryKey: ["team-roster"] });
       queryClient.invalidateQueries({ queryKey: ["team-stats"] });
-      toast.success("Match report saved with player stats!");
+      toast.success(
+        potmCount > 0
+          ? `Match report saved with ${potmCount} Player of the Match award${potmCount > 1 ? "s" : ""}!`
+          : "Match report saved with player stats!",
+      );
     } catch (err: any) {
       toast.error(err.message || "Failed to save report");
     } finally {
@@ -317,6 +326,25 @@ export function MatchReportTab({
         </div>
       </div>
 
+      {/* Player of the Match — part of the same report */}
+      <div className="border-t border-border pt-4">
+        <div className="flex items-center gap-2 mb-1">
+          <Trophy className="h-4 w-4 text-primary" />
+          <Label className="text-xs">Player of the Match (optional)</Label>
+        </div>
+        <p className="text-[11px] text-muted-foreground mb-2">
+          Saved together with the match report below.
+        </p>
+        <POTMTab
+          ref={potmRef}
+          teamSlug={teamSlug}
+          teamName={teamName}
+          opponent={opponent}
+          fixture={fixture}
+          hideSaveButton
+        />
+      </div>
+
       <div>
         <Label className="text-xs">Match Notes</Label>
         <Textarea placeholder="How did the team play? Key moments..." value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} />
@@ -330,7 +358,7 @@ export function MatchReportTab({
 
       <Button onClick={handleSave} disabled={saving} className="w-full">
         {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
-        Save Match Report
+        Save Match Report & POTM
       </Button>
     </div>
   );

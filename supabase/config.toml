@@ -25,3 +25,5 @@ project_id = "scfiodwfvpjqgfmekqwg"
     verify_jwt = false
   [functions.admin-send-parking-reminder]
     verify_jwt = false
+  [functions.match-report-reminders]
+    verify_jwt = false

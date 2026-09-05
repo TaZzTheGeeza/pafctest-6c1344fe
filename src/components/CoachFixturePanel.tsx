@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ClipboardList, Trophy, Users, FileText, Presentation } from "lucide-react";
+import { ClipboardList, Users, FileText, Presentation } from "lucide-react";
 import type { FAFixture } from "@/hooks/useTeamFixtures";
 import { MatchReportTab } from "@/components/coach/MatchReportTab";
-import { POTMTab } from "@/components/coach/POTMTab";
 import { TeamSelectionTab } from "@/components/coach/TeamSelectionTab";
 import { TrainingNotesTab } from "@/components/coach/TrainingNotesTab";
 import { TacticsBoard } from "@/components/coach/TacticsBoard";
@@ -41,12 +40,9 @@ export function CoachFixturePanel({ open, onClose, fixture, teamSlug, teamName }
         </DialogHeader>
 
         <Tabs value={tab} onValueChange={setTab} className="mt-2">
-          <TabsList className="grid grid-cols-5 w-full">
+          <TabsList className="grid grid-cols-4 w-full">
             <TabsTrigger value="report" className="text-xs gap-1">
               <ClipboardList className="h-3 w-3" />Report
-            </TabsTrigger>
-            <TabsTrigger value="potm" className="text-xs gap-1">
-              <Trophy className="h-3 w-3" />POTM
             </TabsTrigger>
             <TabsTrigger value="selection" className="text-xs gap-1">
               <Users className="h-3 w-3" />Squad
@@ -61,10 +57,6 @@ export function CoachFixturePanel({ open, onClose, fixture, teamSlug, teamName }
 
           <TabsContent value="report" forceMount className="data-[state=inactive]:hidden">
             <MatchReportTab teamSlug={teamSlug} teamName={teamName} opponent={opponent} fixture={fixture} isHome={isHome} />
-          </TabsContent>
-
-          <TabsContent value="potm" forceMount className="data-[state=inactive]:hidden">
-            <POTMTab teamSlug={teamSlug} teamName={teamName} opponent={opponent} fixture={fixture} />
           </TabsContent>
 
           <TabsContent value="selection" forceMount className="data-[state=inactive]:hidden">
