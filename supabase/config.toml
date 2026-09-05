@@ -13,7 +13,7 @@ project_id = "scfiodwfvpjqgfmekqwg"
     verify_jwt = false
   [functions.process-email-queue]
     verify_jwt = true
-  [functions.send-transactional-email]
+  [functions.send-app-email]
     verify_jwt = false
   [functions.stripe-photo-webhook]
     verify_jwt = false
