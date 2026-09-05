@@ -230,13 +230,33 @@ interface POTMEntry {
   croppedBlob: Blob | null;
 }
 
-export function POTMForm({ ageGroups }: { ageGroups: string[] }) {
+export interface POTMSaveHandle { save: () => Promise<number> }
+
+export function POTMForm({
+  ageGroups,
+  embedded = false,
+  lockedAgeGroup,
+  lockedMatchDate,
+  lockedOpponent,
+  saveRef,
+}: {
+  ageGroups: string[];
+  embedded?: boolean;
+  lockedAgeGroup?: string;
+  lockedMatchDate?: string;
+  lockedOpponent?: string;
+  saveRef?: React.MutableRefObject<POTMSaveHandle | null>;
+}) {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [fixtureKey, setFixtureKey] = useState("");
-  const [ageGroup, setAgeGroup] = useState(ageGroups.length === 1 ? ageGroups[0] : "");
-  const [matchDescription, setMatchDescription] = useState("");
-  const [matchDate, setMatchDate] = useState("");
+  const [ownAgeGroup, setAgeGroup] = useState(ageGroups.length === 1 ? ageGroups[0] : "");
+  const [ownMatchDescription, setMatchDescription] = useState("");
+  const [ownMatchDate, setMatchDate] = useState("");
+  const ageGroup = embedded ? (lockedAgeGroup || "") : ownAgeGroup;
+  const matchDescription = embedded ? (lockedOpponent || "") : ownMatchDescription;
+  const matchDate = embedded ? (lockedMatchDate || "") : ownMatchDate;
+
   const [entries, setEntries] = useState<POTMEntry[]>([
     { player_name: "", shirt_number: "", reason: "", photoFile: null, photoPreview: null, croppedBlob: null },
   ]);
@@ -298,6 +318,51 @@ export function POTMForm({ ageGroups }: { ageGroups: string[] }) {
     if (fileInputRefs.current[i]) fileInputRefs.current[i]!.value = "";
   };
 
+  const savePotm = async (): Promise<number> => {
+    const validEntries = entries.filter((en) => en.player_name.trim());
+    if (validEntries.length === 0) return 0;
+    if (!ageGroup) throw new Error("Please select a team before saving POTM");
+
+    for (const entry of validEntries) {
+      let photo_url: string | null = null;
+      const fileToUpload = entry.croppedBlob
+        ? new File([entry.croppedBlob], "potm-cropped.png", { type: "image/png" })
+        : entry.photoFile;
+
+      if (fileToUpload) {
+        photo_url = await uploadPotmPhoto(fileToUpload, {
+          playerName: entry.player_name.trim(),
+          awardDate: matchDate || new Date().toISOString().split("T")[0],
+          teamSlug: AGE_GROUP_TO_SLUG[ageGroup],
+          onStatus: (status) => {
+            if (status === "processing") toast.info("Preparing photo...");
+            if (status === "processed") toast.success("Photo ready");
+            if (status === "fallback") toast.warning("Using original photo");
+          },
+        });
+      }
+
+      const { error } = await supabase.from("player_of_the_match").insert({
+        player_name: entry.player_name.trim(),
+        shirt_number: entry.shirt_number ? parseInt(entry.shirt_number) : null,
+        team_name: `Peterborough Athletic ${ageGroup}`,
+        age_group: ageGroup,
+        match_description: matchDescription.trim() || null,
+        reason: entry.reason.trim() || null,
+        photo_url,
+        award_date: matchDate || new Date().toISOString().split("T")[0],
+      });
+      if (error) throw error;
+    }
+
+    entries.forEach((en) => {
+      if (en.photoPreview) URL.revokeObjectURL(en.photoPreview);
+    });
+    return validEntries.length;
+  };
+
+  if (saveRef) saveRef.current = { save: savePotm };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const validEntries = entries.filter((en) => en.player_name.trim());
@@ -308,42 +373,8 @@ export function POTMForm({ ageGroups }: { ageGroups: string[] }) {
     setSubmitting(true);
 
     try {
-      for (const entry of validEntries) {
-        let photo_url: string | null = null;
-        const fileToUpload = entry.croppedBlob
-          ? new File([entry.croppedBlob], "potm-cropped.png", { type: "image/png" })
-          : entry.photoFile;
-
-        if (fileToUpload) {
-          photo_url = await uploadPotmPhoto(fileToUpload, {
-            playerName: entry.player_name.trim(),
-            awardDate: matchDate || new Date().toISOString().split("T")[0],
-            teamSlug: AGE_GROUP_TO_SLUG[ageGroup],
-            onStatus: (status) => {
-              if (status === "processing") toast.info("Preparing photo...");
-              if (status === "processed") toast.success("Photo ready");
-              if (status === "fallback") toast.warning("Using original photo");
-            },
-          });
-        }
-
-        const { error } = await supabase.from("player_of_the_match").insert({
-          player_name: entry.player_name.trim(),
-          shirt_number: entry.shirt_number ? parseInt(entry.shirt_number) : null,
-          team_name: `Peterborough Athletic ${ageGroup}`,
-          age_group: ageGroup,
-          match_description: matchDescription.trim() || null,
-          reason: entry.reason.trim() || null,
-          photo_url,
-          award_date: matchDate || new Date().toISOString().split("T")[0],
-        });
-        if (error) throw error;
-      }
-
-      entries.forEach((en) => {
-        if (en.photoPreview) URL.revokeObjectURL(en.photoPreview);
-      });
-      toast.success(`${validEntries.length} POTM award${validEntries.length > 1 ? "s" : ""} submitted!`);
+      const count = await savePotm();
+      toast.success(`${count} POTM award${count > 1 ? "s" : ""} submitted!`);
       setSubmitted(true);
     } catch (err: any) {
       toast.error(err.message || "Failed to submit POTM");
@@ -352,7 +383,8 @@ export function POTMForm({ ageGroups }: { ageGroups: string[] }) {
     }
   };
 
-  if (submitted) {
+  if (submitted && !embedded) {
+
     return (
       <div className="bg-card border border-border rounded-xl p-8 text-center">
         <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
@@ -375,36 +407,46 @@ export function POTMForm({ ageGroups }: { ageGroups: string[] }) {
     );
   }
 
-  return (
-    <form onSubmit={handleSubmit} className="bg-card border border-border rounded-xl p-6 space-y-5">
+  const content = (
+    <>
       <div className="flex items-center gap-3 mb-2">
         <Star className="h-5 w-5 text-primary" />
         <h3 className="font-display text-lg font-bold text-foreground">Player of the Match</h3>
       </div>
 
-      <div>
-        <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Team *</label>
-        <select value={ageGroup} onChange={(e) => setAgeGroup(e.target.value)} className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground">
-          <option value="">Select team</option>
-          {ageGroups.map((g) => <option key={g} value={g}>{g}</option>)}
-        </select>
-      </div>
+      {embedded ? (
+        !ageGroup ? (
+          <p className="text-xs text-muted-foreground italic">Select a team and fixture above to add a Player of the Match.</p>
+        ) : null
+      ) : (
+        <>
+          <div>
+            <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Team *</label>
+            <select value={ageGroup} onChange={(e) => setAgeGroup(e.target.value)} className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground">
+              <option value="">Select team</option>
+              {ageGroups.map((g) => <option key={g} value={g}>{g}</option>)}
+            </select>
+          </div>
 
-      <FixtureSelect
-        ageGroup={ageGroup}
-        value={fixtureKey}
-        onChange={(opponent, date) => {
-          setFixtureKey(`${date}|${opponent}`);
-          setMatchDescription(opponent);
-          if (date.includes("-")) {
-            setMatchDate(date);
-          } else if (date.includes("/")) {
-            const [dd, mm, yy] = date.split("/");
-            const fullYear = yy.length === 4 ? yy : `20${yy}`;
-            setMatchDate(`${fullYear}-${mm}-${dd}`);
-          }
-        }}
-      />
+          <FixtureSelect
+            ageGroup={ageGroup}
+            value={fixtureKey}
+            onChange={(opponent, date) => {
+              setFixtureKey(`${date}|${opponent}`);
+              setMatchDescription(opponent);
+              if (date.includes("-")) {
+                setMatchDate(date);
+              } else if (date.includes("/")) {
+                const [dd, mm, yy] = date.split("/");
+                const fullYear = yy.length === 4 ? yy : `20${yy}`;
+                setMatchDate(`${fullYear}-${mm}-${dd}`);
+              }
+            }}
+          />
+        </>
+      )}
+
+
 
       {entries.map((entry, i) => (
         <div key={i} className="border border-border rounded-lg p-4 space-y-4 relative">
@@ -512,13 +554,26 @@ export function POTMForm({ ageGroups }: { ageGroups: string[] }) {
         <Plus className="h-4 w-4" /> Add Another POTM
       </button>
 
-      <button type="submit" disabled={submitting} className="w-full bg-primary text-primary-foreground font-display tracking-wider py-3 rounded-lg hover:bg-gold-light transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
-        {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Star className="h-4 w-4" />}
-        {submitting ? "Submitting..." : `Submit POTM${entries.length > 1 ? ` (${entries.length})` : ""}`}
-      </button>
+      {!embedded && (
+        <button type="submit" disabled={submitting} className="w-full bg-primary text-primary-foreground font-display tracking-wider py-3 rounded-lg hover:bg-gold-light transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
+          {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Star className="h-4 w-4" />}
+          {submitting ? "Submitting..." : `Submit POTM${entries.length > 1 ? ` (${entries.length})` : ""}`}
+        </button>
+      )}
+    </>
+  );
+
+  if (embedded) {
+    return <div className="border border-border rounded-xl p-4 space-y-5">{content}</div>;
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="bg-card border border-border rounded-xl p-6 space-y-5">
+      {content}
     </form>
   );
 }
+
 interface GoalAssistEntry { playerId: string; count: number; }
 
 export function MatchReportForm({ ageGroups }: { ageGroups: string[] }) {
@@ -533,6 +588,8 @@ export function MatchReportForm({ ageGroups }: { ageGroups: string[] }) {
   const [goalEntries, setGoalEntries] = useState<GoalAssistEntry[]>([]);
   const [assistEntries, setAssistEntries] = useState<GoalAssistEntry[]>([]);
   const [notes, setNotes] = useState("");
+  const potmRef = useRef<POTMSaveHandle | null>(null);
+
 
   const slug = AGE_GROUP_TO_SLUG[ageGroup];
   const { data: roster = [] } = useTeamRoster(slug);
@@ -623,8 +680,20 @@ export function MatchReportForm({ ageGroups }: { ageGroups: string[] }) {
         if (statsError) throw statsError;
       }
 
-      toast.success("Match report submitted!");
+      let potmCount = 0;
+      try {
+        potmCount = (await potmRef.current?.save()) || 0;
+      } catch (potmErr: any) {
+        toast.error(`Match report saved, but POTM failed: ${potmErr?.message || "unknown error"}`);
+      }
+
+      toast.success(
+        potmCount > 0
+          ? `Match report + ${potmCount} POTM award${potmCount > 1 ? "s" : ""} submitted!`
+          : "Match report submitted!"
+      );
       setSubmitted(true);
+
     } catch (err: any) {
       toast.error(err?.message || "Failed to submit match report");
     } finally {
@@ -757,10 +826,20 @@ export function MatchReportForm({ ageGroups }: { ageGroups: string[] }) {
         <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Any additional notes about the match..." rows={3} className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground resize-none" />
       </div>
 
+      <POTMForm
+        ageGroups={ageGroups}
+        embedded
+        saveRef={potmRef}
+        lockedAgeGroup={ageGroup}
+        lockedMatchDate={matchDate}
+        lockedOpponent={opponent}
+      />
+
       <button type="submit" disabled={submitting} className="w-full bg-primary text-primary-foreground font-display tracking-wider py-3 rounded-lg hover:bg-gold-light transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
         {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
-        {submitting ? "Submitting..." : "Submit Match Report"}
+        {submitting ? "Submitting..." : "Submit Match Report & POTM"}
       </button>
+
     </form>
   );
 }
@@ -768,7 +847,7 @@ export function MatchReportForm({ ageGroups }: { ageGroups: string[] }) {
 export default function CoachPanelPage() {
   const { user, loading, isCoach, isAdmin, rolesLoading } = useAuth();
   const { assignedGroups, isLoading: ageGroupsLoading } = useUserAgeGroups();
-  const [activeTab, setActiveTab] = useState<"potm" | "report" | "stats" | "manage">("potm");
+  const [activeTab, setActiveTab] = useState<"report" | "stats" | "manage">("report");
 
   // Admins see all age groups, coaches see only their assigned ones
   const effectiveAgeGroups = isAdmin ? ALL_AGE_GROUPS : assignedGroups;
@@ -834,15 +913,7 @@ export default function CoachPanelPage() {
             {/* Tabs */}
             <div className="flex gap-2 mb-6">
               <button
-                onClick={() => setActiveTab("potm")}
-                className={`flex-1 flex items-center justify-center gap-2 font-display text-sm tracking-wider py-3 rounded-lg border transition-all ${
-                  activeTab === "potm" ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:text-foreground hover:border-primary/50"
-                }`}
-              >
-                <Star className="h-4 w-4" />
-                POTM
-              </button>
-              <button
+
                 onClick={() => setActiveTab("report")}
                 className={`flex-1 flex items-center justify-center gap-2 font-display text-sm tracking-wider py-3 rounded-lg border transition-all ${
                   activeTab === "report" ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:text-foreground hover:border-primary/50"
@@ -875,10 +946,9 @@ export default function CoachPanelPage() {
               <NoAgeGroupsWarning />
             ) : (
               <>
-                {activeTab === "potm" ? (
-                  <POTMForm ageGroups={effectiveAgeGroups} />
-                ) : activeTab === "report" ? (
+                {activeTab === "report" ? (
                   <MatchReportForm ageGroups={effectiveAgeGroups} />
+
                 ) : activeTab === "stats" ? (
                   <PlayerStatsForm allowedAgeGroups={effectiveAgeGroups} />
                 ) : (
