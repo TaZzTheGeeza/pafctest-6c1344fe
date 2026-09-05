@@ -91,12 +91,15 @@ export function POTMCardPreview({
       const img = new Image();
       img.crossOrigin = "anonymous";
       img.onload = () => {
+        // Export at 3x the card size so uploads stay sharp on high-density screens
+        const EXPORT_SCALE = 3;
         const canvas = document.createElement("canvas");
-        canvas.width = CARD_W;
-        canvas.height = CARD_H;
+        canvas.width = CARD_W * EXPORT_SCALE;
+        canvas.height = CARD_H * EXPORT_SCALE;
 
         const ctx = canvas.getContext("2d");
         if (!ctx) return;
+        ctx.scale(EXPORT_SCALE, EXPORT_SCALE);
 
         ctx.clearRect(0, 0, CARD_W, CARD_H);
         ctx.imageSmoothingEnabled = true;
