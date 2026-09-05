@@ -74,7 +74,7 @@ const ADMIN_LINKS = [
   { label: "Pitch Bookings Admin", path: "/pitch-bookings-admin", icon: MapPin, desc: "Approve or decline pitch booking requests" },
 ];
 
-type DashboardSection = "overview" | "users" | "requests" | "enquiries" | "messages" | "notifications" | "orders" | "potm" | "report" | "stats" | "manage" | "finances" | "permissions";
+type DashboardSection = "overview" | "users" | "requests" | "enquiries" | "messages" | "notifications" | "orders" | "report" | "stats" | "manage" | "finances" | "permissions";
 
 export default function DashboardPage() {
   const { user, isAdmin, isCoach, isTreasurer } = useAuth();
@@ -105,7 +105,7 @@ export default function DashboardPage() {
   // Handle section from URL params (e.g. /dashboard?section=messages)
   useEffect(() => {
     const section = searchParams.get("section");
-    if (section && ["overview", "users", "requests", "enquiries", "messages", "notifications", "orders", "potm", "report", "stats", "manage", "finances", "permissions"].includes(section)) {
+    if (section && ["overview", "users", "requests", "enquiries", "messages", "notifications", "orders", "report", "stats", "manage", "finances", "permissions"].includes(section)) {
       setActiveSection(section as DashboardSection);
     }
   }, [searchParams]);
