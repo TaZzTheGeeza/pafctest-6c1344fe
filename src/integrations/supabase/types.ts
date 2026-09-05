@@ -3283,6 +3283,7 @@ export type Database = {
           created_at: string
           full_address: string
           id: string
+          source: string
           updated_at: string
           venue_name: string
         }
@@ -3290,6 +3291,7 @@ export type Database = {
           created_at?: string
           full_address: string
           id?: string
+          source?: string
           updated_at?: string
           venue_name: string
         }
@@ -3297,6 +3299,7 @@ export type Database = {
           created_at?: string
           full_address?: string
           id?: string
+          source?: string
           updated_at?: string
           venue_name?: string
         }
