@@ -588,6 +588,8 @@ export function MatchReportForm({ ageGroups }: { ageGroups: string[] }) {
   const [goalEntries, setGoalEntries] = useState<GoalAssistEntry[]>([]);
   const [assistEntries, setAssistEntries] = useState<GoalAssistEntry[]>([]);
   const [notes, setNotes] = useState("");
+  const potmRef = useRef<POTMSaveHandle | null>(null);
+
 
   const slug = AGE_GROUP_TO_SLUG[ageGroup];
   const { data: roster = [] } = useTeamRoster(slug);
