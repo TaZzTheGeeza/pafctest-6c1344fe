@@ -1,6 +1,6 @@
 // One-off broadcast: registration reminder to unregistered parents.
 // Protected by CRON_SECRET (Supabase Edge Function secret). Iterates guardians
-// without registrations and invokes send-transactional-email for each unique email.
+// without registrations and invokes send-app-email for each unique email.
 import { createClient } from 'npm:@supabase/supabase-js@2'
 
 Deno.serve(async (req) => {
@@ -87,7 +87,7 @@ Up the Lions! 🦁`
     let sent = false
     while (attempt < 3 && !sent) {
       attempt++
-      const { error } = await supabase.functions.invoke('send-transactional-email', {
+      const { error } = await supabase.functions.invoke('send-app-email', {
         body: {
           templateName: 'admin-broadcast',
           recipientEmail: email,

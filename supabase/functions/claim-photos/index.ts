@@ -89,7 +89,7 @@ Deno.serve(async (req) => {
       const claimUrl = `${origin}/photos/claim?token=${claim.token}`;
       const refs = (photos || []).map((p: any) => p.photo_ref).filter(Boolean).join(", ");
       try {
-        const { error: emailErr } = await admin.functions.invoke("send-transactional-email", {
+        const { error: emailErr } = await admin.functions.invoke("send-app-email", {
           body: {
             templateName: "photo-claim-link",
             recipientEmail: claim.email,

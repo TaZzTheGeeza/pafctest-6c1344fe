@@ -462,7 +462,7 @@ const TournamentAdminPage = () => {
         let sent = 0;
         await Promise.all(Array.from(recipients.entries()).map(async ([email]) => {
           try {
-            await supabase.functions.invoke("send-transactional-email", {
+            await supabase.functions.invoke("send-app-email", {
               body: {
                 templateName: "admin-broadcast",
                 recipientEmail: email,
@@ -532,7 +532,7 @@ const TournamentAdminPage = () => {
     let sent = 0, failed = 0;
     await Promise.all(Array.from(recipients).map(async (email) => {
       try {
-        await supabase.functions.invoke("send-transactional-email", {
+        await supabase.functions.invoke("send-app-email", {
           body: {
             templateName: "admin-broadcast",
             recipientEmail: email,

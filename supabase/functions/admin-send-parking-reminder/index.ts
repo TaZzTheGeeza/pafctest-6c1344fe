@@ -1,5 +1,5 @@
 // One-shot helper to send the tournament parking reminder.
-// Requires an authenticated admin caller. Calls send-transactional-email with the service role key.
+// Requires an authenticated admin caller. Calls send-app-email with the service role key.
 import { createClient } from 'npm:@supabase/supabase-js@2'
 
 const corsHeaders = {
@@ -48,7 +48,7 @@ Deno.serve(async (req) => {
     })
   }
 
-  const res = await fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
+  const res = await fetch(`${supabaseUrl}/functions/v1/send-app-email`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

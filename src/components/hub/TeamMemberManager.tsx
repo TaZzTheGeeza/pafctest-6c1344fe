@@ -140,7 +140,7 @@ export function TeamMemberManager({ teamSlug, teamName }: { teamSlug: string; te
       // Send invite email
       const inviteToken = (inviteData as any).invite_token;
       const signupUrl = buildInviteUrl(inviteToken);
-      await supabase.functions.invoke("send-transactional-email", {
+      await supabase.functions.invoke("send-app-email", {
         body: {
           templateName: "team-invite",
           recipientEmail: email,

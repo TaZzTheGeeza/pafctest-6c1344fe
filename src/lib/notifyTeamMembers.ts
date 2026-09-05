@@ -63,7 +63,7 @@ export async function notifyTeamMembers({
         for (const profile of profiles) {
           if (!profile.email) continue;
           supabase.functions
-            .invoke("send-transactional-email", {
+            .invoke("send-app-email", {
               body: {
                 templateName: email.templateName,
                 recipientEmail: profile.email,

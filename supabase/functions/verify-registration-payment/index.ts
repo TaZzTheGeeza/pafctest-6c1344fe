@@ -67,7 +67,7 @@ serve(async (req) => {
     const sendConfirmationEmail = async () => {
       if (!reg.email || reg.confirmation_email_sent_at) return;
       try {
-        await supabase.functions.invoke("send-transactional-email", {
+        await supabase.functions.invoke("send-app-email", {
           body: {
             templateName: "registration-confirmation",
             recipientEmail: reg.email,

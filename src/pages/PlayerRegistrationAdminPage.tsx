@@ -491,7 +491,7 @@ export default function PlayerRegistrationAdminPage() {
         if (!player.parent_email) continue;
         const childList = players.map((p) => `• ${p.player_name} (${p.age_group})`).join("\n");
         supabase.functions
-          .invoke("send-transactional-email", {
+          .invoke("send-app-email", {
             body: {
               templateName: "admin-broadcast",
               recipientEmail: player.parent_email,
