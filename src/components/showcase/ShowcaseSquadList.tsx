@@ -38,7 +38,6 @@ export function ShowcaseSquadList({ teamName, players, coaches }: ShowcaseProps)
 
               {/* Stats */}
               <div className="hidden sm:flex items-center gap-4 text-xs text-muted-foreground">
-                <span title="Appearances">{player.appearances ?? 0} app</span>
                 <span title="Goals" className="font-medium text-foreground">{player.goals ?? 0}G</span>
                 <span title="Assists">{player.assists ?? 0}A</span>
                 {(player.potm ?? 0) > 0 && (

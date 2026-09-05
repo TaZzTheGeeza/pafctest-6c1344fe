@@ -3543,6 +3543,10 @@ export type Database = {
           read_ct: number
         }[]
       }
+      recalc_potm_awards: {
+        Args: { _player_stat_id: string }
+        Returns: undefined
+      }
       restore_tournament_record: { Args: { _log_id: string }; Returns: Json }
       shares_team_with: {
         Args: { _target: string; _viewer: string }

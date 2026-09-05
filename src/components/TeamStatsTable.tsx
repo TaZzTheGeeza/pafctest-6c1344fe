@@ -13,7 +13,7 @@ interface PlayerStat {
   potm_awards: number;
 }
 
-type SortKey = "goals" | "assists" | "appearances" | "potm_awards";
+type SortKey = "goals" | "assists" | "potm_awards";
 
 const CURRENT_SEASON = "2026/27";
 
@@ -70,7 +70,7 @@ export function TeamStatsTable({ ageGroup }: { ageGroup: string }) {
   const tabs: { key: SortKey; label: string; icon: typeof Trophy }[] = [
     { key: "goals", label: "Goals", icon: Target },
     { key: "assists", label: "Assists", icon: Users },
-    { key: "appearances", label: "Apps", icon: BarChart3 },
+    
     { key: "potm_awards", label: "POTM", icon: Award },
   ];
 
@@ -178,9 +178,6 @@ export function TeamStatsTable({ ageGroup }: { ageGroup: string }) {
                 <Users className="h-3 w-3 mx-auto" />
               </th>
               <th className="text-center px-2 py-3">
-                <BarChart3 className="h-3 w-3 mx-auto" />
-              </th>
-              <th className="text-center px-2 py-3">
                 <Award className="h-3 w-3 mx-auto" />
               </th>
             </tr>
@@ -204,9 +201,6 @@ export function TeamStatsTable({ ageGroup }: { ageGroup: string }) {
                 </td>
                 <td className={`text-center px-2 py-3 text-sm font-bold ${sortBy === "assists" ? "text-primary" : "text-foreground"}`}>
                   {player.assists}
-                </td>
-                <td className={`text-center px-2 py-3 text-sm font-bold ${sortBy === "appearances" ? "text-primary" : "text-foreground"}`}>
-                  {player.appearances}
                 </td>
                 <td className={`text-center px-2 py-3 text-sm font-bold ${sortBy === "potm_awards" ? "text-primary" : "text-foreground"}`}>
                   {player.potm_awards}

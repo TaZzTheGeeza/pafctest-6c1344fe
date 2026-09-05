@@ -55,7 +55,7 @@ export function ShowcaseCarousel({ teamName, players, coaches }: ShowcaseProps) 
                 {!isCoach && (
                   <div className="flex gap-6 mt-4">
                     {[
-                      { label: "Apps", value: (person as ShowcasePlayer).appearances ?? 0 },
+                      
                       { label: "Goals", value: (person as ShowcasePlayer).goals ?? 0 },
                       { label: "Assists", value: (person as ShowcasePlayer).assists ?? 0 },
                       { label: "POTM", value: (person as ShowcasePlayer).potm ?? 0 },

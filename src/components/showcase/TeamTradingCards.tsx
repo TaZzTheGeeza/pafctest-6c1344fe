@@ -76,11 +76,7 @@ export function TeamTradingCards({ ageGroup }: { ageGroup: string }) {
           <p className="text-[10px] text-primary font-display tracking-widest uppercase">{player.position}</p>
         )}
         {!isCoach && (
-          <div className="grid grid-cols-4 gap-1 mt-3 pt-3 border-t border-border">
-            <div className="text-center">
-              <p className="text-xs font-bold">{player.appearances}</p>
-              <p className="text-[8px] text-muted-foreground">APP</p>
-            </div>
+          <div className="grid grid-cols-3 gap-1 mt-3 pt-3 border-t border-border">
             <div className="text-center">
               <p className="text-xs font-bold">{player.goals}</p>
               <p className="text-[8px] text-muted-foreground">G</p>
