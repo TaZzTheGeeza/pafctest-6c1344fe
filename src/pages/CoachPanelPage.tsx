@@ -17,12 +17,11 @@ import { uploadPotmPhoto } from "@/lib/potmPhoto";
 import { notifyTeamMembers } from "@/lib/notifyTeamMembers";
 import { DateInput } from "@/components/ui/date-input";
 import { POTMCardPreview } from "@/components/coach/POTMCardPreview";
+import { CLUB_TEAMS } from "@/lib/teamConfig";
 
 
-const ALL_AGE_GROUPS = [
-  "U6", "U7", "U8", "U9 Black", "U9 Gold", "U10", "U11",
-  "U12 Black", "U12 Gold", "U12 White", "U13", "U14 Black", "U14 Gold", "U15",
-];
+// Same team list as the Hub (single source of truth)
+const ALL_AGE_GROUPS = CLUB_TEAMS.map((t) => t.name);
 
 const AGE_GROUP_TO_SLUG: Record<string, string> = {};
 faTeamConfigs.forEach((c) => { AGE_GROUP_TO_SLUG[c.team] = c.slug; });
