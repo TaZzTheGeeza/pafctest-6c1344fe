@@ -70,7 +70,7 @@ export function TeamStatsTable({ ageGroup }: { ageGroup: string }) {
   const tabs: { key: SortKey; label: string; icon: typeof Trophy }[] = [
     { key: "goals", label: "Goals", icon: Target },
     { key: "assists", label: "Assists", icon: Users },
-    { key: "appearances", label: "Apps", icon: BarChart3 },
+    
     { key: "potm_awards", label: "POTM", icon: Award },
   ];
 
