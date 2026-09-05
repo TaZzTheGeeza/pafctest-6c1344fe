@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trophy, Star, ChevronDown, ChevronUp, Pencil, Target, Sparkles, FileText } from "lucide-react";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Trophy, Star, ChevronDown, ChevronUp, Pencil, Target, Sparkles, FileText, ZoomIn } from "lucide-react";
 
 export interface MatchReport {
   id: string;
@@ -63,6 +65,7 @@ export function MatchReportCard({
   });
   const scorers = parseStatEntries(report.goal_scorers);
   const assists = parseStatEntries(report.assists);
+  const [fullScreenPhoto, setFullScreenPhoto] = useState<{ url: string; name: string } | null>(null);
 
   return (
     <motion.div
@@ -244,20 +247,32 @@ export function MatchReportCard({
                           }`}
                         >
                           {p.photo_url ? (
-                            <img
-                              src={p.photo_url}
-                              alt={p.player_name}
-                              className={`w-20 h-20 rounded-xl object-cover shrink-0 ring-2 ${
-                                i === 0 ? "ring-primary/40" : "ring-border"
-                              }`}
-                            />
-                          ) : (
-                            <div
-                              className={`w-20 h-20 rounded-xl shrink-0 ring-2 flex items-center justify-center bg-secondary ${
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setFullScreenPhoto({ url: p.photo_url!, name: p.player_name });
+                              }}
+                              className={`relative group shrink-0 rounded-xl overflow-hidden ring-2 ${
                                 i === 0 ? "ring-primary/40" : "ring-border"
                               }`}
                             >
-                              <span className="font-display text-2xl font-bold text-primary/50">
+                              <img
+                                src={p.photo_url}
+                                alt={p.player_name}
+                                className="w-40 h-40 object-cover"
+                              />
+                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                                <ZoomIn className="h-6 w-6 text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-md" />
+                              </div>
+                            </button>
+                          ) : (
+                            <div
+                              className={`w-40 h-40 rounded-xl shrink-0 ring-2 flex items-center justify-center bg-secondary ${
+                                i === 0 ? "ring-primary/40" : "ring-border"
+                              }`}
+                            >
+                              <span className="font-display text-4xl font-bold text-primary/50">
                                 {p.shirt_number || p.player_name.charAt(0)}
                               </span>
                             </div>
@@ -308,6 +323,21 @@ export function MatchReportCard({
           )}
         </AnimatePresence>
       </Card>
+
+      <Dialog open={!!fullScreenPhoto} onOpenChange={(open) => !open && setFullScreenPhoto(null)}>
+        <DialogContent className="max-w-4xl p-1 bg-black/90 border-none">
+          <DialogTitle className="sr-only">
+            {fullScreenPhoto ? `Photo of ${fullScreenPhoto.name}` : "Player photo"}
+          </DialogTitle>
+          {fullScreenPhoto && (
+            <img
+              src={fullScreenPhoto.url}
+              alt={fullScreenPhoto.name}
+              className="w-full max-h-[80vh] object-contain rounded-lg"
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </motion.div>
   );
 }
