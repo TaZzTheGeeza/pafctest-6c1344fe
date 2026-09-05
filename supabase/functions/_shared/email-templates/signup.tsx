@@ -9,14 +9,10 @@ import {
   Head,
   Heading,
   Html,
-  Hr,
-  Img,
   Link,
   Preview,
   Text,
 } from 'npm:@react-email/components@0.0.22'
-
-const LOGO_URL = 'https://scfiodwfvpjqgfmekqwg.supabase.co/storage/v1/object/public/email-assets/club-logo.jpg'
 
 interface SignupEmailProps {
   siteName: string
@@ -32,32 +28,30 @@ export const SignupEmail = ({
   confirmationUrl,
 }: SignupEmailProps) => (
   <Html lang="en" dir="ltr">
-    <Head />
-    <Preview>Welcome to Peterborough Athletic FC — confirm your email</Preview>
+    <Head>
+      <style>{darkModeCss}</style>
+    </Head>
+    <Preview>Confirm your email for {siteName}</Preview>
     <Body style={main}>
       <Container style={container}>
-        <div style={logoWrap}>
-          <Img src={LOGO_URL} alt="Peterborough Athletic FC Crest" width="64" height="64" style={logo} />
-        </div>
-        <Heading style={h1}>Welcome to Peterborough Athletic FC</Heading>
+        <Heading style={h1}>Confirm your email</Heading>
         <Text style={text}>
-          Thanks for joining{' '}
+          Thanks for signing up for{' '}
           <Link href={siteUrl} style={link}>
             <strong>{siteName}</strong>
           </Link>
-          ! We're excited to have you on board.
+          !
         </Text>
         <Text style={text}>
           Please confirm your email address (
           <Link href={`mailto:${recipient}`} style={link}>
             {recipient}
           </Link>
-          ) by clicking below:
+          ) by clicking the button below:
         </Text>
-        <Button style={button} href={confirmationUrl}>
-          Confirm Email
+        <Button className="dm-btn" style={button} href={confirmationUrl}>
+          Verify Email
         </Button>
-        <Hr style={hr} />
         <Text style={footer}>
           If you didn't create an account, you can safely ignore this email.
         </Text>
@@ -68,35 +62,36 @@ export const SignupEmail = ({
 
 export default SignupEmail
 
-const main = { backgroundColor: '#ffffff', fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif" }
-const container = { padding: '32px 28px', maxWidth: '480px', margin: '0 auto' }
-const logoWrap = { textAlign: 'center' as const, marginBottom: '24px' }
-const logo = { borderRadius: '50%', display: 'inline-block' as const }
+const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
+const container = { padding: '20px 25px' }
 const h1 = {
-  fontSize: '24px',
+  fontSize: '22px',
   fontWeight: 'bold' as const,
-  fontFamily: "'Oswald', 'Arial Black', sans-serif",
-  textTransform: 'uppercase' as const,
-  letterSpacing: '0.02em',
-  color: '#1a1a1a',
-  textAlign: 'center' as const,
-  margin: '0 0 24px',
+  color: '#000000',
+  margin: '0 0 20px',
 }
-const text = { fontSize: '14px', color: '#555555', lineHeight: '1.6', margin: '0 0 20px' }
-const link = { color: '#B8860B', textDecoration: 'underline' }
+const text = {
+  fontSize: '14px',
+  color: '#55575d',
+  lineHeight: '1.5',
+  margin: '0 0 25px',
+}
+const link = { color: 'inherit', textDecoration: 'underline' }
 const button = {
-  backgroundColor: '#B8860B',
+  backgroundColor: '#000000',
   color: '#ffffff',
   fontSize: '14px',
-  fontFamily: "'Oswald', 'Arial Black', sans-serif",
-  fontWeight: '600' as const,
-  textTransform: 'uppercase' as const,
-  letterSpacing: '0.05em',
+  border: '1px solid #000000',
   borderRadius: '8px',
-  padding: '14px 28px',
+  padding: '12px 20px',
   textDecoration: 'none',
-  display: 'block' as const,
-  textAlign: 'center' as const,
 }
-const hr = { borderColor: '#e5e5e5', margin: '28px 0' }
-const footer = { fontSize: '12px', color: '#999999', margin: '0', textAlign: 'center' as const }
+const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
+// Rendered as a text child, which React may HTML-escape: keep this CSS free of >, &, and quotes.
+const darkModeCss = `
+  @media (prefers-color-scheme: dark) {
+    .dm-btn { background-color: #ffffff !important; color: #000000 !important; }
+  }
+  [data-ogsc] .dm-btn { background-color: #ffffff !important; color: #000000 !important; }
+  [data-ogsb] .dm-btn { background-color: #ffffff !important; color: #000000 !important; }
+`
