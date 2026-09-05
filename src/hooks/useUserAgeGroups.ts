@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { faTeamConfigs } from "@/lib/faFixtureConfig";
+import { normalizeClubTeamNames } from "@/lib/teamConfig";
 
 // Build a reverse map: team_slug → age_group label (including common non-canonical variants)
 const SLUG_TO_AGE_GROUP: Record<string, string> = {};
