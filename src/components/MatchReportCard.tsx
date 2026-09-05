@@ -247,17 +247,17 @@ export function MatchReportCard({
                             <img
                               src={p.photo_url}
                               alt={p.player_name}
-                              className={`w-12 h-12 rounded-xl object-cover shrink-0 ring-2 ${
+                              className={`w-20 h-20 rounded-xl object-cover shrink-0 ring-2 ${
                                 i === 0 ? "ring-primary/40" : "ring-border"
                               }`}
                             />
                           ) : (
                             <div
-                              className={`w-12 h-12 rounded-xl shrink-0 ring-2 flex items-center justify-center bg-secondary ${
+                              className={`w-20 h-20 rounded-xl shrink-0 ring-2 flex items-center justify-center bg-secondary ${
                                 i === 0 ? "ring-primary/40" : "ring-border"
                               }`}
                             >
-                              <span className="font-display text-lg font-bold text-primary/50">
+                              <span className="font-display text-2xl font-bold text-primary/50">
                                 {p.shirt_number || p.player_name.charAt(0)}
                               </span>
                             </div>
