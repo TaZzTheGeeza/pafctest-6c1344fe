@@ -847,7 +847,7 @@ export function MatchReportForm({ ageGroups }: { ageGroups: string[] }) {
 export default function CoachPanelPage() {
   const { user, loading, isCoach, isAdmin, rolesLoading } = useAuth();
   const { assignedGroups, isLoading: ageGroupsLoading } = useUserAgeGroups();
-  const [activeTab, setActiveTab] = useState<"potm" | "report" | "stats" | "manage">("potm");
+  const [activeTab, setActiveTab] = useState<"report" | "stats" | "manage">("report");
 
   // Admins see all age groups, coaches see only their assigned ones
   const effectiveAgeGroups = isAdmin ? ALL_AGE_GROUPS : assignedGroups;
