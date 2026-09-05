@@ -650,6 +650,17 @@ export function MatchReportForm({ ageGroups }: { ageGroups: string[] }) {
       });
       if (reportError) throw reportError;
 
+      // Alert parents/team members that the result & report are live
+      notifyTeamMembers({
+        teamSlug: slug,
+        notification: {
+          title: `Full Time: Peterborough Athletic ${ageGroup} ${parseInt(homeScore) || 0}-${parseInt(awayScore) || 0} ${trimmedOpponent}`,
+          message: "The match report is now live — tap to view the score, scorers and coach's report.",
+          type: "match_report",
+          link: "/results",
+        },
+      });
+
       const playerMap = new Map<string, { goals: number; assists: number }>();
 
       for (const entry of goalEntries.filter((g) => g.playerId)) {
