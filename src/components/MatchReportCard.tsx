@@ -247,20 +247,32 @@ export function MatchReportCard({
                           }`}
                         >
                           {p.photo_url ? (
-                            <img
-                              src={p.photo_url}
-                              alt={p.player_name}
-                              className={`w-20 h-20 rounded-xl object-cover shrink-0 ring-2 ${
-                                i === 0 ? "ring-primary/40" : "ring-border"
-                              }`}
-                            />
-                          ) : (
-                            <div
-                              className={`w-20 h-20 rounded-xl shrink-0 ring-2 flex items-center justify-center bg-secondary ${
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setFullScreenPhoto({ url: p.photo_url!, name: p.player_name });
+                              }}
+                              className={`relative group shrink-0 rounded-xl overflow-hidden ring-2 ${
                                 i === 0 ? "ring-primary/40" : "ring-border"
                               }`}
                             >
-                              <span className="font-display text-2xl font-bold text-primary/50">
+                              <img
+                                src={p.photo_url}
+                                alt={p.player_name}
+                                className="w-40 h-40 object-cover"
+                              />
+                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                                <ZoomIn className="h-6 w-6 text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-md" />
+                              </div>
+                            </button>
+                          ) : (
+                            <div
+                              className={`w-40 h-40 rounded-xl shrink-0 ring-2 flex items-center justify-center bg-secondary ${
+                                i === 0 ? "ring-primary/40" : "ring-border"
+                              }`}
+                            >
+                              <span className="font-display text-4xl font-bold text-primary/50">
                                 {p.shirt_number || p.player_name.charAt(0)}
                               </span>
                             </div>
