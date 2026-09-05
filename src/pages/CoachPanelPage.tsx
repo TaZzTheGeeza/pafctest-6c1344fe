@@ -680,8 +680,20 @@ export function MatchReportForm({ ageGroups }: { ageGroups: string[] }) {
         if (statsError) throw statsError;
       }
 
-      toast.success("Match report submitted!");
+      let potmCount = 0;
+      try {
+        potmCount = (await potmRef.current?.save()) || 0;
+      } catch (potmErr: any) {
+        toast.error(`Match report saved, but POTM failed: ${potmErr?.message || "unknown error"}`);
+      }
+
+      toast.success(
+        potmCount > 0
+          ? `Match report + ${potmCount} POTM award${potmCount > 1 ? "s" : ""} submitted!`
+          : "Match report submitted!"
+      );
       setSubmitted(true);
+
     } catch (err: any) {
       toast.error(err?.message || "Failed to submit match report");
     } finally {
