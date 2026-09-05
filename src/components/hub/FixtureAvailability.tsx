@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { AddAvailabilityEventDialog } from "./AddAvailabilityEventDialog";
 import { ReminderPreviewDialog } from "./ReminderPreviewDialog";
 import { CoachFixturePanel } from "@/components/CoachFixturePanel";
+import { useVenueAddresses } from "@/hooks/useVenueAddresses";
 
 interface Props {
   teamSlug: string;
@@ -637,7 +638,7 @@ export function FixtureAvailability({ teamSlug }: Props) {
                       onClick={(e) => {
                         e.stopPropagation();
                         setEditingVenue(item.key);
-                        setVenueInput(venueOverrideMap[item.venue.toUpperCase()] || "");
+                        setVenueInput(venueOverrideMap[item.venue.replace(/\s+/g, " ").trim().toUpperCase()] || "");
                       }}
                       title="Edit venue address for directions"
                       className="text-[10px] text-muted-foreground hover:text-primary flex items-center gap-0.5 transition-colors"
