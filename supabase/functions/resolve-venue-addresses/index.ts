@@ -8,9 +8,12 @@ const corsHeaders = {
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/google_maps";
 
-// Bias venue lookups to the club's catchment area (Peterborough / South Lincs / Cambs).
-const BIAS_CENTRE = { latitude: 52.5695, longitude: -0.2405 };
-const BIAS_RADIUS_M = 50000;
+// Restrict venue lookups to the club's catchment area (Peterborough, South Lincs,
+// Cambs, Rutland, Northants) so similarly named places elsewhere are never matched.
+const SEARCH_AREA = {
+  low: { latitude: 52.0, longitude: -1.3 },
+  high: { latitude: 53.3, longitude: 0.6 },
+};
 
 const norm = (s: string) => s.replace(/\s+/g, " ").trim().toUpperCase();
 
@@ -37,7 +40,7 @@ async function lookupAddress(venue: string): Promise<string | null> {
       textQuery: `${venue}, United Kingdom`,
       regionCode: "GB",
       maxResultCount: 1,
-      locationBias: { circle: { center: BIAS_CENTRE, radius: BIAS_RADIUS_M } },
+      locationRestriction: { rectangle: SEARCH_AREA },
     }),
   });
 
