@@ -2,8 +2,6 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { Card, CardContent } from "@/components/ui/card";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,40 +14,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Trophy, Star, ChevronDown, ChevronUp, Pencil, Loader2, Save, Target, Sparkles, FileText } from "lucide-react";
+import { Loader2, Save } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { SEO } from "@/components/SEO";
-
-interface MatchReport {
-  id: string;
-  team_name: string;
-  age_group: string;
-  opponent: string;
-  home_score: number;
-  away_score: number;
-  match_date: string;
-  goal_scorers: string | null;
-  assists: string | null;
-  notes: string | null;
-}
+import { MatchReportCard, type MatchReport, type POTMAward } from "@/components/MatchReportCard";
 
 const CURRENT_SEASON = "2026/27";
-
-interface POTMAward {
-  id: string;
-  player_name: string;
-  team_name: string;
-  age_group: string;
-  award_date: string;
-  reason: string | null;
-  photo_url: string | null;
-  shirt_number: number | null;
-  match_description: string | null;
-}
 
 const ResultsPage = () => {
   const [expandedId, setExpandedId] = useState<string | null>(null);
