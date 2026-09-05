@@ -17,6 +17,7 @@ import { MatchDetailPanel } from "@/components/MatchDetailPanel";
 import clubLogo from "@/assets/club-logo.jpg";
 import { SEO } from "@/components/SEO";
 import { CLUB_TEAMS } from "@/lib/teamConfig";
+import { useVenueAddresses } from "@/hooks/useVenueAddresses";
 
 const leagueTableConfig: Record<string, { divisionSeason?: string; tableUrl?: string; faUrl: string; highlightTeams: string[] }> = {
   "u13s-black": {
@@ -133,6 +134,7 @@ function TeamDetail({ team }: { team: TeamData }) {
     }));
 
   // Determine next fixture from live data (future only) or fall back to hardcoded
+  const { getDirectionsAddress } = useVenueAddresses((liveData?.fixtures ?? []).map((f) => f.venue));
   const faFuture = liveData?.fixtures?.filter(isFutureFixture) || [];
   const futureFixtures = [...faFuture, ...customFixtures.filter(isFutureFixture)].sort((a, b) => {
     const da = parseFADate(a.date)?.getTime() ?? 0;
@@ -243,7 +245,7 @@ function TeamDetail({ team }: { team: TeamData }) {
                                       onClick={(e) => {
                                         e.preventDefault();
                                         e.stopPropagation();
-                                        window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(fix.venue)}`, '_system');
+                                        window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(getDirectionsAddress(fix.venue))}`, '_system');
                                       }}
                                       className="text-[10px] text-primary hover:text-primary/80 flex items-center gap-0.5 transition-colors"
                                     >
