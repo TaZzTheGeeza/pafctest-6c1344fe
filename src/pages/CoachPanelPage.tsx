@@ -230,13 +230,33 @@ interface POTMEntry {
   croppedBlob: Blob | null;
 }
 
-export function POTMForm({ ageGroups }: { ageGroups: string[] }) {
+export interface POTMSaveHandle { save: () => Promise<number> }
+
+export function POTMForm({
+  ageGroups,
+  embedded = false,
+  lockedAgeGroup,
+  lockedMatchDate,
+  lockedOpponent,
+  saveRef,
+}: {
+  ageGroups: string[];
+  embedded?: boolean;
+  lockedAgeGroup?: string;
+  lockedMatchDate?: string;
+  lockedOpponent?: string;
+  saveRef?: React.MutableRefObject<POTMSaveHandle | null>;
+}) {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [fixtureKey, setFixtureKey] = useState("");
-  const [ageGroup, setAgeGroup] = useState(ageGroups.length === 1 ? ageGroups[0] : "");
-  const [matchDescription, setMatchDescription] = useState("");
-  const [matchDate, setMatchDate] = useState("");
+  const [ownAgeGroup, setAgeGroup] = useState(ageGroups.length === 1 ? ageGroups[0] : "");
+  const [ownMatchDescription, setMatchDescription] = useState("");
+  const [ownMatchDate, setMatchDate] = useState("");
+  const ageGroup = embedded ? (lockedAgeGroup || "") : ownAgeGroup;
+  const matchDescription = embedded ? (lockedOpponent || "") : ownMatchDescription;
+  const matchDate = embedded ? (lockedMatchDate || "") : ownMatchDate;
+
   const [entries, setEntries] = useState<POTMEntry[]>([
     { player_name: "", shirt_number: "", reason: "", photoFile: null, photoPreview: null, croppedBlob: null },
   ]);
