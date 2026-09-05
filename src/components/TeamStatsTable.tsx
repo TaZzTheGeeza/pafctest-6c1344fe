@@ -13,7 +13,7 @@ interface PlayerStat {
   potm_awards: number;
 }
 
-type SortKey = "goals" | "assists" | "appearances" | "potm_awards";
+type SortKey = "goals" | "assists" | "potm_awards";
 
 const CURRENT_SEASON = "2026/27";
 
