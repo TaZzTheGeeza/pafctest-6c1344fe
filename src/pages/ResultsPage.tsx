@@ -128,17 +128,7 @@ const ResultsPage = () => {
       (p) =>
         p.age_group === report.age_group &&
         p.award_date === report.match_date
-    ) || [];
-
-  const parseStatEntries = (raw: string | null): { name: string; count: number | null }[] =>
-    (raw || "")
-      .split(/[,;]\s*/)
-      .map((s) => s.trim())
-      .filter(Boolean)
-      .map((entry) => {
-        const m = entry.match(/^(.*?)\s*[x×]\s*(\d+)$/i);
-        return m ? { name: m[1].trim(), count: parseInt(m[2], 10) } : { name: entry, count: null };
-      });
+      ) || [];
 
   return (
     <div className="min-h-screen flex flex-col">
