@@ -19,7 +19,7 @@ import { UserMessagesInbox } from "@/components/dashboard/UserMessagesInbox";
 import { PlayerStatsForm } from "@/components/PlayerStatsForm";
 import { useUserAgeGroups } from "@/hooks/useUserAgeGroups";
 import { faTeamConfigs } from "@/lib/faFixtureConfig";
-import { POTMForm } from "@/pages/CoachPanelPage";
+
 import { MatchReportForm } from "@/pages/CoachPanelPage";
 import { Upload, CheckCircle, AlertTriangle, UserPlus as UserPlusIcon, Award, Sparkles } from "lucide-react";
 import { TeamRequestsManager } from "@/components/dashboard/TeamRequestsManager";
@@ -74,7 +74,7 @@ const ADMIN_LINKS = [
   { label: "Pitch Bookings Admin", path: "/pitch-bookings-admin", icon: MapPin, desc: "Approve or decline pitch booking requests" },
 ];
 
-type DashboardSection = "overview" | "users" | "requests" | "enquiries" | "messages" | "notifications" | "orders" | "potm" | "report" | "stats" | "manage" | "finances" | "permissions";
+type DashboardSection = "overview" | "users" | "requests" | "enquiries" | "messages" | "notifications" | "orders" | "report" | "stats" | "manage" | "finances" | "permissions";
 
 export default function DashboardPage() {
   const { user, isAdmin, isCoach, isTreasurer } = useAuth();
@@ -105,7 +105,7 @@ export default function DashboardPage() {
   // Handle section from URL params (e.g. /dashboard?section=messages)
   useEffect(() => {
     const section = searchParams.get("section");
-    if (section && ["overview", "users", "requests", "enquiries", "messages", "notifications", "orders", "potm", "report", "stats", "manage", "finances", "permissions"].includes(section)) {
+    if (section && ["overview", "users", "requests", "enquiries", "messages", "notifications", "orders", "report", "stats", "manage", "finances", "permissions"].includes(section)) {
       setActiveSection(section as DashboardSection);
     }
   }, [searchParams]);
@@ -482,7 +482,6 @@ export default function DashboardPage() {
     { key: "users", label: "Users", icon: Users, adminOnly: true, group: "users" },
     { key: "requests", label: "Requests", icon: UserPlusIcon, adminOnly: true, group: "users" },
     { key: "permissions", label: "Permissions", icon: Shield, adminOnly: true, group: "users" },
-    { key: "potm", label: "POTM", icon: Star, coachOnly: true, group: "coach" },
     { key: "report", label: "Match Report", icon: FileText, coachOnly: true, group: "coach" },
     { key: "stats", label: "Player Stats", icon: BarChart3, coachOnly: true, group: "coach" },
     { key: "manage", label: "Manage", icon: Settings, coachOnly: true, group: "coach" },
@@ -974,11 +973,6 @@ export default function DashboardPage() {
           )}
 
           {/* Coach Tabs */}
-          {activeSection === "potm" && showCoachTools && (
-            <div className="max-w-2xl mx-auto">
-              <POTMForm ageGroups={effectiveAgeGroups} />
-            </div>
-          )}
           {activeSection === "report" && showCoachTools && (
             <div className="max-w-2xl mx-auto">
               <MatchReportForm ageGroups={effectiveAgeGroups} />
