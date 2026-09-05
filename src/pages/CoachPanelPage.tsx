@@ -554,13 +554,26 @@ export function POTMForm({
         <Plus className="h-4 w-4" /> Add Another POTM
       </button>
 
-      <button type="submit" disabled={submitting} className="w-full bg-primary text-primary-foreground font-display tracking-wider py-3 rounded-lg hover:bg-gold-light transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
-        {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Star className="h-4 w-4" />}
-        {submitting ? "Submitting..." : `Submit POTM${entries.length > 1 ? ` (${entries.length})` : ""}`}
-      </button>
+      {!embedded && (
+        <button type="submit" disabled={submitting} className="w-full bg-primary text-primary-foreground font-display tracking-wider py-3 rounded-lg hover:bg-gold-light transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
+          {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Star className="h-4 w-4" />}
+          {submitting ? "Submitting..." : `Submit POTM${entries.length > 1 ? ` (${entries.length})` : ""}`}
+        </button>
+      )}
+    </>
+  );
+
+  if (embedded) {
+    return <div className="border border-border rounded-xl p-4 space-y-5">{content}</div>;
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="bg-card border border-border rounded-xl p-6 space-y-5">
+      {content}
     </form>
   );
 }
+
 interface GoalAssistEntry { playerId: string; count: number; }
 
 export function MatchReportForm({ ageGroups }: { ageGroups: string[] }) {
