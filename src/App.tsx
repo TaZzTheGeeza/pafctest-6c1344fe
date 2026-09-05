@@ -52,7 +52,6 @@ import BulkDocumentUploadPage from "./pages/BulkDocumentUploadPage.tsx";
 import SafeguardingReportsPage from "./pages/SafeguardingReportsPage.tsx";
 import PafcTvPage from "./pages/PafcTvPage.tsx";
 import ResetPasswordPage from "./pages/ResetPasswordPage.tsx";
-import UnsubscribePage from "./pages/UnsubscribePage.tsx";
 import MeetingsPage from "./pages/MeetingsPage.tsx";
 import PlayerShowcaseDemo from "./pages/PlayerShowcaseDemo.tsx";
 import WildcatsPage from "./pages/WildcatsPage.tsx";
@@ -143,7 +142,6 @@ function AppContent() {
         <Route path="/my-profile" element={<RoleGate requiredRole="authenticated"><MyProfilePage /></RoleGate>} />
         <Route path="/auth" element={<AuthPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
-        <Route path="/unsubscribe" element={<UnsubscribePage />} />
         <Route path="/meetings" element={<RoleGate requiredRole="player"><MeetingsPage /></RoleGate>} />
         <Route path="/player-showcase-demo" element={<PlayerShowcaseDemo />} />
         <Route path="/wildcats" element={<WildcatsPage />} />
