@@ -23,6 +23,11 @@ interface PlaceResult {
   displayName?: { text?: string };
 }
 
+interface FixtureContext {
+  venue: string;
+  homeTeam: string;
+}
+
 async function searchPlace(query: string, lovableKey: string, mapsKey: string): Promise<string | null> {
   const res = await fetch(`${GATEWAY_URL}/places/v1/places:searchText`, {
     method: "POST",
@@ -68,18 +73,21 @@ function matchScore(venue: string, candidate: string): number {
   return hits / words.length;
 }
 
-async function lookupAddress(venue: string): Promise<string | null> {
+async function lookupAddress(venue: string, homeTeams: string[]): Promise<string | null> {
   const lovableKey = Deno.env.get("LOVABLE_API_KEY");
   const mapsKey = Deno.env.get("GOOGLE_MAPS_API_KEY");
   if (!lovableKey || !mapsKey) return null;
 
-  // Try a sports-context query and a plain one, then keep whichever result
-  // matches the venue name best — sports context finds grounds, the plain
-  // query wins for named schools and parks.
-  const [sporty, plain] = await Promise.all([
+  // FA venue names are often generic (for example "THE GLEBE FIELD"). Include
+  // the home club in the primary query so Google cannot choose a same-named
+  // ground in another town. The venue-only searches remain fallbacks.
+  const clubContext = homeTeams.slice(0, 2).join(" ");
+  const [contextual, sporty, plain] = await Promise.all([
+    clubContext ? searchPlace(`${clubContext} ${venue}`, lovableKey, mapsKey) : Promise.resolve(null),
     searchPlace(`${venue} football ground`, lovableKey, mapsKey),
     searchPlace(`${venue}, United Kingdom`, lovableKey, mapsKey),
   ]);
+  if (contextual) return contextual;
   if (!sporty) return plain;
   if (!plain) return sporty;
   return matchScore(venue, plain) > matchScore(venue, sporty) ? plain : sporty;
@@ -130,9 +138,24 @@ Deno.serve(async (req) => {
     }
 
     const admin = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
-    const { data: existing } = await admin
+    const [{ data: existing }, { data: fixtureCaches }] = await Promise.all([
+      admin
       .from("venue_address_overrides")
-      .select("venue_name, full_address");
+      .select("venue_name, full_address"),
+      admin.from("fa_fixture_cache").select("fixtures"),
+    ]);
+
+    const homeTeamsByVenue = new Map<string, Set<string>>();
+    for (const cache of fixtureCaches ?? []) {
+      const fixtures = Array.isArray(cache.fixtures) ? cache.fixtures as FixtureContext[] : [];
+      for (const fixture of fixtures) {
+        if (!fixture?.venue || !fixture?.homeTeam) continue;
+        const key = norm(fixture.venue);
+        const teams = homeTeamsByVenue.get(key) ?? new Set<string>();
+        teams.add(fixture.homeTeam.replace(/&amp;/g, "&"));
+        homeTeamsByVenue.set(key, teams);
+      }
+    }
 
     const known = new Map<string, string>();
     for (const row of existing ?? []) {
@@ -149,7 +172,8 @@ Deno.serve(async (req) => {
 
     for (const venue of missing) {
       try {
-        const resolved = await lookupAddress(venue);
+        const homeTeams = [...(homeTeamsByVenue.get(norm(venue)) ?? [])];
+        const resolved = await lookupAddress(venue, homeTeams);
         if (!resolved) continue;
         addresses[venue] = resolved;
         await admin.from("venue_address_overrides").upsert(
