@@ -240,6 +240,7 @@ export default function HubPage() {
       {activeTab === "notifications" && <NotificationCenter />}
       {activeTab === "availability" && activeTeam && <FixtureAvailability teamSlug={activeTeam} />}
       {activeTab === "reports" && activeTeam && <HubMatchReports teamSlug={activeTeam} />}
+      {activeTab === "stats" && activeTeam && <TeamStatsTable ageGroup={getAgeGroup(activeTeam)} />}
       {activeTab === "carpool" && activeTeam && <CarpoolBoard teamSlug={activeTeam} />}
       {activeTab === "attendance" && activeTeam && (isCoach || isAdmin) && <AttendanceStats teamSlug={activeTeam} />}
       {activeTab === "guardian" && activeTeam && <GuardianManager teamSlug={activeTeam} teamName={activeTeamName || ""} />}
