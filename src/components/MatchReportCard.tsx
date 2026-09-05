@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trophy, Star, ChevronDown, ChevronUp, Pencil, Target, Sparkles, FileText } from "lucide-react";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Trophy, Star, ChevronDown, ChevronUp, Pencil, Target, Sparkles, FileText, ZoomIn } from "lucide-react";
 
 export interface MatchReport {
   id: string;
