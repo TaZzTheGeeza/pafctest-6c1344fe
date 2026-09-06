@@ -3,64 +3,30 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Sparkles, Loader2, Mic, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { encodeWav } from "./AiReportAssistant";
 
-export interface AiReportContext {
+export interface AiPotmContext {
+  playerName: string;
   teamName: string;
   opponent: string;
-  isHome: boolean;
-  homeScore: number;
-  awayScore: number;
+  isHome?: boolean;
+  homeScore?: number;
+  awayScore?: number;
   matchDate?: string;
   scorers?: string;
   assists?: string;
-  potm?: string;
 }
 
-export function encodeWav(chunks: Float32Array[], sampleRate: number) {
-  const length = chunks.reduce((n, c) => n + c.length, 0);
-  const samples = new Float32Array(length);
-  let offset = 0;
-  for (const c of chunks) {
-    samples.set(c, offset);
-    offset += c.length;
-  }
-  const buffer = new ArrayBuffer(44 + samples.length * 2);
-  const view = new DataView(buffer);
-  const writeStr = (pos: number, s: string) => {
-    for (let i = 0; i < s.length; i++) view.setUint8(pos + i, s.charCodeAt(i));
-  };
-  writeStr(0, "RIFF");
-  view.setUint32(4, 36 + samples.length * 2, true);
-  writeStr(8, "WAVE");
-  writeStr(12, "fmt ");
-  view.setUint32(16, 16, true);
-  view.setUint16(20, 1, true);
-  view.setUint16(22, 1, true);
-  view.setUint32(24, sampleRate, true);
-  view.setUint32(28, sampleRate * 2, true);
-  view.setUint16(32, 2, true);
-  view.setUint16(34, 16, true);
-  writeStr(36, "data");
-  view.setUint32(40, samples.length * 2, true);
-  let pos = 44;
-  for (let i = 0; i < samples.length; i++) {
-    const s = Math.max(-1, Math.min(1, samples[i]));
-    view.setInt16(pos, s < 0 ? s * 0x8000 : s * 0x7fff, true);
-    pos += 2;
-  }
-  return new Blob([buffer], { type: "audio/wav" });
-}
-
-export function AiReportAssistant({
+export function AiPotmAssistant({
   context,
-  notes,
-  onNotesChange,
+  reason,
+  onReasonChange,
 }: {
-  context: AiReportContext;
-  notes: string;
-  onNotesChange: (text: string) => void;
+  context: AiPotmContext;
+  reason: string;
+  onReasonChange: (text: string) => void;
 }) {
-  const [busy, setBusy] = useState<null | "short" | "standard" | "upbeat">(null);
+  const [busy, setBusy] = useState<null | "standard" | "short" | "upbeat">(null);
   const [recording, setRecording] = useState(false);
   const [transcribing, setTranscribing] = useState(false);
   const recRef = useRef<{
@@ -71,24 +37,24 @@ export function AiReportAssistant({
     chunks: Float32Array[];
   } | null>(null);
 
-  const generate = async (tone: "short" | "standard" | "upbeat") => {
-    if (!context.opponent) {
-      toast.error("Pick the fixture/opponent first.");
+  const generate = async (tone: "standard" | "short" | "upbeat") => {
+    if (!context.playerName) {
+      toast.error("Choose the player first.");
       return;
     }
     setBusy(tone);
     try {
       const { data, error } = await supabase.functions.invoke("generate-match-report", {
-        body: { ...context, notes, tone },
+        body: { ...context, notes: reason, tone, mode: "potm" },
       });
       if (error) throw new Error((data as any)?.error || error.message);
       if ((data as any)?.error) throw new Error((data as any).error);
-      const report = (data as any)?.report as string;
-      if (!report) throw new Error("No report returned");
-      onNotesChange(report);
-      toast.success("Draft written — check it over and edit anything you like.");
+      const text = (data as any)?.report as string;
+      if (!text) throw new Error("No write-up returned");
+      onReasonChange(text);
+      toast.success("Write-up drafted — edit anything you like.");
     } catch (e: any) {
-      toast.error(e?.message || "Could not write the report");
+      toast.error(e?.message || "Could not write the award reason");
     } finally {
       setBusy(null);
     }
@@ -134,8 +100,8 @@ export function AiReportAssistant({
       if ((data as any)?.error) throw new Error((data as any).error);
       const text = ((data as any)?.text || "").trim();
       if (!text) throw new Error("Nothing was picked up in that recording");
-      onNotesChange(notes ? `${notes.trim()} ${text}` : text);
-      toast.success("Voice note added — tap Write report to turn it into a write-up.");
+      onReasonChange(reason ? `${reason.trim()} ${text}` : text);
+      toast.success("Voice note added — tap Write reason to polish it.");
     } catch (e: any) {
       toast.error(e?.message || "Could not read that recording");
     } finally {
@@ -146,24 +112,20 @@ export function AiReportAssistant({
   const disabled = busy !== null || transcribing || recording;
 
   return (
-    <div className="rounded-lg border border-border bg-secondary/40 p-3 space-y-2">
+    <div className="rounded-lg border border-border bg-secondary/40 p-2 space-y-2 mt-2">
       <div className="flex items-center gap-2">
-        <Sparkles className="h-4 w-4 text-primary" />
-        <p className="text-xs font-display tracking-wider">AI Write-Up Helper</p>
+        <Sparkles className="h-3.5 w-3.5 text-primary" />
+        <p className="text-[11px] font-display tracking-wider">AI Write-Up Helper</p>
       </div>
-      <p className="text-[11px] text-muted-foreground">
-        Uses the score, scorers, assists and Player of the Match above. Add rough notes (typed or spoken)
-        for more detail — you can edit the result before saving.
-      </p>
       <div className="flex flex-wrap gap-2">
-        <Button type="button" size="sm" onClick={() => generate("standard")} disabled={disabled} className="h-8 text-xs gap-1">
+        <Button type="button" size="sm" onClick={() => generate("standard")} disabled={disabled} className="h-7 text-xs gap-1">
           {busy === "standard" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
-          Write report
+          Write reason
         </Button>
-        <Button type="button" size="sm" variant="outline" onClick={() => generate("short")} disabled={disabled} className="h-8 text-xs">
-          {busy === "short" ? <Loader2 className="h-3 w-3 animate-spin" /> : "Short summary"}
+        <Button type="button" size="sm" variant="outline" onClick={() => generate("short")} disabled={disabled} className="h-7 text-xs">
+          {busy === "short" ? <Loader2 className="h-3 w-3 animate-spin" /> : "One line"}
         </Button>
-        <Button type="button" size="sm" variant="outline" onClick={() => generate("upbeat")} disabled={disabled} className="h-8 text-xs">
+        <Button type="button" size="sm" variant="outline" onClick={() => generate("upbeat")} disabled={disabled} className="h-7 text-xs">
           {busy === "upbeat" ? <Loader2 className="h-3 w-3 animate-spin" /> : "Upbeat tone"}
         </Button>
         <Button
@@ -172,7 +134,7 @@ export function AiReportAssistant({
           variant={recording ? "destructive" : "outline"}
           onClick={recording ? stopRecording : startRecording}
           disabled={busy !== null || transcribing}
-          className="h-8 text-xs gap-1"
+          className="h-7 text-xs gap-1"
         >
           {transcribing ? (
             <><Loader2 className="h-3 w-3 animate-spin" />Listening…</>

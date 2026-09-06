@@ -11,6 +11,7 @@ import { useTeamRoster, getAgeGroup } from "@/hooks/useTeamRoster";
 import type { FAFixture } from "@/hooks/useTeamFixtures";
 import { uploadPotmPhoto } from "@/lib/potmPhoto";
 import { POTMCardPreview } from "./POTMCardPreview";
+import { AiPotmAssistant } from "./AiPotmAssistant";
 
 interface POTMEntry {
   playerId: string;
@@ -201,6 +202,19 @@ export const POTMTab = forwardRef<POTMHandle, POTMTabProps>(function POTMTab({
                 onChange={(e) => updateEntry(i, "reason", e.target.value)}
                 rows={2}
                 className="text-sm"
+              />
+              <AiPotmAssistant
+                context={{
+                  playerName: player?.first_name || "",
+                  teamName,
+                  opponent,
+                  isHome: !!fixture?.homeTeam?.includes("Peterborough Athletic"),
+                  homeScore: fixture?.homeScore,
+                  awayScore: fixture?.awayScore,
+                  matchDate: fixture?.date,
+                }}
+                reason={entry.reason}
+                onReasonChange={(text) => updateEntry(i, "reason", text)}
               />
             </div>
 
