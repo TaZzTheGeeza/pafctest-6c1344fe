@@ -55,9 +55,25 @@ export function OrdersTab() {
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
+  const [syncWarning, setSyncWarning] = useState<string | null>(null);
+
   const fetchOrders = useCallback(async () => {
     setLoading(true);
     try {
+      // Pull the latest orders straight from Shopify first so the dashboard
+      // is correct even if the store webhook never reached us.
+      try {
+        const { data: sync, error: syncErr } = await supabase.functions.invoke("shopify-orders", {
+          body: {},
+        });
+        if (syncErr) throw syncErr;
+        if ((sync as any)?.error) throw new Error((sync as any).error);
+        setSyncWarning(null);
+      } catch (e: any) {
+        console.error("Shopify sync failed:", e);
+        setSyncWarning("Could not reach Shopify just now — showing the last saved orders.");
+      }
+
       let query = supabase
         .from("shopify_orders" as any)
         .select("*")
@@ -115,6 +131,13 @@ export function OrdersTab() {
           </div>
         ))}
       </div>
+
+      {syncWarning && (
+        <div className="flex items-start gap-2 rounded-lg bg-amber-500/10 border border-amber-500/30 p-3">
+          <AlertTriangle className="h-4 w-4 text-amber-400 shrink-0 mt-0.5" />
+          <p className="text-xs text-amber-200">{syncWarning}</p>
+        </div>
+      )}
 
       {/* Filters + refresh */}
       <div className="flex items-center gap-3">
