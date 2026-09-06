@@ -203,8 +203,31 @@ Deno.serve(async (req) => {
       // Never overwrite good cached data with an empty array from a failed/skipped fetch.
       const cachedFixtures = (cached?.fixtures as Fixture[] | null) ?? [];
       const cachedResults = (cached?.results as Fixture[] | null) ?? [];
-      const nextFixtures = fixturesFailed && fixtures.length === 0 ? cachedFixtures : fixtures;
+      let nextFixtures = fixturesFailed && fixtures.length === 0 ? cachedFixtures : fixtures;
       const nextResults = resultsFailed && results.length === 0 ? cachedResults : results;
+
+      // FA removes fixtures from the fixtures page once played, and the result can
+      // take days to be published. Keep recently played fixtures (last 60 days) that
+      // we previously cached so coaches can still pick them for match reports.
+      const parseFaDate = (d: string) => {
+        const [dd, mm, yy] = (d || '').split('/');
+        if (!dd || !mm || !yy) return null;
+        const year = yy.length === 4 ? Number(yy) : 2000 + Number(yy);
+        const dt = new Date(Date.UTC(year, Number(mm) - 1, Number(dd)));
+        return isNaN(dt.getTime()) ? null : dt;
+      };
+      const keyOf = (f: Fixture) => `${f.date}|${f.homeTeam}|${f.awayTeam}`;
+      const cutoff = Date.now() - 1000 * 60 * 60 * 24 * 60;
+      const known = new Set([...nextFixtures, ...nextResults].map(keyOf));
+      const carriedOver = cachedFixtures.filter((f) => {
+        if (known.has(keyOf(f))) return false;
+        const dt = parseFaDate(f.date);
+        return !!dt && dt.getTime() <= Date.now() && dt.getTime() >= cutoff;
+      });
+      if (carriedOver.length > 0) {
+        nextFixtures = [...carriedOver, ...nextFixtures];
+      }
+
 
       // Only stamp the cache as fresh when nothing failed, or when we actually
       // fetched new data — otherwise stale data would look fresh for 6 hours.
