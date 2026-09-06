@@ -10,6 +10,7 @@ import { AddAvailabilityEventDialog } from "./AddAvailabilityEventDialog";
 import { ReminderPreviewDialog } from "./ReminderPreviewDialog";
 import { CoachFixturePanel } from "@/components/CoachFixturePanel";
 import { useVenueAddresses } from "@/hooks/useVenueAddresses";
+import { CLUB_TEAMS } from "@/lib/teamConfig";
 
 interface Props {
   teamSlug: string;
@@ -890,7 +891,7 @@ export function FixtureAvailability({ teamSlug }: Props) {
           onClose={() => setCoachFixture(null)}
           fixture={coachFixture}
           teamSlug={teamSlug}
-          teamName={teamSlug.toUpperCase().replace(/-/g, " ")}
+          teamName={`Peterborough Athletic ${CLUB_TEAMS.find((t) => t.slug === teamSlug)?.name || teamSlug.toUpperCase().replace(/-/g, " ")}`}
         />
       )}
     </div>
