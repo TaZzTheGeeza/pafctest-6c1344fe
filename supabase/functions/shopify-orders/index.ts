@@ -64,7 +64,7 @@ Deno.serve(async (req) => {
       });
     }
     const tokenSource = Deno.env.get("SHOPIFY_ADMIN_API_TOKEN") ? "SHOPIFY_ADMIN_API_TOKEN" : "fallback";
-    console.log("Using Shopify token source:", tokenSource, "prefix:", SHOPIFY_ACCESS_TOKEN.slice(0, 7));
+    console.log("Using Shopify token source:", tokenSource);
 
     const url = new URL(req.url);
     const status = url.searchParams.get("status") || "any";
