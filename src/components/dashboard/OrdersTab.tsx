@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
   ShoppingBag, Loader2, RefreshCw, Package,
-  ChevronDown, ChevronUp, Clock, CheckCircle, XCircle, AlertTriangle,
+  ChevronDown, ChevronUp, Clock, CheckCircle, XCircle, AlertTriangle, Pencil,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -14,7 +14,15 @@ interface LineItem {
   variant_title: string | null;
   quantity: number;
   price: string;
+  properties?: Array<{ name: string; value: string }>;
 }
+
+interface LineItemOverride {
+  size?: string;
+  initials?: string;
+  note?: string;
+}
+
 
 interface ShopifyOrder {
   id: string;
@@ -30,9 +38,30 @@ interface ShopifyOrder {
   total_price: number;
   currency: string;
   line_items: LineItem[];
+  admin_overrides?: Record<string, LineItemOverride> | null;
   cancelled_at: string | null;
   shopify_created_at: string;
 }
+
+const SIZE_SUGGESTIONS = [
+  "5-6 Years", "7-8 Years", "9-10 Years", "11-12 Years", "13-14 Years",
+  "XS", "S", "M", "L", "XL", "2XL", "3XL",
+];
+
+/** Pull any personalisation (initials etc.) a customer added at checkout. */
+function itemProperties(item: LineItem) {
+  return (item.properties || []).filter(
+    (p) => p && p.value && !String(p.name).startsWith("_")
+  );
+}
+
+function initialsOf(item: LineItem) {
+  const prop = itemProperties(item).find((p) =>
+    /initial|name|personal/i.test(p.name)
+  );
+  return prop?.value || null;
+}
+
 
 const STATUS_STYLES: Record<string, { bg: string; text: string; icon: any }> = {
   paid: { bg: "bg-emerald-500/15", text: "text-emerald-400", icon: CheckCircle },
@@ -56,6 +85,41 @@ export function OrdersTab() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
   const [syncWarning, setSyncWarning] = useState<string | null>(null);
+  const [editingKey, setEditingKey] = useState<string | null>(null);
+  const [draft, setDraft] = useState<LineItemOverride>({});
+  const [saving, setSaving] = useState(false);
+
+  const saveOverride = async (order: ShopifyOrder, item: LineItem) => {
+    setSaving(true);
+    try {
+      const next: Record<string, LineItemOverride> = { ...(order.admin_overrides || {}) };
+      const clean: LineItemOverride = {
+        size: (draft.size || "").trim() || undefined,
+        initials: (draft.initials || "").trim().toUpperCase() || undefined,
+        note: (draft.note || "").trim() || undefined,
+      };
+      if (!clean.size && !clean.initials && !clean.note) delete next[String(item.id)];
+      else next[String(item.id)] = clean;
+
+      const { error } = await supabase
+        .from("shopify_orders" as any)
+        .update({ admin_overrides: next } as any)
+        .eq("id", order.id);
+      if (error) throw error;
+
+      setOrders((prev) =>
+        prev.map((o) => (o.id === order.id ? { ...o, admin_overrides: next } : o))
+      );
+      setEditingKey(null);
+      toast.success("Order details updated");
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e.message || "Could not save changes");
+    } finally {
+      setSaving(false);
+    }
+  };
+
 
   const fetchOrders = useCallback(async () => {
     setLoading(true);
@@ -114,6 +178,12 @@ export function OrdersTab() {
 
   return (
     <div className="space-y-6">
+      <datalist id="pafc-size-options">
+        {SIZE_SUGGESTIONS.map((s) => (
+          <option key={s} value={s} />
+        ))}
+      </datalist>
+
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
@@ -233,26 +303,121 @@ export function OrdersTab() {
                           <thead>
                             <tr className="border-b border-border bg-secondary/30">
                               <th className="text-left px-3 py-2 text-xs font-display uppercase tracking-wider text-muted-foreground">Item</th>
+                              <th className="text-left px-3 py-2 text-xs font-display uppercase tracking-wider text-muted-foreground">Initials</th>
+                              <th className="text-left px-3 py-2 text-xs font-display uppercase tracking-wider text-muted-foreground">Size</th>
                               <th className="text-center px-3 py-2 text-xs font-display uppercase tracking-wider text-muted-foreground">Qty</th>
                               <th className="text-right px-3 py-2 text-xs font-display uppercase tracking-wider text-muted-foreground">Price</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-border">
-                            {(order.line_items || []).map((item) => (
-                              <tr key={item.id}>
-                                <td className="px-3 py-2 text-foreground">
-                                  {item.title}
-                                  {item.variant_title && (
-                                    <span className="text-muted-foreground text-xs ml-1">({item.variant_title})</span>
-                                  )}
-                                </td>
-                                <td className="px-3 py-2 text-center text-foreground">{item.quantity}</td>
-                                <td className="px-3 py-2 text-right text-foreground">£{parseFloat(item.price).toFixed(2)}</td>
-                              </tr>
-                            ))}
+                            {(order.line_items || []).map((item) => {
+                              const ov = (order.admin_overrides || {})[String(item.id)] || {};
+                              const props = itemProperties(item);
+                              const chosenInitials = initialsOf(item);
+                              const key = `${order.id}:${item.id}`;
+                              const isEditing = editingKey === key;
+                              return (
+                                <tr key={item.id} className="align-top">
+                                  <td className="px-3 py-2 text-foreground">
+                                    {item.title}
+                                    {props.length > 0 && (
+                                      <div className="mt-1 space-y-0.5">
+                                        {props.map((p) => (
+                                          <p key={p.name} className="text-[11px] text-muted-foreground">
+                                            {p.name}: <span className="text-foreground">{p.value}</span>
+                                          </p>
+                                        ))}
+                                      </div>
+                                    )}
+                                    {ov.note && (
+                                      <p className="text-[11px] text-amber-300 mt-1">Note: {ov.note}</p>
+                                    )}
+                                  </td>
+                                  <td className="px-3 py-2">
+                                    {isEditing ? (
+                                      <input
+                                        value={draft.initials ?? ""}
+                                        onChange={(e) => setDraft((d) => ({ ...d, initials: e.target.value }))}
+                                        placeholder="e.g. AB"
+                                        className="w-20 bg-background border border-border rounded px-2 py-1 text-xs text-foreground uppercase"
+                                      />
+                                    ) : (
+                                      <span className={ov.initials ? "text-amber-300 font-semibold" : "text-foreground"}>
+                                        {ov.initials || chosenInitials || <span className="text-muted-foreground">—</span>}
+                                      </span>
+                                    )}
+                                  </td>
+                                  <td className="px-3 py-2">
+                                    {isEditing ? (
+                                      <div className="space-y-1">
+                                        <input
+                                          list="pafc-size-options"
+                                          value={draft.size ?? ""}
+                                          onChange={(e) => setDraft((d) => ({ ...d, size: e.target.value }))}
+                                          placeholder="Size"
+                                          className="w-28 bg-background border border-border rounded px-2 py-1 text-xs text-foreground"
+                                        />
+                                        <input
+                                          value={draft.note ?? ""}
+                                          onChange={(e) => setDraft((d) => ({ ...d, note: e.target.value }))}
+                                          placeholder="Note (optional)"
+                                          className="w-40 bg-background border border-border rounded px-2 py-1 text-xs text-foreground"
+                                        />
+                                      </div>
+                                    ) : ov.size ? (
+                                      <span className="text-amber-300 font-semibold">
+                                        {ov.size}
+                                        {item.variant_title && (
+                                          <span className="block text-[10px] text-muted-foreground line-through">
+                                            {item.variant_title}
+                                          </span>
+                                        )}
+                                      </span>
+                                    ) : (
+                                      <span className="text-foreground">
+                                        {item.variant_title || <span className="text-muted-foreground">—</span>}
+                                      </span>
+                                    )}
+                                  </td>
+                                  <td className="px-3 py-2 text-center text-foreground">{item.quantity}</td>
+                                  <td className="px-3 py-2 text-right text-foreground">
+                                    <div className="flex flex-col items-end gap-1">
+                                      <span>£{parseFloat(item.price).toFixed(2)}</span>
+                                      {isEditing ? (
+                                        <div className="flex gap-1">
+                                          <Button size="sm" className="h-6 px-2 text-[10px]" disabled={saving}
+                                            onClick={() => saveOverride(order, item)}>
+                                            {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : "Save"}
+                                          </Button>
+                                          <Button size="sm" variant="ghost" className="h-6 px-2 text-[10px]"
+                                            onClick={() => setEditingKey(null)}>
+                                            Cancel
+                                          </Button>
+                                        </div>
+                                      ) : (
+                                        <button
+                                          onClick={() => {
+                                            setEditingKey(key);
+                                            setDraft({
+                                              size: ov.size ?? item.variant_title ?? "",
+                                              initials: ov.initials ?? chosenInitials ?? "",
+                                              note: ov.note ?? "",
+                                            });
+                                          }}
+                                          className="text-[10px] text-primary hover:underline flex items-center gap-1"
+                                        >
+                                          <Pencil className="h-3 w-3" /> Edit
+                                        </button>
+                                      )}
+                                    </div>
+                                  </td>
+                                </tr>
+                              );
+                            })}
                           </tbody>
                         </table>
                       </div>
+
                       {order.email && (
                         <p className="text-xs text-muted-foreground mt-2">
                           Customer email: <span className="text-foreground">{order.email}</span>
