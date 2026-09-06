@@ -14,7 +14,15 @@ interface LineItem {
   variant_title: string | null;
   quantity: number;
   price: string;
+  properties?: Array<{ name: string; value: string }>;
 }
+
+interface LineItemOverride {
+  size?: string;
+  initials?: string;
+  note?: string;
+}
+
 
 interface ShopifyOrder {
   id: string;
