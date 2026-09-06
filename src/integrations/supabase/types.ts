@@ -2392,6 +2392,7 @@ export type Database = {
       }
       shopify_orders: {
         Row: {
+          admin_overrides: Json
           cancelled_at: string | null
           created_at: string
           currency: string
@@ -2411,6 +2412,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          admin_overrides?: Json
           cancelled_at?: string | null
           created_at?: string
           currency?: string
@@ -2430,6 +2432,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          admin_overrides?: Json
           cancelled_at?: string | null
           created_at?: string
           currency?: string
