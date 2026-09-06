@@ -38,9 +38,30 @@ interface ShopifyOrder {
   total_price: number;
   currency: string;
   line_items: LineItem[];
+  admin_overrides?: Record<string, LineItemOverride> | null;
   cancelled_at: string | null;
   shopify_created_at: string;
 }
+
+const SIZE_SUGGESTIONS = [
+  "5-6 Years", "7-8 Years", "9-10 Years", "11-12 Years", "13-14 Years",
+  "XS", "S", "M", "L", "XL", "2XL", "3XL",
+];
+
+/** Pull any personalisation (initials etc.) a customer added at checkout. */
+function itemProperties(item: LineItem) {
+  return (item.properties || []).filter(
+    (p) => p && p.value && !String(p.name).startsWith("_")
+  );
+}
+
+function initialsOf(item: LineItem) {
+  const prop = itemProperties(item).find((p) =>
+    /initial|name|personal/i.test(p.name)
+  );
+  return prop?.value || null;
+}
+
 
 const STATUS_STYLES: Record<string, { bg: string; text: string; icon: any }> = {
   paid: { bg: "bg-emerald-500/15", text: "text-emerald-400", icon: CheckCircle },
