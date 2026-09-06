@@ -11,6 +11,7 @@ import { useTeamRoster, getAgeGroup } from "@/hooks/useTeamRoster";
 import type { FAFixture } from "@/hooks/useTeamFixtures";
 import { uploadPotmPhoto } from "@/lib/potmPhoto";
 import { POTMCardPreview } from "./POTMCardPreview";
+import { AiPotmAssistant } from "./AiPotmAssistant";
 
 interface POTMEntry {
   playerId: string;
