@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import {
   ShoppingBag, Loader2, RefreshCw, Package,
   ChevronDown, ChevronUp, Clock, CheckCircle, XCircle, AlertTriangle, Pencil,
+  Truck, Printer, Inbox, ListFilter,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -16,6 +17,21 @@ interface LineItem {
   price: string;
   properties?: Array<{ name: string; value: string }>;
 }
+
+type ProgressStatus = "ordered" | "arrived" | "printed" | "delivered";
+
+const PROGRESS_STAGES: {
+  value: ProgressStatus;
+  label: string;
+  icon: any;
+  chip: string;
+  active: string;
+}[] = [
+  { value: "ordered", label: "Ordered", icon: ShoppingBag, chip: "bg-blue-500/15 text-blue-400", active: "bg-blue-500 text-black" },
+  { value: "arrived", label: "Arrived", icon: Inbox, chip: "bg-amber-500/15 text-amber-400", active: "bg-amber-500 text-black" },
+  { value: "printed", label: "Printed", icon: Printer, chip: "bg-violet-500/15 text-violet-300", active: "bg-violet-500 text-black" },
+  { value: "delivered", label: "Delivered", icon: Truck, chip: "bg-emerald-500/15 text-emerald-400", active: "bg-emerald-500 text-black" },
+];
 
 interface LineItemOverride {
   size?: string;
@@ -39,6 +55,7 @@ interface ShopifyOrder {
   currency: string;
   line_items: LineItem[];
   admin_overrides?: Record<string, LineItemOverride> | null;
+  progress_status?: ProgressStatus | null;
   cancelled_at: string | null;
   shopify_created_at: string;
 }
@@ -83,6 +100,8 @@ export function OrdersTab() {
   const [loading, setLoading] = useState(true);
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [progressFilter, setProgressFilter] = useState<ProgressStatus | "all">("all");
+  const [search, setSearch] = useState("");
 
   const [syncWarning, setSyncWarning] = useState<string | null>(null);
   const [editingKey, setEditingKey] = useState<string | null>(null);
@@ -120,6 +139,25 @@ export function OrdersTab() {
     }
   };
 
+
+  const setProgress = async (order: ShopifyOrder, value: ProgressStatus) => {
+    const previous = (order.progress_status || "ordered") as ProgressStatus;
+    setOrders((prev) =>
+      prev.map((o) => (o.id === order.id ? { ...o, progress_status: value } : o))
+    );
+    const { error } = await supabase
+      .from("shopify_orders" as any)
+      .update({ progress_status: value } as any)
+      .eq("id", order.id);
+    if (error) {
+      setOrders((prev) =>
+        prev.map((o) => (o.id === order.id ? { ...o, progress_status: previous } : o))
+      );
+      toast.error(error.message || "Could not update the order stage");
+      return;
+    }
+    toast.success(`${order.order_name} marked as ${value}`);
+  };
 
   const fetchOrders = useCallback(async () => {
     setLoading(true);
@@ -172,6 +210,31 @@ export function OrdersTab() {
     return name || order.customer_email || order.email || "Unknown";
   };
 
+  const progressOf = (o: ShopifyOrder) => (o.progress_status || "ordered") as ProgressStatus;
+
+  const stageCounts = PROGRESS_STAGES.reduce((acc, st) => {
+    acc[st.value] = orders.filter((o) => progressOf(o) === st.value).length;
+    return acc;
+  }, {} as Record<ProgressStatus, number>);
+
+  const term = search.trim().toLowerCase();
+  const visibleOrders = orders.filter((o) => {
+    if (progressFilter !== "all" && progressOf(o) !== progressFilter) return false;
+    if (!term) return true;
+    const hay = [
+      o.order_name,
+      o.customer_first_name,
+      o.customer_last_name,
+      o.customer_email,
+      o.email,
+      ...(o.line_items || []).map((i) => i.title),
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+    return hay.includes(term);
+  });
+
   const totalRevenue = orders
     .filter((o) => !o.cancelled_at && (o.financial_status === "paid" || o.financial_status === "partially_paid"))
     .reduce((sum, o) => sum + (o.total_price || 0), 0);
@@ -209,6 +272,46 @@ export function OrdersTab() {
         </div>
       )}
 
+      {/* Progress filter bar */}
+      <div className="bg-card border border-border rounded-xl p-4 space-y-3">
+        <div className="flex items-center gap-2">
+          <ListFilter className="h-4 w-4 text-primary" />
+          <span className="text-xs font-display tracking-wider uppercase text-muted-foreground">
+            Filter by stage
+          </span>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => setProgressFilter("all")}
+            className={`px-3 py-1.5 rounded-full text-xs font-display tracking-wide transition-colors ${
+              progressFilter === "all"
+                ? "bg-primary text-primary-foreground"
+                : "bg-secondary/50 text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            All ({orders.length})
+          </button>
+          {PROGRESS_STAGES.map((st) => (
+            <button
+              key={st.value}
+              onClick={() => setProgressFilter(st.value)}
+              className={`px-3 py-1.5 rounded-full text-xs font-display tracking-wide flex items-center gap-1.5 transition-colors ${
+                progressFilter === st.value ? st.active : `${st.chip} hover:brightness-125`
+              }`}
+            >
+              <st.icon className="h-3 w-3" />
+              {st.label} ({stageCounts[st.value] || 0})
+            </button>
+          ))}
+        </div>
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search order number, name, email or item…"
+          className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground"
+        />
+      </div>
+
       {/* Filters + refresh */}
       <div className="flex items-center gap-3">
         <select
@@ -239,7 +342,7 @@ export function OrdersTab() {
           <div className="flex items-center justify-center py-16">
             <Loader2 className="h-6 w-6 animate-spin text-primary" />
           </div>
-        ) : orders.length === 0 ? (
+        ) : visibleOrders.length === 0 ? (
           <div className="py-16 text-center">
             <Package className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
             <p className="text-sm text-muted-foreground">No orders found</p>
@@ -247,7 +350,7 @@ export function OrdersTab() {
           </div>
         ) : (
           <div className="divide-y divide-border">
-            {orders.map((order) => {
+            {visibleOrders.map((order) => {
               const expanded = expandedOrder === order.id;
               const payStatus = STATUS_STYLES[order.financial_status] || STATUS_STYLES.pending;
               const PayIcon = payStatus.icon;
@@ -255,9 +358,14 @@ export function OrdersTab() {
 
               return (
                 <div key={order.id}>
-                  <button
+                  <div
+                    role="button"
+                    tabIndex={0}
                     onClick={() => setExpandedOrder(expanded ? null : order.id)}
-                    className="w-full text-left px-5 py-4 hover:bg-secondary/30 transition-colors"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") setExpandedOrder(expanded ? null : order.id);
+                    }}
+                    className="w-full text-left px-5 py-4 hover:bg-secondary/30 transition-colors cursor-pointer"
                   >
                     <div className="flex items-center justify-between gap-3">
                       <div className="flex items-center gap-4 min-w-0">
@@ -281,12 +389,30 @@ export function OrdersTab() {
                           <PayIcon className="h-3 w-3" />
                           {order.financial_status.replace(/_/g, " ")}
                         </Badge>
+                        <Badge className={`${(PROGRESS_STAGES.find((s2) => s2.value === progressOf(order)) || PROGRESS_STAGES[0]).chip} border-0 text-[10px] capitalize`}>
+                          {progressOf(order)}
+                        </Badge>
                         <Badge className={`${fulfillStatus.bg} ${fulfillStatus.text} border-0 text-[10px]`}>
                           {(order.fulfillment_status || "unfulfilled").replace(/_/g, " ")}
                         </Badge>
                         <span className="text-sm font-display font-bold text-foreground ml-2">
                           £{order.total_price.toFixed(2)}
                         </span>
+                        <select
+                          value={progressOf(order)}
+                          onClick={(e) => e.stopPropagation()}
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            setProgress(order, e.target.value as ProgressStatus);
+                          }}
+                          className="bg-background border border-border rounded-lg px-2 py-1 text-xs text-foreground"
+                        >
+                          {PROGRESS_STAGES.map((st) => (
+                            <option key={st.value} value={st.value}>
+                              {st.label}
+                            </option>
+                          ))}
+                        </select>
                         {expanded ? (
                           <ChevronUp className="h-4 w-4 text-muted-foreground" />
                         ) : (
@@ -294,7 +420,7 @@ export function OrdersTab() {
                         )}
                       </div>
                     </div>
-                  </button>
+                  </div>
 
                   {expanded && (
                     <div className="px-5 pb-4 bg-secondary/10">
