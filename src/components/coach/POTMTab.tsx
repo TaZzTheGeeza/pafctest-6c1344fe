@@ -208,7 +208,9 @@ export const POTMTab = forwardRef<POTMHandle, POTMTabProps>(function POTMTab({
                   playerName: player?.first_name || "",
                   teamName,
                   opponent,
-                  isHome: fixture?.isHome ?? true,
+                  isHome: !!fixture?.homeTeam?.includes("Peterborough Athletic"),
+                  homeScore: fixture?.homeScore,
+                  awayScore: fixture?.awayScore,
                   matchDate: fixture?.date,
                 }}
                 reason={entry.reason}
