@@ -85,6 +85,41 @@ export function OrdersTab() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
   const [syncWarning, setSyncWarning] = useState<string | null>(null);
+  const [editingKey, setEditingKey] = useState<string | null>(null);
+  const [draft, setDraft] = useState<LineItemOverride>({});
+  const [saving, setSaving] = useState(false);
+
+  const saveOverride = async (order: ShopifyOrder, item: LineItem) => {
+    setSaving(true);
+    try {
+      const next: Record<string, LineItemOverride> = { ...(order.admin_overrides || {}) };
+      const clean: LineItemOverride = {
+        size: (draft.size || "").trim() || undefined,
+        initials: (draft.initials || "").trim().toUpperCase() || undefined,
+        note: (draft.note || "").trim() || undefined,
+      };
+      if (!clean.size && !clean.initials && !clean.note) delete next[String(item.id)];
+      else next[String(item.id)] = clean;
+
+      const { error } = await supabase
+        .from("shopify_orders" as any)
+        .update({ admin_overrides: next } as any)
+        .eq("id", order.id);
+      if (error) throw error;
+
+      setOrders((prev) =>
+        prev.map((o) => (o.id === order.id ? { ...o, admin_overrides: next } : o))
+      );
+      setEditingKey(null);
+      toast.success("Order details updated");
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e.message || "Could not save changes");
+    } finally {
+      setSaving(false);
+    }
+  };
+
 
   const fetchOrders = useCallback(async () => {
     setLoading(true);
