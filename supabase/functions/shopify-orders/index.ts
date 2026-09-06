@@ -44,12 +44,14 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Find the Shopify online access token - it may be stored with a user-specific suffix
-    let SHOPIFY_ACCESS_TOKEN = Deno.env.get("SHOPIFY_ONLINE_ACCESS_TOKEN") || Deno.env.get("SHOPIFY_ACCESS_TOKEN");
+    // Prefer a dedicated admin token if provided; otherwise fall back to connector tokens.
+    let SHOPIFY_ACCESS_TOKEN = Deno.env.get("SHOPIFY_ADMIN_API_TOKEN")
+      || Deno.env.get("SHOPIFY_ONLINE_ACCESS_TOKEN")
+      || Deno.env.get("SHOPIFY_ACCESS_TOKEN");
     if (!SHOPIFY_ACCESS_TOKEN) {
       // Search for user-scoped online access tokens (format: SHOPIFY_ONLINE_ACCESS_TOKEN:user:xxx)
       for (const [key, value] of Object.entries(Deno.env.toObject())) {
-        if (key.startsWith("SHOPIFY_ONLINE_ACCESS_TOKEN")) {
+        if (key.startsWith("SHOPIFY_ONLINE_ACCESS_TOKEN") || key.startsWith("SHOPIFY_ADMIN_API_TOKEN")) {
           SHOPIFY_ACCESS_TOKEN = value;
           break;
         }
