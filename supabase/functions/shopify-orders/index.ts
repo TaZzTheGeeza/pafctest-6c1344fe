@@ -87,8 +87,44 @@ Deno.serve(async (req) => {
     }
 
     const data = await shopifyRes.json();
+    const orders = data.orders || [];
 
-    return new Response(JSON.stringify(data), {
+    // Persist to shopify_orders so the dashboard has a durable record even if
+    // the Shopify webhook never fired (e.g. webhook secret not configured).
+    let synced = 0;
+    if (orders.length > 0) {
+      const rows = orders.map((o: any) => ({
+        shopify_order_id: o.id,
+        order_name: o.name || `#${o.order_number}`,
+        order_number: o.order_number,
+        email: o.email || null,
+        customer_first_name: o.customer?.first_name || null,
+        customer_last_name: o.customer?.last_name || null,
+        customer_email: o.customer?.email || null,
+        financial_status: o.financial_status || "pending",
+        fulfillment_status: o.fulfillment_status || null,
+        total_price: parseFloat(o.total_price || "0"),
+        currency: o.currency || "GBP",
+        line_items: (o.line_items || []).map((li: any) => ({
+          id: li.id,
+          title: li.title,
+          variant_title: li.variant_title || null,
+          quantity: li.quantity,
+          price: li.price,
+          properties: li.properties || [],
+        })),
+        cancelled_at: o.cancelled_at || null,
+        shopify_created_at: o.created_at,
+        updated_at: new Date().toISOString(),
+      }));
+      const { error: upErr } = await adminClient
+        .from("shopify_orders")
+        .upsert(rows, { onConflict: "shopify_order_id" });
+      if (upErr) console.error("shopify_orders upsert failed:", upErr.message);
+      else synced = rows.length;
+    }
+
+    return new Response(JSON.stringify({ ...data, synced }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {
