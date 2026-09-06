@@ -214,6 +214,87 @@ export function OrdersTab() {
     fetchOrders();
   }, [fetchOrders]);
 
+  /** Match order emails against player registrations and Hub guardian links. */
+  const fetchLinkedChildren = async (rows: ShopifyOrder[]) => {
+    const emails = Array.from(
+      new Set(
+        rows
+          .flatMap((o) => [o.email, o.customer_email])
+          .filter(Boolean)
+          .map((e) => (e as string).toLowerCase().trim())
+      )
+    );
+    if (emails.length === 0) return;
+
+    const map: Record<string, LinkedChild[]> = {};
+    const add = (email: string | null, child: LinkedChild) => {
+      if (!email) return;
+      const key = email.toLowerCase().trim();
+      map[key] = map[key] || [];
+      if (!map[key].some((c) => c.name.toLowerCase() === child.name.toLowerCase())) {
+        map[key].push(child);
+      }
+    };
+
+    try {
+      const [{ data: regs }, { data: profs }] = await Promise.all([
+        supabase
+          .from("player_registrations" as any)
+          .select("child_name, preferred_age_group, email")
+          .in("email", emails),
+        supabase
+          .from("profiles")
+          .select("id, email")
+          .in("email", emails),
+      ]);
+
+      (regs as any[] || []).forEach((r) =>
+        add(r.email, {
+          name: r.child_name,
+          detail: r.preferred_age_group || null,
+          source: "registration",
+        })
+      );
+
+      const profileIds = (profs || []).map((p) => p.id);
+      if (profileIds.length > 0) {
+        const { data: guards } = await supabase
+          .from("guardians")
+          .select("player_name, team_slug, parent_user_id")
+          .in("parent_user_id", profileIds);
+        const emailById = new Map((profs || []).map((p) => [p.id, p.email as string]));
+        (guards || []).forEach((g) =>
+          add(emailById.get(g.parent_user_id) || null, {
+            name: g.player_name,
+            detail: g.team_slug ? g.team_slug.toUpperCase().replace(/-/g, " ") : null,
+            source: "hub",
+          })
+        );
+      }
+    } catch (e) {
+      console.error("Linked children lookup failed:", e);
+    }
+    setChildrenByEmail(map);
+  };
+
+  const childrenFor = (order: ShopifyOrder): LinkedChild[] => {
+    const keys = [order.email, order.customer_email]
+      .filter(Boolean)
+      .map((e) => (e as string).toLowerCase().trim());
+    const seen = new Set<string>();
+    const out: LinkedChild[] = [];
+    for (const k of keys) {
+      for (const c of childrenByEmail[k] || []) {
+        const id = c.name.toLowerCase();
+        if (!seen.has(id)) {
+          seen.add(id);
+          out.push(c);
+        }
+      }
+    }
+    return out;
+  };
+
   const customerName = (order: ShopifyOrder) => {
     const name = `${order.customer_first_name || ""} ${order.customer_last_name || ""}`.trim();
     return name || order.customer_email || order.email || "Unknown";
