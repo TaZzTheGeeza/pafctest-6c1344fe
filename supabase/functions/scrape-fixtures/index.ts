@@ -18,6 +18,17 @@ interface Fixture {
   awayScore?: number;
 }
 
+function decodeEntities(s: string): string {
+  return s
+    .replace(/&amp;/g, '&')
+    .replace(/&#0?39;|&apos;|&rsquo;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .trim();
+}
+
 function parseFixturesPage(html: string): Fixture[] {
   const fixtures: Fixture[] = [];
 
