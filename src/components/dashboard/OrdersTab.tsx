@@ -95,8 +95,15 @@ const FULFILLMENT_STYLES: Record<string, { bg: string; text: string }> = {
   unfulfilled: { bg: "bg-blue-500/15", text: "text-blue-400" },
 };
 
+interface LinkedChild {
+  name: string;
+  detail: string | null; // age group / team
+  source: "registration" | "hub";
+}
+
 export function OrdersTab() {
   const [orders, setOrders] = useState<ShopifyOrder[]>([]);
+  const [childrenByEmail, setChildrenByEmail] = useState<Record<string, LinkedChild[]>>({});
   const [loading, setLoading] = useState(true);
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("all");
