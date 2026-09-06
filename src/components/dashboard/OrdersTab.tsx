@@ -645,6 +645,31 @@ export function OrdersTab() {
                           Customer email: <span className="text-foreground">{order.email}</span>
                         </p>
                       )}
+
+                      {(() => {
+                        const kids = childrenFor(order);
+                        if (kids.length === 0) return null;
+                        return (
+                          <div className="mt-3 rounded-lg bg-primary/5 border border-primary/20 p-3">
+                            <p className="text-[10px] font-display tracking-wider uppercase text-primary flex items-center gap-1.5 mb-1.5">
+                              <Baby className="h-3.5 w-3.5" /> Linked children
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                              {kids.map((c) => (
+                                <span
+                                  key={c.name}
+                                  className="text-xs bg-background border border-border rounded-full px-2.5 py-1 text-foreground"
+                                >
+                                  {c.name}
+                                  {c.detail && (
+                                    <span className="text-muted-foreground"> · {c.detail}</span>
+                                  )}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })()}
                     </div>
                   )}
                 </div>
