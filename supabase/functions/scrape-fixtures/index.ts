@@ -18,6 +18,17 @@ interface Fixture {
   awayScore?: number;
 }
 
+function decodeEntities(s: string): string {
+  return s
+    .replace(/&amp;/g, '&')
+    .replace(/&#0?39;|&apos;|&rsquo;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .trim();
+}
+
 function parseFixturesPage(html: string): Fixture[] {
   const fixtures: Fixture[] = [];
 
@@ -42,15 +53,15 @@ function parseFixturesPage(html: string): Fixture[] {
     const awayMatch = row.match(/<td class="road-team left cell-divider">[\s\S]*?<a[^>]*>\s*([\s\S]*?)\s*<\/a>/);
 
     if (homeMatch && awayMatch) {
-      const home = homeMatch[1].replace(/<[^>]+>/g, '').trim();
-      const away = awayMatch[1].replace(/<[^>]+>/g, '').trim();
+      const home = decodeEntities(homeMatch[1].replace(/<[^>]+>/g, ''));
+      const away = decodeEntities(awayMatch[1].replace(/<[^>]+>/g, ''));
 
       // Extract all left cell-divider td contents
       const cellDividerRegex = /<td class="left cell-divider">([\s\S]*?)<\/td>/g;
       const cells: string[] = [];
       let cellMatch;
       while ((cellMatch = cellDividerRegex.exec(row)) !== null) {
-        cells.push(cellMatch[1].replace(/<[^>]+>/g, '').trim());
+        cells.push(decodeEntities(cellMatch[1].replace(/<[^>]+>/g, '')));
       }
 
       // cells[0] = date/time, cells[1] = venue, cells[2] = competition
@@ -85,10 +96,10 @@ function parseResultsPage(html: string): Fixture[] {
   while ((match = blockRegex.exec(html)) !== null) {
     const date = match[1].trim();
     const time = match[2].trim();
-    const homeTeam = match[3].replace(/<[^>]+>/g, '').trim();
+    const homeTeam = decodeEntities(match[3].replace(/<[^>]+>/g, ''));
     const scoreRaw = match[4].replace(/<[^>]+>/g, '').trim();
-    const awayTeam = match[5].replace(/<[^>]+>/g, '').trim();
-    const competition = match[6].replace(/<[^>]+>/g, '').trim();
+    const awayTeam = decodeEntities(match[5].replace(/<[^>]+>/g, ''));
+    const competition = decodeEntities(match[6].replace(/<[^>]+>/g, ''));
 
     const scoreMatch = scoreRaw.match(/(\d+)\s*-\s*(\d+)/);
 
@@ -203,8 +214,31 @@ Deno.serve(async (req) => {
       // Never overwrite good cached data with an empty array from a failed/skipped fetch.
       const cachedFixtures = (cached?.fixtures as Fixture[] | null) ?? [];
       const cachedResults = (cached?.results as Fixture[] | null) ?? [];
-      const nextFixtures = fixturesFailed && fixtures.length === 0 ? cachedFixtures : fixtures;
+      let nextFixtures = fixturesFailed && fixtures.length === 0 ? cachedFixtures : fixtures;
       const nextResults = resultsFailed && results.length === 0 ? cachedResults : results;
+
+      // FA removes fixtures from the fixtures page once played, and the result can
+      // take days to be published. Keep recently played fixtures (last 60 days) that
+      // we previously cached so coaches can still pick them for match reports.
+      const parseFaDate = (d: string) => {
+        const [dd, mm, yy] = (d || '').split('/');
+        if (!dd || !mm || !yy) return null;
+        const year = yy.length === 4 ? Number(yy) : 2000 + Number(yy);
+        const dt = new Date(Date.UTC(year, Number(mm) - 1, Number(dd)));
+        return isNaN(dt.getTime()) ? null : dt;
+      };
+      const keyOf = (f: Fixture) => `${f.date}|${f.homeTeam}|${f.awayTeam}`;
+      const cutoff = Date.now() - 1000 * 60 * 60 * 24 * 60;
+      const known = new Set([...nextFixtures, ...nextResults].map(keyOf));
+      const carriedOver = cachedFixtures.filter((f) => {
+        if (known.has(keyOf(f))) return false;
+        const dt = parseFaDate(f.date);
+        return !!dt && dt.getTime() <= Date.now() && dt.getTime() >= cutoff;
+      });
+      if (carriedOver.length > 0) {
+        nextFixtures = [...carriedOver, ...nextFixtures];
+      }
+
 
       // Only stamp the cache as fresh when nothing failed, or when we actually
       // fetched new data — otherwise stale data would look fresh for 6 hours.
