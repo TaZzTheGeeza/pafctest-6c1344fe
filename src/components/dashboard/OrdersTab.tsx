@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import {
   ShoppingBag, Loader2, RefreshCw, Package,
   ChevronDown, ChevronUp, Clock, CheckCircle, XCircle, AlertTriangle, Pencil,
-  Truck, Printer, Inbox, ListFilter,
+  Truck, Printer, Inbox, ListFilter, Baby,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
