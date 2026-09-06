@@ -199,7 +199,9 @@ export function OrdersTab() {
 
       const { data, error } = await query;
       if (error) throw error;
-      setOrders((data as any) ?? []);
+      const rows = (data as any as ShopifyOrder[]) ?? [];
+      setOrders(rows);
+      fetchLinkedChildren(rows);
     } catch (err: any) {
       console.error("Failed to fetch orders:", err);
       toast.error(err.message || "Failed to load orders");
