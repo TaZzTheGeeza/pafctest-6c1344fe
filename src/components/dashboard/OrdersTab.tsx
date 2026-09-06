@@ -472,6 +472,12 @@ export function OrdersTab() {
                               hour: "2-digit", minute: "2-digit",
                             })}
                           </p>
+                          {childrenFor(order).length > 0 && (
+                            <p className="text-[10px] text-primary flex items-center gap-1 mt-0.5">
+                              <Baby className="h-3 w-3" />
+                              {childrenFor(order).map((c) => c.name).join(", ")}
+                            </p>
+                          )}
                         </div>
                       </div>
                       <div className="flex items-center gap-2 flex-shrink-0">
