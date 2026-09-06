@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
   ShoppingBag, Loader2, RefreshCw, Package,
-  ChevronDown, ChevronUp, Clock, CheckCircle, XCircle, AlertTriangle,
+  ChevronDown, ChevronUp, Clock, CheckCircle, XCircle, AlertTriangle, Pencil,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
