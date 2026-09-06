@@ -18,6 +18,8 @@ import { notifyTeamMembers } from "@/lib/notifyTeamMembers";
 import { DateInput } from "@/components/ui/date-input";
 import { POTMCardPreview } from "@/components/coach/POTMCardPreview";
 import { CLUB_TEAMS } from "@/lib/teamConfig";
+import { AiReportAssistant } from "@/components/coach/AiReportAssistant";
+
 
 
 // Same team list as the Hub (single source of truth)
@@ -832,10 +834,26 @@ export function MatchReportForm({ ageGroups }: { ageGroups: string[] }) {
         </p>
       )}
 
+      <AiReportAssistant
+        context={{
+          teamName: ageGroup ? `Peterborough Athletic ${ageGroup}` : "Peterborough Athletic",
+          opponent,
+          isHome: true,
+          homeScore: parseInt(homeScore) || 0,
+          awayScore: parseInt(awayScore) || 0,
+          matchDate,
+          scorers: buildText(goalEntries),
+          assists: buildText(assistEntries),
+        }}
+        notes={notes}
+        onNotesChange={setNotes}
+      />
+
       <div>
         <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Match Notes</label>
-        <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Any additional notes about the match..." rows={3} className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground resize-none" />
+        <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Any additional notes about the match..." rows={5} className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground resize-none" />
       </div>
+
 
       <POTMForm
         ageGroups={ageGroups}
