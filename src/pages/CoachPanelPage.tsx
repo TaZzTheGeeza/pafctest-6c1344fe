@@ -18,6 +18,8 @@ import { notifyTeamMembers } from "@/lib/notifyTeamMembers";
 import { DateInput } from "@/components/ui/date-input";
 import { POTMCardPreview } from "@/components/coach/POTMCardPreview";
 import { CLUB_TEAMS } from "@/lib/teamConfig";
+import { AiReportAssistant } from "@/components/coach/AiReportAssistant";
+
 
 
 // Same team list as the Hub (single source of truth)
