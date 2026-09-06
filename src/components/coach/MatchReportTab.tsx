@@ -357,10 +357,26 @@ export function MatchReportTab({
         />
       </div>
 
+      <AiReportAssistant
+        context={{
+          teamName,
+          opponent,
+          isHome,
+          homeScore: parseInt(homeScore) || 0,
+          awayScore: parseInt(awayScore) || 0,
+          matchDate: fixture.date,
+          scorers: entriesToText(goalEntries),
+          assists: entriesToText(assistEntries),
+        }}
+        notes={notes}
+        onNotesChange={setNotes}
+      />
+
       <div>
         <Label className="text-xs">Match Notes</Label>
-        <Textarea placeholder="How did the team play? Key moments..." value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} />
+        <Textarea placeholder="How did the team play? Key moments..." value={notes} onChange={(e) => setNotes(e.target.value)} rows={5} />
       </div>
+
 
       {roster.length === 0 && (
         <p className="text-xs text-amber-600 bg-amber-50 dark:bg-amber-950/30 rounded-md p-2">
