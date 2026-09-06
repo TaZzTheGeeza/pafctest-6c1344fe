@@ -15,7 +15,10 @@ export function HubMatchReports({ teamSlug }: { teamSlug: string }) {
       const { data, error } = await supabase
         .from("match_reports")
         .select("*")
-        .eq("team_name", `Peterborough Athletic ${teamName}`)
+        .in("team_name", [
+          `Peterborough Athletic ${teamName}`,
+          teamSlug.toUpperCase().replace(/-/g, " "),
+        ])
         .order("match_date", { ascending: false });
       if (error) throw error;
       return data as MatchReport[];
