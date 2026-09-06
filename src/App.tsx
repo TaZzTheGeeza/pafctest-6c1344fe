@@ -59,6 +59,8 @@ import PresentationPage from "./pages/PresentationPage.tsx";
 import PresentationAdminPage from "./pages/PresentationAdminPage.tsx";
 import PlayerRegistrationAdminPage from "./pages/PlayerRegistrationAdminPage.tsx";
 import PresentationAwardsAdminPage from "./pages/PresentationAwardsAdminPage.tsx";
+import OrderStatusOptionsDemo from "./pages/OrderStatusOptionsDemo.tsx";
+
 import PhotoClaimPage from "./pages/PhotoClaimPage.tsx";
 import PitchBookingsPage from "./pages/PitchBookingsPage.tsx";
 import PitchBookingsAdminPage from "./pages/PitchBookingsAdminPage.tsx";
