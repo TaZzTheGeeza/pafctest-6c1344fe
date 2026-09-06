@@ -2406,6 +2406,7 @@ export type Database = {
           line_items: Json
           order_name: string
           order_number: number | null
+          progress_status: string
           shopify_created_at: string
           shopify_order_id: number
           total_price: number
@@ -2426,6 +2427,7 @@ export type Database = {
           line_items?: Json
           order_name: string
           order_number?: number | null
+          progress_status?: string
           shopify_created_at?: string
           shopify_order_id: number
           total_price?: number
@@ -2446,6 +2448,7 @@ export type Database = {
           line_items?: Json
           order_name?: string
           order_number?: number | null
+          progress_status?: string
           shopify_created_at?: string
           shopify_order_id?: number
           total_price?: number

@@ -59,7 +59,6 @@ import PresentationPage from "./pages/PresentationPage.tsx";
 import PresentationAdminPage from "./pages/PresentationAdminPage.tsx";
 import PlayerRegistrationAdminPage from "./pages/PlayerRegistrationAdminPage.tsx";
 import PresentationAwardsAdminPage from "./pages/PresentationAwardsAdminPage.tsx";
-import OrderStatusOptionsDemo from "./pages/OrderStatusOptionsDemo.tsx";
 
 import PhotoClaimPage from "./pages/PhotoClaimPage.tsx";
 import PitchBookingsPage from "./pages/PitchBookingsPage.tsx";
@@ -156,7 +155,6 @@ function AppContent() {
         <Route path="/pitch-bookings-admin" element={<PitchBookingsAdminPage />} />
         <Route path="/lineup-reveal/:id" element={<RoleGate requiredRole="authenticated"><LineupRevealPage /></RoleGate>} />
         <Route path="/tactics-reveal/:id" element={<RoleGate requiredRole="coach"><TacticsRevealPage /></RoleGate>} />
-        <Route path="/order-status-options" element={<OrderStatusOptionsDemo />} />
         <Route path="*" element={<NotFound />} />
 
       </Routes>
