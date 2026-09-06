@@ -178,6 +178,12 @@ export function OrdersTab() {
 
   return (
     <div className="space-y-6">
+      <datalist id="pafc-size-options">
+        {SIZE_SUGGESTIONS.map((s) => (
+          <option key={s} value={s} />
+        ))}
+      </datalist>
+
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
