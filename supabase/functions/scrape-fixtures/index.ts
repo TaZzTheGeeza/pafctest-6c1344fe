@@ -53,15 +53,15 @@ function parseFixturesPage(html: string): Fixture[] {
     const awayMatch = row.match(/<td class="road-team left cell-divider">[\s\S]*?<a[^>]*>\s*([\s\S]*?)\s*<\/a>/);
 
     if (homeMatch && awayMatch) {
-      const home = homeMatch[1].replace(/<[^>]+>/g, '').trim();
-      const away = awayMatch[1].replace(/<[^>]+>/g, '').trim();
+      const home = decodeEntities(homeMatch[1].replace(/<[^>]+>/g, ''));
+      const away = decodeEntities(awayMatch[1].replace(/<[^>]+>/g, ''));
 
       // Extract all left cell-divider td contents
       const cellDividerRegex = /<td class="left cell-divider">([\s\S]*?)<\/td>/g;
       const cells: string[] = [];
       let cellMatch;
       while ((cellMatch = cellDividerRegex.exec(row)) !== null) {
-        cells.push(cellMatch[1].replace(/<[^>]+>/g, '').trim());
+        cells.push(decodeEntities(cellMatch[1].replace(/<[^>]+>/g, '')));
       }
 
       // cells[0] = date/time, cells[1] = venue, cells[2] = competition
@@ -96,10 +96,10 @@ function parseResultsPage(html: string): Fixture[] {
   while ((match = blockRegex.exec(html)) !== null) {
     const date = match[1].trim();
     const time = match[2].trim();
-    const homeTeam = match[3].replace(/<[^>]+>/g, '').trim();
+    const homeTeam = decodeEntities(match[3].replace(/<[^>]+>/g, ''));
     const scoreRaw = match[4].replace(/<[^>]+>/g, '').trim();
-    const awayTeam = match[5].replace(/<[^>]+>/g, '').trim();
-    const competition = match[6].replace(/<[^>]+>/g, '').trim();
+    const awayTeam = decodeEntities(match[5].replace(/<[^>]+>/g, ''));
+    const competition = decodeEntities(match[6].replace(/<[^>]+>/g, ''));
 
     const scoreMatch = scoreRaw.match(/(\d+)\s*-\s*(\d+)/);
 
