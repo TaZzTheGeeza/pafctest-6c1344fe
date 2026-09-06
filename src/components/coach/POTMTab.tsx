@@ -202,6 +202,17 @@ export const POTMTab = forwardRef<POTMHandle, POTMTabProps>(function POTMTab({
                 rows={2}
                 className="text-sm"
               />
+              <AiPotmAssistant
+                context={{
+                  playerName: player?.first_name || "",
+                  teamName,
+                  opponent,
+                  isHome: fixture?.isHome ?? true,
+                  matchDate: fixture?.date,
+                }}
+                reason={entry.reason}
+                onReasonChange={(text) => updateEntry(i, "reason", text)}
+              />
             </div>
 
             <div>
