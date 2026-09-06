@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import {
   ShoppingBag, Loader2, RefreshCw, Package,
   ChevronDown, ChevronUp, Clock, CheckCircle, XCircle, AlertTriangle, Pencil,
-  Truck, Printer, Inbox, ListFilter,
+  Truck, Printer, Inbox, ListFilter, Baby,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -95,8 +95,15 @@ const FULFILLMENT_STYLES: Record<string, { bg: string; text: string }> = {
   unfulfilled: { bg: "bg-blue-500/15", text: "text-blue-400" },
 };
 
+interface LinkedChild {
+  name: string;
+  detail: string | null; // age group / team
+  source: "registration" | "hub";
+}
+
 export function OrdersTab() {
   const [orders, setOrders] = useState<ShopifyOrder[]>([]);
+  const [childrenByEmail, setChildrenByEmail] = useState<Record<string, LinkedChild[]>>({});
   const [loading, setLoading] = useState(true);
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -192,7 +199,9 @@ export function OrdersTab() {
 
       const { data, error } = await query;
       if (error) throw error;
-      setOrders((data as any) ?? []);
+      const rows = (data as any as ShopifyOrder[]) ?? [];
+      setOrders(rows);
+      fetchLinkedChildren(rows);
     } catch (err: any) {
       console.error("Failed to fetch orders:", err);
       toast.error(err.message || "Failed to load orders");
@@ -204,6 +213,87 @@ export function OrdersTab() {
   useEffect(() => {
     fetchOrders();
   }, [fetchOrders]);
+
+  /** Match order emails against player registrations and Hub guardian links. */
+  const fetchLinkedChildren = async (rows: ShopifyOrder[]) => {
+    const emails = Array.from(
+      new Set(
+        rows
+          .flatMap((o) => [o.email, o.customer_email])
+          .filter(Boolean)
+          .map((e) => (e as string).toLowerCase().trim())
+      )
+    );
+    if (emails.length === 0) return;
+
+    const map: Record<string, LinkedChild[]> = {};
+    const add = (email: string | null, child: LinkedChild) => {
+      if (!email) return;
+      const key = email.toLowerCase().trim();
+      map[key] = map[key] || [];
+      if (!map[key].some((c) => c.name.toLowerCase() === child.name.toLowerCase())) {
+        map[key].push(child);
+      }
+    };
+
+    try {
+      const [{ data: regs }, { data: profs }] = await Promise.all([
+        supabase
+          .from("player_registrations" as any)
+          .select("child_name, preferred_age_group, email")
+          .in("email", emails),
+        supabase
+          .from("profiles")
+          .select("id, email")
+          .in("email", emails),
+      ]);
+
+      (regs as any[] || []).forEach((r) =>
+        add(r.email, {
+          name: r.child_name,
+          detail: r.preferred_age_group || null,
+          source: "registration",
+        })
+      );
+
+      const profileIds = (profs || []).map((p) => p.id);
+      if (profileIds.length > 0) {
+        const { data: guards } = await supabase
+          .from("guardians")
+          .select("player_name, team_slug, parent_user_id")
+          .in("parent_user_id", profileIds);
+        const emailById = new Map((profs || []).map((p) => [p.id, p.email as string]));
+        (guards || []).forEach((g) =>
+          add(emailById.get(g.parent_user_id) || null, {
+            name: g.player_name,
+            detail: g.team_slug ? g.team_slug.toUpperCase().replace(/-/g, " ") : null,
+            source: "hub",
+          })
+        );
+      }
+    } catch (e) {
+      console.error("Linked children lookup failed:", e);
+    }
+    setChildrenByEmail(map);
+  };
+
+  const childrenFor = (order: ShopifyOrder): LinkedChild[] => {
+    const keys = [order.email, order.customer_email]
+      .filter(Boolean)
+      .map((e) => (e as string).toLowerCase().trim());
+    const seen = new Set<string>();
+    const out: LinkedChild[] = [];
+    for (const k of keys) {
+      for (const c of childrenByEmail[k] || []) {
+        const id = c.name.toLowerCase();
+        if (!seen.has(id)) {
+          seen.add(id);
+          out.push(c);
+        }
+      }
+    }
+    return out;
+  };
 
   const customerName = (order: ShopifyOrder) => {
     const name = `${order.customer_first_name || ""} ${order.customer_last_name || ""}`.trim();
@@ -382,6 +472,12 @@ export function OrdersTab() {
                               hour: "2-digit", minute: "2-digit",
                             })}
                           </p>
+                          {childrenFor(order).length > 0 && (
+                            <p className="text-[10px] text-primary flex items-center gap-1 mt-0.5">
+                              <Baby className="h-3 w-3" />
+                              {childrenFor(order).map((c) => c.name).join(", ")}
+                            </p>
+                          )}
                         </div>
                       </div>
                       <div className="flex items-center gap-2 flex-shrink-0">
@@ -549,6 +645,31 @@ export function OrdersTab() {
                           Customer email: <span className="text-foreground">{order.email}</span>
                         </p>
                       )}
+
+                      {(() => {
+                        const kids = childrenFor(order);
+                        if (kids.length === 0) return null;
+                        return (
+                          <div className="mt-3 rounded-lg bg-primary/5 border border-primary/20 p-3">
+                            <p className="text-[10px] font-display tracking-wider uppercase text-primary flex items-center gap-1.5 mb-1.5">
+                              <Baby className="h-3.5 w-3.5" /> Linked children
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                              {kids.map((c) => (
+                                <span
+                                  key={c.name}
+                                  className="text-xs bg-background border border-border rounded-full px-2.5 py-1 text-foreground"
+                                >
+                                  {c.name}
+                                  {c.detail && (
+                                    <span className="text-muted-foreground"> · {c.detail}</span>
+                                  )}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })()}
                     </div>
                   )}
                 </div>
