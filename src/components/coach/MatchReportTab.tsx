@@ -12,9 +12,11 @@ import { useTeamRoster, getAgeGroup, type RosterPlayer } from "@/hooks/useTeamRo
 import type { FAFixture } from "@/hooks/useTeamFixtures";
 import { POTMTab, type POTMHandle } from "./POTMTab";
 import { notifyTeamMembers } from "@/lib/notifyTeamMembers";
+import { AiReportAssistant } from "./AiReportAssistant";
 
 interface GoalEntry { playerId: string; count: number; }
 interface AssistEntry { playerId: string; count: number; }
+
 
 export function MatchReportTab({
   teamSlug, teamName, opponent, fixture, isHome,
@@ -246,6 +248,18 @@ export function MatchReportTab({
 
   const availableForAssists = (currentId: string) =>
     roster.filter(r => !assistEntries.some(e => e.playerId === r.id && e.playerId !== currentId));
+
+  const entriesToText = (entries: { playerId: string; count: number }[]) =>
+    entries
+      .filter(e => e.playerId)
+      .map(e => {
+        const p = roster.find(r => r.id === e.playerId);
+        return p ? `${p.first_name}${e.count > 1 ? ` x${e.count}` : ""}` : "";
+      })
+      .filter(Boolean)
+      .join(", ");
+
+
 
   return (
     <div className="space-y-4 pt-2">
