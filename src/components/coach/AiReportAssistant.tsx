@@ -16,7 +16,7 @@ export interface AiReportContext {
   potm?: string;
 }
 
-function encodeWav(chunks: Float32Array[], sampleRate: number) {
+export function encodeWav(chunks: Float32Array[], sampleRate: number) {
   const length = chunks.reduce((n, c) => n + c.length, 0);
   const samples = new Float32Array(length);
   let offset = 0;
