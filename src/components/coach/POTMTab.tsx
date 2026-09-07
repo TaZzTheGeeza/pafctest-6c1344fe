@@ -30,11 +30,21 @@ interface POTMTabProps {
   teamSlug: string; teamName: string; opponent: string; fixture: FAFixture;
   /** Hide the internal save button when embedded inside the match report. */
   hideSaveButton?: boolean;
+  /** Live match details entered by the coach (score, scorers, assists) for AI write-ups. */
+  matchContext?: {
+    isHome: boolean;
+    homeScore: number;
+    awayScore: number;
+    scorers?: string;
+    assists?: string;
+  };
 }
 
+
 export const POTMTab = forwardRef<POTMHandle, POTMTabProps>(function POTMTab({
-  teamSlug, teamName, opponent, fixture, hideSaveButton,
+  teamSlug, teamName, opponent, fixture, hideSaveButton, matchContext,
 }, ref) {
+
   const { data: roster = [] } = useTeamRoster(teamSlug);
   const queryClient = useQueryClient();
   const [entries, setEntries] = useState<POTMEntry[]>([
@@ -208,10 +218,15 @@ export const POTMTab = forwardRef<POTMHandle, POTMTabProps>(function POTMTab({
                   playerName: player?.first_name || "",
                   teamName,
                   opponent,
-                  isHome: !!fixture?.homeTeam?.includes("Peterborough Athletic"),
-                  homeScore: fixture?.homeScore,
-                  awayScore: fixture?.awayScore,
+                  isHome: matchContext
+                    ? matchContext.isHome
+                    : !!fixture?.homeTeam?.includes("Peterborough Athletic"),
+                  homeScore: matchContext ? matchContext.homeScore : fixture?.homeScore,
+                  awayScore: matchContext ? matchContext.awayScore : fixture?.awayScore,
+                  scorers: matchContext?.scorers,
+                  assists: matchContext?.assists,
                   matchDate: fixture?.date,
+
                 }}
                 reason={entry.reason}
                 onReasonChange={(text) => updateEntry(i, "reason", text)}
