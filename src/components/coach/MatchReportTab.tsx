@@ -367,7 +367,15 @@ export function MatchReportTab({
           teamName={teamName}
           opponent={opponent}
           fixture={fixture}
+          matchContext={{
+            isHome,
+            homeScore: parseInt(homeScore) || 0,
+            awayScore: parseInt(awayScore) || 0,
+            scorers: entriesToText(goalEntries),
+            assists: entriesToText(assistEntries),
+          }}
           hideSaveButton
+
         />
       </div>
 
