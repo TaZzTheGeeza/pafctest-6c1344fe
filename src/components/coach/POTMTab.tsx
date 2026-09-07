@@ -30,7 +30,16 @@ interface POTMTabProps {
   teamSlug: string; teamName: string; opponent: string; fixture: FAFixture;
   /** Hide the internal save button when embedded inside the match report. */
   hideSaveButton?: boolean;
+  /** Live match details entered by the coach (score, scorers, assists) for AI write-ups. */
+  matchContext?: {
+    isHome: boolean;
+    homeScore: number;
+    awayScore: number;
+    scorers?: string;
+    assists?: string;
+  };
 }
+
 
 export const POTMTab = forwardRef<POTMHandle, POTMTabProps>(function POTMTab({
   teamSlug, teamName, opponent, fixture, hideSaveButton,
