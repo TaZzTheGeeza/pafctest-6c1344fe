@@ -218,10 +218,15 @@ export const POTMTab = forwardRef<POTMHandle, POTMTabProps>(function POTMTab({
                   playerName: player?.first_name || "",
                   teamName,
                   opponent,
-                  isHome: !!fixture?.homeTeam?.includes("Peterborough Athletic"),
-                  homeScore: fixture?.homeScore,
-                  awayScore: fixture?.awayScore,
+                  isHome: matchContext
+                    ? matchContext.isHome
+                    : !!fixture?.homeTeam?.includes("Peterborough Athletic"),
+                  homeScore: matchContext ? matchContext.homeScore : fixture?.homeScore,
+                  awayScore: matchContext ? matchContext.awayScore : fixture?.awayScore,
+                  scorers: matchContext?.scorers,
+                  assists: matchContext?.assists,
                   matchDate: fixture?.date,
+
                 }}
                 reason={entry.reason}
                 onReasonChange={(text) => updateEntry(i, "reason", text)}
