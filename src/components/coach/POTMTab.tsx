@@ -42,8 +42,9 @@ interface POTMTabProps {
 
 
 export const POTMTab = forwardRef<POTMHandle, POTMTabProps>(function POTMTab({
-  teamSlug, teamName, opponent, fixture, hideSaveButton,
+  teamSlug, teamName, opponent, fixture, hideSaveButton, matchContext,
 }, ref) {
+
   const { data: roster = [] } = useTeamRoster(teamSlug);
   const queryClient = useQueryClient();
   const [entries, setEntries] = useState<POTMEntry[]>([
