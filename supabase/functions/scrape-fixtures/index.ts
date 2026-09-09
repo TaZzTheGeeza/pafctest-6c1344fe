@@ -263,7 +263,16 @@ Deno.serve(async (req) => {
       const stale = cacheAge >= FRESH_MS;
       if (stale) {
         // @ts-ignore EdgeRuntime is provided by the edge runtime
-        EdgeRuntime.waitUntil(refresh(60_000).catch((e) => console.warn('Background refresh failed:', e)));
+        // Teams refresh in the same window, which trips Firecrawl's shared rate limit.
+        // Stagger each background refresh and give it a much larger budget so retries
+        // can actually wait out the advertised 429 window.
+        const stagger = Math.floor(Math.random() * 45_000);
+        EdgeRuntime.waitUntil(
+          (async () => {
+            await new Promise((r) => setTimeout(r, stagger));
+            await refresh(240_000);
+          })().catch((e) => console.warn('Background refresh failed:', e)),
+        );
       }
       return new Response(
         JSON.stringify({ success: true, team, fixtures: cached.fixtures ?? [], results: cached.results ?? [], cached: true, stale }),
