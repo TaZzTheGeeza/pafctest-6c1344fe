@@ -102,7 +102,7 @@ export function ReportTracker() {
             const ag = (r.age_group || "").toLowerCase();
             return ag === nameLower || tn.includes(nameLower) || tn.includes(legacyName);
           });
-          return { ...m, submitted: !!report };
+          return { ...m, submitted: !!report, submittedAt: report?.created_at };
         });
 
         return {
