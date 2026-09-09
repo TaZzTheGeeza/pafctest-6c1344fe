@@ -240,26 +240,38 @@ export function ReportTracker() {
                     </button>
                     {open && (
                       <div className="px-5 pb-4 space-y-1.5">
-                        {team.matches.map((m) => (
-                          <div
-                            key={`${m.dateISO}-${m.opponent}`}
-                            className="flex items-center justify-between text-xs rounded-lg bg-accent/20 px-3 py-2"
-                          >
-                            <span className="text-foreground truncate">
-                              vs {m.opponent}
-                              <span className="text-muted-foreground"> · {m.displayDate}</span>
-                            </span>
-                            {m.submitted ? (
-                              <span className="flex items-center gap-1 text-green-500 shrink-0 ml-2">
-                                <CheckCircle2 className="h-3 w-3" /> Submitted
+                        {team.matches.map((m) => {
+                          const submittedDate = m.submittedAt
+                            ? new Date(m.submittedAt).toLocaleString("en-GB", {
+                                day: "numeric",
+                                month: "short",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })
+                            : null;
+                          return (
+                            <div
+                              key={`${m.dateISO}-${m.opponent}`}
+                              className="flex items-center justify-between text-xs rounded-lg bg-accent/20 px-3 py-2"
+                            >
+                              <span className="text-foreground truncate">
+                                vs {m.opponent}
+                                <span className="text-muted-foreground"> · {m.displayDate}</span>
                               </span>
-                            ) : (
-                              <span className="flex items-center gap-1 text-red-400 shrink-0 ml-2">
-                                <XCircle className="h-3 w-3" /> Not submitted
-                              </span>
-                            )}
-                          </div>
-                        ))}
+                              {m.submitted ? (
+                                <span className="flex items-center gap-1.5 text-green-500 shrink-0 ml-2" title={`Submitted ${submittedDate}`}>
+                                  <CheckCircle2 className="h-3 w-3" />
+                                  <span className="hidden sm:inline">{submittedDate}</span>
+                                  <Clock className="h-3 w-3 sm:hidden" />
+                                </span>
+                              ) : (
+                                <span className="flex items-center gap-1 text-red-400 shrink-0 ml-2">
+                                  <XCircle className="h-3 w-3" /> Not submitted
+                                </span>
+                              )}
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
                   </div>
