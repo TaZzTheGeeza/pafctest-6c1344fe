@@ -19,6 +19,7 @@ interface PlayedMatch {
   dateISO: string; // yyyy-mm-dd
   displayDate: string;
   opponent: string;
+  submittedAt?: string | null;
 }
 
 function parseFaDate(d: string): string | null {
