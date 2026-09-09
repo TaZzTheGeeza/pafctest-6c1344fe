@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { CLUB_TEAMS } from "@/lib/teamConfig";
 import { faTeamConfigs } from "@/lib/faFixtureConfig";
-import { CheckCircle2, XCircle, ChevronDown, ClipboardCheck, RefreshCw } from "lucide-react";
+import { CheckCircle2, XCircle, ChevronDown, ClipboardCheck, RefreshCw, Clock } from "lucide-react";
 
 interface CachedFixture {
   date: string; // "DD/MM/YY"
