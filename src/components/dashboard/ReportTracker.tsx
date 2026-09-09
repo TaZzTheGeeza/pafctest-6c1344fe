@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { CLUB_TEAMS } from "@/lib/teamConfig";
 import { faTeamConfigs } from "@/lib/faFixtureConfig";
-import { CheckCircle2, XCircle, ChevronDown, ClipboardCheck, RefreshCw } from "lucide-react";
+import { CheckCircle2, XCircle, ChevronDown, ClipboardCheck, RefreshCw, Clock } from "lucide-react";
 
 interface CachedFixture {
   date: string; // "DD/MM/YY"
@@ -19,6 +19,7 @@ interface PlayedMatch {
   dateISO: string; // yyyy-mm-dd
   displayDate: string;
   opponent: string;
+  submittedAt?: string | null;
 }
 
 function parseFaDate(d: string): string | null {
@@ -36,7 +37,7 @@ export function ReportTracker() {
     queryFn: async () => {
       const [{ data: cacheRows, error: cacheErr }, { data: reports, error: repErr }] = await Promise.all([
         supabase.from("fa_fixture_cache").select("team, fixtures, results"),
-        supabase.from("match_reports").select("id, team_name, age_group, match_date, opponent"),
+        supabase.from("match_reports").select("id, team_name, age_group, match_date, opponent, created_at"),
       ]);
       if (cacheErr) throw cacheErr;
       if (repErr) throw repErr;
@@ -101,7 +102,7 @@ export function ReportTracker() {
             const ag = (r.age_group || "").toLowerCase();
             return ag === nameLower || tn.includes(nameLower) || tn.includes(legacyName);
           });
-          return { ...m, submitted: !!report };
+          return { ...m, submitted: !!report, submittedAt: report?.created_at };
         });
 
         return {
@@ -239,26 +240,38 @@ export function ReportTracker() {
                     </button>
                     {open && (
                       <div className="px-5 pb-4 space-y-1.5">
-                        {team.matches.map((m) => (
-                          <div
-                            key={`${m.dateISO}-${m.opponent}`}
-                            className="flex items-center justify-between text-xs rounded-lg bg-accent/20 px-3 py-2"
-                          >
-                            <span className="text-foreground truncate">
-                              vs {m.opponent}
-                              <span className="text-muted-foreground"> · {m.displayDate}</span>
-                            </span>
-                            {m.submitted ? (
-                              <span className="flex items-center gap-1 text-green-500 shrink-0 ml-2">
-                                <CheckCircle2 className="h-3 w-3" /> Submitted
+                        {team.matches.map((m) => {
+                          const submittedDate = m.submittedAt
+                            ? new Date(m.submittedAt).toLocaleString("en-GB", {
+                                day: "numeric",
+                                month: "short",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })
+                            : null;
+                          return (
+                            <div
+                              key={`${m.dateISO}-${m.opponent}`}
+                              className="flex items-center justify-between text-xs rounded-lg bg-accent/20 px-3 py-2"
+                            >
+                              <span className="text-foreground truncate">
+                                vs {m.opponent}
+                                <span className="text-muted-foreground"> · {m.displayDate}</span>
                               </span>
-                            ) : (
-                              <span className="flex items-center gap-1 text-red-400 shrink-0 ml-2">
-                                <XCircle className="h-3 w-3" /> Not submitted
-                              </span>
-                            )}
-                          </div>
-                        ))}
+                              {m.submitted ? (
+                                <span className="flex items-center gap-1.5 text-green-500 shrink-0 ml-2" title={`Submitted ${submittedDate}`}>
+                                  <CheckCircle2 className="h-3 w-3" />
+                                  <span className="hidden sm:inline">{submittedDate}</span>
+                                  <Clock className="h-3 w-3 sm:hidden" />
+                                </span>
+                              ) : (
+                                <span className="flex items-center gap-1 text-red-400 shrink-0 ml-2">
+                                  <XCircle className="h-3 w-3" /> Not submitted
+                                </span>
+                              )}
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
                   </div>
