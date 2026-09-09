@@ -37,7 +37,7 @@ export function ReportTracker() {
     queryFn: async () => {
       const [{ data: cacheRows, error: cacheErr }, { data: reports, error: repErr }] = await Promise.all([
         supabase.from("fa_fixture_cache").select("team, fixtures, results"),
-        supabase.from("match_reports").select("id, team_name, age_group, match_date, opponent"),
+        supabase.from("match_reports").select("id, team_name, age_group, match_date, opponent, created_at"),
       ]);
       if (cacheErr) throw cacheErr;
       if (repErr) throw repErr;
