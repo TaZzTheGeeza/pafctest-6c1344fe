@@ -111,8 +111,7 @@ export function ReportTracker() {
           submitted: matches.filter((m) => m.submitted).length,
           missing: matches.filter((m) => !m.submitted),
         };
-      })
-      .filter((t) => t.matches.length > 0);
+      });
   }, [data]);
 
   const totals = useMemo(() => {
@@ -199,14 +198,19 @@ export function ReportTracker() {
               {visibleTeams.map((team) => {
                 const open = expanded === team.slug;
                 const allDone = team.missing.length === 0;
+                const nonePlayed = team.matches.length === 0;
                 return (
                   <div key={team.slug}>
                     <button
-                      onClick={() => setExpanded(open ? null : team.slug)}
-                      className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-accent/30 transition-colors text-left"
+                      onClick={() => !nonePlayed && setExpanded(open ? null : team.slug)}
+                      className={`w-full flex items-center justify-between px-5 py-3.5 transition-colors text-left ${
+                        nonePlayed ? "opacity-60 cursor-default" : "hover:bg-accent/30"
+                      }`}
                     >
                       <div className="flex items-center gap-3 min-w-0">
-                        {allDone ? (
+                        {nonePlayed ? (
+                          <span className="h-4 w-4 shrink-0 rounded-full border border-border" />
+                        ) : allDone ? (
                           <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
                         ) : (
                           <XCircle className="h-4 w-4 text-red-400 shrink-0" />
@@ -217,16 +221,20 @@ export function ReportTracker() {
                       </div>
                       <div className="flex items-center gap-3 shrink-0">
                         <span className="text-xs text-muted-foreground">
-                          {team.submitted}/{team.matches.length} reports
+                          {nonePlayed
+                            ? "Season not started"
+                            : `${team.submitted}/${team.matches.length} reports`}
                         </span>
-                        {!allDone && (
+                        {!nonePlayed && !allDone && (
                           <span className="text-[10px] font-display tracking-wider uppercase bg-red-500/15 text-red-400 px-2 py-0.5 rounded-full">
                             {team.missing.length} missing
                           </span>
                         )}
-                        <ChevronDown
-                          className={`h-4 w-4 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`}
-                        />
+                        {!nonePlayed && (
+                          <ChevronDown
+                            className={`h-4 w-4 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`}
+                          />
+                        )}
                       </div>
                     </button>
                     {open && (
