@@ -111,8 +111,7 @@ export function ReportTracker() {
           submitted: matches.filter((m) => m.submitted).length,
           missing: matches.filter((m) => !m.submitted),
         };
-      })
-      .filter((t) => t.matches.length > 0);
+      });
   }, [data]);
 
   const totals = useMemo(() => {
