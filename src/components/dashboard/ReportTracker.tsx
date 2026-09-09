@@ -225,14 +225,16 @@ export function ReportTracker() {
                             ? "Season not started"
                             : `${team.submitted}/${team.matches.length} reports`}
                         </span>
-                        {!allDone && (
+                        {!nonePlayed && !allDone && (
                           <span className="text-[10px] font-display tracking-wider uppercase bg-red-500/15 text-red-400 px-2 py-0.5 rounded-full">
                             {team.missing.length} missing
                           </span>
                         )}
-                        <ChevronDown
-                          className={`h-4 w-4 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`}
-                        />
+                        {!nonePlayed && (
+                          <ChevronDown
+                            className={`h-4 w-4 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`}
+                          />
+                        )}
                       </div>
                     </button>
                     {open && (
