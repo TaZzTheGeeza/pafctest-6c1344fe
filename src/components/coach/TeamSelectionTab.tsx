@@ -160,7 +160,7 @@ export function TeamSelectionTab({
           title: "Squad Announced",
           message: `Team selection published for vs ${opponent}`,
           type: "info",
-          link: "/hub?tab=availability",
+          link: id ? `/lineup-reveal/${id}` : "/hub?tab=availability",
         },
         email: {
           templateName: "team-selection-published",

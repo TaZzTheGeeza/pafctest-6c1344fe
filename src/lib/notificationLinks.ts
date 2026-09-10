@@ -36,6 +36,9 @@ export function resolveNotificationLink(n: NotificationLinkSource): string {
   const text = `${n.title ?? ""} ${n.message ?? ""}`.toLowerCase();
 
   if (text.includes("match report") || text.includes("player of the match")) return "/results";
+  if (text.includes("squad") || text.includes("lineup") || text.includes("line-up") || text.includes("team selection")) {
+    return withTeam("/hub?tab=availability", n.team_slug);
+  }
   if (text.includes("registration")) return "/register";
   if (text.includes("meeting")) return "/meetings";
   if (text.includes("availability") || text.includes("fixture")) {
