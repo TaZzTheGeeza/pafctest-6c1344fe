@@ -1,6 +1,6 @@
 import * as React from 'npm:react@18.3.1'
 import {
-  Body, Container, Head, Heading, Html, Preview, Text, Section, Hr,
+  Body, Button, Container, Head, Heading, Html, Preview, Text, Section, Hr,
 } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
 
@@ -12,9 +12,10 @@ interface Props {
   scheduledTime?: string
   duration?: string
   description?: string
+  actionUrl?: string
 }
 
-const MeetingInviteEmail = ({ meetingTitle, scheduledDate, scheduledTime, duration, description }: Props) => (
+const MeetingInviteEmail = ({ meetingTitle, scheduledDate, scheduledTime, duration, description, actionUrl }: Props) => (
   <Html lang="en" dir="ltr">
     <Head />
     <Preview>You're invited: {meetingTitle || 'Club Meeting'}</Preview>
@@ -37,6 +38,7 @@ const MeetingInviteEmail = ({ meetingTitle, scheduledDate, scheduledTime, durati
         <Text style={text}>
           Head to the Meetings page on the PAFC website to join when the meeting starts.
         </Text>
+        {actionUrl && <Section style={buttonSection}><Button href={actionUrl} style={button}>View Meeting</Button></Section>}
         <Text style={footer}>— The {SITE_NAME} Team</Text>
       </Container>
     </Body>
@@ -62,3 +64,5 @@ const titleStyle = { fontSize: '16px', fontWeight: '600', color: '#1a1a1a', marg
 const detail = { fontSize: '13px', color: '#555', margin: '0 0 4px' }
 const descStyle = { fontSize: '13px', color: '#666', margin: '8px 0 0', fontStyle: 'italic' as const }
 const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
+const buttonSection = { textAlign: 'center' as const, margin: '22px 0' }
+const button = { backgroundColor: '#141414', color: '#ffd700', padding: '12px 24px', borderRadius: '4px', textDecoration: 'none', fontWeight: '700' }

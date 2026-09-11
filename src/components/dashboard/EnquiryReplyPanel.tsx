@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Mail, Send, Loader2, Clock, MessageSquare, ChevronDown, ChevronUp } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { useSearchParams } from "react-router-dom";
 
 interface Enquiry {
   id: string;
@@ -23,10 +24,21 @@ export function EnquiryReplyPanel() {
   const [sending, setSending] = useState(false);
   const [replies, setReplies] = useState<Record<string, any[]>>({});
   const [loadingReplies, setLoadingReplies] = useState<string | null>(null);
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
     loadEnquiries();
   }, []);
+
+  useEffect(() => {
+    const submissionId = searchParams.get("submission");
+    if (!submissionId || enquiries.length === 0) return;
+    if (enquiries.some((item) => item.id === submissionId)) {
+      setExpandedId(submissionId);
+      loadReplies(submissionId);
+      requestAnimationFrame(() => document.getElementById(`enquiry-${submissionId}`)?.scrollIntoView({ behavior: "smooth", block: "center" }));
+    }
+  }, [enquiries, searchParams]);
 
   async function loadEnquiries() {
     setLoading(true);
@@ -125,7 +137,7 @@ export function EnquiryReplyPanel() {
         const eqReplies = replies[eq.id] ?? [];
 
         return (
-          <div key={eq.id} className="transition-colors">
+          <div id={`enquiry-${eq.id}`} key={eq.id} className="transition-colors scroll-mt-28">
             <div className="p-5 hover:bg-secondary/30 cursor-pointer" onClick={() => toggleExpand(eq.id)}>
               <div className="flex items-start justify-between gap-4 mb-2">
                 <div className="flex items-center gap-3">

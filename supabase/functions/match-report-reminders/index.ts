@@ -115,7 +115,7 @@ serve(async (req) => {
     const nameToSlug = new Map(Object.entries(TEAMS).map(([slug, name]) => [name, slug]));
 
     let sent = 0;
-    const pushBatches: { userIds: string[]; title: string; message: string }[] = [];
+    const pushBatches: { userIds: string[]; title: string; message: string; link: string }[] = [];
 
     for (const row of cache || []) {
       const slug = nameToSlug.get(row.team as string);

@@ -1,6 +1,6 @@
 import * as React from 'npm:react@18.3.1'
 import {
-  Body, Container, Head, Heading, Html, Preview, Text, Section, Hr,
+  Body, Button, Container, Head, Heading, Html, Preview, Text, Section, Hr,
 } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
 
@@ -12,9 +12,10 @@ interface Props {
   formation?: string
   teamName?: string
   playerCount?: number
+  actionUrl?: string
 }
 
-const TeamSelectionPublishedEmail = ({ opponent, fixtureDate, formation, teamName, playerCount }: Props) => (
+const TeamSelectionPublishedEmail = ({ opponent, fixtureDate, formation, teamName, playerCount, actionUrl }: Props) => (
   <Html lang="en" dir="ltr">
     <Head />
     <Preview>Squad announced for {opponent || 'upcoming match'}</Preview>
@@ -37,6 +38,7 @@ const TeamSelectionPublishedEmail = ({ opponent, fixtureDate, formation, teamNam
         <Text style={text}>
           Check the PAFC Hub for the full squad list and notes.
         </Text>
+        {actionUrl && <Section style={buttonSection}><Button href={actionUrl} style={button}>View Lineup</Button></Section>}
         <Text style={footer}>— The {SITE_NAME} Team</Text>
       </Container>
     </Body>
@@ -61,3 +63,5 @@ const teamBadge = { fontSize: '11px', fontWeight: '600', color: '#b8860b', backg
 const matchBox = { backgroundColor: '#f9f9f9', borderRadius: '8px', padding: '16px 20px', margin: '0 0 20px' }
 const matchDetail = { fontSize: '13px', color: '#555', margin: '0 0 6px' }
 const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
+const buttonSection = { textAlign: 'center' as const, margin: '22px 0' }
+const button = { backgroundColor: '#141414', color: '#ffd700', padding: '12px 24px', borderRadius: '4px', textDecoration: 'none', fontWeight: '700' }

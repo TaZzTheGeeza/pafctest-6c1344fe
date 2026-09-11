@@ -1,6 +1,6 @@
 import * as React from 'npm:react@18.3.1'
 import {
-  Body, Container, Head, Heading, Html, Img, Preview, Text, Section, Hr,
+  Body, Button, Container, Head, Heading, Html, Img, Preview, Text, Section, Hr,
 } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
 
@@ -10,9 +10,11 @@ const LOGO_URL = 'https://scfiodwfvpjqgfmekqwg.supabase.co/storage/v1/object/pub
 interface Props {
   title?: string
   message?: string
+  actionUrl?: string
+  ctaLabel?: string
 }
 
-const AdminBroadcastEmail = ({ title, message }: Props) => (
+const AdminBroadcastEmail = ({ title, message, actionUrl, ctaLabel }: Props) => (
   <Html lang="en" dir="ltr">
     <Head />
     <Preview>{title || 'Club Announcement'}</Preview>
@@ -28,6 +30,7 @@ const AdminBroadcastEmail = ({ title, message }: Props) => (
         </Section>
         <Heading style={h2}>{title || 'Announcement'}</Heading>
         <Text style={text}>{message || ''}</Text>
+        {actionUrl && <Section style={buttonSection}><Button href={actionUrl} style={button}>{ctaLabel || 'View Details'}</Button></Section>}
         <Text style={footer}>— The {SITE_NAME} Team</Text>
       </Container>
     </Body>
@@ -52,3 +55,5 @@ const text = { fontSize: '14px', color: '#55575d', lineHeight: '1.6', margin: '0
 const badgeWrap = { margin: '10px 0 0' }
 const badge = { fontSize: '11px', fontWeight: '600', color: '#b8860b', backgroundColor: '#fdf6e3', padding: '4px 10px', borderRadius: '4px', display: 'inline-block' as const, margin: '0', textTransform: 'uppercase' as const, letterSpacing: '0.05em' }
 const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
+const buttonSection = { textAlign: 'center' as const, margin: '22px 0' }
+const button = { backgroundColor: '#141414', color: '#ffd700', padding: '12px 24px', borderRadius: '4px', textDecoration: 'none', fontWeight: '700' }

@@ -504,8 +504,8 @@ export default function PlayerRegistrationAdminPage() {
                   `Please complete it as soon as possible so your child is fully registered to play this season.\n\n` +
                   `Register here: https://www.pa-fc.uk/register\n\n` +
                   `If you've already completed this and believe you're seeing this in error, please reply to this email and we'll get it sorted.`,
-                  actionUrl: "https://www.pa-fc.uk/register",
-                  ctaLabel: "Complete Registration",
+                actionUrl: "https://www.pa-fc.uk/register",
+                ctaLabel: "Complete Registration",
               },
             },
           })

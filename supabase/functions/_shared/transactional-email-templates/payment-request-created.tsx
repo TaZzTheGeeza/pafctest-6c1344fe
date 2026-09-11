@@ -1,6 +1,6 @@
 import * as React from 'npm:react@18.3.1'
 import {
-  Body, Container, Head, Heading, Html, Preview, Text, Section, Hr,
+  Body, Button, Container, Head, Heading, Html, Preview, Text, Section, Hr,
 } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
 
@@ -11,9 +11,10 @@ interface Props {
   amount?: string
   dueDate?: string
   teamName?: string
+  actionUrl?: string
 }
 
-const PaymentRequestCreatedEmail = ({ title, amount, dueDate, teamName }: Props) => (
+const PaymentRequestCreatedEmail = ({ title, amount, dueDate, teamName, actionUrl }: Props) => (
   <Html lang="en" dir="ltr">
     <Head />
     <Preview>New payment request: {title || 'Payment due'}</Preview>
@@ -37,6 +38,7 @@ const PaymentRequestCreatedEmail = ({ title, amount, dueDate, teamName }: Props)
         <Text style={text}>
           Log in to the PAFC Hub to view details and mark as paid.
         </Text>
+        {actionUrl && <Section style={buttonSection}><Button href={actionUrl} style={button}>View Payment</Button></Section>}
         <Text style={footer}>— The {SITE_NAME} Team</Text>
       </Container>
     </Body>
@@ -62,3 +64,5 @@ const amountBox = { backgroundColor: '#f9f9f9', borderRadius: '8px', padding: '1
 const amountText = { fontSize: '28px', fontWeight: '700', color: '#b8860b', margin: '0' }
 const dueDateText = { fontSize: '12px', color: '#888', margin: '4px 0 0' }
 const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
+const buttonSection = { textAlign: 'center' as const, margin: '22px 0' }
+const button = { backgroundColor: '#141414', color: '#ffd700', padding: '12px 24px', borderRadius: '4px', textDecoration: 'none', fontWeight: '700' }
