@@ -8,6 +8,7 @@ import { Check, X, HelpCircle, Loader2, MapPin, Clock, Navigation, ChevronDown, 
 
 import { toast } from "sonner";
 import { AddAvailabilityEventDialog } from "./AddAvailabilityEventDialog";
+import { EditAvailabilityEventDialog } from "./EditAvailabilityEventDialog";
 import { ReminderPreviewDialog } from "./ReminderPreviewDialog";
 import { CoachFixturePanel } from "@/components/CoachFixturePanel";
 import { useVenueAddresses } from "@/hooks/useVenueAddresses";
