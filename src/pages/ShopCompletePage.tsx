@@ -116,7 +116,7 @@ export default function ShopCompletePage() {
               )}
               <div className="flex flex-wrap gap-3 justify-center">
                 <Button asChild className="bg-gold-gradient text-primary-foreground font-display tracking-wider">
-                  <Link to="/profile?tab=orders">View My Orders</Link>
+                  <Link to="/my-profile?tab=orders">View My Orders</Link>
                 </Button>
                 <Button asChild variant="outline">
                   <Link to="/shop">Back to Shop</Link>
@@ -143,7 +143,7 @@ export default function ShopCompletePage() {
                   Check again
                 </Button>
                 <Button asChild variant="outline">
-                  <Link to="/profile?tab=orders">My Orders</Link>
+                  <Link to="/my-profile?tab=orders">My Orders</Link>
                 </Button>
               </div>
             </>
