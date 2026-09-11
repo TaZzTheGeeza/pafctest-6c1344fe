@@ -365,7 +365,22 @@ const ageGroups = [
 ];
 
 function TeamCard({ team, index }: { team: TeamData; index: number }) {
-  const f = team.nextFixture;
+  const { data: liveData, isLoading } = useTeamFixtures(team.slug);
+  const nextFixture = (liveData?.fixtures ?? [])
+    .filter(isFutureFixture)
+    .sort((a, b) => {
+      const first = parseFADate(a.date, a.time)?.getTime() ?? Number.MAX_SAFE_INTEGER;
+      const second = parseFADate(b.date, b.time)?.getTime() ?? Number.MAX_SAFE_INTEGER;
+      return first - second;
+    })[0];
+  const f = nextFixture
+    ? {
+        opponent: nextFixture.homeTeam.includes("Peterborough Ath") ? nextFixture.awayTeam : nextFixture.homeTeam,
+        venue: nextFixture.homeTeam.includes("Peterborough Ath") ? "Home" as const : "Away" as const,
+        date: formatFADate(nextFixture.date),
+        kickoff: nextFixture.time || "TBC",
+      }
+    : team.nextFixture;
   return (
     <motion.div
       initial={{ opacity: 0, y: 24 }}
@@ -401,7 +416,9 @@ function TeamCard({ team, index }: { team: TeamData; index: number }) {
                 {f.venue.toUpperCase()}
               </span>
             </div>
-            <p className="text-sm font-medium text-foreground truncate mb-1.5">vs {f.opponent}</p>
+            <p className="text-sm font-medium text-foreground truncate mb-1.5">
+              {isLoading ? "Loading fixture…" : `vs ${f.opponent}`}
+            </p>
             <div className="flex items-center gap-3 text-xs text-muted-foreground">
               <span className="flex items-center gap-1"><Calendar className="w-3 h-3 text-primary/60" />{f.date}</span>
               <span className="flex items-center gap-1"><Clock className="w-3 h-3 text-primary/60" />{f.kickoff}</span>
