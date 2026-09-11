@@ -53,16 +53,25 @@ serve(async (req) => {
       });
     }
 
-    // Fetch the billing request with its linked payment
+    // Fetch the billing request with its linked payment.
+    // GoCardless exposes the payment under a few different keys depending on
+    // the flow, so check all of them.
     const br = await gcGet(`/billing_requests/${br_id}`, gcToken);
     const billingRequest = br.billing_requests;
-    const paymentId = billingRequest?.links?.payment;
+    const paymentId =
+      billingRequest?.links?.payment ||
+      billingRequest?.links?.payment_request_payment ||
+      billingRequest?.payment_request?.links?.payment;
 
     if (!paymentId || billingRequest.status === "failed" || billingRequest.status === "cancelled") {
       if (billingRequest.status === "failed" || billingRequest.status === "cancelled") {
         await adminClient.from("shop_orders").update({ status: "cancelled" }).eq("id", order_id);
       }
-      return new Response(JSON.stringify({ status: "pending" }), {
+      return new Response(JSON.stringify({
+        status: billingRequest.status === "failed" || billingRequest.status === "cancelled" ? "cancelled" : "pending",
+        flow_complete: billingRequest.status === "fulfilled",
+        billing_request_status: billingRequest.status,
+      }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -74,7 +83,11 @@ serve(async (req) => {
     // "pending_submission"/"submitted" can still be treated as successful for PIS.
     const paidStates = ["confirmed", "paid_out", "submitted", "pending_submission"];
     if (!paidStates.includes(payment.status)) {
-      return new Response(JSON.stringify({ status: "pending", payment_status: payment.status }), {
+      return new Response(JSON.stringify({
+        status: payment.status === "failed" || payment.status === "cancelled" ? "cancelled" : "pending",
+        flow_complete: true,
+        payment_status: payment.status,
+      }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }

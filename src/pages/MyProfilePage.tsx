@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Navbar } from "@/components/Navbar";
@@ -104,7 +104,8 @@ export default function MyProfilePage() {
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [shopOrders, setShopOrders] = useState<ShopOrder[]>([]);
   const [shopOrdersLoading, setShopOrdersLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState("overview");
+  const [searchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "overview");
 
   // Edit state
   const [isEditingName, setIsEditingName] = useState(false);
