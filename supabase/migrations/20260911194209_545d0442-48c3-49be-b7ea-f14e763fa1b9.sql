@@ -1,0 +1,2 @@
+ALTER TABLE public.shop_products ADD COLUMN IF NOT EXISTS tags TEXT[] NOT NULL DEFAULT '{}';
+ALTER TABLE public.shop_products ADD COLUMN IF NOT EXISTS handle TEXT;

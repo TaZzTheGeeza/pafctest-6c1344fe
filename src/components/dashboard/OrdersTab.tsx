@@ -43,6 +43,7 @@ interface LineItemOverride {
 
 interface ShopifyOrder {
   id: string;
+  source: "shopify" | "club-shop";
   shopify_order_id: number;
   order_name: string;
   order_number: number;
@@ -138,8 +139,9 @@ export function OrdersTab() {
       if (!clean.size && !clean.initials && !clean.note) delete next[String(item.id)];
       else next[String(item.id)] = clean;
 
+      const table = order.source === "club-shop" ? "shop_orders" : "shopify_orders";
       const { error } = await supabase
-        .from("shopify_orders" as any)
+        .from(table as any)
         .update({ admin_overrides: next } as any)
         .eq("id", order.id);
       if (error) throw error;
@@ -163,8 +165,9 @@ export function OrdersTab() {
     setOrders((prev) =>
       prev.map((o) => (o.id === order.id ? { ...o, progress_status: value } : o))
     );
+    const table = order.source === "club-shop" ? "shop_orders" : "shopify_orders";
     const { error } = await supabase
-      .from("shopify_orders" as any)
+      .from(table as any)
       .update({ progress_status: value } as any)
       .eq("id", order.id);
     if (error) {
@@ -180,18 +183,23 @@ export function OrdersTab() {
   const fetchOrders = useCallback(async () => {
     setLoading(true);
     try {
-      // Pull the latest orders straight from Shopify first so the dashboard
-      // is correct even if the store webhook never reached us.
-      try {
-        const { data: sync, error: syncErr } = await supabase.functions.invoke("shopify-orders", {
-          body: {},
-        });
-        if (syncErr) throw syncErr;
-        if ((sync as any)?.error) throw new Error((sync as any).error);
-        setSyncWarning(null);
-      } catch (e: any) {
-        console.error("Shopify sync failed:", e);
-        setSyncWarning("Could not reach Shopify just now — showing the last saved orders.");
+      // Only bother talking to Shopify if legacy Shopify orders exist — the shop
+      // now runs on the built-in club shop, so most dashboards have nothing to sync.
+      const { count: shopifyCount } = await supabase
+        .from("shopify_orders" as any)
+        .select("id", { count: "exact", head: true });
+      if ((shopifyCount ?? 0) > 0) {
+        try {
+          const { data: sync, error: syncErr } = await supabase.functions.invoke("shopify-orders", {
+            body: {},
+          });
+          if (syncErr) throw syncErr;
+          if ((sync as any)?.error) throw new Error((sync as any).error);
+          setSyncWarning(null);
+        } catch (e: any) {
+          console.error("Shopify sync failed:", e);
+          setSyncWarning("Could not reach Shopify just now — showing the last saved Shopify orders. New club shop orders are unaffected.");
+        }
       }
 
       let query = supabase
@@ -208,9 +216,58 @@ export function OrdersTab() {
         query = query.not("cancelled_at", "is", null);
       }
 
-      const { data, error } = await query;
+      const [{ data, error }, { data: shopData, error: shopErr }] = await Promise.all([
+        query,
+        supabase
+          .from("shop_orders" as any)
+          .select("*")
+          .order("created_at", { ascending: false })
+          .limit(100),
+      ]);
       if (error) throw error;
-      const rows = (data as any as ShopifyOrder[]) ?? [];
+      if (shopErr) throw shopErr;
+
+      const shopifyRows: ShopifyOrder[] = ((data as any[]) ?? []).map((o) => ({ ...o, source: "shopify" as const }));
+
+      // Map the new club shop orders into the same shape so both lists share one view.
+      const clubRows: ShopifyOrder[] = ((shopData as any[]) ?? [])
+        .filter((o) => {
+          if (statusFilter === "paid") return o.status === "paid";
+          if (statusFilter === "pending") return o.status !== "paid" && o.status !== "cancelled";
+          if (statusFilter === "cancelled") return o.status === "cancelled";
+          return true;
+        })
+        .map((o): ShopifyOrder => ({
+          id: o.id,
+          source: "club-shop",
+          shopify_order_id: 0,
+          order_name: `#${String(o.id).slice(0, 8).toUpperCase()}`,
+          order_number: 0,
+          email: o.email,
+          customer_first_name: o.customer_name,
+          customer_last_name: null,
+          customer_email: o.email,
+          financial_status: o.status === "paid" ? "paid" : o.status === "cancelled" ? "voided" : "pending",
+          fulfillment_status: null,
+          total_price: (o.total_cents || 0) / 100,
+          currency: "GBP",
+          line_items: ((o.items as any[]) || []).map((it, idx) => ({
+            id: idx + 1,
+            title: it.name,
+            variant_title: it.size,
+            quantity: it.quantity,
+            price: ((it.price_cents || 0) / 100).toFixed(2),
+            properties: it.initials ? [{ name: "Initials", value: it.initials }] : [],
+          })),
+          admin_overrides: o.admin_overrides,
+          progress_status: o.progress_status,
+          cancelled_at: o.status === "cancelled" ? o.updated_at : null,
+          shopify_created_at: o.created_at,
+        }));
+
+      const rows = [...clubRows, ...shopifyRows].sort(
+        (a, b) => new Date(b.shopify_created_at).getTime() - new Date(a.shopify_created_at).getTime()
+      );
       setOrders(rows);
       fetchLinkedChildren(rows);
     } catch (err: any) {
@@ -471,6 +528,9 @@ export function OrdersTab() {
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                       <div className="flex items-center gap-3 min-w-0">
                         <span className="text-sm font-display font-bold text-primary flex-shrink-0">{order.order_name}</span>
+                        <Badge className={`${order.source === "club-shop" ? "bg-primary/15 text-primary" : "bg-secondary/60 text-muted-foreground"} border-0 text-[10px] flex-shrink-0`}>
+                          {order.source === "club-shop" ? "Club Shop" : "Shopify"}
+                        </Badge>
                         <div className="min-w-0">
                           <p className="text-sm font-display font-semibold text-foreground truncate">
                             {customerName(order)}

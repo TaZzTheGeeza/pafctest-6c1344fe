@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X, ChevronDown, Trophy, ShoppingBag, LogIn, Newspaper, CalendarDays, Image, Award, Clock, UserPlus, FileText, Shield, Info, Heart, MessageSquare, Settings, Youtube, User, Sparkles } from "lucide-react";
 
-import { CartDrawer } from "@/components/CartDrawer";
+import { ShopCartDrawer } from "@/components/shop/ShopCartDrawer";
 import { NotificationBell } from "@/components/hub/NotificationBell";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTournamentEnabled } from "@/hooks/useTournamentEnabled";
@@ -192,7 +192,7 @@ export function Navbar() {
           </div>
           <div className="flex items-center gap-3">
             <NotificationBell />
-            <span className="hidden lg:block"><CartDrawer /></span>
+            <span className="hidden lg:block"><ShopCartDrawer /></span>
              {(isAdmin || isCoach || isTreasurer) && (
               <Link to="/dashboard" className="font-display text-[10px] tracking-[0.15em] uppercase text-primary hover:text-primary/80 transition-colors flex items-center gap-1.5">
                 <Settings className="h-3 w-3" /> Dashboard
@@ -251,7 +251,7 @@ export function Navbar() {
             <span className="font-display text-sm font-bold text-primary">PAFC</span>
           </Link>
           <div className="flex items-center gap-3">
-            <CartDrawer />
+            <ShopCartDrawer />
             <button onClick={() => setIsOpen(!isOpen)} className="text-foreground p-1">
               {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>

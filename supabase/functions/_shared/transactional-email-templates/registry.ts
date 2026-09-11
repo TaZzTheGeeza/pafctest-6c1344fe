@@ -21,6 +21,7 @@ import { template as presentationSeatsAllocated } from './presentation-seats-all
 import { template as photoClaimLink } from './photo-claim-link.tsx'
 import { template as registrationConfirmation } from './registration-confirmation.tsx'
 import { template as tournamentParkingReminder } from './tournament-parking-reminder.tsx'
+import { template as shopOrderConfirmation } from './shop-order-confirmation.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'payment-request-created': paymentRequestCreated,
@@ -35,4 +36,5 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'photo-claim-link': photoClaimLink,
   'registration-confirmation': registrationConfirmation,
   'tournament-parking-reminder': tournamentParkingReminder,
+  'shop-order-confirmation': shopOrderConfirmation,
 }
