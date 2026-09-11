@@ -151,7 +151,7 @@ export function AwardsVoting({ teamSlug, teamName }: Props) {
     <div className="space-y-6">
       <div>
         <h2 className="font-display text-2xl font-bold flex items-center gap-2">
-          <Award className="h-6 w-6 text-primary" /> Presentation Awards — {teamName}
+          <Award className="h-6 w-6 text-primary" /> Presentation Awards - {teamName}
         </h2>
         <p className="text-sm text-muted-foreground mt-1">
           One vote per child for each award. You can change your vote while voting is open.

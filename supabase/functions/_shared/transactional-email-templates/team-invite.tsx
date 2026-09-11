@@ -27,7 +27,7 @@ const TeamInviteEmail = ({ teamName, signupUrl, inviterName }: Props) => (
           {inviterName ? `${inviterName} has` : 'A coach has'} invited you to join <strong>{teamName || 'the team'}</strong> as a Parent / Guardian on the PAFC platform.
         </Text>
         <Text style={text}>
-          Create your account using the link below. Once registered, you'll automatically have access to your child's team — including fixtures, availability, chat, and more.
+          Create your account using the link below. Once registered, you'll automatically have access to your child's team - including fixtures, availability, chat, and more.
         </Text>
         {signupUrl && (
           <Section style={btnSection}>
@@ -39,7 +39,7 @@ const TeamInviteEmail = ({ teamName, signupUrl, inviterName }: Props) => (
         <Text style={smallText}>
           Make sure to sign up using <strong>this email address</strong> so your account is linked automatically.
         </Text>
-        <Text style={footer}>— The {SITE_NAME} Team</Text>
+        <Text style={footer}> - The {SITE_NAME} Team</Text>
       </Container>
     </Body>
   </Html>

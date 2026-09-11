@@ -303,7 +303,7 @@ export default function PlayerRegistrationAdminPage() {
     return Array.from(set).sort();
   }, [registrations, roster]);
 
-  // Index PAID registrations per age group — pre-parsed for flexible matching.
+  // Index PAID registrations per age group - pre-parsed for flexible matching.
   type PaidIndex = { first: string; surname: string; full: string; ag: string };
   const paidIndex = useMemo<PaidIndex[]>(() => {
     return paidRegistrations.map((r) => {
@@ -484,7 +484,7 @@ export default function PlayerRegistrationAdminPage() {
       }));
       await supabase.from("hub_notifications").insert(notifications);
 
-      // 2. Email (admin-broadcast template) — one per parent with email
+      // 2. Email (admin-broadcast template) - one per parent with email
       const ts = Date.now();
       for (const [uid, players] of byParent.entries()) {
         const player = players[0];
@@ -497,7 +497,7 @@ export default function PlayerRegistrationAdminPage() {
               recipientEmail: player.parent_email,
               idempotencyKey: `reg-reminder-${uid}-${ts}`,
               templateData: {
-                title: "Player Registration Reminder — 2026/27 Season",
+                title: "Player Registration Reminder - 2026/27 Season",
                 message:
                   `Hi ${player.parent_name},\n\n` +
                   `Our records show that the 2026/27 registration & payment is still outstanding for:\n\n${childList}\n\n` +
@@ -864,7 +864,7 @@ function OutstandingList({ items, onMarkComplete, markingId, excludedItems, onTo
                     }
                   }}
                   className="inline-flex items-center gap-1.5 text-[10px] px-2.5 py-1 rounded-md bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 font-display tracking-wider"
-                  title="Hide from outstanding list — this person is a coach/staff member, not a player"
+                  title="Hide from outstanding list - this person is a coach/staff member, not a player"
                 >
                   NOT A PLAYER
                 </button>
@@ -880,7 +880,7 @@ function OutstandingList({ items, onMarkComplete, markingId, excludedItems, onTo
       {excludedItems.length > 0 && (
         <div className="bg-card border border-border rounded-xl overflow-hidden">
           <div className="px-4 py-3 bg-blue-500/10 border-b border-blue-500/20 text-xs text-blue-400 font-display tracking-wider">
-            Coaches / Staff — hidden from outstanding ({excludedItems.length})
+            Coaches / Staff - hidden from outstanding ({excludedItems.length})
           </div>
           <div className="divide-y divide-border">
             {excludedItems.map((p) => (
@@ -942,7 +942,7 @@ function RegistrationDetail({ registration: r, onClose, onDelete, onSaved }: {
         await supabase.storage.from("registration-photos").remove([form.photo_url]);
       }
       set("photo_url", path);
-      toast.success("Photo updated — click Save to persist");
+      toast.success("Photo updated - click Save to persist");
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : "Upload failed");
     } finally {
@@ -957,7 +957,7 @@ function RegistrationDetail({ registration: r, onClose, onDelete, onSaved }: {
       await supabase.storage.from("registration-photos").remove([form.photo_url]);
     }
     set("photo_url", null);
-    toast.success("Photo removed — click Save to persist");
+    toast.success("Photo removed - click Save to persist");
   };
 
   const save = async () => {
@@ -1106,7 +1106,7 @@ function RegistrationDetail({ registration: r, onClose, onDelete, onSaved }: {
                   <label className="flex items-center gap-2 text-sm text-foreground"><input type="checkbox" checked={!!form.declaration_confirmed} onChange={(e) => set("declaration_confirmed", e.target.checked)} /> Declaration Confirmed</label>
                   <label className="block mt-2"><span className="text-[10px] uppercase tracking-wider text-muted-foreground font-display">Payment Status</span>
                     <select className={inputCls} value={form.payment_status || ""} onChange={(e) => set("payment_status", e.target.value)}>
-                      <option value="">—</option>
+                      <option value="">-</option>
                       <option value="paid">paid</option>
                       <option value="pending">pending</option>
                       <option value="unpaid">unpaid</option>
@@ -1118,25 +1118,25 @@ function RegistrationDetail({ registration: r, onClose, onDelete, onSaved }: {
               <>
                 <Section title="Child">
                   <Field icon={UserIcon} label="Full Name" value={r.child_name} />
-                  <Field icon={Calendar} label="Date of Birth" value={r.child_dob ? format(new Date(r.child_dob), "dd/MM/yyyy") : "—"} />
+                  <Field icon={Calendar} label="Date of Birth" value={r.child_dob ? format(new Date(r.child_dob), "dd/MM/yyyy") : "-"} />
                   <Field icon={UserIcon} label="Preferred Age Group" value={r.preferred_age_group} />
-                  <Field icon={UserIcon} label="Previous Club" value={r.previous_club || "—"} />
-                  <Field icon={UserIcon} label="FA Fan Number" value={r.fa_fan_number || "—"} />
-                  <Field icon={MapPin} label="Address" value={r.address || "—"} />
+                  <Field icon={UserIcon} label="Previous Club" value={r.previous_club || "-"} />
+                  <Field icon={UserIcon} label="FA Fan Number" value={r.fa_fan_number || "-"} />
+                  <Field icon={MapPin} label="Address" value={r.address || "-"} />
                 </Section>
 
                 <Section title="Parent / Guardian">
                   <Field icon={UserIcon} label="Name" value={r.parent_name} />
-                  <Field icon={Calendar} label="Date of Birth" value={r.parent_dob ? format(new Date(r.parent_dob), "dd/MM/yyyy") : "—"} />
-                  <Field icon={UserIcon} label="Relationship" value={r.relationship_to_child || "—"} />
+                  <Field icon={Calendar} label="Date of Birth" value={r.parent_dob ? format(new Date(r.parent_dob), "dd/MM/yyyy") : "-"} />
+                  <Field icon={UserIcon} label="Relationship" value={r.relationship_to_child || "-"} />
                   <Field icon={Mail} label="Email" value={r.email} />
                   <Field icon={Phone} label="Phone" value={r.phone} />
                 </Section>
 
                 <Section title="Emergency Contact">
-                  <Field icon={UserIcon} label="Name" value={r.emergency_contact_name || "—"} />
-                  <Field icon={UserIcon} label="Relationship" value={r.emergency_contact_relationship || "—"} />
-                  <Field icon={Phone} label="Phone" value={r.emergency_contact_phone || "—"} />
+                  <Field icon={UserIcon} label="Name" value={r.emergency_contact_name || "-"} />
+                  <Field icon={UserIcon} label="Relationship" value={r.emergency_contact_relationship || "-"} />
+                  <Field icon={Phone} label="Phone" value={r.emergency_contact_phone || "-"} />
                 </Section>
 
                 <Section title="Medical & Safeguarding">
@@ -1144,7 +1144,7 @@ function RegistrationDetail({ registration: r, onClose, onDelete, onSaved }: {
                   <Field icon={ShieldAlert} label="Known to Social Services" value={r.known_to_social_services ? "Yes" : "No"} />
                   {r.social_services_details && <Field icon={ShieldAlert} label="Social Services Details" value={r.social_services_details} />}
                   {r.foster_care_details && <Field icon={ShieldAlert} label="Foster Care Details" value={r.foster_care_details} />}
-                  <Field icon={UserIcon} label="Additional Info" value={r.additional_info || "—"} />
+                  <Field icon={UserIcon} label="Additional Info" value={r.additional_info || "-"} />
                 </Section>
 
                 <Section title="Consents">

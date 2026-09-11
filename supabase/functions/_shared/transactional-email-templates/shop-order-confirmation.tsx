@@ -29,7 +29,7 @@ const ShopOrderConfirmationEmail = ({ customerName, orderId, items, total }: Pro
         <Heading style={h2}>Thanks for your order{customerName ? `, ${customerName}` : ''}!</Heading>
         <Text style={text}>
           Your club shop order{orderId ? ` (#${orderId})` : ''} has been received and paid.
-          We'll get it printed and ready as soon as possible — you'll hear from us when it's on its way.
+          We'll get it printed and ready as soon as possible - you'll hear from us when it's on its way.
         </Text>
         {items ? (
           <Section style={orderBox}>
@@ -44,7 +44,7 @@ const ShopOrderConfirmationEmail = ({ customerName, orderId, items, total }: Pro
         <Text style={smallText}>
           Any questions about your order? Just reply to this email or contact the club through the website.
         </Text>
-        <Text style={footer}>— The {SITE_NAME} Team</Text>
+        <Text style={footer}> - The {SITE_NAME} Team</Text>
       </Container>
     </Body>
   </Html>
@@ -55,7 +55,7 @@ export const template = {
   subject: (data: Record<string, any>) =>
     `Your PAFC shop order${data.orderId ? ` #${data.orderId}` : ''} is confirmed`,
   displayName: 'Shop order confirmation',
-  previewData: { customerName: 'Ben', orderId: 'A1B2C3D4', items: '1x PAFC Hoodie (M) — initials: BM', total: '30.00' },
+  previewData: { customerName: 'Ben', orderId: 'A1B2C3D4', items: '1x PAFC Hoodie (M) - initials: BM', total: '30.00' },
 } satisfies TemplateEntry
 
 const main = { backgroundColor: '#ffffff', fontFamily: "'Inter', Arial, sans-serif" }

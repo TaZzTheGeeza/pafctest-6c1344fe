@@ -218,7 +218,7 @@ function AdminInner() {
               {photos.length === 0 ? (
                 <div className="bg-card border border-border rounded-lg p-12 text-center">
                   <Camera className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground">No photos yet — upload some above</p>
+                  <p className="text-muted-foreground">No photos yet - upload some above</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">

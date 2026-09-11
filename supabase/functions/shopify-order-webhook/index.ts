@@ -43,7 +43,7 @@ Deno.serve(async (req) => {
     const webhookSecret = Deno.env.get("SHOPIFY_WEBHOOK_SECRET");
 
     if (!webhookSecret) {
-      console.error("SHOPIFY_WEBHOOK_SECRET is not configured — rejecting webhook");
+      console.error("SHOPIFY_WEBHOOK_SECRET is not configured - rejecting webhook");
       return new Response(JSON.stringify({ error: "Webhook not configured" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -177,7 +177,7 @@ Deno.serve(async (req) => {
 
     // Send notifications to admins
     const title = `🛒 New Order ${orderName}`;
-    const message = `${customerName} placed an order for ${itemCount} item${itemCount !== 1 ? "s" : ""} — ${currency} ${totalPrice}`;
+    const message = `${customerName} placed an order for ${itemCount} item${itemCount !== 1 ? "s" : ""} - ${currency} ${totalPrice}`;
 
     // Roles that get notified about shop orders (configurable via site_settings)
     let notifyRoles = ["admin", "treasurer"];

@@ -48,7 +48,7 @@ const PresentationSeatsAllocatedEmail = ({ playerName, eventTitle, allSeated, se
           <Section style={eventBox}>
             {(seats ?? []).map((s, i) => (
               <Text key={i} style={eventDetail}>
-                • <strong>{s.attendee}</strong> ({s.ticketType}) —{' '}
+                • <strong>{s.attendee}</strong> ({s.ticketType}) - {' '}
                 {s.table && s.seat != null ? `${s.table}, seat ${s.seat}` : 'no seat yet'}
               </Text>
             ))}
@@ -63,7 +63,7 @@ const PresentationSeatsAllocatedEmail = ({ playerName, eventTitle, allSeated, se
               View Seating Plan
             </Button>
           </Section>
-          <Text style={footer}>— The {SITE_NAME} Team</Text>
+          <Text style={footer}> - The {SITE_NAME} Team</Text>
         </Container>
       </Body>
     </Html>

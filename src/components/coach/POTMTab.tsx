@@ -115,7 +115,7 @@ export const POTMTab = forwardRef<POTMHandle, POTMTabProps>(function POTMTab({
             awardDate,
             teamSlug,
             onStatus: (status) => {
-              if (status === "processing") toast.info("Removing background — this may take a moment...");
+              if (status === "processing") toast.info("Removing background - this may take a moment...");
               if (status === "processed") toast.success("Background removed!");
               if (status === "fallback") toast.warning("Background removal failed, using original photo");
             },

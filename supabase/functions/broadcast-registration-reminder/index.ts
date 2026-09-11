@@ -17,25 +17,25 @@ Deno.serve(async (req) => {
   const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
   const supabase = createClient(supabaseUrl, serviceKey)
 
-  const TITLE = 'Action Required: Player Registration – Deadline Tue 30 June 2026'
+  const TITLE = 'Action Required: Player Registration - Deadline Tue 30 June 2026'
   const MESSAGE = `Hi,
 
 This is a quick reminder that every PAFC player must be registered for the 2026/27 season by Tuesday 30 June 2026.
 
-The league won't accept late registrations and any child not signed off won't be eligible to play in the opening fixtures, so please get this done as soon as you can — it only takes 5 minutes.
+The league won't accept late registrations and any child not signed off won't be eligible to play in the opening fixtures, so please get this done as soon as you can - it only takes 5 minutes.
 
 How to register:
 1. Go to https://www.pa-fc.uk/register
 2. Sign in or create your free PAFC account
 3. Fill in your child's details (DOB, medical info, emergency contact, FA Fan Number if you have one)
 4. Upload a clear head-and-shoulders photo of your child
-5. Submit — you'll get a confirmation email
+5. Submit - you'll get a confirmation email
 
 If you have more than one child at the club, please complete a separate registration for each player.
 
 Any issues, just reply to this email or message Ben and we'll help you through it.
 
-Thanks for getting this sorted early — it makes a huge difference to getting the season started smoothly.
+Thanks for getting this sorted early - it makes a huge difference to getting the season started smoothly.
 
 Up the Lions! 🦁`
 

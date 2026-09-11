@@ -142,7 +142,7 @@ export default function SafeguardingReportsPage() {
                     )}
                     <div>
                       <span className="text-muted-foreground">Reporter</span>
-                      <p className="font-medium">{selectedReport.is_anonymous ? "Anonymous" : selectedReport.reporter_name || "—"}</p>
+                      <p className="font-medium">{selectedReport.is_anonymous ? "Anonymous" : selectedReport.reporter_name || "-"}</p>
                     </div>
                     {!selectedReport.is_anonymous && selectedReport.reporter_email && (
                       <div>
@@ -227,7 +227,7 @@ export default function SafeguardingReportsPage() {
                           {new Date(report.created_at).toLocaleDateString("en-GB")}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          {report.is_anonymous ? "Anonymous" : report.reporter_name || "—"}
+                          {report.is_anonymous ? "Anonymous" : report.reporter_name || "-"}
                         </p>
                       </div>
                       <Eye className="h-4 w-4 text-muted-foreground shrink-0" />

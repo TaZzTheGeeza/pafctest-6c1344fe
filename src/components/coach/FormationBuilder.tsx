@@ -503,7 +503,7 @@ export function FormationBuilder({
         <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Subs bench ({bench.length})</Label>
         <div className="mt-1 flex flex-wrap gap-1.5 min-h-[36px] rounded-md border border-dashed border-border p-2">
           {bench.length === 0 && (
-            <span className="text-[11px] text-muted-foreground italic">No subs yet — pick from roster below</span>
+            <span className="text-[11px] text-muted-foreground italic">No subs yet - pick from roster below</span>
           )}
           {bench.map((p) => (
             <button
@@ -674,7 +674,7 @@ export function FormationBuilder({
                     </span>
                     {placedElsewhere && (
                       <span className="text-[10px] text-muted-foreground">
-                        on pitch — will swap
+                        on pitch - will swap
                       </span>
                     )}
                     {entry?.slot_id === "" && (

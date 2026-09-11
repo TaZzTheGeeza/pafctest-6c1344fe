@@ -302,7 +302,7 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
               Tournament Action Photos
             </h2>
             <p className="text-muted-foreground text-sm md:text-base">
-              Before you browse — a quick note about what you'll see.
+              Before you browse - a quick note about what you'll see.
             </p>
           </div>
 
@@ -318,12 +318,12 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
               <Sparkles className="h-5 w-5 text-primary" />
               <h3 className="font-semibold text-sm">Purchases are full quality</h3>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Once bought, your download is the original high-resolution, watermark-free file — sharp, crisp and print-ready.
+                Once bought, your download is the original high-resolution, watermark-free file - sharp, crisp and print-ready.
               </p>
             </div>
             <div className="rounded-xl border border-border/60 bg-card/50 p-4 space-y-2">
               <ShieldCheck className="h-5 w-5 text-primary" />
-              <h3 className="font-semibold text-sm">£2 each — supports the club</h3>
+              <h3 className="font-semibold text-sm">£2 each - supports the club</h3>
               <p className="text-xs text-muted-foreground leading-relaxed">
                 All proceeds go straight back into PAFC. We'll email you a <span className="text-foreground font-medium">secure download link</span> as soon as your bank confirms payment.
               </p>
@@ -367,12 +367,12 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
             Action Photos
           </h3>
           <p className="text-sm text-muted-foreground">
-            High-resolution action shots — £2 each. All proceeds go back into the club.
+            High-resolution action shots - £2 each. All proceeds go back into the club.
           </p>
           <div className="flex items-start gap-2 mt-2 bg-primary/10 border border-primary/20 rounded-lg px-3 py-2">
             <Mail className="h-4 w-4 text-primary shrink-0 mt-0.5" />
             <p className="text-xs text-muted-foreground">
-              After your bank confirms payment, we'll <span className="text-foreground font-semibold">email a secure magic link</span> to your inbox — open it on any device to download the full-resolution files. The link is also shown on screen right after payment.{" "}
+              After your bank confirms payment, we'll <span className="text-foreground font-semibold">email a secure magic link</span> to your inbox - open it on any device to download the full-resolution files. The link is also shown on screen right after payment.{" "}
               <Link to="/photos/claim" className="text-primary font-semibold hover:underline">Lost your link?</Link>
             </p>
           </div>
@@ -704,8 +704,7 @@ export function TournamentPhotoGallery({ tournamentId, ageGroups, defaultAgeGrou
               : "Buy this photo · £2"}
           </DialogTitle>
           <DialogDescription>
-            Pay instantly with your bank (Open Banking via GoCardless). No card details, no account needed —
-            we'll email a secure download link to the address below.
+            Pay instantly with your bank (Open Banking via GoCardless). No card details, no account needed - we'll email a secure download link to the address below.
           </DialogDescription>
           <div className="space-y-3 pt-2">
             <div>

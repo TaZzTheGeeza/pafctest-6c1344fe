@@ -111,7 +111,7 @@ export function AdminTeamDetail({ teamId, team }: AdminTeamDetailProps) {
             {whatsappContacts.length > 0 ? (
               whatsappContacts.map((c: any, i: number) => (
                 <div key={i}>
-                  <Detail label={`Contact ${i + 1}`} value={`${c.name || "—"} · ${c.number || "—"}`} />
+                  <Detail label={`Contact ${i + 1}`} value={`${c.name || "-"} · ${c.number || "-"}`} />
                 </div>
               ))
             ) : (

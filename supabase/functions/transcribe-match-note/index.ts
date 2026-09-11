@@ -38,7 +38,7 @@ serve(async (req) => {
     const form = await req.formData();
     const audio = form.get("audio");
     if (!(audio instanceof File) || audio.size < 2048) {
-      return json({ error: "That recording was empty — please try again." }, 400);
+      return json({ error: "That recording was empty - please try again." }, 400);
     }
     if (audio.size > 20 * 1024 * 1024) {
       return json({ error: "Recording is too long. Please keep it under a couple of minutes." }, 400);

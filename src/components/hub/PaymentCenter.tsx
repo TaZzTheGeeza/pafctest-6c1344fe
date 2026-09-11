@@ -98,7 +98,7 @@ export function PaymentCenter({ teamSlug }: { teamSlug: string }) {
       (async () => {
         try {
           toast.info("Setting up your Direct Debit subscription...");
-          // The bank mandate can take a few moments to confirm — retry a few times.
+          // The bank mandate can take a few moments to confirm - retry a few times.
           const attempts = 4;
           let pendingMessage: string | null = null;
           for (let i = 0; i < attempts; i++) {
@@ -214,7 +214,7 @@ export function PaymentCenter({ teamSlug }: { teamSlug: string }) {
       excludeUserId: user?.id,
       notification: {
         title: "New Payment Request",
-        message: `${form.title} — £${amountStr}`,
+        message: `${form.title} - £${amountStr}`,
         type: "payment",
         link: `/hub?tab=payments&team=${encodeURIComponent(teamSlug)}&request=${id}`,
       },

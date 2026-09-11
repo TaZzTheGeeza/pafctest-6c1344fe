@@ -39,7 +39,7 @@ const NewChatMessageEmail = ({ senderName, channelName, messagePreview, teamName
           Open the PAFC Hub to reply and continue the conversation.
         </Text>
         {actionUrl && <Section style={buttonSection}><Button href={actionUrl} style={button}>View Message</Button></Section>}
-        <Text style={footer}>— The {SITE_NAME} Team</Text>
+        <Text style={footer}> - The {SITE_NAME} Team</Text>
       </Container>
     </Body>
   </Html>

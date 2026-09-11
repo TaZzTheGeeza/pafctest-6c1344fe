@@ -39,7 +39,7 @@ const TeamSelectionPublishedEmail = ({ opponent, fixtureDate, formation, teamNam
           Check the PAFC Hub for the full squad list and notes.
         </Text>
         {actionUrl && <Section style={buttonSection}><Button href={actionUrl} style={button}>View Lineup</Button></Section>}
-        <Text style={footer}>— The {SITE_NAME} Team</Text>
+        <Text style={footer}> - The {SITE_NAME} Team</Text>
       </Container>
     </Body>
   </Html>

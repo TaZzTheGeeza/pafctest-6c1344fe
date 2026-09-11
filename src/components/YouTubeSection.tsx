@@ -94,7 +94,7 @@ export function YouTubeSection() {
               WATCH THE <span className="text-primary">ACTION</span>
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Catch all the match day action from our young lions — full game footage uploaded after every fixture.
+              Catch all the match day action from our young lions - full game footage uploaded after every fixture.
             </p>
           </div>
 

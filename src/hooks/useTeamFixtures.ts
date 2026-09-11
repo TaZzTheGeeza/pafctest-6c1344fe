@@ -54,7 +54,7 @@ async function fetchTeamFixtures(
     },
   });
 
-  // Hard client timeout — better to show an error than buffer indefinitely.
+  // Hard client timeout - better to show an error than buffer indefinitely.
   const { data, error } = await Promise.race([
     invocation,
     new Promise<never>((_, reject) =>

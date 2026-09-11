@@ -31,7 +31,7 @@ const AdminBroadcastEmail = ({ title, message, actionUrl, ctaLabel }: Props) => 
         <Heading style={h2}>{title || 'Announcement'}</Heading>
         <Text style={text}>{message || ''}</Text>
         {actionUrl && <Section style={buttonSection}><Button href={actionUrl} style={button}>{ctaLabel || 'View Details'}</Button></Section>}
-        <Text style={footer}>— The {SITE_NAME} Team</Text>
+        <Text style={footer}> - The {SITE_NAME} Team</Text>
       </Container>
     </Body>
   </Html>

@@ -39,7 +39,7 @@ export function ShotOfTheDay() {
           <div className="relative aspect-[16/9] md:aspect-[21/9] overflow-hidden">
             <img
               src={shot.preview_url}
-              alt={shot.caption || "PAFC Tournament — Shot of the Day"}
+              alt={shot.caption || "PAFC Tournament - Shot of the Day"}
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
               loading="lazy"
             />
@@ -62,7 +62,7 @@ export function ShotOfTheDay() {
                     Relive the action
                   </h3>
                   <p className="text-white/70 text-sm md:text-base mt-1">
-                    Hi-res action photos from PAFC Tournament — only £2 each.
+                    Hi-res action photos from PAFC Tournament - only £2 each.
                   </p>
                 </div>
                 <div className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-5 py-2.5 rounded-full font-semibold text-sm group-hover:gap-3 transition-all">

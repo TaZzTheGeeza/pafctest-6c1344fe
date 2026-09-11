@@ -134,7 +134,7 @@ function Inner() {
       status: "approved", decided_by: user?.id, decided_at: new Date().toISOString(), decline_reason: null,
     }).eq("id", b.id);
     if (error) toast.error(error.message);
-    else { toast.success("Booking approved — the requester has been notified"); load(); }
+    else { toast.success("Booking approved - the requester has been notified"); load(); }
   }
 
 
@@ -144,7 +144,7 @@ function Inner() {
       status: "declined", decided_by: user?.id, decided_at: new Date().toISOString(), decline_reason: declineReason,
     }).eq("id", b.id);
     if (error) toast.error(error.message);
-    else { toast.success("Declined — the requester has been notified"); setDeclining(null); setDeclineReason(""); load(); }
+    else { toast.success("Declined - the requester has been notified"); setDeclining(null); setDeclineReason(""); load(); }
   }
 
   async function remove(b: Booking) {
@@ -208,7 +208,7 @@ function Inner() {
                         {b.fa_fixture_id && <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-800 text-gray-300 uppercase">FA</span>}
                       </div>
                       <div className="text-xs text-muted-foreground mt-0.5">
-                        {format(parseISO(b.start_time), "EEE dd MMM yyyy · HH:mm")}–{format(parseISO(b.end_time), "HH:mm")}
+                        {format(parseISO(b.start_time), "EEE dd MMM yyyy · HH:mm")}-{format(parseISO(b.end_time), "HH:mm")}
                       </div>
                       <div className="text-xs mt-1">
                         <span className="uppercase text-muted-foreground">{b.purpose}</span>
@@ -228,7 +228,7 @@ function Inner() {
                           <ul className="mt-1 space-y-0.5">
                             {clashes[b.id].map(c => (
                               <li key={c.id} className="text-[11px] text-amber-200/90">
-                                {c.pitch_name} · {format(parseISO(c.start_time), "HH:mm")}–{format(parseISO(c.end_time), "HH:mm")}
+                                {c.pitch_name} · {format(parseISO(c.start_time), "HH:mm")}-{format(parseISO(c.end_time), "HH:mm")}
                                 {c.age_group ? ` · ${c.age_group}` : ""}{c.opponent ? ` vs ${c.opponent}` : ""} (approved)
                               </li>
                             ))}

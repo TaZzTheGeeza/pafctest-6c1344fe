@@ -43,7 +43,7 @@ async function fetchShopifyOrders(email: string): Promise<{ orders: any[]; error
     const body = await res.text();
     console.error("Shopify orders API error:", res.status, body);
     lastError = res.status === 401
-      ? "Shopify store credentials were rejected — reconnect the store to sync new orders"
+      ? "Shopify store credentials were rejected - reconnect the store to sync new orders"
       : `Shopify API error (${res.status})`;
     if (res.status !== 401 && res.status !== 403) break;
   }

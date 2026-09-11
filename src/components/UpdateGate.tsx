@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
  *      * no form input is focused / has unsaved text
  *      * not already auto-refreshed for this version (tracked in localStorage)
  *  - If the same mismatch persists after an auto-refresh, we never auto-refresh
- *    that fingerprint again — preventing the previous loop.
+ *    that fingerprint again - preventing the previous loop.
  */
 
 const FP_KEY = "pafc-index-fingerprint";
@@ -78,7 +78,7 @@ function isUserBusy(): boolean {
     if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || el.isContentEditable) {
       const value = (el as HTMLInputElement).value;
       if (value && value.length > 0) return true;
-      // Even empty but focused — treat as busy
+      // Even empty but focused - treat as busy
       return true;
     }
   }
@@ -144,11 +144,11 @@ export function UpdateGate() {
       try {
         if (localStorage.getItem(MANUAL_REFRESHED_FP_KEY) === fp) return;
       } catch {}
-      // Already auto-refreshed once this session — never again
+      // Already auto-refreshed once this session - never again
       try {
         if (sessionStorage.getItem(SESSION_AUTO_KEY) === "1") return;
       } catch {}
-      // Already auto-refreshed for this fingerprint previously — never again (loop guard)
+      // Already auto-refreshed for this fingerprint previously - never again (loop guard)
       try {
         if (localStorage.getItem(AUTO_REFRESHED_KEY) === fp) return;
       } catch {}
@@ -202,7 +202,7 @@ export function UpdateGate() {
           doRefresh();
           return;
         }
-        // Loop-guard tripped — fall through to banner
+        // Loop-guard tripped - fall through to banner
         setUpdateAvailable(true);
         return;
       }

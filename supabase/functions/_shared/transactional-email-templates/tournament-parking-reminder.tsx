@@ -24,17 +24,17 @@ const TournamentParkingReminderEmail = ({ managerName, teamName }: Props) => (
         <Section style={headerSection}>
           <Img src={LOGO_URL} width="72" height="72" alt={SITE_NAME} style={logo} />
           <Heading style={h1}>{SITE_NAME}</Heading>
-          <Text style={subheader}>Tournament 2026 — Coach Reminder</Text>
+          <Text style={subheader}>Tournament 2026 - Coach Reminder</Text>
         </Section>
         <Hr style={divider} />
 
         <Heading style={h2}>Hi {managerName || 'Coach'} 👋</Heading>
         <Text style={text}>
-          Thanks again for entering {teamName ? <strong>{teamName}</strong> : 'your team'} into the PAFC Tournament this weekend — we're really looking forward to hosting you.
+          Thanks again for entering {teamName ? <strong>{teamName}</strong> : 'your team'} into the PAFC Tournament this weekend - we're really looking forward to hosting you.
         </Text>
 
         <Section style={alertBox}>
-          <Text style={alertTitle}>⚠️ Parking — please read carefully</Text>
+          <Text style={alertTitle}>⚠️ Parking - please read carefully</Text>
           <Text style={alertText}>
             <strong>Peterborough City Council are actively patrolling and issuing tickets</strong> in the area around the venue. To avoid a fine, you and your parents <strong>must</strong> use the designated parking spot only.
           </Text>
@@ -57,7 +57,7 @@ const TournamentParkingReminderEmail = ({ managerName, teamName }: Props) => (
 
         <Section style={warnBox}>
           <Text style={warnText}>
-            🚫 <strong>Do NOT park</strong> in front of or block the Main Gate on Itter Crescent — this must be kept clear for emergency vehicle access.
+            🚫 <strong>Do NOT park</strong> in front of or block the Main Gate on Itter Crescent - this must be kept clear for emergency vehicle access.
           </Text>
         </Section>
 
@@ -65,7 +65,7 @@ const TournamentParkingReminderEmail = ({ managerName, teamName }: Props) => (
           If you have any questions, just reply to this email and we'll get back to you.
         </Text>
         <Text style={text}>See you this weekend!</Text>
-        <Text style={footer}>— The {SITE_NAME} Tournament Team</Text>
+        <Text style={footer}> - The {SITE_NAME} Tournament Team</Text>
       </Container>
     </Body>
   </Html>

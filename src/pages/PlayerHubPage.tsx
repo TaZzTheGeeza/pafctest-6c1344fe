@@ -27,7 +27,7 @@ const hubItems = [
   },
   {
     title: "My Profile",
-    description: "View your stats, documents, availability history, and POTM awards — all in one place.",
+    description: "View your stats, documents, availability history, and POTM awards - all in one place.",
     icon: UserPlus,
     path: "/my-profile",
     color: "text-primary",
@@ -57,7 +57,7 @@ const hubItems = [
   },
   {
     title: "Safeguarding",
-    description: "Our commitment to player safety — policies, contacts, and reporting procedures.",
+    description: "Our commitment to player safety - policies, contacts, and reporting procedures.",
     icon: Shield,
     path: "/safeguarding",
     color: "text-red-400",
@@ -92,7 +92,7 @@ export default function PlayerHubPage() {
               Player <span className="text-gold-gradient">Hub</span>
             </h1>
             <p className="text-muted-foreground max-w-lg mx-auto">
-              Everything players and parents need in one place — registration, documents, match info, and more.
+              Everything players and parents need in one place - registration, documents, match info, and more.
             </p>
           </motion.div>
 

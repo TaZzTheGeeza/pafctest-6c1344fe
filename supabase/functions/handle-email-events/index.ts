@@ -15,8 +15,8 @@ const LOG_STATUS: Record<Outcome, 'bounced' | 'complained' | 'suppressed'> = {
 }
 
 const LOG_MESSAGE: Record<Outcome, string> = {
-  bounce: 'Permanent bounce — email address is invalid or rejected',
-  complaint: 'Spam complaint — recipient marked email as spam',
+  bounce: 'Permanent bounce - email address is invalid or rejected',
+  complaint: 'Spam complaint - recipient marked email as spam',
   unsubscribe: 'Recipient unsubscribed',
 }
 

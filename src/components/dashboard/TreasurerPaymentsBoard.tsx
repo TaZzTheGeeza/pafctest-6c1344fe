@@ -152,7 +152,7 @@ export function TreasurerPaymentsBoard() {
     new Intl.NumberFormat("en-GB", { style: "currency", currency }).format(cents / 100);
 
   const fmtDate = (iso: string | null) =>
-    iso ? new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "—";
+    iso ? new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "-";
 
   const statusColors: Record<string, string> = {
     active: "bg-emerald-500/20 text-emerald-400",
@@ -467,17 +467,17 @@ export function TreasurerPaymentsBoard() {
                   filteredSubs.map((s) => (
                     <tr key={s.id} className="hover:bg-secondary/20 transition-colors">
                       <td className="px-4 py-3">
-                        <p className="font-display font-semibold text-foreground text-xs">{s.customer_name || "—"}</p>
-                        <p className="text-[10px] text-muted-foreground">{s.customer_email || "—"}</p>
+                        <p className="font-display font-semibold text-foreground text-xs">{s.customer_name || "-"}</p>
+                        <p className="text-[10px] text-muted-foreground">{s.customer_email || "-"}</p>
                       </td>
-                      <td className="px-4 py-3 text-xs text-muted-foreground">{s.product_name || "—"}</td>
+                      <td className="px-4 py-3 text-xs text-muted-foreground">{s.product_name || "-"}</td>
                       <td className="px-4 py-3">
                         <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-display tracking-wider uppercase ${statusColors[s.status] || "bg-muted text-muted-foreground"}`}>
                           {s.status.replace(/_/g, " ")}
                         </span>
                       </td>
                       <td className="px-4 py-3 font-display text-xs text-foreground">
-                        {fmt(s.amount_cents, s.currency)}/{s.interval || "—"}
+                        {fmt(s.amount_cents, s.currency)}/{s.interval || "-"}
                       </td>
                       <td className="px-4 py-3 text-xs text-muted-foreground">{fmtDate(s.current_period_end)}</td>
                       <td className="px-4 py-3 text-xs text-muted-foreground">{fmtDate(s.created)}</td>
@@ -510,10 +510,10 @@ export function TreasurerPaymentsBoard() {
                   filteredPayments.map((p) => (
                     <tr key={p.id} className="hover:bg-secondary/20 transition-colors">
                       <td className="px-4 py-3">
-                        <p className="font-display font-semibold text-foreground text-xs">{p.customer_name || "—"}</p>
-                        <p className="text-[10px] text-muted-foreground">{p.customer_email || "—"}</p>
+                        <p className="font-display font-semibold text-foreground text-xs">{p.customer_name || "-"}</p>
+                        <p className="text-[10px] text-muted-foreground">{p.customer_email || "-"}</p>
                       </td>
-                      <td className="px-4 py-3 text-xs text-muted-foreground max-w-[200px] truncate">{p.description || "—"}</td>
+                      <td className="px-4 py-3 text-xs text-muted-foreground max-w-[200px] truncate">{p.description || "-"}</td>
                       <td className="px-4 py-3">
                         <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-display tracking-wider uppercase ${statusColors[p.status] || "bg-muted text-muted-foreground"}`}>
                           {statusLabels[p.status] || p.status.replace(/_/g, " ")}
@@ -575,12 +575,12 @@ export function TreasurerPaymentsBoard() {
                       filtered.map((s) => (
                         <tr key={s.id} className="hover:bg-secondary/20 transition-colors">
                           <td className="px-4 py-3">
-                            <p className="font-display font-semibold text-foreground text-xs">{s.buyer_name || "—"}</p>
+                            <p className="font-display font-semibold text-foreground text-xs">{s.buyer_name || "-"}</p>
                             <p className="text-[10px] text-muted-foreground">{s.email}</p>
                           </td>
                           <td className="px-4 py-3 text-xs text-foreground">{s.photo_count}</td>
                           <td className="px-4 py-3 text-[10px] text-muted-foreground font-mono max-w-[260px]">
-                            {s.photo_refs.length > 0 ? s.photo_refs.join(", ") : "—"}
+                            {s.photo_refs.length > 0 ? s.photo_refs.join(", ") : "-"}
                           </td>
                           <td className="px-4 py-3 font-display text-xs text-foreground">{fmt(s.total_cents)}</td>
                           <td className="px-4 py-3">

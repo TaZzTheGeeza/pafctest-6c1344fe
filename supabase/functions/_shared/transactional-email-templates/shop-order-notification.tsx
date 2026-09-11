@@ -34,7 +34,7 @@ const ShopOrderNotificationEmail = ({ orderName, customerName, totalPrice, itemC
         </Text>
         <Text style={totalStyle}>Total: {totalPrice || '£0.00'}</Text>
         {actionUrl && <Section style={buttonSection}><Button href={actionUrl} style={button}>View Order</Button></Section>}
-        <Text style={footer}>— The {SITE_NAME} Team</Text>
+        <Text style={footer}> - The {SITE_NAME} Team</Text>
       </Container>
     </Body>
   </Html>
@@ -42,7 +42,7 @@ const ShopOrderNotificationEmail = ({ orderName, customerName, totalPrice, itemC
 
 export const template = {
   component: ShopOrderNotificationEmail,
-  subject: (data: Record<string, any>) => `New Order ${data.orderName || ''} — Club Shop`,
+  subject: (data: Record<string, any>) => `New Order ${data.orderName || ''} - Club Shop`,
   displayName: 'Shop order notification',
   previewData: { orderName: '#1042', customerName: 'John Smith', totalPrice: 'GBP 24.99', itemCount: '2' },
 } satisfies TemplateEntry

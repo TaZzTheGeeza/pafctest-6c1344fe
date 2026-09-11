@@ -55,7 +55,7 @@ serve(async (req) => {
     if (!Array.isArray(items) || items.length === 0) throw new Error("Your basket is empty");
     if (items.length > 30) throw new Error("Too many items in one order");
 
-    // Optional auth — prefill buyer details when signed in
+    // Optional auth - prefill buyer details when signed in
     let userId: string | null = null;
     const authHeader = req.headers.get("Authorization");
     if (authHeader) {
@@ -75,7 +75,7 @@ serve(async (req) => {
     if (!buyerEmail) throw new Error("Email is required for your order confirmation");
     if (!buyerName) throw new Error("Name is required");
 
-    // Validate items against live product data — never trust client prices
+    // Validate items against live product data - never trust client prices
     const productIds = [...new Set(items.map((i) => i.product_id))];
     const { data: products, error: prodErr } = await adminClient
       .from("shop_products")
@@ -134,7 +134,7 @@ serve(async (req) => {
     const brResponse = await gcPost("/billing_requests", {
       billing_requests: {
         payment_request: {
-          description: `PAFC Club Shop — ${itemSummary}`.slice(0, 255),
+          description: `PAFC Club Shop - ${itemSummary}`.slice(0, 255),
           amount: totalPence,
           currency: "GBP",
           scheme: "faster_payments",

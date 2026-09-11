@@ -344,7 +344,7 @@ const TournamentAdminPage = () => {
     }).eq("id", matchId);
     if (error) { toast.error("Failed to reset match"); return; }
     invalidateAll();
-    toast.success("Match reset — teams cleared to TBC");
+    toast.success("Match reset - teams cleared to TBC");
   };
 
   // ===== AUTO-PROGRESS KNOCKOUTS =====
@@ -505,7 +505,7 @@ const TournamentAdminPage = () => {
     invalidateAll();
   };
 
-  // NOTIFY: FIXTURES READY — emails all team coaches + secretaries with link to tournament page
+  // NOTIFY: FIXTURES READY - emails all team coaches + secretaries with link to tournament page
   const notifyFixturesReady = async () => {
     if (!selectedTournament) return;
     const ageGroupIds = (ageGroups || []).map(ag => ag.id);
@@ -530,9 +530,9 @@ const TournamentAdminPage = () => {
 
     const tournamentName = tournament?.name || "Tournament";
     const link = `https://www.pa-fc.uk/tournament`;
-    const title = `${tournamentName} – Fixtures Now Available`;
+    const title = `${tournamentName} - Fixtures Now Available`;
     const message =
-      `Great news — your fixtures for ${tournamentName} are now published and ready to view.\n\n` +
+      `Great news - your fixtures for ${tournamentName} are now published and ready to view.\n\n` +
       `View the full schedule, group standings and match times here:\n${link}\n\n` +
       `Please check kick-off times carefully and arrive in good time. See you on the day!`;
 
@@ -795,7 +795,7 @@ const TournamentAdminPage = () => {
                     <Card key={ag.id}>
                       <CardHeader>
                         <CardTitle className="text-base flex items-center gap-2">
-                          {ag.age_group} — {agTeams.length} teams
+                          {ag.age_group} - {agTeams.length} teams
                           <Badge variant="default" className="text-[10px]">{confirmedCount} confirmed</Badge>
                           {pendingCount > 0 && <Badge variant="secondary" className="text-[10px]">{pendingCount} pending</Badge>}
                         </CardTitle>
@@ -832,15 +832,15 @@ const TournamentAdminPage = () => {
                                       {isExpanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
                                     </TableCell>
                                     <TableCell className="font-medium">{team.team_name}</TableCell>
-                                    <TableCell className="text-xs">{team.club_name || "—"}</TableCell>
+                                    <TableCell className="text-xs">{team.club_name || "-"}</TableCell>
                                     <TableCell className="text-xs text-muted-foreground">expand →</TableCell>
-                                    <TableCell className="text-xs">{team.player_count || "—"}</TableCell>
+                                    <TableCell className="text-xs">{team.player_count || "-"}</TableCell>
                                     <TableCell>
                                       <Badge variant={team.status === "confirmed" ? "default" : team.status === "rejected" ? "destructive" : "secondary"}>{team.status}</Badge>
                                     </TableCell>
                                     <TableCell onClick={e => e.stopPropagation()}>
                                       <Select value={team.group_id || ""} onValueChange={v => assignTeamToGroup(team.id, v || null)}>
-                                        <SelectTrigger className="h-8 w-24"><SelectValue placeholder="—" /></SelectTrigger>
+                                        <SelectTrigger className="h-8 w-24"><SelectValue placeholder="-" /></SelectTrigger>
                                         <SelectContent>
                                           {agGroups.map(g => <SelectItem key={g.id} value={g.id}>Group {g.group_name}</SelectItem>)}
                                         </SelectContent>
@@ -1533,9 +1533,9 @@ function MatchRow({ match, teams, groups, getTeamName, getAgeGroupName, onUpdate
           </div>
         </TableCell>
         <TableCell className="text-xs font-medium">{getTeamName(match.away_team_id)}</TableCell>
-        <TableCell className="text-xs">{match.match_time ? new Date(match.match_time).toLocaleString("en-GB", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) : "—"}</TableCell>
-        <TableCell className="text-xs">{match.pitch || "—"}</TableCell>
-        <TableCell className="text-xs">{match.referee || "—"}</TableCell>
+        <TableCell className="text-xs">{match.match_time ? new Date(match.match_time).toLocaleString("en-GB", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) : "-"}</TableCell>
+        <TableCell className="text-xs">{match.pitch || "-"}</TableCell>
+        <TableCell className="text-xs">{match.referee || "-"}</TableCell>
         <TableCell>
           <div className="flex gap-1">
             <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setEditing(!editing)} title="Edit"><Edit className="h-3 w-3" /></Button>

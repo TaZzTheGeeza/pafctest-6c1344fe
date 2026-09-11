@@ -58,7 +58,7 @@ const ROLE_CONFIG: Record<AppRole, { label: string; color: string; icon: any }> 
   photographer: { label: "Photographer", color: "bg-violet-500/20 text-violet-400 border-violet-500/30", icon: Eye },
 };
 
-// ⚠️ DO NOT REMOVE — admin link to Presentation Evening management. Required for 2025/26 season.
+// ⚠️ DO NOT REMOVE - admin link to Presentation Evening management. Required for 2025/26 season.
 const PRESENTATION_ADMIN_LINK = { label: "Presentation Admin", path: "/presentation-admin", icon: Star, desc: "Manage presentation evening seating" };
 
 const ADMIN_LINKS = [
@@ -232,7 +232,7 @@ export default function DashboardPage() {
       .from("site_settings" as any)
       .upsert({ key: "shop_closes_at", value: "", updated_at: new Date().toISOString() } as any, { onConflict: "key" });
     if (error) toast.error("Failed to clear deadline");
-    else toast.success("Deadline cleared — shop stays open until manually closed");
+    else toast.success("Deadline cleared - shop stays open until manually closed");
   }
 
 
@@ -259,7 +259,7 @@ export default function DashboardPage() {
       }
       setShopOpen(newVal);
       toast.success(`Club Shop ${newVal ? "opened" : "closed"}`, {
-        description: clearStale ? "Past closing deadline cleared — set a new one if needed" : undefined,
+        description: clearStale ? "Past closing deadline cleared - set a new one if needed" : undefined,
       });
     }
     setTogglingShop(false);
@@ -441,7 +441,7 @@ export default function DashboardPage() {
       const typed = window.prompt(`To confirm, type the user's email exactly:\n\n${email}`);
       if (!typed) return;
       if (typed.trim().toLowerCase() !== email.trim().toLowerCase()) {
-        toast.error("Email did not match — deletion cancelled");
+        toast.error("Email did not match - deletion cancelled");
         return;
       }
     }
@@ -633,7 +633,7 @@ export default function DashboardPage() {
           {/* Overview Section */}
           {activeSection === "overview" && (
             <div className="space-y-8">
-              {/* Stats Cards — admin only */}
+              {/* Stats Cards - admin only */}
               {isAdmin && (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {[
@@ -653,7 +653,7 @@ export default function DashboardPage() {
                 </div>
               )}
 
-              {/* Site Toggles — admin only */}
+              {/* Site Toggles - admin only */}
               {isAdmin && (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                   <div className="bg-card border border-border rounded-xl p-5 flex flex-col gap-3">
@@ -707,7 +707,7 @@ export default function DashboardPage() {
                             {!shopOpen
                               ? "Shop is CLOSED (browse only)"
                               : shopClosesAt && new Date(shopClosesAt).getTime() <= Date.now()
-                                ? "Shop is CLOSED — ordering deadline has passed"
+                                ? "Shop is CLOSED - ordering deadline has passed"
                                 : "Shop is currently OPEN"}
                           </p>
                         </div>
@@ -777,7 +777,7 @@ export default function DashboardPage() {
                       <div>
                         <p className="text-sm font-display font-semibold text-foreground">Presentation Evening</p>
                         <p className="text-[10px] text-muted-foreground">
-                          {presentationOpen ? "Visible on homepage & Player Zone" : "Hidden — turn on when ready for next year"}
+                          {presentationOpen ? "Visible on homepage & Player Zone" : "Hidden - turn on when ready for next year"}
                         </p>
                       </div>
                     </div>
@@ -797,7 +797,7 @@ export default function DashboardPage() {
                       <div>
                         <p className="text-sm font-display font-semibold text-foreground">Tournament</p>
                         <p className="text-[10px] text-muted-foreground">
-                          {tournamentEnabled ? "Visible on homepage & navigation" : "Hidden — turn on when next tournament is ready"}
+                          {tournamentEnabled ? "Visible on homepage & navigation" : "Hidden - turn on when next tournament is ready"}
                         </p>
                       </div>
                     </div>
@@ -868,7 +868,7 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* Users Section — admin only */}
+          {/* Users Section - admin only */}
           {activeSection === "users" && isAdmin && (
             <div className="bg-card border border-border rounded-xl overflow-hidden">
               <div className="p-5 border-b border-border">
@@ -946,12 +946,12 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* Requests Section — admin only */}
+          {/* Requests Section - admin only */}
           {activeSection === "requests" && isAdmin && (
             <TeamRequestsManager />
           )}
 
-          {/* Enquiries Section — admin only */}
+          {/* Enquiries Section - admin only */}
           {activeSection === "enquiries" && isAdmin && (
             <div className="bg-card border border-border rounded-xl overflow-hidden">
               <div className="p-5 border-b border-border">
@@ -963,7 +963,7 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* Messages Section — all authenticated users */}
+          {/* Messages Section - all authenticated users */}
           {activeSection === "messages" && (
             <div className="bg-card border border-border rounded-xl overflow-hidden">
               <div className="p-5 border-b border-border">

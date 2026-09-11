@@ -78,7 +78,7 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `You are a sports journalist writing for a grassroots football club called "Peterborough Athletic FC" (PAFC). Write engaging, professional news articles in British English. Use a warm, community-focused tone. Return ONLY the article body as clean HTML using <p>, <h2>, <h3>, <ul>, <li>, <strong>, <em> tags. Do not include the title — it is shown separately. Write 3-6 paragraphs. Do not use markdown.`,
+            content: `You are a sports journalist writing for a grassroots football club called "Peterborough Athletic FC" (PAFC). Write engaging, professional news articles in British English. Use a warm, community-focused tone. Return ONLY the article body as clean HTML using <p>, <h2>, <h3>, <ul>, <li>, <strong>, <em> tags. Do not include the title - it is shown separately. Write 3-6 paragraphs. Do not use markdown.`,
           },
           {
             role: "user",

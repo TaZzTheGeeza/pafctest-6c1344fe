@@ -217,7 +217,7 @@ export function NewsFlipbook({ articles, featured, monthLabel }: Props) {
         <div className="absolute -bottom-3 left-8 right-8 h-4 bg-black/10 rounded-full blur-lg pointer-events-none" />
 
         <div className="aspect-[3/4] w-full relative overflow-hidden rounded-sm shadow-xl">
-          {/* Base layer — the page being revealed underneath */}
+          {/* Base layer - the page being revealed underneath */}
           <div className="absolute inset-0">
             {flipState === "flipping-forward" && renderPage(flipFromPage + 1)}
             {flipState === "flipping-back" && renderPage(flipFromPage - 1)}

@@ -47,7 +47,7 @@ const PURPOSE_OPTIONS = [
 
 // Layout coordinates match the aerial map of Itter Park (square viewBox 1000 x 1000).
 // Pitches are painted on a diagonal, so each one is rotated about its own centre.
-// These are only the DEFAULTS — admins can drag/resize pitches and labels in "Edit layout"
+// These are only the DEFAULTS - admins can drag/resize pitches and labels in "Edit layout"
 // mode, and the saved positions (public.pitch_map_layout) take priority.
 export interface PitchLayout {
   cx: number; cy: number; w: number; h: number; rot: number; z: number;
@@ -209,7 +209,7 @@ function BookingDialog({ pitch, dayBookings, overlapBookings, pitches, selectedD
               return (
                 <div key={b.id} className="flex items-center gap-2">
                   <StatusPill status={b.status} faLocked={!!b.fa_fixture_id} />
-                  <span>{format(parseISO(b.start_time), "HH:mm")}–{format(parseISO(b.end_time), "HH:mm")}</span>
+                  <span>{format(parseISO(b.start_time), "HH:mm")}-{format(parseISO(b.end_time), "HH:mm")}</span>
                   {b.opponent && <span className="text-muted-foreground">vs {b.opponent}</span>}
                   {isOverlap && <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-900/40 text-amber-300 uppercase tracking-wider">on {bp?.name} · overlaps</span>}
                 </div>
@@ -329,7 +329,7 @@ function MyBookingsTab({ userId, pitches, isAdmin }: { userId?: string; pitches:
           <div id={`booking-${b.id}`} key={b.id} className="bg-card border border-border rounded-lg p-3 flex items-center gap-3 flex-wrap scroll-mt-28">
             <StatusPill status={b.status} faLocked={!!b.fa_fixture_id} />
             <div className="text-sm font-display tracking-wider">{pitch?.name}</div>
-            <div className="text-xs text-muted-foreground">{format(parseISO(b.start_time), "EEE dd MMM · HH:mm")}–{format(parseISO(b.end_time), "HH:mm")}</div>
+            <div className="text-xs text-muted-foreground">{format(parseISO(b.start_time), "EEE dd MMM · HH:mm")}-{format(parseISO(b.end_time), "HH:mm")}</div>
             <div className="text-xs">{b.age_group}{b.opponent ? ` vs ${b.opponent}` : ""}</div>
             {b.status === "declined" && b.decline_reason && (
               <div className="text-[11px] text-red-300 basis-full">Reason: {b.decline_reason}</div>
@@ -640,7 +640,7 @@ export default function PitchBookingsPanel() {
     await loadPitches();
     setLayoutEdit(true);
     setSelectedPitchNum(nextNum);
-    toast.success(`${name} added — drag it into place, then Save layout`);
+    toast.success(`${name} added - drag it into place, then Save layout`);
   }
 
 
@@ -936,7 +936,7 @@ export default function PitchBookingsPanel() {
                     <g key={p.id}
                       onClick={() => { if (layoutEdit) setSelectedPitchNum(p.number); else setDialogPitch(p); }}
                       className={layoutEdit ? "cursor-move group" : "cursor-pointer group"}>
-                      <title>{layoutEdit ? `${p.name} — drag to reposition` : `${p.name} · ${p.format} — tap to book`}</title>
+                      <title>{layoutEdit ? `${p.name} - drag to reposition` : `${p.name} · ${p.format} - tap to book`}</title>
                       <g transform={`translate(${cx} ${cy}) rotate(${rot})`}>
                         <rect x={-hw} y={-hh} width={w} height={h} rx={3}
                           fill={c.fill} fillOpacity={layout.fillOpacity ?? 0.3} stroke={isSel ? "#facc15" : c.stroke} strokeWidth={isSel ? 4 : 2.5}
@@ -1030,7 +1030,7 @@ export default function PitchBookingsPanel() {
                 <div key={b.id} className="bg-card border border-border rounded-lg p-3 flex items-center gap-3 flex-wrap">
                   <StatusPill status={b.status} faLocked={!!b.fa_fixture_id} />
                   <div className="text-sm font-display tracking-wider">{pitch?.name}</div>
-                  <div className="text-xs text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" />{format(parseISO(b.start_time), "HH:mm")} – {format(parseISO(b.end_time), "HH:mm")}</div>
+                  <div className="text-xs text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" />{format(parseISO(b.start_time), "HH:mm")} - {format(parseISO(b.end_time), "HH:mm")}</div>
                   <div className="text-xs text-foreground">{b.age_group ? `${b.age_group}` : ""}{b.opponent ? ` vs ${b.opponent}` : ""}</div>
                   <div className="text-[11px] text-muted-foreground ml-auto uppercase">{b.purpose}</div>
                   {(isAdmin || (isCoach && b.requested_by === user?.id && b.status !== "approved")) && (

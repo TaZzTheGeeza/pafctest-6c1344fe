@@ -139,7 +139,7 @@ export default function ShopCheckoutPage() {
                   Pay £{(totalCents / 100).toFixed(2)} by Bank
                 </Button>
                 <p className="text-xs text-muted-foreground text-center">
-                  Secure instant bank payment via GoCardless — no card details needed.
+                  Secure instant bank payment via GoCardless - no card details needed.
                 </p>
               </form>
             </div>

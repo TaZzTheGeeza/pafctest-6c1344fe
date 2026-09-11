@@ -46,7 +46,7 @@ export default function ShopPage() {
 
   useEffect(() => {
     if (searchParams.get("cancelled") === "true") {
-      toast.info("Checkout cancelled — your basket is still saved.");
+      toast.info("Checkout cancelled - your basket is still saved.");
     }
   }, [searchParams]);
 
@@ -105,7 +105,7 @@ export default function ShopPage() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <SEO title="Club Shop | Peterborough Athletic FC Kit & Merch" description="Official Peterborough Athletic FC shop — kit, training wear, hoodies and merchandise. Support your local junior football club." keywords="Peterborough Athletic FC shop, PAFC kit, Peterborough football kit, junior football merchandise Peterborough, PAFC hoodies" path="/shop" />
+      <SEO title="Club Shop | Peterborough Athletic FC Kit & Merch" description="Official Peterborough Athletic FC shop - kit, training wear, hoodies and merchandise. Support your local junior football club." keywords="Peterborough Athletic FC shop, PAFC kit, Peterborough football kit, junior football merchandise Peterborough, PAFC hoodies" path="/shop" />
       <Navbar />
       <main className="flex-1 pt-28 pb-16">
         <div className="container mx-auto px-4">
@@ -114,7 +114,7 @@ export default function ShopPage() {
               <span className="text-gold-gradient">Club</span> Shop
             </h1>
             <p className="text-muted-foreground text-center mb-8">
-              Official Peterborough Athletic FC merchandise — pay securely straight from your bank
+              Official Peterborough Athletic FC merchandise - pay securely straight from your bank
             </p>
           </motion.div>
 
@@ -262,7 +262,7 @@ export default function ShopPage() {
 
               {shopOpen ? (
                 <Button onClick={handleAdd} className="w-full bg-gold-gradient text-primary-foreground font-display tracking-wider hover:opacity-90">
-                  <CheckCircle2 className="h-4 w-4 mr-2" /> Add to Basket — £{((selected.price_cents * quantity) / 100).toFixed(2)}
+                  <CheckCircle2 className="h-4 w-4 mr-2" /> Add to Basket - £{((selected.price_cents * quantity) / 100).toFixed(2)}
                 </Button>
               ) : (
                 <p className="text-sm text-muted-foreground text-center">The shop is currently closed</p>

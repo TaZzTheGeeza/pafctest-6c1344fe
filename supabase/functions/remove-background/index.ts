@@ -79,7 +79,7 @@ serve(async (req) => {
               content: [
                 {
                   type: "text",
-                  text: "Remove the background from this photo and replace ONLY the background with a solid bright green (#00FF00). CRITICAL RULES: 1) Keep the EXACT same framing, scale, zoom level, and composition — do NOT crop, zoom in, or reframe. 2) Preserve 100% of the person's hair — every strand, curl, wisp. Hair is NOT background. 3) Preserve the entire visible body from top of head to feet including all clothing, skin, and accessories. 4) The output image must be the same dimensions as the input. Return a single PNG image.",
+                  text: "Remove the background from this photo and replace ONLY the background with a solid bright green (#00FF00). CRITICAL RULES: 1) Keep the EXACT same framing, scale, zoom level, and composition - do NOT crop, zoom in, or reframe. 2) Preserve 100% of the person's hair - every strand, curl, wisp. Hair is NOT background. 3) Preserve the entire visible body from top of head to feet including all clothing, skin, and accessories. 4) The output image must be the same dimensions as the input. Return a single PNG image.",
                 },
                 {
                   type: "image_url",

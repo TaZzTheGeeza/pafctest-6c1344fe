@@ -261,7 +261,7 @@ export function TeamAccessRequest() {
                 <div key={req.id} className="flex items-center justify-between bg-secondary/50 rounded-lg px-3 py-2.5">
                   <div>
                     <p className="text-sm font-display text-foreground">
-                      {teamLabel} — <span className="text-muted-foreground capitalize">{req.role_requested}</span>
+                      {teamLabel} - <span className="text-muted-foreground capitalize">{req.role_requested}</span>
                     </p>
                     {req.player_name && (
                       <p className="text-[10px] text-muted-foreground">Child: {req.player_name}</p>

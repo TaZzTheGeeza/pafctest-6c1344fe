@@ -82,7 +82,7 @@ serve(async (req) => {
             .eq("payment_status", "paid");
 
           if (paidTickets && paidTickets.length >= raffle.number_range) {
-            // All numbers sold — auto-draw a winner
+            // All numbers sold - auto-draw a winner
             const winnerIdx = Math.floor(Math.random() * paidTickets.length);
             const winner = paidTickets[winnerIdx];
 

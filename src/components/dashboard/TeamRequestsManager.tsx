@@ -202,7 +202,7 @@ export function TeamRequestsManager() {
                     <div className="text-right">
                       <p className="text-xs font-display text-foreground">
                         <span className="text-primary">{teamLabel}</span>
-                        {" — "}
+                        {" - "}
                         <span className="capitalize">{req.role_requested}</span>
                       </p>
                       {req.player_name && (

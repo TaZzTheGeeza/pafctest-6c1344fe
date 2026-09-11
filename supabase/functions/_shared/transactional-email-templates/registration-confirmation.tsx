@@ -46,7 +46,7 @@ const RegistrationConfirmationEmail = ({ parentName, childName, ageGroup, amount
         <Text style={smallText}>
           Any questions, just reply to this email and we'll come back to you.
         </Text>
-        <Text style={footer}>Up the Lions 🦁 — The {SITE_NAME} Team</Text>
+        <Text style={footer}>Up the Lions 🦁 - The {SITE_NAME} Team</Text>
       </Container>
     </Body>
   </Html>
@@ -55,7 +55,7 @@ const RegistrationConfirmationEmail = ({ parentName, childName, ageGroup, amount
 export const template = {
   component: RegistrationConfirmationEmail,
   subject: (data: Record<string, any>) =>
-    `Registration confirmed${data.childName ? ` — ${data.childName}` : ''} | PAFC 2026/27`,
+    `Registration confirmed${data.childName ? ` - ${data.childName}` : ''} | PAFC 2026/27`,
   displayName: 'Registration confirmation',
   previewData: { parentName: 'Ben', childName: 'Alex Masters', ageGroup: 'U9s', amountPaid: '40.00' },
 } satisfies TemplateEntry

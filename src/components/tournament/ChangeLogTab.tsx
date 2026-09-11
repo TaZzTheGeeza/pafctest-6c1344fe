@@ -32,14 +32,14 @@ const OP_VARIANT: Record<string, "default" | "secondary" | "destructive"> = {
 
 function summarize(row: LogRow): string {
   const data = row.operation === "DELETE" ? row.old_row : row.new_row;
-  if (!data) return row.record_id ?? "—";
-  if (row.table_name === "tournament_teams") return data.team_name || data.club_name || row.record_id || "—";
+  if (!data) return row.record_id ?? "-";
+  if (row.table_name === "tournament_teams") return data.team_name || data.club_name || row.record_id || "-";
   if (row.table_name === "tournament_groups") return `Group ${data.group_name || ""}`.trim();
   if (row.table_name === "tournament_matches") {
     const when = data.match_time ? new Date(data.match_time).toLocaleString("en-GB", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : "";
     return `${data.pitch || "Match"} • ${when}`.trim();
   }
-  return row.record_id ?? "—";
+  return row.record_id ?? "-";
 }
 
 export function ChangeLogTab() {

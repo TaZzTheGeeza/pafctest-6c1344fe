@@ -168,7 +168,7 @@ export function ShopProductsManager() {
     setDeleting(p.id);
     const { error } = await supabase.from("shop_products" as any).delete().eq("id", p.id);
     if (error) {
-      toast.error(error.message || "Could not delete — try hiding it instead");
+      toast.error(error.message || "Could not delete - try hiding it instead");
     } else {
       setProducts((prev) => prev.filter((x) => x.id !== p.id));
       toast.success("Product deleted");

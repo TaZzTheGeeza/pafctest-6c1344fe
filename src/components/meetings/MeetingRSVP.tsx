@@ -115,7 +115,7 @@ export function MeetingRSVP({ meetingId, meetingTitle }: { meetingId: string; me
           .map((i) => i.user_id)
           .filter((uid) => !respondedIds.has(uid));
       } else {
-        // "everyone" meeting — get all profiles
+        // "everyone" meeting - get all profiles
         const { data: allProfiles } = await supabase
           .from("profiles")
           .select("id");

@@ -216,7 +216,7 @@ export function Navbar() {
         </div>
       </div>
 
-      {/* Main nav — split layout with centered logo + mega menu dropdowns */}
+      {/* Main nav - split layout with centered logo + mega menu dropdowns */}
       <div className={`transition-all duration-300 border-b border-border ${scrolled ? "bg-background/[0.97]" : "bg-background"}`}>
         <div className="container mx-auto px-4 hidden lg:flex items-center justify-center h-14">
           {/* Left nav */}

@@ -193,7 +193,7 @@ Deno.serve(async (req) => {
           age_group: it.team,
           team_slug: it.slug,
           opponent: it.opponent,
-          notes: `Auto-synced from FA Full-Time${it.competition ? ` — ${it.competition}` : ""}`,
+          notes: `Auto-synced from FA Full-Time${it.competition ? ` - ${it.competition}` : ""}`,
           fa_fixture_id: it.faId,
         });
         if (insErr) failed.push({ faId: it.faId, team: it.team, opponent: it.opponent, reason: insErr.message });
@@ -260,7 +260,7 @@ Deno.serve(async (req) => {
       (existing || []).map((b: any) => b.fa_fixture_id).filter(Boolean),
     );
 
-    // Candidate pitches per format — prefer standalone pitches over the nested 1/2/3 space
+    // Candidate pitches per format - prefer standalone pitches over the nested 1/2/3 space
     const candidatesFor = (format: string) => {
       const list = (pitches || []).filter((p: any) => p.format === format);
       return list.sort((a: any, b: any) => {
@@ -269,7 +269,7 @@ Deno.serve(async (req) => {
       });
     };
 
-    // Scrape each team — sequentially with retries; FA Full-Time throttles bursts of parallel hits
+    // Scrape each team - sequentially with retries; FA Full-Time throttles bursts of parallel hits
     const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
     const fetchTeam = async (t: TeamInput) => {
@@ -296,7 +296,7 @@ Deno.serve(async (req) => {
     const scraped: { t: TeamInput; fixtures: FAFixture[]; error: string | null }[] = [];
     for (const t of teams) {
       scraped.push(await fetchTeam(t));
-      // Pace requests — Firecrawl enforces a per-minute rate limit across all teams.
+      // Pace requests - Firecrawl enforces a per-minute rate limit across all teams.
       await sleep(3000);
     }
 
@@ -443,7 +443,7 @@ Deno.serve(async (req) => {
         age_group: c.team,
         team_slug: c.slug,
         opponent: c.opponent,
-        notes: `Auto-synced from FA Full-Time${c.competition ? ` — ${c.competition}` : ""}`,
+        notes: `Auto-synced from FA Full-Time${c.competition ? ` - ${c.competition}` : ""}`,
         fa_fixture_id: c.faId,
       });
 

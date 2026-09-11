@@ -85,7 +85,7 @@ serve(async (req) => {
             {
               role: "system",
               content:
-                "You write short Player of the Match citations for a grassroots youth football club (Peterborough Athletic FC), read by parents and children. British English, warm, encouraging and age-appropriate. Use ONLY the facts given — never invent goals, incidents or other players. Address the player by first name. Return plain text only: no markdown, no headings, no quotes.",
+                "You write short Player of the Match citations for a grassroots youth football club (Peterborough Athletic FC), read by parents and children. British English, warm, encouraging and age-appropriate. Use ONLY the facts given - never invent goals, incidents or other players. Address the player by first name. Return plain text only: no markdown, no headings, no quotes.",
             },
             { role: "user", content: `${potmTone}\n\nFacts:\n${potmFacts}` },
           ],

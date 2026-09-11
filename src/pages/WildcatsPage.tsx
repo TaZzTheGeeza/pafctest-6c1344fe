@@ -15,7 +15,7 @@ const PINK = "#FF4D7E";
 const YELLOW = "#FFD23F";
 const RED = "#E74C3C";
 
-// Sticker text — chunky rounded letters with white outline + drop shadow
+// Sticker text - chunky rounded letters with white outline + drop shadow
 function Sticker({
   children,
   color,
@@ -130,7 +130,7 @@ export default function WildcatsPage() {
                 fontFamily: "'Fredoka', system-ui, sans-serif",
               }}
             >
-              An FA initiative for girls aged 5–11 to play, learn and have fun in a safe, friendly environment.
+              An FA initiative for girls aged 5-11 to play, learn and have fun in a safe, friendly environment.
             </p>
 
             <a href={FA_BOOKING_URL} target="_blank" rel="noopener noreferrer" className="inline-block">
@@ -157,7 +157,7 @@ export default function WildcatsPage() {
         </div>
       </section>
 
-      {/* Session details — sticker cards */}
+      {/* Session details - sticker cards */}
       <section className="py-16 relative">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
@@ -168,8 +168,8 @@ export default function WildcatsPage() {
           <div className="max-w-6xl mx-auto grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
               { icon: Calendar, label: "When", value: "Every Thursday", color: PINK, href: null },
-              { icon: Clock, label: "Time", value: "1730 – 1830", color: TEAL, href: null },
-              { icon: Users, label: "Ages", value: "Girls 5 – 11", color: PURPLE, href: null },
+              { icon: Clock, label: "Time", value: "1730 - 1830", color: TEAL, href: null },
+              { icon: Users, label: "Ages", value: "Girls 5 - 11", color: PURPLE, href: null },
               {
                 icon: Navigation,
                 label: "Where",

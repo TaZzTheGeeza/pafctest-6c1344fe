@@ -1122,7 +1122,7 @@ function ManageTablesPanel({
     <Card className="p-4 md:p-6">
       <p className="text-xs text-muted-foreground mb-4">
         Rename any table or change its label individually. Lock tables to mark
-        them reserved. No rows are dedicated to teams — assign labels per table
+        them reserved. No rows are dedicated to teams - assign labels per table
         as needed.
       </p>
 
@@ -1244,7 +1244,7 @@ function TableEditorCard({
             {table.label ? ` · ${table.label}` : ""}
           </p>
           <p className="text-[10px] text-muted-foreground">
-            {table.age_group ?? "—"} · {used} seated
+            {table.age_group ?? "-"} · {used} seated
             {table.is_locked ? " · reserved" : ""}
           </p>
           <div className="flex gap-1">
@@ -1324,10 +1324,10 @@ function buildSeatLines(
     const table = t.table_id ? tableById.get(t.table_id) : null;
     if (!table || t.seat_number == null) {
       allSeated = false;
-      return `• ${t.attendee_name} (${t.ticket_type}) — no seat yet`;
+      return `• ${t.attendee_name} (${t.ticket_type}) - no seat yet`;
     }
     const tableLabel = table.label ?? `Table ${table.table_number}`;
-    return `• ${t.attendee_name} (${t.ticket_type}) — ${tableLabel}, seat ${t.seat_number}`;
+    return `• ${t.attendee_name} (${t.ticket_type}) - ${tableLabel}, seat ${t.seat_number}`;
   });
   return { lines, allSeated };
 }
@@ -1695,7 +1695,7 @@ function TheatreSeatEditorDialog({
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-xl">
         <DialogHeader>
-          <DialogTitle>Theatre Seat — {seatLabel}</DialogTitle>
+          <DialogTitle>Theatre Seat - {seatLabel}</DialogTitle>
           <DialogDescription>
             {seat.player ? (
               <>
@@ -1704,7 +1704,7 @@ function TheatreSeatEditorDialog({
                 {seat.player.age_group && ` · ${seat.player.age_group}`}
               </>
             ) : (
-              "Empty seat — pick a player to assign."
+              "Empty seat - pick a player to assign."
             )}
           </DialogDescription>
         </DialogHeader>
@@ -1764,7 +1764,7 @@ function TheatreSeatEditorDialog({
                   {where && !isHere && (
                     <p className="text-[10px] text-muted-foreground mt-0.5">
                       Currently in {where.side === "left" ? "Stage Left" : "Stage Right"} R{where.row_index} C{where.col_index}
-                      {seat.player ? " — will swap" : " — will move"}
+                      {seat.player ? " - will swap" : " - will move"}
                     </p>
                   )}
                   {!where && !isHere && (

@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useQueryClient } from "@tanstack/react-query";
 import { Plus, X } from "lucide-react";
 import { toast } from "sonner";
-// faTeamConfigs import removed — using local age-ordered list below
+// faTeamConfigs import removed - using local age-ordered list below
 import { notifyTeamMembers } from "@/lib/notifyTeamMembers";
 
 interface Props {
@@ -108,7 +108,7 @@ export function AddAvailabilityEventDialog({ teamSlug }: Props) {
       excludeUserId: user.id,
       notification: {
         title: dates.length > 1 ? "New Recurring Availability Events" : "New Availability Event",
-        message: `${title} — ${friendlyFirst}${seriesLabel}`,
+        message: `${title} - ${friendlyFirst}${seriesLabel}`,
         type: "event",
         link: `/hub?tab=availability&team=${encodeURIComponent(selectedTeam)}${createdEvents?.[0]?.id ? `&event=${createdEvents[0].id}` : ""}`,
       },

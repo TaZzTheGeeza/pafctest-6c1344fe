@@ -39,7 +39,7 @@ const PaymentRequestCreatedEmail = ({ title, amount, dueDate, teamName, actionUr
           Log in to the PAFC Hub to view details and mark as paid.
         </Text>
         {actionUrl && <Section style={buttonSection}><Button href={actionUrl} style={button}>View Payment</Button></Section>}
-        <Text style={footer}>— The {SITE_NAME} Team</Text>
+        <Text style={footer}> - The {SITE_NAME} Team</Text>
       </Container>
     </Body>
   </Html>

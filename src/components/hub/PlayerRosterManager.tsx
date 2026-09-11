@@ -194,7 +194,7 @@ export function PlayerRosterManager({ teamSlug, teamName }: { teamSlug: string; 
     const firstName = p.first_name.trim();
     const firstToken = firstName.toLowerCase().split(/\s+/)[0];
 
-    // 1. Player registrations — match by first name token + age group (case-insensitive)
+    // 1. Player registrations - match by first name token + age group (case-insensitive)
     const { data: regs } = await supabase
       .from("player_registrations")
       .select("id, child_name, preferred_age_group")
@@ -242,7 +242,7 @@ export function PlayerRosterManager({ teamSlug, teamName }: { teamSlug: string; 
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3 bg-card border border-border rounded-xl p-4">
         <div>
-          <h2 className="font-display text-lg font-bold text-foreground">Player Roster — {teamName}</h2>
+          <h2 className="font-display text-lg font-bold text-foreground">Player Roster - {teamName}</h2>
           <p className="text-xs text-muted-foreground mt-1">Add, edit, or remove players in this age group.</p>
         </div>
         {!showAdd && !editingId && (
@@ -277,7 +277,7 @@ export function PlayerRosterManager({ teamSlug, teamName }: { teamSlug: string; 
                 type="number"
                 value={draft.shirt_number}
                 onChange={(e) => setDraft({ ...draft, shirt_number: e.target.value })}
-                placeholder="—"
+                placeholder="-"
                 className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground mt-1"
               />
             </div>
@@ -288,7 +288,7 @@ export function PlayerRosterManager({ teamSlug, teamName }: { teamSlug: string; 
                 onChange={(e) => setDraft({ ...draft, position: e.target.value })}
                 className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground mt-1"
               >
-                <option value="">—</option>
+                <option value="">-</option>
                 {POSITIONS.map((p) => <option key={p} value={p}>{p}</option>)}
               </select>
             </div>
