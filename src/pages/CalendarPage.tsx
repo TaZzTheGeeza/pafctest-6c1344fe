@@ -11,6 +11,7 @@ import { EventRSVP } from "@/components/EventRSVP";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths, parse } from "date-fns";
 import { faTeamConfigs } from "@/lib/faFixtureConfig";
 import type { FAFixture } from "@/hooks/useTeamFixtures";
+import { useSearchParams } from "react-router-dom";
 
 /** Format a UTC date string to UK time display */
 function formatUK(dateStr: string, fmt: string): string {
@@ -148,6 +149,7 @@ export default function CalendarPage() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [filterType, setFilterType] = useState<string>("all");
+  const [searchParams] = useSearchParams();
 
   // Fetch club_events from DB
   useEffect(() => {
@@ -197,6 +199,17 @@ export default function CalendarPage() {
       (a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime()
     );
   }, [events, fixtureEvents]);
+
+  useEffect(() => {
+    const eventId = searchParams.get("event");
+    if (!eventId || allEvents.length === 0) return;
+    const event = allEvents.find((item) => item.id === eventId);
+    if (!event) return;
+    const date = toUKDate(event.start_time);
+    setCurrentMonth(date);
+    setSelectedDate(date);
+    requestAnimationFrame(() => document.getElementById(`calendar-event-${eventId}`)?.scrollIntoView({ behavior: "smooth", block: "center" }));
+  }, [allEvents, searchParams]);
 
   const days = eachDayOfInterval({ start: startOfMonth(currentMonth), end: endOfMonth(currentMonth) });
   const startDayOfWeek = startOfMonth(currentMonth).getDay();
@@ -285,7 +298,7 @@ export default function CalendarPage() {
                   ) : (
                     <div className="space-y-3">
                       {dayEvents.map((e) => (
-                        <div key={e.id} className="bg-card border border-border rounded-lg p-4">
+                        <div id={`calendar-event-${e.id}`} key={e.id} className="bg-card border border-border rounded-lg p-4 scroll-mt-28">
                           <div className="flex items-center gap-2 mb-2">
                             <span className={`w-2 h-2 rounded-full ${typeColors[e.event_type] || typeColors.general}`} />
                             <span className="text-xs font-display tracking-wider text-muted-foreground capitalize">{e.event_type}</span>

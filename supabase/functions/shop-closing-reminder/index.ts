@@ -124,7 +124,7 @@ Up the Lions! 🦁`
         templateName: 'admin-broadcast',
         recipientEmail: p.email,
         idempotencyKey: `shop-closing-${closesAt.toISOString().slice(0, 10)}-${daysLeft}-${p.id}`,
-        templateData: { title, message },
+        templateData: { title, message, actionUrl: 'https://www.pa-fc.uk/shop', ctaLabel: 'Visit Club Shop' },
       },
     })
     if (error) failed++

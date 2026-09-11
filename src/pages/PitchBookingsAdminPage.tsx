@@ -8,7 +8,7 @@ import { format, parseISO } from "date-fns";
 import { Loader2, CheckCircle2, XCircle, Hourglass, Shield, Trash2, AlertTriangle, History } from "lucide-react";
 import { toast } from "sonner";
 import { Textarea } from "@/components/ui/textarea";
-import { Navigate } from "react-router-dom";
+import { Navigate, useSearchParams } from "react-router-dom";
 import { FaPitchSyncPanel } from "@/components/pitch/FaPitchSyncPanel";
 
 
@@ -54,6 +54,7 @@ function Inner() {
   const [loading, setLoading] = useState(true);
   const [declining, setDeclining] = useState<string | null>(null);
   const [declineReason, setDeclineReason] = useState("");
+  const [searchParams] = useSearchParams();
 
 
   useEffect(() => {
@@ -65,6 +66,15 @@ function Inner() {
   }, [user]);
 
   useEffect(() => { load(); }, []);
+
+  useEffect(() => {
+    const bookingId = searchParams.get("booking");
+    if (!bookingId || bookings.length === 0) return;
+    const booking = bookings.find((item) => item.id === bookingId);
+    if (!booking) return;
+    setTab(booking.status === "pending" ? "pending" : booking.status === "approved" && new Date(booking.end_time) >= new Date() ? "upcoming" : "history");
+    requestAnimationFrame(() => document.getElementById(`admin-booking-${bookingId}`)?.scrollIntoView({ behavior: "smooth", block: "center" }));
+  }, [bookings, searchParams]);
 
   async function load() {
     setLoading(true);

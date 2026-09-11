@@ -467,7 +467,7 @@ const TournamentAdminPage = () => {
                 templateName: "admin-broadcast",
                 recipientEmail: email,
                 idempotencyKey: `tournament-announce-${selectedTournament}-${Date.now()}-${email}`,
-                templateData: { title, message },
+                templateData: { title, message, actionUrl: "https://www.pa-fc.uk/tournament", ctaLabel: "View Tournament" },
               },
             });
             sent++;
@@ -537,7 +537,7 @@ const TournamentAdminPage = () => {
             templateName: "admin-broadcast",
             recipientEmail: email,
             idempotencyKey: `tournament-fixtures-ready-${selectedTournament}-${email}`,
-            templateData: { title, message },
+            templateData: { title, message, actionUrl: link, ctaLabel: "View Fixtures" },
           },
         });
         sent++;
