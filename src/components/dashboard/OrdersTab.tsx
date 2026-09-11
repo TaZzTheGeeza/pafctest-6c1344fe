@@ -468,11 +468,9 @@ export function OrdersTab() {
                     }}
                     className="w-full text-left px-5 py-4 hover:bg-secondary/30 transition-colors cursor-pointer"
                   >
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="flex items-center gap-4 min-w-0">
-                        <div className="flex-shrink-0">
-                          <span className="text-sm font-display font-bold text-primary">{order.order_name}</span>
-                        </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <span className="text-sm font-display font-bold text-primary flex-shrink-0">{order.order_name}</span>
                         <div className="min-w-0">
                           <p className="text-sm font-display font-semibold text-foreground truncate">
                             {customerName(order)}
@@ -485,13 +483,16 @@ export function OrdersTab() {
                           </p>
                           {childrenFor(order).length > 0 && (
                             <p className="text-[10px] text-primary flex items-center gap-1 mt-0.5">
-                              <Baby className="h-3 w-3" />
-                              {childrenFor(order).map((c) => c.name).join(", ")}
+                              <Baby className="h-3 w-3 flex-shrink-0" />
+                              <span className="truncate">{childrenFor(order).map((c) => c.name).join(", ")}</span>
                             </p>
                           )}
                         </div>
+                        <span className="text-sm font-display font-bold text-foreground ml-auto sm:hidden flex-shrink-0">
+                          £{order.total_price.toFixed(2)}
+                        </span>
                       </div>
-                      <div className="flex items-center gap-2 flex-shrink-0">
+                      <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap sm:flex-shrink-0">
                         <Badge className={`${payStatus.bg} ${payStatus.text} border-0 text-[10px] gap-1`}>
                           <PayIcon className="h-3 w-3" />
                           {order.financial_status.replace(/_/g, " ")}
@@ -499,10 +500,10 @@ export function OrdersTab() {
                         <Badge className={`${(PROGRESS_STAGES.find((s2) => s2.value === progressOf(order)) || PROGRESS_STAGES[0]).chip} border-0 text-[10px] capitalize`}>
                           {progressOf(order)}
                         </Badge>
-                        <Badge className={`${fulfillStatus.bg} ${fulfillStatus.text} border-0 text-[10px]`}>
+                        <Badge className={`${fulfillStatus.bg} ${fulfillStatus.text} border-0 text-[10px] hidden sm:inline-flex`}>
                           {(order.fulfillment_status || "unfulfilled").replace(/_/g, " ")}
                         </Badge>
-                        <span className="text-sm font-display font-bold text-foreground ml-2">
+                        <span className="text-sm font-display font-bold text-foreground ml-1 hidden sm:inline">
                           £{order.total_price.toFixed(2)}
                         </span>
                         <select
