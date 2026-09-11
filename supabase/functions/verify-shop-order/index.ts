@@ -53,10 +53,15 @@ serve(async (req) => {
       });
     }
 
-    // Fetch the billing request with its linked payment
+    // Fetch the billing request with its linked payment.
+    // GoCardless exposes the payment under a few different keys depending on
+    // the flow, so check all of them.
     const br = await gcGet(`/billing_requests/${br_id}`, gcToken);
     const billingRequest = br.billing_requests;
-    const paymentId = billingRequest?.links?.payment;
+    const paymentId =
+      billingRequest?.links?.payment ||
+      billingRequest?.links?.payment_request_payment ||
+      billingRequest?.payment_request?.links?.payment;
 
     if (!paymentId || billingRequest.status === "failed" || billingRequest.status === "cancelled") {
       if (billingRequest.status === "failed" || billingRequest.status === "cancelled") {
