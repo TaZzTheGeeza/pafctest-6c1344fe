@@ -47,7 +47,7 @@ const InstallPage = () => {
             Get the PAFC App
           </h1>
           <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-            Install Peterborough Athletic FC directly to your phone's home screen — no app store needed.
+            Install Peterborough Athletic FC directly to your phone's home screen - no app store needed.
           </p>
         </div>
 
@@ -68,7 +68,7 @@ const InstallPage = () => {
           </div>
         ) : null}
 
-        {/* Guides — always show both */}
+        {/* Guides - always show both */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
           {/* iPhone / iPad Guide */}
           <div className="bg-card border border-border rounded-xl overflow-hidden">
@@ -82,7 +82,7 @@ const InstallPage = () => {
               <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 flex gap-2">
                 <AlertTriangle className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                 <p className="text-xs text-foreground">
-                  <strong>You must use Safari</strong> — this won't work in Chrome, Instagram, or Facebook browsers. Open this page in Safari first.
+                  <strong>You must use Safari</strong> - this won't work in Chrome, Instagram, or Facebook browsers. Open this page in Safari first.
                 </p>
               </div>
 
@@ -103,7 +103,7 @@ const InstallPage = () => {
                 <div>
                   <p className="font-semibold text-foreground">Tap the Share button</p>
                   <p className="text-sm text-muted-foreground mt-0.5">
-                    It's the square icon with an arrow pointing upward — found at the <strong>bottom centre</strong> of Safari (or top-right on iPad).
+                    It's the square icon with an arrow pointing upward - found at the <strong>bottom centre</strong> of Safari (or top-right on iPad).
                   </p>
                   <div className="mt-2 bg-secondary rounded-lg px-3 py-2 inline-flex items-center gap-2 text-xs text-muted-foreground">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 8.25H7.5a2.25 2.25 0 0 0-2.25 2.25v9a2.25 2.25 0 0 0 2.25 2.25h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25H15m0-3-3-3m0 0-3 3m3-3v11.25" /></svg>
@@ -129,7 +129,7 @@ const InstallPage = () => {
                 <div>
                   <p className="font-semibold text-foreground">Tap "Add" in the top-right corner</p>
                   <p className="text-sm text-muted-foreground mt-0.5">
-                    You'll see a preview — just tap <strong>Add</strong> and the PAFC app icon will appear on your home screen.
+                    You'll see a preview - just tap <strong>Add</strong> and the PAFC app icon will appear on your home screen.
                   </p>
                 </div>
               </div>
@@ -152,7 +152,7 @@ const InstallPage = () => {
               <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 flex gap-2">
                 <AlertTriangle className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                 <p className="text-xs text-foreground">
-                  <strong>Use Chrome or Samsung Internet</strong> — this won't work from links opened inside Facebook, Instagram, or other apps. Open the website in your normal browser.
+                  <strong>Use Chrome or Samsung Internet</strong> - this won't work from links opened inside Facebook, Instagram, or other apps. Open the website in your normal browser.
                 </p>
               </div>
 
@@ -162,7 +162,7 @@ const InstallPage = () => {
                 <div>
                   <p className="font-semibold text-foreground">Open this website in Chrome</p>
                   <p className="text-sm text-muted-foreground mt-0.5">
-                    If you see a banner at the bottom saying <strong>"Install app"</strong> or <strong>"Add PAFC to Home Screen"</strong> — just tap it and skip to step 4!
+                    If you see a banner at the bottom saying <strong>"Install app"</strong> or <strong>"Add PAFC to Home Screen"</strong> - just tap it and skip to step 4!
                   </p>
                 </div>
               </div>
@@ -184,7 +184,7 @@ const InstallPage = () => {
                 <div>
                   <p className="font-semibold text-foreground">Tap "Install app" or "Add to Home Screen"</p>
                   <p className="text-sm text-muted-foreground mt-0.5">
-                    The wording depends on your phone. Look for either option in the menu — it may also say <strong>"Install Peterborough Athletic FC"</strong>.
+                    The wording depends on your phone. Look for either option in the menu - it may also say <strong>"Install Peterborough Athletic FC"</strong>.
                   </p>
                 </div>
               </div>
@@ -195,7 +195,7 @@ const InstallPage = () => {
                 <div>
                   <p className="font-semibold text-foreground">Tap "Install" to confirm</p>
                   <p className="text-sm text-muted-foreground mt-0.5">
-                    A popup will appear asking you to confirm — tap <strong>Install</strong> and the app will be added to your home screen and app drawer.
+                    A popup will appear asking you to confirm - tap <strong>Install</strong> and the app will be added to your home screen and app drawer.
                   </p>
                 </div>
               </div>
@@ -229,7 +229,7 @@ const InstallPage = () => {
               <span className="text-primary font-bold shrink-0">Q:</span>
               <div>
                 <p className="font-semibold text-foreground">I accidentally dismissed the install popup</p>
-                <p className="text-muted-foreground">No worries — on Android, go to the ⋮ menu and look for "Install app" again. On iPhone, tap the Share button again and find "Add to Home Screen".</p>
+                <p className="text-muted-foreground">No worries - on Android, go to the ⋮ menu and look for "Install app" again. On iPhone, tap the Share button again and find "Add to Home Screen".</p>
               </div>
             </div>
           </div>

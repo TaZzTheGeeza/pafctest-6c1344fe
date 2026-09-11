@@ -44,14 +44,14 @@ const PhotoClaimLinkEmail = ({ claimUrl, photoCount, orderName, photoRefs }: Pro
           </Text>
         ) : null}
         <Text style={smallText}>
-          This is your <strong>secure magic link</strong> — anyone with the link can download the photos, so keep it private.
+          This is your <strong>secure magic link</strong> - anyone with the link can download the photos, so keep it private.
           The link is valid for 30 days and works on any device.
         </Text>
         <Text style={smallText}>
           If the button doesn't work, paste this URL into your browser:<br />
           <span style={{ wordBreak: 'break-all', color: '#b8860b' }}>{claimUrl}</span>
         </Text>
-        <Text style={footer}>— The {SITE_NAME} Team</Text>
+        <Text style={footer}> - The {SITE_NAME} Team</Text>
       </Container>
     </Body>
   </Html>
@@ -60,7 +60,7 @@ const PhotoClaimLinkEmail = ({ claimUrl, photoCount, orderName, photoRefs }: Pro
 export const template = {
   component: PhotoClaimLinkEmail,
   subject: (data: Record<string, any>) =>
-    `Your tournament photos are ready${data.orderName ? ` — ${data.orderName}` : ''}`,
+    `Your tournament photos are ready${data.orderName ? ` - ${data.orderName}` : ''}`,
   displayName: 'Photo claim link',
   previewData: { claimUrl: 'https://www.pa-fc.uk/photos/claim?token=abc123', photoCount: '2', orderName: '#1042' },
 } satisfies TemplateEntry

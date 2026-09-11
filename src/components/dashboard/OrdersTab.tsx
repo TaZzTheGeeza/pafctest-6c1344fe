@@ -623,7 +623,7 @@ export function OrdersTab() {
                                       />
                                     ) : (
                                       <span className={ov.initials ? "text-amber-300 font-semibold" : "text-foreground"}>
-                                        {ov.initials || chosenInitials || <span className="text-muted-foreground">—</span>}
+                                        {ov.initials || chosenInitials || <span className="text-muted-foreground">-</span>}
                                       </span>
                                     )}
                                   </td>
@@ -655,7 +655,7 @@ export function OrdersTab() {
                                       </span>
                                     ) : (
                                       <span className="text-foreground">
-                                        {item.variant_title || <span className="text-muted-foreground">—</span>}
+                                        {item.variant_title || <span className="text-muted-foreground">-</span>}
                                       </span>
                                     )}
                                   </td>

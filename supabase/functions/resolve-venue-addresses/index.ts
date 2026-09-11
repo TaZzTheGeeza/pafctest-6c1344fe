@@ -57,7 +57,7 @@ async function searchPlace(query: string, lovableKey: string, mapsKey: string): 
   if (!address) return null;
 
   const name = place?.displayName?.text?.trim();
-  // Prefix the place name when the address doesn't already carry it — keeps
+  // Prefix the place name when the address doesn't already carry it - keeps
   // "Itter Park" style ground names attached to the postal address.
   return name && !address.toUpperCase().includes(name.toUpperCase())
     ? `${name}, ${address}`

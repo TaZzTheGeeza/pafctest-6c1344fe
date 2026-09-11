@@ -52,7 +52,7 @@ const tabs = [
 const playerHubItems = [
   {
     title: "Presentation Evening",
-    description: "Claim your family tickets at the Player Zone — admins will allocate your seats for 05/06/26.",
+    description: "Claim your family tickets at the Player Zone - admins will allocate your seats for 05/06/26.",
     icon: Sparkles,
     path: "/presentation",
     color: "text-primary",
@@ -252,7 +252,7 @@ export default function HubPage() {
       {activeTab === "awards" && activeTeam && activeTeam !== "u6s" && <AwardsVoting teamSlug={activeTeam} teamName={activeTeamName || ""} />}
       {activeTab === "player" && (
         <div className="space-y-4">
-          {/* Featured: Presentation Evening — toggled via site_settings (admin dashboard) */}
+          {/* Featured: Presentation Evening - toggled via site_settings (admin dashboard) */}
           {presentationEnabled && playerHubItems
             .filter((i) => i.featured)
             .map((item) => (

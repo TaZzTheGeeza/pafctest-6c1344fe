@@ -140,9 +140,9 @@ export default function PresentationAwardsAdminPage() {
         rows.push([
           t.name,
           a.label,
-          first?.[0] || "—",
+          first?.[0] || "-",
           String(first?.[1] ?? 0),
-          second?.[0] || "—",
+          second?.[0] || "-",
           String(second?.[1] ?? 0),
           String(total),
           tie,
@@ -295,7 +295,7 @@ export default function PresentationAwardsAdminPage() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h2 className="font-display text-xl font-bold flex items-center gap-2">
-                  <Trophy className="h-5 w-5 text-primary" /> Winners Summary — All Teams
+                  <Trophy className="h-5 w-5 text-primary" /> Winners Summary - All Teams
                 </h2>
                 <p className="text-xs text-muted-foreground mt-1">Top vote-getter per award. Ties are flagged in amber.</p>
               </div>
@@ -456,7 +456,7 @@ export default function PresentationAwardsAdminPage() {
                         <tr key={v.id} className="border-b border-border/50">
                           <td className="py-2 pr-4">{AWARDS.find((a) => a.type === v.award_type)?.label || v.award_type}</td>
                           <td className="py-2 pr-4">
-                            <div>{p?.full_name || "—"}</div>
+                            <div>{p?.full_name || "-"}</div>
                             <div className="text-xs text-muted-foreground">{p?.email || ""}</div>
                           </td>
                           <td className="py-2 pr-4">{v.responding_for}</td>

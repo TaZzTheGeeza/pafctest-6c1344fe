@@ -4,7 +4,7 @@ import { Shield, Heart, Award, Users } from "lucide-react";
 
 const values = [
   { icon: Shield, title: "FA Accredited", description: "All coaches FA-qualified, first aid trained, and DBS-checked to the highest standards." },
-  { icon: Heart, title: "Community First", description: "A safe, friendly environment where young people learn, develop, and thrive — on and off the pitch." },
+  { icon: Heart, title: "Community First", description: "A safe, friendly environment where young people learn, develop, and thrive - on and off the pitch." },
   { icon: Award, title: "Player Development", description: "Offering players of all ages and abilities the opportunity to play, develop, and reach their potential." },
   { icon: Users, title: "Volunteer Powered", description: "Our success is built on the incredible commitment and dedication of our volunteer coaches and staff." },
 ];
@@ -28,7 +28,7 @@ export function AboutSection() {
               <img src={clubLogo} alt="PAFC Crest" className="w-20 h-20 rounded-full object-cover border-2 border-primary" />
             </div>
             <p className="text-muted-foreground text-lg leading-relaxed max-w-3xl mx-auto mb-4">
-              At <strong className="text-foreground">Peterborough Athletic</strong>, we are more than just a football club — we are a family.
+              At <strong className="text-foreground">Peterborough Athletic</strong>, we are more than just a football club - we are a family.
               Built on the values of teamwork, respect, and community spirit, our club is proud to offer players of all ages
               and abilities the opportunity to play, develop, and thrive in a supportive and inclusive environment.
             </p>

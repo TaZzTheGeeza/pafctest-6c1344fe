@@ -95,7 +95,7 @@ const WhatsNewAdminPage = () => {
 
   const startNewCampaign = () => {
     setCampaign({ ...EMPTY });
-    toast.info("Started a new campaign — saving will create a fresh entry that re-shows for everyone");
+    toast.info("Started a new campaign - saving will create a fresh entry that re-shows for everyone");
   };
 
   const save = async () => {

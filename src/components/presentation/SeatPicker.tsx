@@ -66,9 +66,9 @@ export function SeatPicker({
         )}
         title={
           isTakenByOther
-            ? `Seat ${seatNum} – taken by ${taken?.attendee_name ?? "another guest"}`
+            ? `Seat ${seatNum} - taken by ${taken?.attendee_name ?? "another guest"}`
             : isOwn
-            ? `Seat ${seatNum} – your seat`
+            ? `Seat ${seatNum} - your seat`
             : `Seat ${seatNum}`
         }
       >

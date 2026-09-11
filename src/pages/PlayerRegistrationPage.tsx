@@ -129,7 +129,7 @@ export default function PlayerRegistrationPage() {
 
   useEffect(() => {
     if (paymentStatus === "cancelled") {
-      toast.error("Payment was cancelled. Your registration is incomplete — please complete payment to finish registration.");
+      toast.error("Payment was cancelled. Your registration is incomplete - please complete payment to finish registration.");
     }
   }, [paymentStatus]);
 
@@ -139,7 +139,7 @@ export default function PlayerRegistrationPage() {
   useEffect(() => {
     if (paymentStatus !== "success" || !returnedRegistrationId) {
       if (paymentStatus === "success" && !returnedRegistrationId) {
-        // Legacy success redirect with no id — best effort show success.
+        // Legacy success redirect with no id - best effort show success.
         setVerifyingPayment(false);
         setSubmitted(true);
       }
@@ -312,7 +312,7 @@ export default function PlayerRegistrationPage() {
       };
 
 
-      // Make sure the session is still valid — an expired token silently breaks uploads.
+      // Make sure the session is still valid - an expired token silently breaks uploads.
       const { data: sessionData } = await supabase.auth.getSession();
       if (!sessionData.session) {
         toast.error("Your session has expired. Please sign in again and resubmit.");
@@ -320,7 +320,7 @@ export default function PlayerRegistrationPage() {
         return;
       }
 
-      // Shrink big phone photos before upload — large files are the main cause of failures.
+      // Shrink big phone photos before upload - large files are the main cause of failures.
       let uploadBody: Blob = photoFile;
       let uploadType = photoFile.type || "image/jpeg";
       let fileExt = (photoFile.name.split(".").pop() || "").toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -379,7 +379,7 @@ export default function PlayerRegistrationPage() {
       }
       const newRegistrationId = (insertedRows as any)?.id as string | undefined;
 
-      // Redirect to GoCardless for £40 payment — registration is NOT complete until payment is confirmed.
+      // Redirect to GoCardless for £40 payment - registration is NOT complete until payment is confirmed.
       toast.info("Redirecting to payment...");
       const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke(
         "create-registration-checkout",
@@ -409,7 +409,7 @@ export default function PlayerRegistrationPage() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <SEO title="Join PAFC — Player Registration | Peterborough Athletic FC" description="Sign up to play for Peterborough Athletic FC. Junior and youth football registration for boys' and girls' teams U6–U16 in Peterborough." keywords="join Peterborough football club, register Peterborough Athletic FC, sign up junior football Peterborough, kids football trials Peterborough, U7 U8 U9 U10 football Peterborough" path="/register" />
+      <SEO title="Join PAFC - Player Registration | Peterborough Athletic FC" description="Sign up to play for Peterborough Athletic FC. Junior and youth football registration for boys' and girls' teams U6-U16 in Peterborough." keywords="join Peterborough football club, register Peterborough Athletic FC, sign up junior football Peterborough, kids football trials Peterborough, U7 U8 U9 U10 football Peterborough" path="/register" />
       <Navbar />
       <main className="flex-1 pt-32 pb-16">
         <div className="container mx-auto px-4">
@@ -469,7 +469,7 @@ export default function PlayerRegistrationPage() {
                   We couldn't find any children linked to your account in the PAFC Hub.
                 </p>
                 <p className="text-sm text-muted-foreground mb-6">
-                  Registration is only available for parents/carers with a linked child. Please request Hub access first — once approved, your child will appear here.
+                  Registration is only available for parents/carers with a linked child. Please request Hub access first - once approved, your child will appear here.
                 </p>
                 <Link to="/hub">
                   <Button className="bg-gold-gradient text-primary-foreground font-display tracking-wider">
@@ -518,7 +518,7 @@ export default function PlayerRegistrationPage() {
                     <h2 className="font-display text-xl font-bold">Player Registration Form</h2>
                   </div>
 
-                  {/* Child's Details — locked to a linked Hub child */}
+                  {/* Child's Details - locked to a linked Hub child */}
                   <div>
                     <h3 className="font-display text-sm font-bold text-primary mb-3">Child's Details</h3>
                     <div className="space-y-4">
@@ -546,7 +546,7 @@ export default function PlayerRegistrationPage() {
                           <option value="">Choose your linked child...</option>
                           {linkedChildren?.map((c) => (
                             <option key={c.id} value={c.id}>
-                              {c.player_name}{c.team_slug ? ` — ${teamSlugToLabel[c.team_slug] || c.team_slug.toUpperCase()}` : ""}
+                              {c.player_name}{c.team_slug ? ` - ${teamSlugToLabel[c.team_slug] || c.team_slug.toUpperCase()}` : ""}
                             </option>
                           ))}
                         </select>
@@ -663,7 +663,7 @@ export default function PlayerRegistrationPage() {
                     )}
                     {form.hasFaFanNumber === "no" && (
                       <p className="text-[10px] text-muted-foreground mt-1">
-                        No problem — we'll help you register with The FA after sign-up.
+                        No problem - we'll help you register with The FA after sign-up.
                       </p>
                     )}
                   </div>

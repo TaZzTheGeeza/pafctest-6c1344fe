@@ -39,7 +39,7 @@ const MeetingInviteEmail = ({ meetingTitle, scheduledDate, scheduledTime, durati
           Head to the Meetings page on the PAFC website to join when the meeting starts.
         </Text>
         {actionUrl && <Section style={buttonSection}><Button href={actionUrl} style={button}>View Meeting</Button></Section>}
-        <Text style={footer}>— The {SITE_NAME} Team</Text>
+        <Text style={footer}> - The {SITE_NAME} Team</Text>
       </Container>
     </Body>
   </Html>

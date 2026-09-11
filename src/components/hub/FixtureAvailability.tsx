@@ -217,7 +217,7 @@ export function FixtureAvailability({ teamSlug }: Props) {
   ]);
 
 
-  // Published lineups for this team — visible to every team member
+  // Published lineups for this team - visible to every team member
   const { data: publishedLineups = [] } = useQuery({
     queryKey: ["published-lineups", teamSlug],
     queryFn: async () => {
@@ -364,7 +364,7 @@ export function FixtureAvailability({ teamSlug }: Props) {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["fixture-availability", teamSlug] }),
     onError: (err: any) => {
       console.error("Availability vote failed:", err);
-      toast.error("Failed to save availability – please try again");
+      toast.error("Failed to save availability - please try again");
     },
   });
 
@@ -469,7 +469,7 @@ export function FixtureAvailability({ teamSlug }: Props) {
 
   function getTeamSummary(item: AvailabilityItem) {
     const records = availability.filter((a) => a.fixture_date === item.date && a.opponent === item.opponent);
-    // Deduplicate: per child (normalized) or per user — case-insensitive child match
+    // Deduplicate: per child (normalized) or per user - case-insensitive child match
     const deduped = new Map<string, string>();
     records.forEach((r) => {
       const key = r.responding_for ? `child:${normalizeName(r.responding_for)}` : `user:${r.user_id}`;

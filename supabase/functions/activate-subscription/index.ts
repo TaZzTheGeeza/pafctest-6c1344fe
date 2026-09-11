@@ -82,7 +82,7 @@ serve(async (req) => {
           success: false,
           pending: true,
           status: br.status,
-          message: "Your Direct Debit is still being confirmed. This can take a few moments — please try again shortly.",
+          message: "Your Direct Debit is still being confirmed. This can take a few moments - please try again shortly.",
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 202 },
       );

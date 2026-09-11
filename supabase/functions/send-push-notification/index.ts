@@ -5,7 +5,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-// Web Push VAPID auth — simplified implementation using web-push library
+// Web Push VAPID auth - simplified implementation using web-push library
 // For web push, we use the web-push npm package
 import webpush from 'npm:web-push@3.6.7'
 

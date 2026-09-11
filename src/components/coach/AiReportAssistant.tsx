@@ -86,7 +86,7 @@ export function AiReportAssistant({
       const report = (data as any)?.report as string;
       if (!report) throw new Error("No report returned");
       onNotesChange(report);
-      toast.success("Draft written — check it over and edit anything you like.");
+      toast.success("Draft written - check it over and edit anything you like.");
     } catch (e: any) {
       toast.error(e?.message || "Could not write the report");
     } finally {
@@ -122,7 +122,7 @@ export function AiReportAssistant({
     const blob = encodeWav(rec.chunks, rec.ctx.sampleRate);
     await rec.ctx.close();
     if (blob.size < 4096) {
-      toast.error("That recording was empty — please try again.");
+      toast.error("That recording was empty - please try again.");
       return;
     }
     setTranscribing(true);
@@ -135,7 +135,7 @@ export function AiReportAssistant({
       const text = ((data as any)?.text || "").trim();
       if (!text) throw new Error("Nothing was picked up in that recording");
       onNotesChange(notes ? `${notes.trim()} ${text}` : text);
-      toast.success("Voice note added — tap Write report to turn it into a write-up.");
+      toast.success("Voice note added - tap Write report to turn it into a write-up.");
     } catch (e: any) {
       toast.error(e?.message || "Could not read that recording");
     } finally {
@@ -153,7 +153,7 @@ export function AiReportAssistant({
       </div>
       <p className="text-[11px] text-muted-foreground">
         Uses the score, scorers, assists and Player of the Match above. Add rough notes (typed or spoken)
-        for more detail — you can edit the result before saving.
+        for more detail - you can edit the result before saving.
       </p>
       <div className="flex flex-wrap gap-2">
         <Button type="button" size="sm" onClick={() => generate("standard")} disabled={disabled} className="h-8 text-xs gap-1">

@@ -62,7 +62,7 @@ function normaliseStoredLink(raw: string, teamSlug?: string | null): string {
     link = link.replace(/([?&])section=contact\b/, "$1section=enquiries");
   }
 
-  // Hub links are useless without a team — attach the notification's team.
+  // Hub links are useless without a team - attach the notification's team.
   if (link.startsWith("/hub?") || link === "/hub") {
     link = withTeam(link, teamSlug);
   }

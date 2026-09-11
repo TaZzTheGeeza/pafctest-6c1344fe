@@ -153,7 +153,7 @@ function TeamDetail({ team }: { team: TeamData }) {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <SEO title="Our Teams | Peterborough Athletic FC — U6 to U16" description="Meet the PAFC teams. Junior and youth football squads from U6 to U16 — fixtures, league tables, squad lists and stats." keywords="Peterborough Athletic FC teams, PAFC squads, U7 football Peterborough, U10 football Peterborough, U13 football Peterborough, junior football teams Peterborough, youth football Cambridgeshire" path="/teams" />
+      <SEO title="Our Teams | Peterborough Athletic FC - U6 to U16" description="Meet the PAFC teams. Junior and youth football squads from U6 to U16 - fixtures, league tables, squad lists and stats." keywords="Peterborough Athletic FC teams, PAFC squads, U7 football Peterborough, U10 football Peterborough, U13 football Peterborough, junior football teams Peterborough, youth football Cambridgeshire" path="/teams" />
       <Navbar />
       <main className="flex-1 pt-28 pb-16">
         <div className="container mx-auto px-4">
@@ -359,9 +359,9 @@ function TeamDetail({ team }: { team: TeamData }) {
 
 const ageGroups = [
   { label: "All", filter: () => true },
-  { label: "U6–U9", filter: (t: TeamData) => ["Under 6", "Under 7", "Under 8", "Under 9"].includes(t.ageGroup) },
-  { label: "U10–U12", filter: (t: TeamData) => ["Under 10", "Under 11", "Under 12"].includes(t.ageGroup) },
-  { label: "U13–U15", filter: (t: TeamData) => ["Under 13", "Under 14", "Under 15"].includes(t.ageGroup) },
+  { label: "U6-U9", filter: (t: TeamData) => ["Under 6", "Under 7", "Under 8", "Under 9"].includes(t.ageGroup) },
+  { label: "U10-U12", filter: (t: TeamData) => ["Under 10", "Under 11", "Under 12"].includes(t.ageGroup) },
+  { label: "U13-U15", filter: (t: TeamData) => ["Under 13", "Under 14", "Under 15"].includes(t.ageGroup) },
 ];
 
 function TeamCard({ team, index }: { team: TeamData; index: number }) {

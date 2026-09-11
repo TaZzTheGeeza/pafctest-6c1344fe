@@ -33,7 +33,7 @@ export const SignupEmail = ({
 }: SignupEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>Welcome to Peterborough Athletic FC — confirm your email</Preview>
+    <Preview>Welcome to Peterborough Athletic FC - confirm your email</Preview>
     <Body style={main}>
       <Container style={container}>
         <div style={logoWrap}>

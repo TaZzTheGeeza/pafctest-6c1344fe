@@ -55,7 +55,7 @@ export default function PhotoClaimPage() {
         return;
       }
 
-      // Pending payment — keep polling
+      // Pending payment - keep polling
       if (!invErr && (res as any)?.pending) {
         setWaiting(true);
         attempts++;
@@ -131,7 +131,7 @@ export default function PhotoClaimPage() {
             />
             <Button onClick={handleResend} disabled={resending || resent || !resendEmail} className="w-full">
               {resending && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-              {resent ? "Link sent — check your inbox" : "Send my link"}
+              {resent ? "Link sent - check your inbox" : "Send my link"}
             </Button>
           </CardContent>
         </Card>
@@ -152,7 +152,7 @@ export default function PhotoClaimPage() {
       {(loading || waiting) && (
         <div className="flex items-center gap-2 text-muted-foreground">
           <Loader2 className="h-4 w-4 animate-spin" />
-          {waiting ? "Payment received — preparing your photos…" : "Looking up your photos…"}
+          {waiting ? "Payment received - preparing your photos…" : "Looking up your photos…"}
         </div>
       )}
 
@@ -171,7 +171,7 @@ export default function PhotoClaimPage() {
             />
             <Button onClick={handleResend} disabled={resending || resent || !resendEmail} className="w-full">
               {resending && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-              {resent ? "Link sent — check your inbox" : "Send a new link"}
+              {resent ? "Link sent - check your inbox" : "Send a new link"}
             </Button>
           </CardContent>
         </Card>

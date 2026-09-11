@@ -50,7 +50,7 @@ interface Props {
   theatrePlayers?: TheatreSeatPlayer[];
   /** Persisted seat→player assignments (admin-managed). When omitted falls back to auto-sort. */
   theatreAssignments?: TheatreAssignment[];
-  /** Player first names belonging to current user — gold ring */
+  /** Player first names belonging to current user - gold ring */
   highlightedNames?: string[];
   /** Click handler for any theatre chair (occupied or empty). Triggered in adminMode. */
   onTheatreSeatClick?: (info: {
@@ -59,7 +59,7 @@ interface Props {
     col_index: number;
     player: TheatreSeatPlayer | null;
   }) => void;
-  /** Theatre block dimensions — must match what the editor expects */
+  /** Theatre block dimensions - must match what the editor expects */
   theatreRows?: number;
   theatreChairsPerRow?: number;
 }
@@ -246,7 +246,7 @@ export function SeatingPlan({
         </div>
       </div>
 
-      {/* Theatre blocks — flanking the stage, no rotation to avoid overlap */}
+      {/* Theatre blocks - flanking the stage, no rotation to avoid overlap */}
       <div className="grid grid-cols-2 gap-3 md:gap-6 mb-6 md:mb-10">
         <div className="flex justify-center">
           <TheatreSeatBlock
@@ -315,7 +315,7 @@ export function SeatingPlan({
         ))}
       </div>
 
-      {/* Age group legend removed — tables are numbered 1–80 with no colour coding */}
+      {/* Age group legend removed - tables are numbered 1-80 with no colour coding */}
 
       {/* Legend */}
       <div className="mt-6 md:mt-8 pt-4 md:pt-5 border-t border-primary/20 flex flex-wrap items-center justify-center gap-4 text-[10px] font-display tracking-wider uppercase text-muted-foreground">
@@ -368,8 +368,8 @@ function RectTable({
       disabled={isLocked || (isFull && !isSelected)}
       title={
         isLocked
-          ? `${table.label ?? `Table ${table.table_number}`} – Reserved`
-          : `${table.label ?? `Table ${table.table_number}`} – ${taken}/${total} seats`
+          ? `${table.label ?? `Table ${table.table_number}`} - Reserved`
+          : `${table.label ?? `Table ${table.table_number}`} - ${taken}/${total} seats`
       }
       className={cn(
         "relative group transition-all flex items-center justify-center gap-0.5",
@@ -586,7 +586,7 @@ function TheatreSeatBlock({
                     )}
                     title={
                       clickable
-                        ? `Empty seat — row ${rIdx + 1}, col ${cIdx + 1} (click to assign)`
+                        ? `Empty seat - row ${rIdx + 1}, col ${cIdx + 1} (click to assign)`
                         : "Empty seat"
                     }
                   >

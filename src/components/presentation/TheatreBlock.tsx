@@ -10,7 +10,7 @@ export interface TheatrePlayer {
 
 interface Props {
   players: TheatrePlayer[];
-  /** Player names (case-insensitive) belonging to the current user — get a gold ring */
+  /** Player names (case-insensitive) belonging to the current user - get a gold ring */
   highlightedNames?: string[];
   /** Approx chairs per row inside an age-group block (responsive cap) */
   chairsPerRow?: number;
@@ -22,7 +22,7 @@ interface Props {
  * each group rendered as its own colour-banded row. Each chair shows the
  * player's first name + shirt number.
  *
- * No interactivity — seats are auto-allocated.
+ * No interactivity - seats are auto-allocated.
  */
 export function TheatreBlock({
   players,
@@ -81,7 +81,7 @@ export function TheatreBlock({
     <div className="mb-6 md:mb-8">
       <div className="text-center mb-3">
         <p className="text-[10px] font-display tracking-[0.4em] uppercase text-primary">
-          ★ Theatre Block — Players ★
+          ★ Theatre Block - Players ★
         </p>
         <p className="text-[10px] text-muted-foreground mt-1">
           {totalSeats} reserved player seats · auto-allocated by age group

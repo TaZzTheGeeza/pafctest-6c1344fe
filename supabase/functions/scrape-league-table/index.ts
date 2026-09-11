@@ -50,7 +50,7 @@ Deno.serve(async (req) => {
 
     const url = tableUrl || `https://fulltime.thefa.com/table.html?divisionseason=${divisionSeason}`;
 
-    // SSRF guard — only allow scraping the FA Full-Time host over HTTPS.
+    // SSRF guard - only allow scraping the FA Full-Time host over HTTPS.
     try {
       const parsed = new URL(url);
       if (parsed.protocol !== 'https:' || parsed.hostname !== 'fulltime.thefa.com') {

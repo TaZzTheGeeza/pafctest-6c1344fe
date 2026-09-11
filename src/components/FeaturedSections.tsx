@@ -27,7 +27,7 @@ export function FeaturedSections() {
               Summer Tournament 2026
             </h3>
             <p className="text-muted-foreground text-sm mb-6 max-w-sm">
-              Register your team for the annual PAFC tournament. All age groups welcome — compete for the cup!
+              Register your team for the annual PAFC tournament. All age groups welcome - compete for the cup!
             </p>
             <span className="inline-flex items-center gap-2 text-primary font-display text-sm tracking-wider group-hover:gap-3 transition-all">
               View Tournament <ArrowRight className="h-4 w-4" />

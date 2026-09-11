@@ -146,7 +146,7 @@ export function ReminderPreviewDialog({
       const notifications = userIds.map((uid) => ({
         user_id: uid,
         title: "Availability Reminder",
-        message: `${itemTitle} — ${friendlyDate}. Please submit your availability.`,
+        message: `${itemTitle} - ${friendlyDate}. Please submit your availability.`,
         type: "event",
         team_slug: teamSlug,
         link: destination,
@@ -181,7 +181,7 @@ export function ReminderPreviewDialog({
           body: {
             userIds,
             title: "Availability Reminder",
-            message: `${itemTitle} — ${friendlyDate}. Please submit your availability.`,
+            message: `${itemTitle} - ${friendlyDate}. Please submit your availability.`,
             link: destination,
             tag: `event-${teamSlug}`,
           },

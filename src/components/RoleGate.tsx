@@ -11,7 +11,7 @@ interface Props {
   redirectTo?: string;
 }
 
-// 🔧 DEV BYPASS — set to false before publishing!
+// 🔧 DEV BYPASS - set to false before publishing!
 const DEV_BYPASS = false;
 
 export function RoleGate({ children, requiredRole, redirectTo = "/auth" }: Props) {

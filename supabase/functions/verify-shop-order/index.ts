@@ -102,7 +102,7 @@ serve(async (req) => {
     // Buyer confirmation email
     try {
       const itemsList = (order.items as any[])
-        .map((i) => `${i.quantity}x ${i.name}${i.size ? ` (${i.size})` : ""}${i.initials ? ` — initials: ${i.initials}` : ""}`)
+        .map((i) => `${i.quantity}x ${i.name}${i.size ? ` (${i.size})` : ""}${i.initials ? ` - initials: ${i.initials}` : ""}`)
         .join("\n");
       const origin = new URL(req.url).origin;
       await adminClient.functions.invoke("send-app-email", {
@@ -132,7 +132,7 @@ serve(async (req) => {
       const notifications = (admins || []).map((a: any) => ({
         user_id: a.user_id,
         title: "New Shop Order",
-        message: `${order.customer_name} — £${(order.total_cents / 100).toFixed(2)}`,
+        message: `${order.customer_name} - £${(order.total_cents / 100).toFixed(2)}`,
         type: "payment",
         link: `/dashboard?section=orders&order=${encodeURIComponent(order.id)}`,
       }));

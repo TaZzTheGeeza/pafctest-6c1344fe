@@ -221,7 +221,7 @@ const TournamentPage = () => {
   return (
 
     <div className="min-h-screen flex flex-col">
-      <SEO title="PAFC Tournament 2026 | Peterborough Junior Football Tournament" description="The PAFC Tournament — Peterborough's premier junior football tournament. Team entry, fixtures, results and information." keywords="Peterborough football tournament, PAFC tournament 2026, junior football tournament Peterborough, kids football tournament Cambridgeshire, summer football tournament Peterborough" path="/tournament" />
+      <SEO title="PAFC Tournament 2026 | Peterborough Junior Football Tournament" description="The PAFC Tournament - Peterborough's premier junior football tournament. Team entry, fixtures, results and information." keywords="Peterborough football tournament, PAFC tournament 2026, junior football tournament Peterborough, kids football tournament Cambridgeshire, summer football tournament Peterborough" path="/tournament" />
       <Navbar />
       <main className="flex-1 pt-28 pb-12">
         <div className="container mx-auto px-4">
@@ -233,7 +233,7 @@ const TournamentPage = () => {
             <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 mt-4 text-sm text-muted-foreground">
               <span className="flex items-center gap-1.5">
                 <Calendar className="h-4 w-4 text-primary" />
-                13th – 21st June 2026
+                13th - 21st June 2026
               </span>
               <span className="flex items-center gap-1.5">
                 <MapPin className="h-4 w-4 text-primary" />
@@ -412,7 +412,7 @@ const TournamentPage = () => {
                     <CardContent className="space-y-2 text-sm">
                       <p>🏥 First Aid available at the Registration Gazebo</p>
                       <p>👨‍⚕️ Several first aiders on site</p>
-                      <p>👦 Lost children — bring to Registration Gazebo</p>
+                      <p>👦 Lost children - bring to Registration Gazebo</p>
                     </CardContent>
                   </Card>
                 </div>
@@ -426,7 +426,7 @@ const TournamentPage = () => {
                         <AccordionTrigger className="text-sm font-semibold">⚽ Match Day Rules</AccordionTrigger>
                         <AccordionContent className="space-y-2 text-sm text-muted-foreground">
                           <p>• Kit clashes: Away team must wear bibs</p>
-                          <p>• Home team supplies match ball (Size 3 for U7–U10, Size 4 for U11–U14)</p>
+                          <p>• Home team supplies match ball (Size 3 for U7-U10, Size 4 for U11-U14)</p>
                           <p>• Shin pads are mandatory</p>
                           <p>• Roll-on, roll-off substitutions (unlimited)</p>
                           <p>• No offside rule for any age group</p>
@@ -437,7 +437,7 @@ const TournamentPage = () => {
                         </AccordionContent>
                       </AccordionItem>
                       <AccordionItem value="younger-rules">
-                        <AccordionTrigger className="text-sm font-semibold">👦 U7–U10 Specific Rules</AccordionTrigger>
+                        <AccordionTrigger className="text-sm font-semibold">👦 U7-U10 Specific Rules</AccordionTrigger>
                         <AccordionContent className="space-y-2 text-sm text-muted-foreground">
                           <p>• Must take kick ins or dribble ins</p>
                           <p>• No shooting direct from a kick in</p>
@@ -535,7 +535,7 @@ const TournamentPage = () => {
                     </div>
                     <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-3 flex items-start gap-2">
                       <AlertTriangle className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
-                      <p className="text-sm text-destructive"><strong>Important:</strong> Do NOT park in front of or block the Main Gate on Itter Crescent — this must be kept clear for emergency vehicle access.</p>
+                      <p className="text-sm text-destructive"><strong>Important:</strong> Do NOT park in front of or block the Main Gate on Itter Crescent - this must be kept clear for emergency vehicle access.</p>
                     </div>
                     <p className="text-sm text-muted-foreground">Some parking available near the event address. A parking steward will be on location. Extra parking details included in tournament documents.</p>
                   </CardContent>
@@ -804,7 +804,7 @@ const TournamentPage = () => {
                   <Card className="max-w-lg mx-auto text-center">
                     <CardContent className="pt-6 space-y-2">
                       <h3 className="font-display text-xl uppercase tracking-wider">Entries Closed</h3>
-                      <p className="text-muted-foreground">Tournament entries are now closed. Thanks to all teams who registered — see you on matchday!</p>
+                      <p className="text-muted-foreground">Tournament entries are now closed. Thanks to all teams who registered - see you on matchday!</p>
                     </CardContent>
                   </Card>
                 ) : ageGroups && ageGroups.length > 0 ? (
@@ -820,7 +820,7 @@ const TournamentPage = () => {
                 ) : (
                   <Card className="max-w-lg mx-auto text-center">
                     <CardContent className="pt-6">
-                      <p className="text-muted-foreground">Registration not yet open — check back soon!</p>
+                      <p className="text-muted-foreground">Registration not yet open - check back soon!</p>
                     </CardContent>
                   </Card>
                 )}

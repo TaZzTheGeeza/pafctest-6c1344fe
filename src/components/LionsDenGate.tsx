@@ -14,7 +14,7 @@ interface Bullet {
  * Tapping ENTER clears caches/SW and hard-reloads to the latest version.
  *
  * This component is rendered by UpdateGate when initial load detects a stale
- * fingerprint — it replaces the silent auto-refresh with a branded interaction.
+ * fingerprint - it replaces the silent auto-refresh with a branded interaction.
  */
 
 interface Props {

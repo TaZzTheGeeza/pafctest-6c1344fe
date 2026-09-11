@@ -26,7 +26,7 @@ export function Footer() {
           <div className="text-center sm:text-left">
             <h3 className="font-display text-lg font-bold text-gold-gradient tracking-wide">Support The Lions</h3>
             <p className="text-xs text-muted-foreground mt-1">
-              Every donation helps fund kits, pitches & player development. One-off or monthly — straight to PAFC.
+              Every donation helps fund kits, pitches & player development. One-off or monthly - straight to PAFC.
             </p>
           </div>
           <DonationButton size="lg" label="Donate Now" className="shadow-lg shadow-primary/20 animate-pulse-slow" />

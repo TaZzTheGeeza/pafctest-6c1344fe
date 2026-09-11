@@ -132,7 +132,7 @@ const ResultsPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <SEO title="Results & Match Reports | Peterborough Athletic FC" description="Latest match results, reports and Player of the Match awards from Peterborough Athletic FC teams U6–U16." keywords="Peterborough Athletic FC results, PAFC match reports, Peterborough junior football results, player of the match Peterborough" path="/results" />
+      <SEO title="Results & Match Reports | Peterborough Athletic FC" description="Latest match results, reports and Player of the Match awards from Peterborough Athletic FC teams U6-U16." keywords="Peterborough Athletic FC results, PAFC match reports, Peterborough junior football results, player of the match Peterborough" path="/results" />
       <Navbar />
       <main className="flex-1 pt-28 pb-12">
         <div className="container mx-auto px-4 max-w-3xl">
@@ -200,7 +200,7 @@ const ResultsPage = () => {
             <DialogDescription>
               {editing && (
                 <>
-                  {editing.team_name} vs {editing.opponent} —{" "}
+                  {editing.team_name} vs {editing.opponent} - {" "}
                   {new Date(editing.match_date).toLocaleDateString("en-GB", {
                     day: "numeric",
                     month: "short",

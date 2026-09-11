@@ -43,7 +43,7 @@ export async function fetchFaHtml(url: string, opts: FetchOpts = {}): Promise<st
 
       const raw = await res.text();
       if (res.status === 429) {
-        // Firecrawl rate limit — wait for the advertised window and retry, but never past the deadline.
+        // Firecrawl rate limit - wait for the advertised window and retry, but never past the deadline.
         const headerWait = Number(res.headers.get("retry-after"));
         const bodyWait = Number(raw.match(/retry after (\d+)/i)?.[1]);
         const waitSec = Number.isFinite(headerWait) && headerWait > 0
@@ -51,7 +51,7 @@ export async function fetchFaHtml(url: string, opts: FetchOpts = {}): Promise<st
           : Number.isFinite(bodyWait) && bodyWait > 0
             ? bodyWait
             : 20;
-        lastError = `Firecrawl rate limit — retrying in ${waitSec}s`;
+        lastError = `Firecrawl rate limit - retrying in ${waitSec}s`;
         console.warn(`Rate limited fetching ${url}; advertised wait ${waitSec}s`);
         // Honour the advertised rate-limit window (capped), but never sleep past
         // the deadline or without enough time left to perform the retry fetch.

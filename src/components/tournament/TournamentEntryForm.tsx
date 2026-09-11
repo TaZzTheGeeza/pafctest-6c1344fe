@@ -178,7 +178,7 @@ export function TournamentEntryForm({ ageGroups, onSuccess }: TournamentEntryFor
           Enter Your Team
         </CardTitle>
         <CardDescription>
-          Complete all sections below. Your team sheet and squad list are submitted digitally — no need to email anything.
+          Complete all sections below. Your team sheet and squad list are submitted digitally - no need to email anything.
         </CardDescription>
 
         {/* Step Indicator */}
@@ -264,7 +264,7 @@ export function TournamentEntryForm({ ageGroups, onSuccess }: TournamentEntryFor
                       const isFull = (ag.entered_count ?? 0) >= max;
                       return (
                         <SelectItem key={ag.id} value={ag.id} disabled={isFull}>
-                          {ag.age_group} {isFull ? "— FULL" : `(${ag.entered_count ?? 0}/${max})`}
+                          {ag.age_group} {isFull ? " - FULL" : `(${ag.entered_count ?? 0}/${max})`}
                         </SelectItem>
                       );
                     })}

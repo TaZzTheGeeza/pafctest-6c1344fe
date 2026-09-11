@@ -104,12 +104,12 @@ function generatePDFHtml(fixtures: FixtureRow[], from: string, to: string): stri
   .footer { margin-top: 16px; font-size: 9px; color: #888; text-align: center; }
   .total { margin-top: 10px; font-weight: bold; font-size: 12px; }
 </style></head><body>
-  <h1>Peterborough Athletic FC — Council Fixture Report</h1>
-  <h2>Period: ${fromFormatted} — ${toFormatted}</h2>
+  <h1>Peterborough Athletic FC - Council Fixture Report</h1>
+  <h2>Period: ${fromFormatted} - ${toFormatted}</h2>
   <table><thead><tr><th>Date</th><th>Time</th><th>Age Group</th><th>Home</th><th>Away</th><th>Venue</th><th>Competition</th></tr></thead>
   <tbody>${rows}</tbody></table>
   <p class="total">Total Fixtures: ${fixtures.length}</p>
-  <p class="footer">Generated on ${format(new Date(), "dd/MM/yyyy HH:mm")} — Data sourced from FA Full-Time</p>
+  <p class="footer">Generated on ${format(new Date(), "dd/MM/yyyy HH:mm")} - Data sourced from FA Full-Time</p>
 </body></html>`;
 }
 
@@ -175,11 +175,11 @@ export function CouncilFixtureExport() {
           printWindow.document.write(htmlContent);
           printWindow.document.close();
           setTimeout(() => printWindow.print(), 500);
-          toast.success(`Opened ${filtered.length} fixtures — use Print > Save as PDF`);
+          toast.success(`Opened ${filtered.length} fixtures - use Print > Save as PDF`);
         } else {
           // Fallback: download as HTML
           downloadBlob(htmlContent, `${filename}.html`, "text/html");
-          toast.success("Downloaded as HTML — open and print to PDF");
+          toast.success("Downloaded as HTML - open and print to PDF");
         }
       }
     } catch (err) {

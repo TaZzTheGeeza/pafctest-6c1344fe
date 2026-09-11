@@ -129,10 +129,10 @@ export default function AuthPage() {
       if (error) {
         toast.error(error.message);
       } else if (data.session) {
-        toast.success("Account created — you're signed in.");
+        toast.success("Account created - you're signed in.");
       } else {
         setConfirmPending(true);
-        toast.success("Almost there — check your inbox to confirm your email address.", {
+        toast.success("Almost there - check your inbox to confirm your email address.", {
           duration: 8000,
         });
         setMode("login");
@@ -147,7 +147,7 @@ export default function AuthPage() {
       if (error) {
         if (/email not confirmed/i.test(error.message)) {
           setConfirmPending(true);
-          toast.error("Please confirm your email address first — check your inbox for the link.");
+          toast.error("Please confirm your email address first - check your inbox for the link.");
         } else {
           toast.error(error.message);
         }
@@ -170,7 +170,7 @@ export default function AuthPage() {
     if (error) {
       toast.error(error.message);
     } else {
-      toast.success("Confirmation email sent — check your inbox (and spam folder).");
+      toast.success("Confirmation email sent - check your inbox (and spam folder).");
     }
   };
 
@@ -207,7 +207,7 @@ export default function AuthPage() {
             {confirmPending && (
               <div className="mb-6 rounded-lg border border-primary/30 bg-primary/10 p-4 text-center">
                 <p className="text-sm text-foreground">
-                  Confirm your email address to finish setting up your account. The link expires and can only be used once — if it no longer works, send a fresh one.
+                  Confirm your email address to finish setting up your account. The link expires and can only be used once - if it no longer works, send a fresh one.
                 </p>
                 <button
                   type="button"

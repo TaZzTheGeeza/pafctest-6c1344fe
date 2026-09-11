@@ -19,7 +19,7 @@ export function ShopWindowBanner({ window: w, className = "" }: Props) {
             The club shop is currently closed for orders. You can still browse our products.
           </p>
           <p className="text-xs text-amber-200/70 mt-1">
-            We open the shop in short windows so we can print and pack every order ourselves — keep an eye out for the next one.
+            We open the shop in short windows so we can print and pack every order ourselves - keep an eye out for the next one.
           </p>
         </div>
       </div>
@@ -50,7 +50,7 @@ export function ShopWindowBanner({ window: w, className = "" }: Props) {
         <div className="flex items-start gap-2 mt-3 pt-3 border-t border-border/50">
           <PackageCheck className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
           <p className="text-xs text-muted-foreground">
-            All printing is done in-house — please allow {w.readyDays} days after the shop closes for your order to be
+            All printing is done in-house - please allow {w.readyDays} days after the shop closes for your order to be
             ready (approx. <span className="text-foreground">{formatUkDate(w.readyBy)}</span>).
           </p>
         </div>

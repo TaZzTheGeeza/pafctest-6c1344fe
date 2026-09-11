@@ -7,17 +7,17 @@ import { SEO } from "@/components/SEO";
 
 const values = [
   { icon: Shield, title: "FA Accredited", text: "All coaches and staff are FA-qualified, first aid trained, and DBS-checked, ensuring the highest standards of safety and professionalism." },
-  { icon: Heart, title: "Community Spirit", text: "We are more than just a football club — we are a family. Built on the values of teamwork, respect, and community spirit." },
+  { icon: Heart, title: "Community Spirit", text: "We are more than just a football club - we are a family. Built on the values of teamwork, respect, and community spirit." },
   { icon: Users, title: "Inclusive for All", text: "Our club is proud to offer players of all ages and abilities the opportunity to play, develop, and thrive in a supportive environment." },
   { icon: Award, title: "Volunteer Powered", text: "Our success is built on the commitment and dedication of our incredible volunteers who give their time to grassroots football." },
   { icon: Star, title: "Player Development", text: "We provide structured coaching and development pathways to help every player reach their potential." },
-  { icon: CheckCircle, title: "Safeguarding", text: "We pride ourselves on providing a safe, friendly, and supportive environment — the welfare of our players is our top priority." },
+  { icon: CheckCircle, title: "Safeguarding", text: "We pride ourselves on providing a safe, friendly, and supportive environment - the welfare of our players is our top priority." },
 ];
 
 export default function ClubInfoPage() {
   return (
     <div className="min-h-screen flex flex-col">
-      <SEO title="About Us | Peterborough Athletic FC — The Lions" description="Peterborough Athletic FC (PAFC) — FA Accredited grassroots junior football club in Peterborough. Our values, safeguarding, FA-qualified coaches and how we develop young footballers." keywords="about Peterborough Athletic FC, PAFC Peterborough, FA accredited football club Peterborough, junior football coaching Peterborough, grassroots football Cambridgeshire" path="/club-info" />
+      <SEO title="About Us | Peterborough Athletic FC - The Lions" description="Peterborough Athletic FC (PAFC) - FA Accredited grassroots junior football club in Peterborough. Our values, safeguarding, FA-qualified coaches and how we develop young footballers." keywords="about Peterborough Athletic FC, PAFC Peterborough, FA accredited football club Peterborough, junior football coaching Peterborough, grassroots football Cambridgeshire" path="/club-info" />
       <Navbar />
       <main className="flex-1 pt-28 pb-16">
         <div className="container mx-auto px-4">
@@ -44,7 +44,7 @@ export default function ClubInfoPage() {
               <h2 className="font-display text-xl font-bold mb-4">About <span className="text-gold-gradient">Us</span></h2>
               <div className="space-y-4 text-muted-foreground leading-relaxed text-sm">
                 <p>
-                  At <strong className="text-foreground">Peterborough Athletic</strong>, we are more than just a football club — we are a family. Built on the values of teamwork, respect, and community spirit, our club is proud to offer players of all ages and abilities the opportunity to play, develop, and thrive in a supportive and inclusive environment.
+                  At <strong className="text-foreground">Peterborough Athletic</strong>, we are more than just a football club - we are a family. Built on the values of teamwork, respect, and community spirit, our club is proud to offer players of all ages and abilities the opportunity to play, develop, and thrive in a supportive and inclusive environment.
                 </p>
                 <p>
                   Our success is built on the commitment and dedication of our incredible volunteers. All coaches and staff are FA-qualified, first aid trained, and DBS-checked, ensuring the highest standards of safety and professionalism.

@@ -11,7 +11,7 @@ interface DrawVideoRecorderProps {
 /**
  * Renders the raffle draw animation entirely on a hidden <canvas>,
  * records it via MediaRecorder, and returns the WebM blob when done.
- * No DOM-to-canvas conversion — everything is drawn natively on canvas.
+ * No DOM-to-canvas conversion - everything is drawn natively on canvas.
  */
 const DrawVideoRecorder = ({
   raffleName,

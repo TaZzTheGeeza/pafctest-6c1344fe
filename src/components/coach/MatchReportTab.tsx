@@ -179,7 +179,7 @@ export function MatchReportTab({
           teamSlug,
           notification: {
             title: `Full Time: ${teamName} ${parseInt(homeScore) || 0}-${parseInt(awayScore) || 0} ${opponent}`,
-            message: "The match report is now live — tap to view the score, scorers and coach's report.",
+            message: "The match report is now live - tap to view the score, scorers and coach's report.",
             type: "match_report",
             link: `/hub?tab=reports&team=${encodeURIComponent(teamSlug)}&report=${createdReport.id}`,
           },
@@ -283,7 +283,7 @@ export function MatchReportTab({
           </Button>
         </div>
         {goalEntries.length === 0 && (
-          <p className="text-xs text-muted-foreground italic">No goals scored — click Add to log scorers</p>
+          <p className="text-xs text-muted-foreground italic">No goals scored - click Add to log scorers</p>
         )}
         <div className="space-y-2">
           {goalEntries.map((entry, i) => (
@@ -322,7 +322,7 @@ export function MatchReportTab({
           </Button>
         </div>
         {assistEntries.length === 0 && (
-          <p className="text-xs text-muted-foreground italic">No assists — click Add to log</p>
+          <p className="text-xs text-muted-foreground italic">No assists - click Add to log</p>
         )}
         <div className="space-y-2">
           {assistEntries.map((entry, i) => (
@@ -352,7 +352,7 @@ export function MatchReportTab({
         </div>
       </div>
 
-      {/* Player of the Match — part of the same report */}
+      {/* Player of the Match - part of the same report */}
       <div className="border-t border-border pt-4">
         <div className="flex items-center gap-2 mb-1">
           <Trophy className="h-4 w-4 text-primary" />

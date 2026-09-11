@@ -20,7 +20,7 @@ interface TournamentPhotoUploadProps {
 const SECONDS_PER_PHOTO_ESTIMATE = 4;
 
 function formatDuration(seconds: number): string {
-  if (!isFinite(seconds) || seconds < 0) return "—";
+  if (!isFinite(seconds) || seconds < 0) return "-";
   seconds = Math.max(1, Math.round(seconds));
   if (seconds < 60) return `${seconds}s`;
   const m = Math.floor(seconds / 60);
@@ -42,7 +42,7 @@ export function TournamentPhotoUpload({ tournamentId, ageGroups }: TournamentPho
   const fileRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
 
-  // Warn the user if they try to leave/close the tab mid-upload — navigating away
+  // Warn the user if they try to leave/close the tab mid-upload - navigating away
   // cancels in-flight uploads since they run entirely in the browser.
   useEffect(() => {
     if (!uploading) return;
@@ -276,7 +276,7 @@ export function TournamentPhotoUpload({ tournamentId, ageGroups }: TournamentPho
             onChange={(e) => setPhotoDate(e.target.value)}
           />
           <p className="text-xs text-muted-foreground mt-1">
-            Buyers filter the gallery by this date — set it to the match day.
+            Buyers filter the gallery by this date - set it to the match day.
           </p>
         </div>
 

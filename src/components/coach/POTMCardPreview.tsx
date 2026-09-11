@@ -146,7 +146,7 @@ export function POTMCardPreview({
 
       {/* Card preview */}
       <div className="relative w-[180px] rounded-xl overflow-hidden shadow-md border border-border bg-card">
-        {/* Photo area – interactive */}
+        {/* Photo area - interactive */}
         <div
           ref={containerRef}
           className={`relative overflow-hidden select-none ${

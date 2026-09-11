@@ -149,7 +149,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    // SSRF guard — only allow scraping the FA Full-Time host over HTTPS.
+    // SSRF guard - only allow scraping the FA Full-Time host over HTTPS.
     const ALLOWED_HOST = 'fulltime.thefa.com';
     const isAllowed = (u: string | undefined): boolean => {
       if (!u) return true;
@@ -203,7 +203,7 @@ Deno.serve(async (req) => {
             console.warn(`Results fetch failed for ${team || 'unknown'}: ${e instanceof Error ? e.message : e}`);
           }
         } else {
-          // Ran out of budget before results — treat as "not fetched", never as empty.
+          // Ran out of budget before results - treat as "not fetched", never as empty.
           resultsFailed = true;
         }
       }
@@ -238,7 +238,7 @@ Deno.serve(async (req) => {
 
 
       // Only stamp the cache as fresh when nothing failed, or when we actually
-      // fetched new data — otherwise stale data would look fresh for 6 hours.
+      // fetched new data - otherwise stale data would look fresh for 6 hours.
       if ((!fixturesFailed && !resultsFailed) || fixtures.length > 0 || results.length > 0) {
         await admin.from('fa_fixture_cache').upsert({
           cache_key: cacheKey,
@@ -277,7 +277,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    // No cache at all — scrape inline with a tight budget so the UI never hangs.
+    // No cache at all - scrape inline with a tight budget so the UI never hangs.
     const { fixtures, results } = await refresh(30_000);
 
     return new Response(

@@ -335,7 +335,7 @@ export function CarpoolBoard({ teamSlug }: Props) {
                             <Check className="h-3 w-3" /> {getName(req.accepted_by!)}
                           </span>
                         )}
-                        {/* Accept button — visible to others when open */}
+                        {/* Accept button - visible to others when open */}
                         {req.status === "open" && req.user_id !== user?.id && (
                           <button
                             onClick={() => acceptRequestMutation.mutate(req.id)}
@@ -345,7 +345,7 @@ export function CarpoolBoard({ teamSlug }: Props) {
                             <Check className="h-3 w-3" /> Accept
                           </button>
                         )}
-                        {/* Cancel accept — visible to the accepter */}
+                        {/* Cancel accept - visible to the accepter */}
                         {req.status === "accepted" && req.accepted_by === user?.id && (
                           <button
                             onClick={() => cancelAcceptMutation.mutate(req.id)}
@@ -355,7 +355,7 @@ export function CarpoolBoard({ teamSlug }: Props) {
                             <X className="h-3.5 w-3.5" />
                           </button>
                         )}
-                        {/* Delete — visible to request owner */}
+                        {/* Delete - visible to request owner */}
                         {req.user_id === user?.id && (
                           <button onClick={() => deleteRequestMutation.mutate(req.id)} className="text-destructive hover:text-destructive/80 transition-colors">
                             <Trash2 className="h-3.5 w-3.5" />

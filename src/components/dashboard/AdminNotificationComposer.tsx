@@ -153,7 +153,7 @@ export function AdminNotificationComposer() {
         targetUserIds = unique;
       }
 
-      // No longer exclude the sender – admins may want to test on themselves
+      // No longer exclude the sender - admins may want to test on themselves
 
       if (targetUserIds.length === 0) {
         toast.error("No members to notify");

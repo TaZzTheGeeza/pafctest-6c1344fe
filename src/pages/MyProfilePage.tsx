@@ -727,7 +727,7 @@ export default function MyProfilePage() {
                   <UserPlus className="h-4 w-4 text-primary" /> Request Additional Team Access
                 </h3>
                 <p className="text-xs text-muted-foreground mb-4">
-                  Need access to another team? Submit a new request below — you can request Parent or Coach roles for any team at any time.
+                  Need access to another team? Submit a new request below - you can request Parent or Coach roles for any team at any time.
                 </p>
               </div>
               <TeamAccessRequest />

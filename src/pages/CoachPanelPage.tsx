@@ -53,8 +53,8 @@ function FixtureSelect({ ageGroup, value, onChange, label = "Match (Opponent)" }
   const renderFixtureLabel = (f: FAFixture) => {
     const opponent = getOpponent(f);
     return hasRecordedScore(f)
-      ? `${f.date} — vs ${opponent} (${f.homeScore}-${f.awayScore})`
-      : `${f.date} — vs ${opponent}`;
+      ? `${f.date} - vs ${opponent} (${f.homeScore}-${f.awayScore})`
+      : `${f.date} - vs ${opponent}`;
   };
 
   const dedupeFixtures = (fixtures: FAFixture[]) => {
@@ -657,7 +657,7 @@ export function MatchReportForm({ ageGroups }: { ageGroups: string[] }) {
         teamSlug: slug,
         notification: {
           title: `Full Time: Peterborough Athletic ${ageGroup} ${parseInt(homeScore) || 0}-${parseInt(awayScore) || 0} ${trimmedOpponent}`,
-          message: "The match report is now live — tap to view the score, scorers and coach's report.",
+          message: "The match report is now live - tap to view the score, scorers and coach's report.",
           type: "match_report",
           link: `/hub?tab=reports&team=${encodeURIComponent(slug)}&report=${createdReport.id}`,
         },
@@ -825,8 +825,8 @@ export function MatchReportForm({ ageGroups }: { ageGroups: string[] }) {
         </div>
       </div>
 
-      {renderEntryList(goalEntries, updateGoalEntry, removeGoalEntry, addGoalEntry, "Goal Scorers", "No goals — click Add to log scorers")}
-      {renderEntryList(assistEntries, updateAssistEntry, removeAssistEntry, addAssistEntry, "Assists", "No assists — click Add to log")}
+      {renderEntryList(goalEntries, updateGoalEntry, removeGoalEntry, addGoalEntry, "Goal Scorers", "No goals - click Add to log scorers")}
+      {renderEntryList(assistEntries, updateAssistEntry, removeAssistEntry, addAssistEntry, "Assists", "No assists - click Add to log")}
 
       {roster.length === 0 && ageGroup && (
         <p className="text-xs text-amber-600 bg-amber-50 dark:bg-amber-950/30 rounded-md p-2">
@@ -933,7 +933,7 @@ export default function CoachPanelPage() {
             )}
             {isAdmin && (
               <p className="text-xs text-center text-primary/80 mb-6">
-                Admin — All age groups
+                Admin - All age groups
               </p>
             )}
           </motion.div>

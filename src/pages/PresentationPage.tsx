@@ -437,7 +437,7 @@ function ClaimAllocationForm({
   onCreated: () => void;
 }) {
   const [selectedPlayer, setSelectedPlayer] = useState<string>("");
-  // Guest tickets only — the player gets their own seat in the theatre block at the front.
+  // Guest tickets only - the player gets their own seat in the theatre block at the front.
   const [adults, setAdults] = useState(2);
   const [children, setChildren] = useState(1);
   const [submitting, setSubmitting] = useState(false);
@@ -517,7 +517,7 @@ function ClaimAllocationForm({
     );
   }
 
-  // No linked children — block claim and direct them to link via the Hub
+  // No linked children - block claim and direct them to link via the Hub
   if (guardians.length === 0) {
     return (
       <Card className="max-w-2xl mx-auto p-8 text-center">
@@ -619,7 +619,7 @@ function ClaimAllocationForm({
         </div>
 
         <p className="text-xs text-muted-foreground">
-          Your player&apos;s seat in the theatre block is automatic — you don&apos;t need to add
+          Your player&apos;s seat in the theatre block is automatic - you don&apos;t need to add
           a ticket for them. Need a different arrangement? Contact a club admin.
         </p>
 

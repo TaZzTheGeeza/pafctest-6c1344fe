@@ -239,7 +239,7 @@ export function TeamChat({ teamSlug }: { teamSlug: string }) {
       .single();
     if (error) { toast.error("Failed to send message"); return; }
 
-    // Notify team (email only — in-app is handled by realtime)
+    // Notify team (email only - in-app is handled by realtime)
     const senderName = profiles[user.id] || "A team member";
     const preview = text ? (text.length > 80 ? text.slice(0, 80) + "…" : text) : "sent an image";
     notifyTeamMembers({

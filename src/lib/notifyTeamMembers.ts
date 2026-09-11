@@ -9,7 +9,7 @@ function absoluteNotificationUrl(path: string) {
 
 /**
  * Sends in-app notification + email + push to all members of a team.
- * Fire-and-forget — errors are logged but don't block the caller.
+ * Fire-and-forget - errors are logged but don't block the caller.
  */
 export async function notifyTeamMembers({
   teamSlug,

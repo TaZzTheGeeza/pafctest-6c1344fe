@@ -62,7 +62,7 @@ Deno.serve(async (req) => {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       } else {
-        // pending / unknown — let client poll
+        // pending / unknown - let client poll
         return new Response(JSON.stringify({ pending: true, status: status || "pending" }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
@@ -83,7 +83,7 @@ Deno.serve(async (req) => {
       .select("id, caption, age_group, preview_url, storage_path, photo_ref")
       .in("id", photoIds);
 
-    // Send confirmation email when payment was just confirmed (idempotent — awaited so it actually fires)
+    // Send confirmation email when payment was just confirmed (idempotent - awaited so it actually fires)
     if (justPaid) {
       const origin = req.headers.get("origin") || "https://www.pa-fc.uk";
       const claimUrl = `${origin}/photos/claim?token=${claim.token}`;

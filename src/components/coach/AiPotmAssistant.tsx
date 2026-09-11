@@ -52,7 +52,7 @@ export function AiPotmAssistant({
       const text = (data as any)?.report as string;
       if (!text) throw new Error("No write-up returned");
       onReasonChange(text);
-      toast.success("Write-up drafted — edit anything you like.");
+      toast.success("Write-up drafted - edit anything you like.");
     } catch (e: any) {
       toast.error(e?.message || "Could not write the award reason");
     } finally {
@@ -88,7 +88,7 @@ export function AiPotmAssistant({
     const blob = encodeWav(rec.chunks, rec.ctx.sampleRate);
     await rec.ctx.close();
     if (blob.size < 4096) {
-      toast.error("That recording was empty — please try again.");
+      toast.error("That recording was empty - please try again.");
       return;
     }
     setTranscribing(true);
@@ -101,7 +101,7 @@ export function AiPotmAssistant({
       const text = ((data as any)?.text || "").trim();
       if (!text) throw new Error("Nothing was picked up in that recording");
       onReasonChange(reason ? `${reason.trim()} ${text}` : text);
-      toast.success("Voice note added — tap Write reason to polish it.");
+      toast.success("Voice note added - tap Write reason to polish it.");
     } catch (e: any) {
       toast.error(e?.message || "Could not read that recording");
     } finally {

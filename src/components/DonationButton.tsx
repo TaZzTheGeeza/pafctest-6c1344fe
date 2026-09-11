@@ -101,7 +101,7 @@ export function DonationButton({
             A single Direct Debit payment.
           </TabsContent>
           <TabsContent value="monthly" className="text-xs text-muted-foreground pt-2">
-            Recurring monthly Direct Debit — cancel anytime via your bank.
+            Recurring monthly Direct Debit - cancel anytime via your bank.
           </TabsContent>
         </Tabs>
 

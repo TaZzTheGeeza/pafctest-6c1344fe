@@ -72,7 +72,7 @@ export function AttendanceStats({ teamSlug }: Props) {
     <div className="bg-card border border-border rounded-xl overflow-hidden">
       <div className="p-4 border-b border-border">
         <h3 className="font-display text-sm font-bold text-foreground flex items-center gap-2">
-          <Users className="h-4 w-4 text-primary" /> Season Attendance — {stats[0]?.total_matches} match{stats[0]?.total_matches !== 1 ? "es" : ""} recorded
+          <Users className="h-4 w-4 text-primary" /> Season Attendance - {stats[0]?.total_matches} match{stats[0]?.total_matches !== 1 ? "es" : ""} recorded
         </h3>
       </div>
       <div className="overflow-x-auto">
@@ -92,7 +92,7 @@ export function AttendanceStats({ teamSlug }: Props) {
           <tbody>
             {stats.map((p) => (
               <tr key={p.id} className="border-b border-border/50 hover:bg-secondary/50 transition-colors">
-                <td className="px-4 py-2.5 text-muted-foreground font-mono text-xs">{p.shirt_number ?? "–"}</td>
+                <td className="px-4 py-2.5 text-muted-foreground font-mono text-xs">{p.shirt_number ?? "-"}</td>
                 <td className="px-4 py-2.5 font-display font-bold text-foreground">{p.first_name}</td>
                 <td className="px-4 py-2.5 text-center text-muted-foreground">{p.appearances}/{p.total_matches}</td>
                 <td className="px-4 py-2.5 text-center font-bold">

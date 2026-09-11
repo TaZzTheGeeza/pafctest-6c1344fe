@@ -73,7 +73,7 @@ serve(async (req) => {
         .eq("id", registrationId);
     }
 
-    // Create Billing Request Flow — include registration id in the redirect so we can verify on return.
+    // Create Billing Request Flow - include registration id in the redirect so we can verify on return.
     const successUrl = registrationId
       ? `${origin}/register?status=success&rid=${registrationId}`
       : `${origin}/register?status=success`;

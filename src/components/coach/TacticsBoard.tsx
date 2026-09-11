@@ -345,7 +345,7 @@ export function TacticsBoard({
     const rec = fixtureBoards.find((b) => b.id === id);
     if (!rec) return;
     setBoardId(rec.is_template ? null : rec.id); // templates load as new copies
-    setName(rec.is_template ? `${rec.name} — vs ${opponent}` : rec.name);
+    setName(rec.is_template ? `${rec.name} - vs ${opponent}` : rec.name);
     setBoard({ ...emptyBoard, ...(rec.board_data as BoardData) });
     setSelectedBoardId(id);
   };
@@ -480,7 +480,7 @@ export function TacticsBoard({
           onPointerUp={endPointer}
           onPointerLeave={endPointer}
         >
-          {/* Pitch markings (portrait — matches Squad tab) */}
+          {/* Pitch markings (portrait - matches Squad tab) */}
           <g stroke={pitchLine} strokeWidth="0.3" fill="none">
             <rect x="2" y="2" width="96" height="96" />
             <line x1="2" y1="50" x2="98" y2="50" />

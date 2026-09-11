@@ -74,9 +74,9 @@ export function POTMCard({
               {/* Gold radial glow */}
               <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center_60%,_hsla(38,45%,47%,0.2)_0%,_transparent_70%)]" />
 
-              {/* Age group badge – moved to bottom */}
+              {/* Age group badge - moved to bottom */}
 
-              {/* Player image – centred and large */}
+              {/* Player image - centred and large */}
               {photoUrl ? (
                 <img
                   src={photoUrl}
