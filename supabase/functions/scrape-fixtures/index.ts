@@ -124,23 +124,20 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // --- Auth gate: require any valid authenticated user ---
+  // Fixtures are public information (they are published on FA Full-Time), so the
+  // Teams/Fixtures pages must work for signed-out visitors too. Signed-in users are
+  // still identified so only they can trigger a live re-scrape.
   const authHeader = req.headers.get('Authorization') || '';
-  if (!authHeader.startsWith('Bearer ')) {
-    return new Response(JSON.stringify({ success: false, error: 'Unauthorized' }), {
-      status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-  }
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
   const anonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
-  const userClient = createClient(supabaseUrl, anonKey, { global: { headers: { Authorization: authHeader } } });
-  const token = authHeader.replace('Bearer ', '');
-  const { data: claims, error: claimsErr } = await userClient.auth.getClaims(token);
-  if (claimsErr || !claims?.claims?.sub) {
-    return new Response(JSON.stringify({ success: false, error: 'Invalid token' }), {
-      status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+  let isAuthed = false;
+  if (authHeader.startsWith('Bearer ')) {
+    const token = authHeader.replace('Bearer ', '');
+    const userClient = createClient(supabaseUrl, anonKey, { global: { headers: { Authorization: authHeader } } });
+    const { data: claims } = await userClient.auth.getClaims(token);
+    isAuthed = !!claims?.claims?.sub;
   }
+
 
   try {
     const { fixtureUrl, resultUrl, team } = await req.json();
@@ -261,7 +258,7 @@ Deno.serve(async (req) => {
     // background so the user never waits on the FA site / Firecrawl.
     if (cached) {
       const stale = cacheAge >= FRESH_MS;
-      if (stale) {
+      if (stale && isAuthed) {
         // @ts-ignore EdgeRuntime is provided by the edge runtime
         // Teams refresh in the same window, which trips Firecrawl's shared rate limit.
         // Stagger each background refresh and give it a much larger budget so retries
