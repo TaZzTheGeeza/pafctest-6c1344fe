@@ -199,7 +199,7 @@ function Inner() {
               const pitch = pitches.find(p => p.id === b.pitch_id);
               const req = b.requested_by ? requesters[b.requested_by] : null;
               return (
-                <div key={b.id} className="bg-card border border-border rounded-lg p-4">
+                <div id={`admin-booking-${b.id}`} key={b.id} className="bg-card border border-border rounded-lg p-4 scroll-mt-28">
                   <div className="flex items-start gap-3 flex-wrap">
                     <StatusIcon status={b.status} />
                     <div className="flex-1 min-w-[200px]">

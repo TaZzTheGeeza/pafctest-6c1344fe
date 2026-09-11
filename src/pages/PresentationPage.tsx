@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
@@ -68,6 +68,8 @@ export default function PresentationPage() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const [searchParams] = useSearchParams();
+  const requestedTab = searchParams.get("tab") === "seating" ? "seating" : "tickets";
 
   // Admin check (for shortcut button)
   const { data: isAdmin } = useQuery({
@@ -271,7 +273,7 @@ export default function PresentationPage() {
         </section>
 
         <section className="container mx-auto px-4">
-          <Tabs defaultValue="tickets" className="w-full">
+          <Tabs defaultValue={requestedTab} className="w-full">
             <TabsList className="mb-6">
               <TabsTrigger value="tickets">
                 <Ticket className="h-4 w-4 mr-2" />

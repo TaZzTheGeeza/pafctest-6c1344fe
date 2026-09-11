@@ -19,10 +19,11 @@ interface Props {
   eventTitle?: string
   allSeated?: boolean
   seats?: SeatLine[]
+  actionUrl?: string
 }
 
-const PresentationSeatsAllocatedEmail = ({ playerName, eventTitle, allSeated, seats }: Props) => {
-  const link = `${SITE_URL}/presentation`
+const PresentationSeatsAllocatedEmail = ({ playerName, eventTitle, allSeated, seats, actionUrl }: Props) => {
+  const link = actionUrl || `${SITE_URL}/presentation?tab=seating`
   const title = allSeated
     ? `Your ${eventTitle || 'Presentation Evening'} seats are confirmed`
     : `Update on your ${eventTitle || 'Presentation Evening'} tickets`
