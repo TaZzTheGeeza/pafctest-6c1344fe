@@ -441,7 +441,7 @@ export function TeamChat({ teamSlug }: { teamSlug: string }) {
                   const parentAuthor = parentMsg ? (parentMsg.user_id === user.id ? "You" : profiles[parentMsg.user_id] || "Unknown") : null;
 
                   return (
-                    <div key={msg.id} className={`group flex ${isOwn ? "justify-end" : "justify-start"}`}>
+                    <div id={`chat-message-${msg.id}`} key={msg.id} className={`group flex ${isOwn ? "justify-end" : "justify-start"}`}>
                       <div className={`max-w-[75%] ${isOwn ? "items-end" : "items-start"}`}>
                         {showAvatar && (
                           <p className={`text-[10px] font-display tracking-wider mb-0.5 flex items-center gap-1.5 ${isOwn ? "justify-end text-primary" : "text-muted-foreground"}`}>

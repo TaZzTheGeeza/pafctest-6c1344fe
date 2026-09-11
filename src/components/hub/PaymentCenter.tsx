@@ -57,6 +57,12 @@ export function PaymentCenter({ teamSlug }: { teamSlug: string }) {
   const [guardianCount, setGuardianCount] = useState(0);
   const [searchParams] = useSearchParams();
 
+  useEffect(() => {
+    const requestId = searchParams.get("request");
+    if (!requestId || requests.length === 0) return;
+    requestAnimationFrame(() => document.getElementById(`payment-request-${requestId}`)?.scrollIntoView({ behavior: "smooth", block: "center" }));
+  }, [requests, searchParams]);
+
   // Determine which tiers this user can access
   const availableTiers = SUB_TIERS.filter((tier) => {
     if (tier.key === "standard") return true;
@@ -377,7 +383,7 @@ export function PaymentCenter({ teamSlug }: { teamSlug: string }) {
           {requests.map((req) => {
             const status = getPaymentStatus(req.id);
             return (
-              <div key={req.id} className="bg-card border border-border rounded-xl p-5">
+              <div id={`payment-request-${req.id}`} key={req.id} className="bg-card border border-border rounded-xl p-5 scroll-mt-28">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <h4 className="font-display font-bold text-foreground">{req.title}</h4>

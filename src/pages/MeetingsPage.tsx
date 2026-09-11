@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { notifyMeetingInvitees } from "@/lib/notifyMeetingInvitees";
 import { useAuth } from "@/contexts/AuthContext";
@@ -10,6 +10,7 @@ import { Video, Plus, ArrowLeft, Loader2, X, Pencil } from "lucide-react";
 import { format } from "date-fns";
 import { MeetingCard, type Meeting } from "@/components/meetings/MeetingCard";
 import { MeetingInviteSelector, type InviteType } from "@/components/meetings/MeetingInviteSelector";
+import { useSearchParams } from "react-router-dom";
 
 export default function MeetingsPage() {
   const { user, isAdmin } = useAuth();
@@ -18,6 +19,7 @@ export default function MeetingsPage() {
   const [editingMeeting, setEditingMeeting] = useState<Meeting | null>(null);
   const [activeRoom, setActiveRoom] = useState<Meeting | null>(null);
   const [saving, setSaving] = useState(false);
+  const [searchParams] = useSearchParams();
 
   // Form state
   const [title, setTitle] = useState("");
@@ -61,6 +63,12 @@ export default function MeetingsPage() {
       );
     },
   });
+
+  useEffect(() => {
+    const meetingId = searchParams.get("meeting");
+    if (!meetingId || meetings.length === 0) return;
+    requestAnimationFrame(() => document.getElementById(`meeting-${meetingId}`)?.scrollIntoView({ behavior: "smooth", block: "center" }));
+  }, [meetings, searchParams]);
 
   // Fetch invitee counts per meeting
   const { data: inviteeCounts = {} } = useQuery({

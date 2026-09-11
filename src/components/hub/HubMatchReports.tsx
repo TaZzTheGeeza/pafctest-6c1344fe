@@ -1,12 +1,14 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { MatchReportCard, type MatchReport, type POTMAward } from "@/components/MatchReportCard";
 import { CLUB_TEAMS } from "@/lib/teamConfig";
 import { ClipboardList } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 
 export function HubMatchReports({ teamSlug }: { teamSlug: string }) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [searchParams] = useSearchParams();
   const teamName = CLUB_TEAMS.find((t) => t.slug === teamSlug)?.name || "";
 
   const { data: reports, isLoading } = useQuery({
@@ -44,6 +46,13 @@ export function HubMatchReports({ teamSlug }: { teamSlug: string }) {
       (p) => p.age_group === report.age_group && p.award_date === report.match_date
     ) || [];
 
+  useEffect(() => {
+    const reportId = searchParams.get("report");
+    if (!reportId || !reports?.some((report) => report.id === reportId)) return;
+    setExpandedId(reportId);
+    requestAnimationFrame(() => document.getElementById(`match-report-${reportId}`)?.scrollIntoView({ behavior: "smooth", block: "start" }));
+  }, [reports, searchParams]);
+
   if (isLoading) {
     return <p className="text-muted-foreground text-center py-12">Loading match reports...</p>;
   }
@@ -63,13 +72,14 @@ export function HubMatchReports({ teamSlug }: { teamSlug: string }) {
   return (
     <div className="space-y-3">
       {reports.map((report) => (
-        <MatchReportCard
-          key={report.id}
-          report={report}
-          potmPlayers={findPOTM(report)}
-          expanded={expandedId === report.id}
-          onToggle={() => setExpandedId(expandedId === report.id ? null : report.id)}
-        />
+        <div id={`match-report-${report.id}`} key={report.id}>
+          <MatchReportCard
+            report={report}
+            potmPlayers={findPOTM(report)}
+            expanded={expandedId === report.id}
+            onToggle={() => setExpandedId(expandedId === report.id ? null : report.id)}
+          />
+        </div>
       ))}
     </div>
   );
