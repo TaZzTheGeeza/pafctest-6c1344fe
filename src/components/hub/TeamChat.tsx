@@ -8,6 +8,7 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 import { isUserOnline } from "@/hooks/usePresence";
 import { notifyTeamMembers } from "@/lib/notifyTeamMembers";
+import { useSearchParams } from "react-router-dom";
 
 interface Channel {
   id: string;
@@ -76,11 +77,27 @@ export function TeamChat({ teamSlug }: { teamSlug: string }) {
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
   const [replyTo, setReplyTo] = useState<Message | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [searchParams] = useSearchParams();
   useEffect(() => {
     setActiveChannel(null);
     setMessages([]);
     loadChannels();
   }, [teamSlug]);
+
+  useEffect(() => {
+    const requestedChannel = searchParams.get("channel");
+    if (!requestedChannel || channels.length === 0) return;
+    const channel = channels.find((item) => item.id === requestedChannel);
+    if (channel) setActiveChannel(channel);
+  }, [channels, searchParams]);
+
+  useEffect(() => {
+    const requestedMessage = searchParams.get("message");
+    if (!requestedMessage || messages.length === 0) return;
+    requestAnimationFrame(() => {
+      document.getElementById(`chat-message-${requestedMessage}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+  }, [messages, searchParams]);
 
   useEffect(() => {
     if (activeChannel) {
@@ -232,7 +249,7 @@ export function TeamChat({ teamSlug }: { teamSlug: string }) {
         title: `Message in #${activeChannel.name}`,
         message: `${senderName}: ${preview}`,
         type: "info",
-        link: "/hub?tab=chat",
+        link: `/hub?tab=chat&team=${encodeURIComponent(teamSlug)}&channel=${activeChannel.id}&message=${insertedMsg.id}`,
       },
       email: {
         templateName: "new-chat-message",

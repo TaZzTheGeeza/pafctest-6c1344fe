@@ -136,7 +136,7 @@ export function MeetingRSVP({ meetingId, meetingTitle }: { meetingId: string; me
         title: `Meeting RSVP reminder: ${meetingTitle}`,
         message: `Please confirm your attendance for "${meetingTitle}".`,
         type: "reminder",
-        link: "/meetings",
+        link: `/meetings?meeting=${encodeURIComponent(meetingId)}`,
       }));
 
       const { error } = await supabase.from("hub_notifications").insert(notifications);
@@ -148,8 +148,9 @@ export function MeetingRSVP({ meetingId, meetingTitle }: { meetingId: string; me
           body: {
             userIds: nonResponders,
             title: `Meeting RSVP Reminder`,
-            body: `Please confirm your attendance for "${meetingTitle}".`,
-            url: "/meetings",
+            message: `Please confirm your attendance for "${meetingTitle}".`,
+            link: `/meetings?meeting=${encodeURIComponent(meetingId)}`,
+            tag: `meeting-rsvp-${meetingId}`,
           },
         });
       } catch {}
