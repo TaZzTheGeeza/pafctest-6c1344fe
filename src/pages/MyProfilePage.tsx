@@ -68,6 +68,26 @@ interface PhotoPurchase {
   } | null;
 }
 
+interface ShopOrderItem {
+  name?: string;
+  size?: string | null;
+  initials?: string | null;
+  quantity?: number;
+  price_cents?: number;
+}
+
+interface ShopOrder {
+  id: string;
+  created_at: string;
+  status: string;
+  progress_status: string;
+  total_cents: number;
+  items: ShopOrderItem[];
+}
+
+const PROGRESS_STEPS = ["ordered", "arrived", "printed", "delivered"];
+
+
 export default function MyProfilePage() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
