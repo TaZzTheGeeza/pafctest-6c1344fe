@@ -104,7 +104,8 @@ export default function MyProfilePage() {
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [shopOrders, setShopOrders] = useState<ShopOrder[]>([]);
   const [shopOrdersLoading, setShopOrdersLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState("overview");
+  const [searchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "overview");
 
   // Edit state
   const [isEditingName, setIsEditingName] = useState(false);
