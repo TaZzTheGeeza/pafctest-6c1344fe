@@ -2390,6 +2390,102 @@ export type Database = {
         }
         Relationships: []
       }
+      shop_orders: {
+        Row: {
+          admin_overrides: Json
+          created_at: string
+          customer_name: string
+          email: string
+          gocardless_billing_request_id: string | null
+          gocardless_payment_id: string | null
+          id: string
+          items: Json
+          progress_status: string
+          status: string
+          total_cents: number
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          admin_overrides?: Json
+          created_at?: string
+          customer_name: string
+          email: string
+          gocardless_billing_request_id?: string | null
+          gocardless_payment_id?: string | null
+          id?: string
+          items?: Json
+          progress_status?: string
+          status?: string
+          total_cents: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          admin_overrides?: Json
+          created_at?: string
+          customer_name?: string
+          email?: string
+          gocardless_billing_request_id?: string | null
+          gocardless_payment_id?: string | null
+          id?: string
+          items?: Json
+          progress_status?: string
+          status?: string
+          total_cents?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      shop_products: {
+        Row: {
+          active: boolean
+          created_at: string
+          description: string | null
+          handle: string | null
+          id: string
+          image_url: string | null
+          name: string
+          price_cents: number
+          requires_initials: boolean
+          sizes: string[]
+          sort_order: number
+          tags: string[]
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          description?: string | null
+          handle?: string | null
+          id?: string
+          image_url?: string | null
+          name: string
+          price_cents: number
+          requires_initials?: boolean
+          sizes?: string[]
+          sort_order?: number
+          tags?: string[]
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          description?: string | null
+          handle?: string | null
+          id?: string
+          image_url?: string | null
+          name?: string
+          price_cents?: number
+          requires_initials?: boolean
+          sizes?: string[]
+          sort_order?: number
+          tags?: string[]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       shopify_orders: {
         Row: {
           admin_overrides: Json

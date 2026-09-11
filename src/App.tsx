@@ -6,7 +6,7 @@ import { UpdateGate } from "@/components/UpdateGate";
 import { WhatsNewLoader } from "@/components/WhatsNewLoader";
 import WhatsNewAdminPage from "./pages/WhatsNewAdminPage.tsx";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { useCartSync } from "@/hooks/useCartSync";
+
 import { usePresence } from "@/hooks/usePresence";
 import { useEffect } from "react";
 import { FootballBackground } from "@/components/FootballBackground";
@@ -15,7 +15,8 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { RoleGate } from "@/components/RoleGate";
 import Index from "./pages/Index.tsx";
 import ShopPage from "./pages/Shop.tsx";
-import ProductPage from "./pages/ProductPage.tsx";
+import ShopCheckoutPage from "./pages/ShopCheckoutPage.tsx";
+import ShopCompletePage from "./pages/ShopCompletePage.tsx";
 import TeamsPage from "./pages/TeamsPage.tsx";
 import WhatsOnPage from "./pages/WhatsOnPage.tsx";
 import NewsPage from "./pages/NewsPage.tsx";
@@ -91,7 +92,6 @@ function ForcePasswordChangeGate() {
 }
 
 function AppContent() {
-  useCartSync();
   usePresence();
   return (
     <BrowserRouter>
@@ -101,7 +101,8 @@ function AppContent() {
       <Routes>
         <Route path="/" element={<Index />} />
         <Route path="/shop" element={<ShopPage />} />
-        <Route path="/product/:handle" element={<ProductPage />} />
+        <Route path="/shop/checkout" element={<ShopCheckoutPage />} />
+        <Route path="/shop/complete" element={<ShopCompletePage />} />
         <Route path="/teams" element={<TeamsPage />} />
         <Route path="/teams/:teamSlug" element={<TeamsPage />} />
         <Route path="/whats-on" element={<WhatsOnPage />} />
