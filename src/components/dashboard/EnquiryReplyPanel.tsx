@@ -93,7 +93,7 @@ export function EnquiryReplyPanel() {
             title: "Reply to your enquiry",
             message: `An admin replied to your contact enquiry: "${replyText.trim().substring(0, 100)}${replyText.trim().length > 100 ? "..." : ""}"`,
             type: "info",
-            link: "/dashboard?section=messages",
+            link: `/dashboard?section=messages&submission=${encodeURIComponent(submissionId)}`,
           } as any);
         }
       }

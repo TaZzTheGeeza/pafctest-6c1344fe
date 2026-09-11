@@ -210,7 +210,7 @@ export function PaymentCenter({ teamSlug }: { teamSlug: string }) {
         title: "New Payment Request",
         message: `${form.title} — £${amountStr}`,
         type: "payment",
-        link: "/hub?tab=payments",
+        link: `/hub?tab=payments&team=${encodeURIComponent(teamSlug)}&request=${id}`,
       },
       email: {
         templateName: "payment-request-created",

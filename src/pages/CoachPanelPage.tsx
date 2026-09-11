@@ -639,7 +639,7 @@ export function MatchReportForm({ ageGroups }: { ageGroups: string[] }) {
 
       const trimmedOpponent = opponent.trim();
 
-      const { error: reportError } = await supabase.from("match_reports").insert({
+      const { data: createdReport, error: reportError } = await supabase.from("match_reports").insert({
         team_name: `Peterborough Athletic ${ageGroup}`,
         age_group: ageGroup,
         opponent: trimmedOpponent,
@@ -649,7 +649,7 @@ export function MatchReportForm({ ageGroups }: { ageGroups: string[] }) {
         assists: buildText(assistEntries) || null,
         notes: notes.trim() || null,
         match_date: normalizedMatchDate,
-      });
+      }).select("id").single();
       if (reportError) throw reportError;
 
       // Alert parents/team members that the result & report are live
@@ -659,7 +659,7 @@ export function MatchReportForm({ ageGroups }: { ageGroups: string[] }) {
           title: `Full Time: Peterborough Athletic ${ageGroup} ${parseInt(homeScore) || 0}-${parseInt(awayScore) || 0} ${trimmedOpponent}`,
           message: "The match report is now live — tap to view the score, scorers and coach's report.",
           type: "match_report",
-          link: "/results",
+          link: `/hub?tab=reports&team=${encodeURIComponent(slug)}&report=${createdReport.id}`,
         },
       });
 

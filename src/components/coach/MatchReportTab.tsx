@@ -161,7 +161,7 @@ export function MatchReportTab({
         if (reportError) throw reportError;
       } else {
         // Insert new report
-        const { error: reportError } = await supabase.from("match_reports").insert({
+        const { data: createdReport, error: reportError } = await supabase.from("match_reports").insert({
           team_name: teamName,
           age_group: ageGroup,
           opponent,
@@ -171,7 +171,7 @@ export function MatchReportTab({
           assists: assistText || null,
           notes: notes || null,
           match_date: matchDate,
-        });
+        }).select("id").single();
         if (reportError) throw reportError;
 
         // Alert parents/team members that the result & report are live
@@ -181,7 +181,7 @@ export function MatchReportTab({
             title: `Full Time: ${teamName} ${parseInt(homeScore) || 0}-${parseInt(awayScore) || 0} ${opponent}`,
             message: "The match report is now live — tap to view the score, scorers and coach's report.",
             type: "match_report",
-            link: "/results",
+            link: `/hub?tab=reports&team=${encodeURIComponent(teamSlug)}&report=${createdReport.id}`,
           },
         });
       }

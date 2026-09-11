@@ -117,7 +117,7 @@ export function EventRSVP({ eventId }: { eventId: string }) {
             title: "Event RSVP",
             message: `${playerName} marked "${statusLabel}" for ${event?.title || "an event"}`,
             type: "event",
-            link: "/events",
+            link: `/events?event=${encodeURIComponent(eventId)}`,
           }));
           await supabase.from("hub_notifications").insert(notifications);
         }

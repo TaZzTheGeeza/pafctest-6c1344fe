@@ -1,5 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 
+const PUBLIC_SITE_URL = "https://www.pa-fc.uk";
+
 /**
  * Sends in-app + email + push notifications to meeting invitees.
  * For "everyone" meetings, notifies all users with profiles.
@@ -22,6 +24,7 @@ export async function notifyMeetingInvitees({
   };
 }) {
   try {
+    const destination = `/meetings?meeting=${encodeURIComponent(meetingId)}`;
     let targetUserIds = userIds;
 
     // For "everyone", get all profiles
@@ -40,7 +43,7 @@ export async function notifyMeetingInvitees({
       title: "Meeting Invitation",
       message: `You're invited to: ${meeting.title} on ${meeting.scheduledDate} at ${meeting.scheduledTime}`,
       type: "meeting",
-      link: "/meetings",
+      link: destination,
     }));
 
     await supabase.from("hub_notifications").insert(notifications);
@@ -66,6 +69,7 @@ export async function notifyMeetingInvitees({
                 scheduledTime: meeting.scheduledTime,
                 duration: meeting.duration,
                 description: meeting.description,
+                actionUrl: `${PUBLIC_SITE_URL}${destination}`,
               },
             },
           })
@@ -80,7 +84,7 @@ export async function notifyMeetingInvitees({
           userIds: targetUserIds,
           title: "Meeting Invitation",
           message: `You're invited to: ${meeting.title} on ${meeting.scheduledDate} at ${meeting.scheduledTime}`,
-          link: "/meetings",
+          link: destination,
           tag: `meeting-${meetingId}`,
         },
       })
