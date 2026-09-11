@@ -102,6 +102,8 @@ export default function MyProfilePage() {
   const [purchases, setPurchases] = useState<PhotoPurchase[]>([]);
   const [purchasesLoading, setPurchasesLoading] = useState(false);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [shopOrders, setShopOrders] = useState<ShopOrder[]>([]);
+  const [shopOrdersLoading, setShopOrdersLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
 
   // Edit state
@@ -115,8 +117,23 @@ export default function MyProfilePage() {
     if (user) {
       loadAll();
       loadPurchases();
+      loadShopOrders();
     }
   }, [user]);
+
+  async function loadShopOrders() {
+    if (!user) return;
+    setShopOrdersLoading(true);
+    const { data, error } = await supabase
+      .from("shop_orders")
+      .select("id, created_at, status, progress_status, total_cents, items")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
+    if (error) console.error("Failed to load shop orders:", error);
+    setShopOrders(((data ?? []) as any[]).map(o => ({ ...o, items: Array.isArray(o.items) ? o.items : [] })));
+    setShopOrdersLoading(false);
+  }
+
 
   async function loadAll() {
     if (!user) return;
