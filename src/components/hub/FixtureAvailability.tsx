@@ -8,6 +8,7 @@ import { Check, X, HelpCircle, Loader2, MapPin, Clock, Navigation, ChevronDown, 
 
 import { toast } from "sonner";
 import { AddAvailabilityEventDialog } from "./AddAvailabilityEventDialog";
+import { EditAvailabilityEventDialog } from "./EditAvailabilityEventDialog";
 import { ReminderPreviewDialog } from "./ReminderPreviewDialog";
 import { CoachFixturePanel } from "@/components/CoachFixturePanel";
 import { useVenueAddresses } from "@/hooks/useVenueAddresses";
@@ -96,6 +97,7 @@ export function FixtureAvailability({ teamSlug }: Props) {
   const [respondingForMap, setRespondingForMap] = useState<Record<string, string | null>>({});
   const [reminderItem, setReminderItem] = useState<AvailabilityItem | null>(null);
   const [editingVenue, setEditingVenue] = useState<string | null>(null);
+  const [editingEvent, setEditingEvent] = useState<CustomEvent | null>(null);
   const [venueInput, setVenueInput] = useState("");
   const [typeFilter, setTypeFilter] = useState<"all" | "fixtures" | "events">("all");
   const [statusFilter, setStatusFilter] = useState<"all" | "available" | "maybe" | "unavailable" | "none">("all");
@@ -747,6 +749,20 @@ export function FixtureAvailability({ teamSlug }: Props) {
                 )}
                 {item.isCustom && (isCoach || isAdmin) && (
                   <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const ev = customEvents.find((c) => c.id === item.customEventId);
+                      if (ev) setEditingEvent(ev);
+                    }}
+                    title="Edit this event"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-border text-xs font-semibold text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                    <span>Edit</span>
+                  </button>
+                )}
+                {item.isCustom && (isCoach || isAdmin) && (
+                  <button
                     onClick={() => {
                       if (confirm("Delete this event?")) {
                         deleteMutation.mutate(item.customEventId!);
@@ -911,6 +927,13 @@ export function FixtureAvailability({ teamSlug }: Props) {
           fixture={coachFixture}
           teamSlug={teamSlug}
           teamName={`Peterborough Athletic ${CLUB_TEAMS.find((t) => t.slug === teamSlug)?.name || teamSlug.toUpperCase().replace(/-/g, " ")}`}
+        />
+      )}
+
+      {editingEvent && (
+        <EditAvailabilityEventDialog
+          event={editingEvent}
+          onClose={() => setEditingEvent(null)}
         />
       )}
     </div>
