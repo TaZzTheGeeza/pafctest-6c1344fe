@@ -258,7 +258,7 @@ Deno.serve(async (req) => {
     // background so the user never waits on the FA site / Firecrawl.
     if (cached) {
       const stale = cacheAge >= FRESH_MS;
-      if (stale) {
+      if (stale && isAuthed) {
         // @ts-ignore EdgeRuntime is provided by the edge runtime
         // Teams refresh in the same window, which trips Firecrawl's shared rate limit.
         // Stagger each background refresh and give it a much larger budget so retries
