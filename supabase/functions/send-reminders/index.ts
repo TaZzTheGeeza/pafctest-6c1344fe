@@ -128,7 +128,7 @@ serve(async (req) => {
                 message: `Please confirm your availability for ${displayName} on ${fixture.date}.`,
                 type: "reminder",
                 team_slug: teamSlug,
-                link: `/hub?tab=availability&team=${teamSlug}`,
+                link: `/hub?tab=availability&team=${encodeURIComponent(teamSlug)}&date=${encodeURIComponent(fixture.date)}&opponent=${encodeURIComponent(fixture.opponent)}`,
               });
               notificationsSent++;
             }
@@ -177,7 +177,7 @@ serve(async (req) => {
                   : `Your payment for "${req.title}" is due in ${Math.ceil(daysUntilDue)} day${Math.ceil(daysUntilDue) !== 1 ? "s" : ""}.`,
                 type: "reminder",
                 team_slug: req.team_slug,
-                link: `/hub?tab=payments&team=${req.team_slug}`,
+                link: `/hub?tab=payments&team=${encodeURIComponent(req.team_slug)}&request=${encodeURIComponent(req.id)}`,
               });
               paymentReminders++;
             }

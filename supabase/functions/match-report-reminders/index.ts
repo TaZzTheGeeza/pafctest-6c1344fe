@@ -156,6 +156,7 @@ serve(async (req) => {
           .filter((uid) => !recentSet.has(`${uid}::${title}`));
         if (targets.length === 0) continue;
 
+        const destination = `/hub?team=${encodeURIComponent(slug)}&tab=availability&date=${encodeURIComponent(f.date)}&opponent=${encodeURIComponent(opponent)}`;
         const { error } = await admin.from("hub_notifications").insert(
           targets.map((uid) => ({
             user_id: uid,
@@ -163,7 +164,7 @@ serve(async (req) => {
             message,
             type: "match_report_reminder",
             team_slug: slug,
-            link: `/hub?team=${slug}&tab=availability`,
+            link: destination,
           })),
         );
         if (error) {
@@ -172,7 +173,7 @@ serve(async (req) => {
         }
         targets.forEach((uid) => recentSet.add(`${uid}::${title}`));
         sent += targets.length;
-        pushBatches.push({ userIds: targets, title, message });
+        pushBatches.push({ userIds: targets, title, message, link: destination });
       }
     }
 
@@ -183,7 +184,7 @@ serve(async (req) => {
             userIds: batch.userIds,
             title: batch.title,
             message: batch.message,
-            link: "/hub",
+            link: batch.link,
             tag: "match-report-reminder",
           },
         });

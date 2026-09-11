@@ -206,7 +206,7 @@ Deno.serve(async (req) => {
         title,
         message,
         type: "shop_order",
-        link: "/dashboard?section=orders",
+         link: `/dashboard?section=orders&order=${encodeURIComponent(orderName)}`,
       }));
       await supabase.from("hub_notifications").insert(notifications);
 
@@ -228,6 +228,7 @@ Deno.serve(async (req) => {
                 customerName,
                 totalPrice: `${currency} ${totalPrice}`,
                 itemCount: String(itemCount),
+                 actionUrl: `https://www.pa-fc.uk/dashboard?section=orders&order=${encodeURIComponent(orderName)}`,
               },
             },
           });
@@ -240,6 +241,7 @@ Deno.serve(async (req) => {
           title,
           message,
           tag: `shop-order-${body.id}`,
+           link: `/dashboard?section=orders&order=${encodeURIComponent(orderName)}`,
         },
       });
     }

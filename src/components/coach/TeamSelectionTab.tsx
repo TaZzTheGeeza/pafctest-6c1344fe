@@ -170,6 +170,7 @@ export function TeamSelectionTab({
             formation: formationName || undefined,
             teamName: teamSlug,
             playerCount: positions.length,
+            actionUrl: id ? `https://www.pa-fc.uk/lineup-reveal/${id}` : `https://www.pa-fc.uk/hub?tab=availability&team=${encodeURIComponent(teamSlug)}`,
           },
           idempotencyPrefix: `team-sel-${teamSlug}-${fixture.date}-${opponent}`,
         },

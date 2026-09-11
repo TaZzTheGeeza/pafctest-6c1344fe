@@ -603,7 +603,13 @@ export function FixtureAvailability({ teamSlug }: Props) {
 
 
         return (
-          <div key={item.key} className="bg-card border border-border rounded-xl p-4">
+          <div
+            id={item.isCustom
+              ? `availability-event-${item.customEventId}`
+              : `availability-${item.date}-${item.opponent}`}
+            key={item.key}
+            className="bg-card border border-border rounded-xl p-4 scroll-mt-28"
+          >
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
               <div>
                 <div className="flex items-center gap-2">

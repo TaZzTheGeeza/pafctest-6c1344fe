@@ -26,9 +26,11 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
     // Save the submission
-    const { error: insertError } = await supabase
+    const { data: submission, error: insertError } = await supabase
       .from("contact_submissions")
-      .insert({ name, email, message });
+      .insert({ name, email, message })
+      .select("id")
+      .single();
 
     if (insertError) throw insertError;
 
@@ -47,7 +49,7 @@ Deno.serve(async (req) => {
         title: "New Contact Enquiry",
         message: `${name} (${email}) sent a message: "${message.substring(0, 100)}${message.length > 100 ? "..." : ""}"`,
         type: "info",
-        link: "/admin?tab=contact",
+        link: `/dashboard?section=enquiries&submission=${encodeURIComponent(submission.id)}`,
       }));
 
       const { error: notifError } = await supabase
