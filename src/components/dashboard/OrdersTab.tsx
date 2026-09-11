@@ -183,24 +183,10 @@ export function OrdersTab() {
   const fetchOrders = useCallback(async () => {
     setLoading(true);
     try {
-      // Only bother talking to Shopify if legacy Shopify orders exist — the shop
-      // now runs on the built-in club shop, so most dashboards have nothing to sync.
-      const { count: shopifyCount } = await supabase
-        .from("shopify_orders" as any)
-        .select("id", { count: "exact", head: true });
-      if ((shopifyCount ?? 0) > 0) {
-        try {
-          const { data: sync, error: syncErr } = await supabase.functions.invoke("shopify-orders", {
-            body: {},
-          });
-          if (syncErr) throw syncErr;
-          if ((sync as any)?.error) throw new Error((sync as any).error);
-          setSyncWarning(null);
-        } catch (e: any) {
-          console.error("Shopify sync failed:", e);
-          setSyncWarning("Could not reach Shopify just now — showing the last saved Shopify orders. New club shop orders are unaffected.");
-        }
-      }
+      // The club shop now handles all new orders. Shopify order history is kept
+      // as a read-only record in the database, so no live Shopify call is made.
+      setSyncWarning(null);
+
 
       let query = supabase
         .from("shopify_orders" as any)
