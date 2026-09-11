@@ -1352,6 +1352,7 @@ async function sendSeatNotification(params: {
     (allSeated
       ? "\n\nPlease arrive 15 minutes before the start time."
       : "");
+  const destination = `/presentation?tab=seating&allocation=${encodeURIComponent(params.familyTickets[0]?.allocation_id ?? params.userId)}`;
 
   // 1. In-app notification
   const { error } = await supabase.from("hub_notifications").insert({
@@ -1359,7 +1360,7 @@ async function sendSeatNotification(params: {
     title,
     message,
     type: "info",
-    link: "/presentation",
+    link: destination,
   } as any);
   if (error) return { ok: false, error: error.message };
 
@@ -1397,6 +1398,7 @@ async function sendSeatNotification(params: {
               eventTitle: params.eventTitle,
               allSeated,
               seats,
+              actionUrl: `https://www.pa-fc.uk${destination}`,
             },
           },
         });
@@ -1415,7 +1417,7 @@ async function sendSeatNotification(params: {
         message: allSeated
           ? `Seats confirmed for ${params.familyTickets.length} ticket(s). Tap to view.`
           : `Your ticket allocation has been updated. Tap to view.`,
-        link: "/presentation",
+        link: destination,
         tag: `presentation-seats-${params.userId}`,
       },
     })

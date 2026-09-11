@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Navbar } from "@/components/Navbar";
@@ -21,6 +22,7 @@ import { toast } from "sonner";
 
 const TournamentAdminPage = () => {
   const queryClient = useQueryClient();
+  const [searchParams] = useSearchParams();
   const [selectedTournament, setSelectedTournament] = useState<string>("");
   const [expandedTeams, setExpandedTeams] = useState<Set<string>>(new Set());
   const [showCreateTournament, setShowCreateTournament] = useState(false);
@@ -44,6 +46,7 @@ const TournamentAdminPage = () => {
   const [standingForm, setStandingForm] = useState<{ p: string; w: string; d: string; l: string; gf: string; ga: string; pts: string }>({ p: "", w: "", d: "", l: "", gf: "", ga: "", pts: "" });
   const [editingTeam, setEditingTeam] = useState<any | null>(null);
   const [editTeamForm, setEditTeamForm] = useState({ team_name: "", club_name: "", county: "", club_org_id: "", league_division: "", team_category: "", manager_name: "", manager_email: "", manager_phone: "", secretary_name: "", secretary_email: "", secretary_phone: "", player_count: "", whatsapp_contacts: [{ name: "", number: "" }] as { name: string; number: string }[], consent_rules: true, consent_photography: true });
+  const [activeTab, setActiveTab] = useState("age-groups");
   const invalidateAll = () => {
     queryClient.invalidateQueries({ queryKey: ["admin-tournaments"] });
     queryClient.invalidateQueries({ queryKey: ["admin-age-groups"] });
@@ -136,6 +139,19 @@ const TournamentAdminPage = () => {
     },
     enabled: !!selectedTournament,
   });
+
+  useEffect(() => {
+    const tournamentId = searchParams.get("tournament");
+    if (tournamentId && tournaments?.some((item) => item.id === tournamentId)) setSelectedTournament(tournamentId);
+  }, [searchParams, tournaments]);
+
+  useEffect(() => {
+    const teamId = searchParams.get("team");
+    if (!teamId || !teams?.some((item) => item.id === teamId)) return;
+    setActiveTab("teams");
+    setExpandedTeams((previous) => new Set(previous).add(teamId));
+    requestAnimationFrame(() => document.getElementById(`tournament-team-${teamId}`)?.scrollIntoView({ behavior: "smooth", block: "center" }));
+  }, [searchParams, teams]);
 
   const deleteAnnouncement = async (id: string) => {
     if (!confirm("Delete this announcement?")) return;
@@ -722,7 +738,7 @@ const TournamentAdminPage = () => {
           )}
 
           {selectedTournament && (
-            <Tabs defaultValue="age-groups" className="space-y-4">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
               <TabsList className="grid w-full grid-cols-5 gap-1">
                 <TabsTrigger value="age-groups">Age Groups</TabsTrigger>
                 <TabsTrigger value="teams">Teams</TabsTrigger>
@@ -811,7 +827,7 @@ const TournamentAdminPage = () => {
                               };
                               return (
                                 <>
-                                  <TableRow key={team.id} className="cursor-pointer hover:bg-muted/50" onClick={toggleExpand}>
+                                  <TableRow id={`tournament-team-${team.id}`} key={team.id} className="cursor-pointer hover:bg-muted/50 scroll-mt-28" onClick={toggleExpand}>
                                     <TableCell className="w-8">
                                       {isExpanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
                                     </TableCell>

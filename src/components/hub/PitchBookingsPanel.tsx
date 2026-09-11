@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useSearchParams } from "react-router-dom";
 import groundSatelliteAsset from "@/assets/itter-park-map-v2.png.asset.json";
 
 const groundSatellite = groundSatelliteAsset.url;
@@ -281,6 +282,7 @@ function MyBookingsTab({ userId, pitches, isAdmin }: { userId?: string; pitches:
   const [items, setItems] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [editBooking, setEditBooking] = useState<Booking | null>(null);
+  const [searchParams] = useSearchParams();
 
   async function load() {
     if (!userId) return;
@@ -295,6 +297,12 @@ function MyBookingsTab({ userId, pitches, isAdmin }: { userId?: string; pitches:
   }
 
   useEffect(() => { load(); }, [userId]);
+
+  useEffect(() => {
+    const bookingId = searchParams.get("booking");
+    if (!bookingId || items.length === 0) return;
+    requestAnimationFrame(() => document.getElementById(`booking-${bookingId}`)?.scrollIntoView({ behavior: "smooth", block: "center" }));
+  }, [items, searchParams]);
 
   async function cancel(id: string) {
     if (!confirm("Cancel this booking request?")) return;
@@ -318,7 +326,7 @@ function MyBookingsTab({ userId, pitches, isAdmin }: { userId?: string; pitches:
       {items.map(b => {
         const pitch = pitches.find(p => p.id === b.pitch_id);
         return (
-          <div key={b.id} className="bg-card border border-border rounded-lg p-3 flex items-center gap-3 flex-wrap">
+          <div id={`booking-${b.id}`} key={b.id} className="bg-card border border-border rounded-lg p-3 flex items-center gap-3 flex-wrap scroll-mt-28">
             <StatusPill status={b.status} faLocked={!!b.fa_fixture_id} />
             <div className="text-sm font-display tracking-wider">{pitch?.name}</div>
             <div className="text-xs text-muted-foreground">{format(parseISO(b.start_time), "EEE dd MMM · HH:mm")}–{format(parseISO(b.end_time), "HH:mm")}</div>
@@ -479,6 +487,7 @@ export default function PitchBookingsPanel() {
   const [loading, setLoading] = useState(true);
   const [dialogPitch, setDialogPitch] = useState<Pitch | null>(null);
   const [editBooking, setEditBooking] = useState<Booking | null>(null);
+  const [searchParams] = useSearchParams();
 
   // ---- Ground map layout editing (admins) ----
   const svgRef = useRef<SVGSVGElement | null>(null);
@@ -644,6 +653,10 @@ export default function PitchBookingsPanel() {
     else { toast.success("Booking deleted"); loadBookings(); }
   }
   const [tab, setTab] = useState<"map" | "mine">("map");
+
+  useEffect(() => {
+    if (searchParams.get("booking")) setTab("mine");
+  }, [searchParams]);
 
   useEffect(() => { loadPitches(); }, []);
   useEffect(() => { if (pitches.length) loadBookings(); }, [pitches, selectedDate]);
