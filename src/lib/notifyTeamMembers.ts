@@ -1,5 +1,12 @@
 import { supabase } from "@/integrations/supabase/client";
 
+const PUBLIC_SITE_URL = "https://www.pa-fc.uk";
+
+function absoluteNotificationUrl(path: string) {
+  if (/^https?:\/\//i.test(path)) return path;
+  return `${PUBLIC_SITE_URL}${path.startsWith("/") ? path : `/${path}`}`;
+}
+
 /**
  * Sends in-app notification + email + push to all members of a team.
  * Fire-and-forget — errors are logged but don't block the caller.
@@ -25,6 +32,7 @@ export async function notifyTeamMembers({
   };
 }) {
   try {
+    const destination = notification.link || `/hub?tab=notifications&team=${encodeURIComponent(teamSlug)}`;
     // Get all team members
     const { data: members } = await supabase
       .from("team_members")
@@ -46,7 +54,7 @@ export async function notifyTeamMembers({
       message: notification.message,
       type: notification.type,
       team_slug: teamSlug,
-      link: notification.link || null,
+      link: destination,
     }));
 
     await supabase.from("hub_notifications").insert(notifications);
@@ -68,7 +76,10 @@ export async function notifyTeamMembers({
                 templateName: email.templateName,
                 recipientEmail: profile.email,
                 idempotencyKey: `${email.idempotencyPrefix}-${profile.id}`,
-                templateData: email.templateData,
+                templateData: {
+                  ...email.templateData,
+                  actionUrl: absoluteNotificationUrl(destination),
+                },
               },
             })
             .catch((err) => console.error("Email notification failed:", err));
@@ -84,7 +95,7 @@ export async function notifyTeamMembers({
           userIds: pushUserIds,
           title: notification.title,
           message: notification.message,
-          link: notification.link,
+          link: destination,
           tag: `${notification.type}-${teamSlug}`,
         },
       })

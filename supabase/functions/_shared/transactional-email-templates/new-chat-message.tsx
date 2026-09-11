@@ -1,6 +1,6 @@
 import * as React from 'npm:react@18.3.1'
 import {
-  Body, Container, Head, Heading, Html, Preview, Text, Section, Hr,
+  Body, Button, Container, Head, Heading, Html, Preview, Text, Section, Hr,
 } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
 
@@ -11,9 +11,10 @@ interface Props {
   channelName?: string
   messagePreview?: string
   teamName?: string
+  actionUrl?: string
 }
 
-const NewChatMessageEmail = ({ senderName, channelName, messagePreview, teamName }: Props) => (
+const NewChatMessageEmail = ({ senderName, channelName, messagePreview, teamName, actionUrl }: Props) => (
   <Html lang="en" dir="ltr">
     <Head />
     <Preview>{senderName || 'Someone'} sent a message in #{channelName || 'chat'}</Preview>
@@ -37,6 +38,7 @@ const NewChatMessageEmail = ({ senderName, channelName, messagePreview, teamName
         <Text style={text}>
           Open the PAFC Hub to reply and continue the conversation.
         </Text>
+        {actionUrl && <Section style={buttonSection}><Button href={actionUrl} style={button}>View Message</Button></Section>}
         <Text style={footer}>— The {SITE_NAME} Team</Text>
       </Container>
     </Body>
@@ -61,3 +63,5 @@ const teamBadge = { fontSize: '11px', fontWeight: '600', color: '#b8860b', backg
 const messageBox = { backgroundColor: '#f5f5f5', borderLeft: '3px solid #b8860b', borderRadius: '0 6px 6px 0', padding: '12px 16px', margin: '0 0 20px' }
 const messageText = { fontSize: '14px', color: '#333', lineHeight: '1.5', margin: '0', fontStyle: 'italic' as const }
 const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
+const buttonSection = { textAlign: 'center' as const, margin: '22px 0' }
+const button = { backgroundColor: '#141414', color: '#ffd700', padding: '12px 24px', borderRadius: '4px', textDecoration: 'none', fontWeight: '700' }

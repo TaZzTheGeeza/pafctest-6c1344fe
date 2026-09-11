@@ -162,15 +162,16 @@ export function AdminNotificationComposer() {
       }
 
       // 1. In-app notifications
+      const broadcastTeam = audience === "team" && selectedTeams.length === 1 ? selectedTeams[0] : null;
+      const destination = broadcastTeam ? `/hub?tab=notifications&team=${encodeURIComponent(broadcastTeam)}` : "/hub?tab=notifications";
       if (sendInApp) {
-        const broadcastTeam = audience === "team" && selectedTeams.length === 1 ? selectedTeams[0] : null;
         const notifications = targetUserIds.map((uid) => ({
           user_id: uid,
           title: trimmedTitle,
           message: trimmedMessage,
           type: "admin_broadcast",
           team_slug: broadcastTeam,
-          link: broadcastTeam ? `/hub?tab=notifications&team=${broadcastTeam}` : "/hub?tab=notifications",
+          link: destination,
         }));
 
         const { error } = await supabase.from("hub_notifications").insert(notifications);
@@ -208,6 +209,8 @@ export function AdminNotificationComposer() {
                     templateData: {
                       title: trimmedTitle,
                       message: trimmedMessage,
+                      actionUrl: `https://www.pa-fc.uk${destination}`,
+                      ctaLabel: "Open Notification",
                     },
                   },
                 });
@@ -245,7 +248,7 @@ export function AdminNotificationComposer() {
             userIds: targetUserIds,
             title: trimmedTitle,
             message: trimmedMessage,
-            link: "/hub?tab=notifications",
+            link: destination,
             tag: `admin-broadcast-${broadcastId}`,
           },
         });

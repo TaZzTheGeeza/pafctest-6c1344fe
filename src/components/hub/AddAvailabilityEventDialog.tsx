@@ -92,7 +92,7 @@ export function AddAvailabilityEventDialog({ teamSlug }: Props) {
     });
 
     setSaving(true);
-    const { error } = await supabase.from("hub_availability_events").insert(rows as any);
+    const { data: createdEvents, error } = await supabase.from("hub_availability_events").insert(rows as any).select("id");
 
     setSaving(false);
     if (error) {
@@ -110,7 +110,7 @@ export function AddAvailabilityEventDialog({ teamSlug }: Props) {
         title: dates.length > 1 ? "New Recurring Availability Events" : "New Availability Event",
         message: `${title} — ${friendlyFirst}${seriesLabel}`,
         type: "event",
-        link: "/hub?tab=availability",
+        link: `/hub?tab=availability&team=${encodeURIComponent(selectedTeam)}${createdEvents?.[0]?.id ? `&event=${createdEvents[0].id}` : ""}`,
       },
       email: {
         templateName: "availability-event-added",

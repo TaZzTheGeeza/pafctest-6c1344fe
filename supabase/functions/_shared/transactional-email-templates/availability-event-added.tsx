@@ -13,10 +13,11 @@ interface Props {
   eventTime?: string
   venue?: string
   teamName?: string
+  actionUrl?: string
 }
 
-const AvailabilityEventAddedEmail = ({ eventTitle, eventDate, eventTime, venue, teamName }: Props) => {
-  const hubLink = `${SITE_URL}/hub?tab=availability${teamName ? `&team=${encodeURIComponent(teamName)}` : ''}`
+const AvailabilityEventAddedEmail = ({ eventTitle, eventDate, eventTime, venue, teamName, actionUrl }: Props) => {
+  const hubLink = actionUrl || `${SITE_URL}/hub?tab=availability${teamName ? `&team=${encodeURIComponent(teamName)}` : ''}`
 
   return (
     <Html lang="en" dir="ltr">

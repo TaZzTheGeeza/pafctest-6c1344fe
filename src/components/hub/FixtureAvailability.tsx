@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useTeamFixtures, type FAFixture } from "@/hooks/useTeamFixtures";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -100,7 +101,19 @@ export function FixtureAvailability({ teamSlug }: Props) {
   const [statusFilter, setStatusFilter] = useState<"all" | "available" | "maybe" | "unavailable" | "none">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [coachFixture, setCoachFixture] = useState<FAFixture | null>(null);
+  const [searchParams] = useSearchParams();
   const { data: teamData, isLoading: fixturesLoading, isError: fixturesError } = useTeamFixtures(teamSlug);
+
+  useEffect(() => {
+    const eventId = searchParams.get("event");
+    const date = searchParams.get("date");
+    const opponent = searchParams.get("opponent");
+    if (!eventId && !date) return;
+    requestAnimationFrame(() => {
+      const target = eventId ? `availability-event-${eventId}` : `availability-${date}-${opponent || ""}`;
+      document.getElementById(target)?.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+  }, [searchParams, teamData]);
 
   const getFriendlyDate = (date: string) => {
     const [dd, mm, yy] = date.split("/").map(Number);
@@ -590,7 +603,13 @@ export function FixtureAvailability({ teamSlug }: Props) {
 
 
         return (
-          <div key={item.key} className="bg-card border border-border rounded-xl p-4">
+          <div
+            id={item.isCustom
+              ? `availability-event-${item.customEventId}`
+              : `availability-${item.date}-${item.opponent}`}
+            key={item.key}
+            className="bg-card border border-border rounded-xl p-4 scroll-mt-28"
+          >
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
               <div>
                 <div className="flex items-center gap-2">

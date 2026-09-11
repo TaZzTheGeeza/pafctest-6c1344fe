@@ -92,7 +92,7 @@ Up the Lions! 🦁`
           templateName: 'admin-broadcast',
           recipientEmail: email,
           idempotencyKey: `reg-reminder-2026-${email}`,
-          templateData: { title: TITLE, message: MESSAGE },
+          templateData: { title: TITLE, message: MESSAGE, actionUrl: 'https://www.pa-fc.uk/register', ctaLabel: 'Complete Registration' },
         },
       })
       if (!error) { sent = true; break }

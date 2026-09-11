@@ -160,7 +160,7 @@ export function TeamSelectionTab({
           title: "Squad Announced",
           message: `Team selection published for vs ${opponent}`,
           type: "info",
-          link: id ? `/lineup-reveal/${id}` : "/hub?tab=availability",
+          link: id ? `/lineup-reveal/${id}` : `/hub?tab=availability&team=${encodeURIComponent(teamSlug)}`,
         },
         email: {
           templateName: "team-selection-published",
@@ -170,6 +170,7 @@ export function TeamSelectionTab({
             formation: formationName || undefined,
             teamName: teamSlug,
             playerCount: positions.length,
+            actionUrl: id ? `https://www.pa-fc.uk/lineup-reveal/${id}` : `https://www.pa-fc.uk/hub?tab=availability&team=${encodeURIComponent(teamSlug)}`,
           },
           idempotencyPrefix: `team-sel-${teamSlug}-${fixture.date}-${opponent}`,
         },

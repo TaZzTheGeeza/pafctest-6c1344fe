@@ -1,6 +1,6 @@
 import * as React from 'npm:react@18.3.1'
 import {
-  Body, Container, Head, Heading, Html, Preview, Text, Section, Hr,
+  Body, Button, Container, Head, Heading, Html, Preview, Text, Section, Hr,
 } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
 
@@ -11,9 +11,10 @@ interface Props {
   customerName?: string
   totalPrice?: string
   itemCount?: string
+  actionUrl?: string
 }
 
-const ShopOrderNotificationEmail = ({ orderName, customerName, totalPrice, itemCount }: Props) => (
+const ShopOrderNotificationEmail = ({ orderName, customerName, totalPrice, itemCount, actionUrl }: Props) => (
   <Html lang="en" dir="ltr">
     <Head />
     <Preview>New order {orderName || ''} received</Preview>
@@ -32,6 +33,7 @@ const ShopOrderNotificationEmail = ({ orderName, customerName, totalPrice, itemC
           <strong>{itemCount || '0'} item{itemCount !== '1' ? 's' : ''}</strong>.
         </Text>
         <Text style={totalStyle}>Total: {totalPrice || '£0.00'}</Text>
+        {actionUrl && <Section style={buttonSection}><Button href={actionUrl} style={button}>View Order</Button></Section>}
         <Text style={footer}>— The {SITE_NAME} Team</Text>
       </Container>
     </Body>
@@ -56,3 +58,5 @@ const totalStyle = { fontSize: '16px', fontWeight: '700', color: '#1a1a1a', marg
 const badgeWrap = { margin: '10px 0 0' }
 const badge = { fontSize: '11px', fontWeight: '600', color: '#b8860b', backgroundColor: '#fdf6e3', padding: '4px 10px', borderRadius: '4px', display: 'inline-block' as const, margin: '0', textTransform: 'uppercase' as const, letterSpacing: '0.05em' }
 const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
+const buttonSection = { textAlign: 'center' as const, margin: '22px 0' }
+const button = { backgroundColor: '#141414', color: '#ffd700', padding: '12px 24px', borderRadius: '4px', textDecoration: 'none', fontWeight: '700' }

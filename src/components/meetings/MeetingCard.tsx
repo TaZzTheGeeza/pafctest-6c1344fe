@@ -31,6 +31,7 @@ export function MeetingCard({ meeting, isAdmin, inviteeCount, onJoin, onDelete, 
 
   return (
     <div
+      id={`meeting-${meeting.id}`}
       className={`relative p-4 bg-card border rounded-xl transition-all ${
         isLive
           ? "border-emerald-500/50 shadow-lg shadow-emerald-500/10"

@@ -140,6 +140,7 @@ export function ReminderPreviewDialog({
     setSending(true);
     try {
       const userIds = chosen.map((r) => r.user_id);
+      const destination = `/hub?tab=availability&team=${encodeURIComponent(teamSlug)}&date=${encodeURIComponent(fixtureDate)}&opponent=${encodeURIComponent(opponent)}`;
 
       // 1. In-app notifications
       const notifications = userIds.map((uid) => ({
@@ -148,7 +149,7 @@ export function ReminderPreviewDialog({
         message: `${itemTitle} — ${friendlyDate}. Please submit your availability.`,
         type: "event",
         team_slug: teamSlug,
-        link: "/hub?tab=availability",
+        link: destination,
       }));
       await supabase.from("hub_notifications").insert(notifications);
 
@@ -167,6 +168,7 @@ export function ReminderPreviewDialog({
                 eventTime: itemTime,
                 venue: itemVenue || undefined,
                 teamName: teamSlug,
+                  actionUrl: `https://www.pa-fc.uk${destination}`,
               },
             },
           })
@@ -180,7 +182,7 @@ export function ReminderPreviewDialog({
             userIds,
             title: "Availability Reminder",
             message: `${itemTitle} — ${friendlyDate}. Please submit your availability.`,
-            link: "/hub?tab=availability",
+            link: destination,
             tag: `event-${teamSlug}`,
           },
         })

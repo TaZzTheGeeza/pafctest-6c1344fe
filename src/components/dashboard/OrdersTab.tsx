@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useSearchParams } from "react-router-dom";
 
 interface LineItem {
   id: number;
@@ -114,6 +115,16 @@ export function OrdersTab() {
   const [editingKey, setEditingKey] = useState<string | null>(null);
   const [draft, setDraft] = useState<LineItemOverride>({});
   const [saving, setSaving] = useState(false);
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    const requestedOrder = searchParams.get("order");
+    if (!requestedOrder || orders.length === 0) return;
+    const order = orders.find((item) => item.order_name === requestedOrder || String(item.shopify_order_id) === requestedOrder);
+    if (!order) return;
+    setExpandedOrder(order.id);
+    requestAnimationFrame(() => document.getElementById(`shop-order-${order.id}`)?.scrollIntoView({ behavior: "smooth", block: "start" }));
+  }, [orders, searchParams]);
 
   const saveOverride = async (order: ShopifyOrder, item: LineItem) => {
     setSaving(true);
@@ -447,7 +458,7 @@ export function OrdersTab() {
               const fulfillStatus = FULFILLMENT_STYLES[order.fulfillment_status || "unfulfilled"] || FULFILLMENT_STYLES.unfulfilled;
 
               return (
-                <div key={order.id}>
+                <div id={`shop-order-${order.id}`} key={order.id} className="scroll-mt-28">
                   <div
                     role="button"
                     tabIndex={0}
