@@ -83,7 +83,11 @@ serve(async (req) => {
     // "pending_submission"/"submitted" can still be treated as successful for PIS.
     const paidStates = ["confirmed", "paid_out", "submitted", "pending_submission"];
     if (!paidStates.includes(payment.status)) {
-      return new Response(JSON.stringify({ status: "pending", payment_status: payment.status }), {
+      return new Response(JSON.stringify({
+        status: payment.status === "failed" || payment.status === "cancelled" ? "cancelled" : "pending",
+        flow_complete: true,
+        payment_status: payment.status,
+      }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
