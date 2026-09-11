@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import tclarkeAsset from "@/assets/sponsors/tclarke.png.asset.json";
 import totalHoistAsset from "@/assets/sponsors/total-hoist-services.png.asset.json";
 import lcFencingAsset from "@/assets/sponsors/lc-fencing.png.asset.json";
+import proforceAsset from "@/assets/sponsors/proforce-security.png.asset.json";
 
 interface Sponsor {
   name: string;
@@ -14,6 +15,7 @@ const sponsors: Sponsor[] = [
   { name: "TClarke", logo: tclarkeAsset.url, url: "https://www.tclarke.com" },
   { name: "Total Hoist Services Ltd", logo: totalHoistAsset.url, url: "" },
   { name: "L.C Fencing", logo: lcFencingAsset.url, url: "https://lcfencing.co.uk" },
+  { name: "Proforce Security & Events Ltd", logo: proforceAsset.url, url: "https://www.proforce-sec.com/" },
 ];
 
 
