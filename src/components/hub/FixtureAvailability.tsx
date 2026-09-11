@@ -929,6 +929,13 @@ export function FixtureAvailability({ teamSlug }: Props) {
           teamName={`Peterborough Athletic ${CLUB_TEAMS.find((t) => t.slug === teamSlug)?.name || teamSlug.toUpperCase().replace(/-/g, " ")}`}
         />
       )}
+
+      {editingEvent && (
+        <EditAvailabilityEventDialog
+          event={editingEvent}
+          onClose={() => setEditingEvent(null)}
+        />
+      )}
     </div>
   );
 }
