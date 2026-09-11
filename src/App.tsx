@@ -82,6 +82,13 @@ function PlayerHubRedirect() {
   return <Navigate to="/hub?tab=player" replace />;
 }
 
+/** Keeps query params (e.g. ?section=orders) when redirecting legacy routes. */
+function RedirectWithQuery({ to }: { to: string }) {
+  const { search } = useLocation();
+  const normalised = search.replace(/([?&])tab=/, "$1section=");
+  return <Navigate to={`${to}${normalised}`} replace />;
+}
+
 function ForcePasswordChangeGate() {
   const { mustChangePassword, user } = useAuth();
   const location = useLocation();
@@ -130,14 +137,14 @@ function AppContent() {
         <Route path="/photos/claim" element={<PhotoClaimPage />} />
         
         <Route path="/player-of-the-match" element={<POTMPage />} />
-        <Route path="/calendar" element={<Navigate to="/events" replace />} />
-        <Route path="/coach-panel" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/calendar" element={<RedirectWithQuery to="/events" />} />
+        <Route path="/coach-panel" element={<RedirectWithQuery to="/dashboard" />} />
         <Route path="/results" element={<ResultsPage />} />
         <Route path="/potm-demo" element={<POTMDemoPage />} />
         <Route path="/hub" element={<HubPage />} />
         <Route path="/install" element={<InstallPage />} />
         <Route path="/dashboard" element={<RoleGate requiredRole="coach"><DashboardPage /></RoleGate>} />
-        <Route path="/admin" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/admin" element={<RedirectWithQuery to="/dashboard" />} />
         <Route path="/admin/player/:userId" element={<RoleGate requiredRole="admin"><AdminPlayerProfilePage /></RoleGate>} />
         <Route path="/admin/bulk-documents" element={<RoleGate requiredRole="admin"><BulkDocumentUploadPage /></RoleGate>} />
         <Route path="/admin/safeguarding-reports" element={<SafeguardingReportsPage />} />

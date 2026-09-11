@@ -134,7 +134,7 @@ serve(async (req) => {
         title: "New Shop Order",
         message: `${order.customer_name} — £${(order.total_cents / 100).toFixed(2)}`,
         type: "payment",
-        link: "/dashboard?tab=orders",
+        link: `/dashboard?section=orders&order=${encodeURIComponent(order.id)}`,
       }));
       if (notifications.length > 0) {
         await adminClient.from("hub_notifications").insert(notifications);
