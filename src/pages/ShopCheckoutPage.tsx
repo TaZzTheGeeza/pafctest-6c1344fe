@@ -75,7 +75,19 @@ export default function ShopCheckoutPage() {
             </div>
           ) : (
             <div className="grid gap-6">
+              {!user && (
+                <div className="bg-primary/10 border border-primary/30 rounded-xl p-4 text-sm">
+                  <p className="text-foreground font-medium mb-1">Sign in first to track this order</p>
+                  <p className="text-muted-foreground text-xs mb-3">
+                    Signed-in orders appear in My Profile so you can check progress any time. You can still order as a guest.
+                  </p>
+                  <Link to="/auth" className="text-primary text-xs font-display tracking-wider hover:underline">
+                    Sign in or create an account →
+                  </Link>
+                </div>
+              )}
               <div className="bg-card border border-border rounded-xl p-5">
+
                 <h2 className="font-display text-sm tracking-wider uppercase text-muted-foreground mb-4">Order Summary</h2>
                 <div className="space-y-3">
                   {items.map((item) => (

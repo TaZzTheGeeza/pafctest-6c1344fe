@@ -9,7 +9,7 @@ import { CheckForUpdatesButton } from "@/components/CheckForUpdatesButton";
 import {
   User, Trophy, FileText, Calendar, Loader2,
   Activity, Award, Star, ArrowLeft, Camera, Pencil, Check, X, UserPlus, Shield,
-  ShoppingBag, Download, Image
+  ShoppingBag, Download, Image, Package
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -68,6 +68,26 @@ interface PhotoPurchase {
   } | null;
 }
 
+interface ShopOrderItem {
+  name?: string;
+  size?: string | null;
+  initials?: string | null;
+  quantity?: number;
+  price_cents?: number;
+}
+
+interface ShopOrder {
+  id: string;
+  created_at: string;
+  status: string;
+  progress_status: string;
+  total_cents: number;
+  items: ShopOrderItem[];
+}
+
+const PROGRESS_STEPS = ["ordered", "arrived", "printed", "delivered"];
+
+
 export default function MyProfilePage() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
@@ -82,6 +102,8 @@ export default function MyProfilePage() {
   const [purchases, setPurchases] = useState<PhotoPurchase[]>([]);
   const [purchasesLoading, setPurchasesLoading] = useState(false);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [shopOrders, setShopOrders] = useState<ShopOrder[]>([]);
+  const [shopOrdersLoading, setShopOrdersLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
 
   // Edit state
@@ -95,8 +117,23 @@ export default function MyProfilePage() {
     if (user) {
       loadAll();
       loadPurchases();
+      loadShopOrders();
     }
   }, [user]);
+
+  async function loadShopOrders() {
+    if (!user) return;
+    setShopOrdersLoading(true);
+    const { data, error } = await supabase
+      .from("shop_orders")
+      .select("id, created_at, status, progress_status, total_cents, items")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
+    if (error) console.error("Failed to load shop orders:", error);
+    setShopOrders(((data ?? []) as any[]).map(o => ({ ...o, items: Array.isArray(o.items) ? o.items : [] })));
+    setShopOrdersLoading(false);
+  }
+
 
   async function loadAll() {
     if (!user) return;
@@ -226,7 +263,9 @@ export default function MyProfilePage() {
 
   const TABS = [
     { key: "overview", label: "Overview", icon: User },
+    { key: "orders", label: "My Orders", icon: Package },
     { key: "purchases", label: "Purchases", icon: ShoppingBag },
+
     { key: "stats", label: "Stats", icon: Activity },
     { key: "documents", label: "Documents", icon: FileText },
     { key: "availability", label: "Availability", icon: Calendar },
@@ -440,7 +479,77 @@ export default function MyProfilePage() {
             </div>
           )}
 
+          {/* Club shop orders */}
+          {activeTab === "orders" && (
+            <div className="bg-card border border-border rounded-xl p-5">
+              <h3 className="text-sm font-display tracking-wider uppercase text-muted-foreground mb-4 flex items-center gap-2">
+                <Package className="h-4 w-4 text-primary" /> My Club Shop Orders
+              </h3>
+              {shopOrdersLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                </div>
+              ) : shopOrders.length === 0 ? (
+                <div className="text-center py-12">
+                  <Package className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+                  <p className="text-sm text-muted-foreground">No club shop orders yet</p>
+                  <Link to="/shop" className="text-xs text-primary hover:underline mt-2 inline-block">
+                    Visit the club shop →
+                  </Link>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {shopOrders.map(o => {
+                    const stepIndex = PROGRESS_STEPS.indexOf(o.progress_status);
+                    return (
+                      <div key={o.id} className="rounded-lg border border-border bg-secondary/20 p-4">
+                        <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                          <div>
+                            <p className="text-sm font-display font-semibold text-foreground">
+                              Order {o.id.slice(0, 8).toUpperCase()}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {new Date(o.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm font-bold text-primary">£{(o.total_cents / 100).toFixed(2)}</p>
+                            <span className={`text-[11px] px-2 py-0.5 rounded-full ${o.status === "paid" ? "bg-green-500/10 text-green-500" : o.status === "cancelled" ? "bg-destructive/10 text-destructive" : "bg-amber-500/10 text-amber-500"}`}>
+                              {o.status === "paid" ? "Paid" : o.status === "cancelled" ? "Cancelled" : "Awaiting payment"}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="space-y-1 mb-3">
+                          {o.items.map((it, idx) => (
+                            <p key={idx} className="text-xs text-muted-foreground">
+                              {(it.quantity ?? 1)}x {it.name}
+                              {it.size && ` · Size ${it.size}`}
+                              {it.initials && ` · Initials ${it.initials}`}
+                            </p>
+                          ))}
+                        </div>
+
+                        {o.status === "paid" && (
+                          <div className="flex items-center gap-1">
+                            {PROGRESS_STEPS.map((step, i) => (
+                              <div key={step} className="flex-1">
+                                <div className={`h-1.5 rounded-full ${i <= stepIndex ? "bg-primary" : "bg-border"}`} />
+                                <p className={`text-[10px] mt-1 capitalize ${i <= stepIndex ? "text-primary" : "text-muted-foreground"}`}>{step}</p>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Purchases */}
+
           {activeTab === "purchases" && (
             <div className="bg-card border border-border rounded-xl p-5">
               <h3 className="text-sm font-display tracking-wider uppercase text-muted-foreground mb-4 flex items-center gap-2">
