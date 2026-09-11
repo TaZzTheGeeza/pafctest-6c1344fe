@@ -67,7 +67,11 @@ serve(async (req) => {
       if (billingRequest.status === "failed" || billingRequest.status === "cancelled") {
         await adminClient.from("shop_orders").update({ status: "cancelled" }).eq("id", order_id);
       }
-      return new Response(JSON.stringify({ status: "pending" }), {
+      return new Response(JSON.stringify({
+        status: billingRequest.status === "failed" || billingRequest.status === "cancelled" ? "cancelled" : "pending",
+        flow_complete: billingRequest.status === "fulfilled",
+        billing_request_status: billingRequest.status,
+      }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
