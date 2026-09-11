@@ -8,6 +8,7 @@ import { SEO } from "@/components/SEO";
 import tclarkeAsset from "@/assets/sponsors/tclarke.png.asset.json";
 import totalHoistAsset from "@/assets/sponsors/total-hoist-services.png.asset.json";
 import lcFencingAsset from "@/assets/sponsors/lc-fencing.png.asset.json";
+import proforceAsset from "@/assets/sponsors/proforce-security.png.asset.json";
 
 
 interface Sponsor {
@@ -28,6 +29,7 @@ const mainSponsors: Sponsor[] = [
     secondaryUrl: "https://www.facebook.com/share/19GXGy4xr4/",
     secondaryLabel: "Facebook",
   },
+  { name: "Proforce Security & Events Ltd", logo: proforceAsset.url, url: "https://www.proforce-sec.com/" },
 ];
 
 
