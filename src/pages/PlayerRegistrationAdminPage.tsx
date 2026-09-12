@@ -937,12 +937,19 @@ function RegistrationDetail({ registration: r, onClose, onDelete, onSaved }: {
         .from("registration-photos")
         .upload(path, file, { upsert: true, contentType: file.type });
       if (upErr) throw upErr;
+      // Save straight away so the photo can't be lost if the page reloads
+      // after returning from the phone's photo picker.
+      const { error: saveErr } = await supabase
+        .from("player_registrations")
+        .update({ photo_url: path })
+        .eq("id", r.id);
+      if (saveErr) throw saveErr;
       // Remove previous photo if it was a storage path (not a legacy https URL)
       if (form.photo_url && !/^https?:\/\//i.test(form.photo_url)) {
         await supabase.storage.from("registration-photos").remove([form.photo_url]);
       }
       set("photo_url", path);
-      toast.success("Photo updated - click Save to persist");
+      toast.success("Photo saved");
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : "Upload failed");
     } finally {
@@ -953,11 +960,17 @@ function RegistrationDetail({ registration: r, onClose, onDelete, onSaved }: {
   const handlePhotoRemove = async () => {
     if (!form.photo_url) return;
     if (!confirm("Remove this photo?")) return;
-    if (!/^https?:\/\//i.test(form.photo_url)) {
-      await supabase.storage.from("registration-photos").remove([form.photo_url]);
+    const previous = form.photo_url;
+    const { error } = await supabase
+      .from("player_registrations")
+      .update({ photo_url: null })
+      .eq("id", r.id);
+    if (error) { toast.error(error.message); return; }
+    if (!/^https?:\/\//i.test(previous)) {
+      await supabase.storage.from("registration-photos").remove([previous]);
     }
     set("photo_url", null);
-    toast.success("Photo removed - click Save to persist");
+    toast.success("Photo removed");
   };
 
   const save = async () => {
@@ -995,7 +1008,10 @@ function RegistrationDetail({ registration: r, onClose, onDelete, onSaved }: {
   const inputCls = "w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground mt-1";
 
   return (
-    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm overflow-y-auto" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm overflow-y-auto"
+      onClick={(e) => { if (!editing && e.target === e.currentTarget) onClose(); }}
+    >
       <div className="container mx-auto px-4 py-10 max-w-3xl" onClick={(e) => e.stopPropagation()}>
         <div className="bg-card border border-border rounded-2xl shadow-2xl">
           <div className="flex items-center justify-between px-6 py-4 border-b border-border gap-2">
