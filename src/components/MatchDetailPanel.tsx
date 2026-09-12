@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
-import { Trophy, Target, Users, FileText, Star, Image } from "lucide-react";
+import { Trophy, Target, Users, FileText, Star, Image, Hand } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface MatchDetailPanelProps {
@@ -126,6 +126,24 @@ export function MatchDetailPanel({ teamSlug, teamName, opponent, matchDate }: Ma
                       return `${num ? `#${num} ` : ""}${name}${s.assists > 1 ? ` ×${s.assists}` : ""}`;
                     }).join(", ")
                   : report?.assists}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Saves */}
+        {saveMakers.length > 0 && (
+          <div className="flex items-start gap-2">
+            <Hand className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
+            <div>
+              <p className="text-[10px] font-display uppercase tracking-wider text-muted-foreground mb-0.5">Saves</p>
+              <p className="text-sm text-foreground">
+                {saveMakers.map((s) => {
+                  const name = (s as any).player_stats?.first_name || "Unknown";
+                  const num = (s as any).player_stats?.shirt_number;
+                  const saves = (s as any).saves;
+                  return `${num ? `#${num} ` : ""}${name}${saves > 1 ? ` ×${saves}` : ""}`;
+                }).join(", ")}
               </p>
             </div>
           </div>
