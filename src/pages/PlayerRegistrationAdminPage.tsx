@@ -950,7 +950,6 @@ function RegistrationDetail({ registration: r, onClose, onDelete, onSaved }: {
       }
       set("photo_url", path);
       toast.success("Photo saved");
-      await onSaved();
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : "Upload failed");
     } finally {
