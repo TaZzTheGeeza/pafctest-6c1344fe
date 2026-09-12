@@ -16,6 +16,7 @@ interface PlayerStat {
   team_name: string;
   goals: number;
   assists: number;
+  saves: number;
   appearances: number;
   potm_awards: number;
   photo_url?: string | null;
@@ -63,6 +64,7 @@ export function PlayerStatsForm({ allowedAgeGroups }: { allowedAgeGroups?: strin
         team_name: `Peterborough Athletic ${selectedGroup}`,
         goals: 0,
         assists: 0,
+        saves: 0,
         appearances: 0,
         potm_awards: 0,
         photo_url: null,
@@ -295,7 +297,7 @@ export function PlayerStatsForm({ allowedAgeGroups }: { allowedAgeGroups?: strin
                     </div>
 
                     {/* Row 2: Stats */}
-                    <div className="grid grid-cols-4 gap-2 pl-[68px]">
+                    <div className="grid grid-cols-5 gap-2 pl-[68px]">
                       <div>
                         <label className="text-[9px] font-display tracking-wider text-muted-foreground uppercase block mb-0.5">Goals</label>
                         <input
@@ -314,6 +316,17 @@ export function PlayerStatsForm({ allowedAgeGroups }: { allowedAgeGroups?: strin
                           min="0"
                           value={player.assists}
                           onChange={(e) => updatePlayer(i, "assists", parseInt(e.target.value) || 0)}
+                          disabled={!canEdit}
+                          className="w-full bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground text-center disabled:opacity-60"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[9px] font-display tracking-wider text-muted-foreground uppercase block mb-0.5">Saves</label>
+                        <input
+                          type="number"
+                          min="0"
+                          value={player.saves}
+                          onChange={(e) => updatePlayer(i, "saves", parseInt(e.target.value) || 0)}
                           disabled={!canEdit}
                           className="w-full bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground text-center disabled:opacity-60"
                         />
