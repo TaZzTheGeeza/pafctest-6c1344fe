@@ -70,6 +70,38 @@ export function MatchReportCard({
   const assists = parseStatEntries(report.assists);
   const [fullScreenPhoto, setFullScreenPhoto] = useState<{ url: string; name: string } | null>(null);
 
+  const handleShare = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const url = teamSlug
+      ? `${window.location.origin}/hub?tab=reports&team=${encodeURIComponent(teamSlug)}&report=${report.id}`
+      : `${window.location.origin}/results?report=${report.id}`;
+    const lines = [
+      `Full Time: ${report.team_name} ${report.home_score}-${report.away_score} ${report.opponent}`,
+    ];
+    if (report.goal_scorers) lines.push(`Goals: ${report.goal_scorers}`);
+    if (report.assists) lines.push(`Assists: ${report.assists}`);
+    if (potmPlayers.length > 0) {
+      lines.push(`Player of the Match: ${potmPlayers.map((p) => p.player_name).join(", ")}`);
+    }
+    lines.push("", `View the full match report: ${url}`);
+    const text = lines.join("\n");
+
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: "Match Report", text });
+        return;
+      } catch (err: any) {
+        if (err?.name === "AbortError") return;
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success("Report copied - paste it into WhatsApp to share");
+    } catch {
+      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -132,6 +164,14 @@ export function MatchReportCard({
                   {report.away_score}
                 </span>
               </div>
+              <button
+                type="button"
+                onClick={handleShare}
+                title="Share match report"
+                className="p-1.5 rounded-md hover:bg-primary/10 text-primary border border-primary/30"
+              >
+                <Share2 className="h-3.5 w-3.5" />
+              </button>
               {canEdit && onEdit && (
                 <button
                   type="button"
@@ -305,8 +345,17 @@ export function MatchReportCard({
                   </div>
                 )}
 
-                {canEdit && onEdit && (
-                  <div className="pt-1 flex justify-end">
+                <div className="pt-1 flex justify-end gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleShare}
+                    className="gap-1.5"
+                  >
+                    <Share2 className="h-3.5 w-3.5" />
+                    Share Report
+                  </Button>
+                  {canEdit && onEdit && (
                     <Button
                       size="sm"
                       variant="outline"
@@ -319,8 +368,8 @@ export function MatchReportCard({
                       <Pencil className="h-3.5 w-3.5" />
                       Edit Report
                     </Button>
-                  </div>
-                )}
+                  )}
+                </div>
               </CardContent>
             </motion.div>
           )}
