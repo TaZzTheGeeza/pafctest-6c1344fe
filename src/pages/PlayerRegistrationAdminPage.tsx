@@ -1008,7 +1008,10 @@ function RegistrationDetail({ registration: r, onClose, onDelete, onSaved }: {
   const inputCls = "w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground mt-1";
 
   return (
-    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm overflow-y-auto" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm overflow-y-auto"
+      onClick={(e) => { if (!editing && e.target === e.currentTarget) onClose(); }}
+    >
       <div className="container mx-auto px-4 py-10 max-w-3xl" onClick={(e) => e.stopPropagation()}>
         <div className="bg-card border border-border rounded-2xl shadow-2xl">
           <div className="flex items-center justify-between px-6 py-4 border-b border-border gap-2">
