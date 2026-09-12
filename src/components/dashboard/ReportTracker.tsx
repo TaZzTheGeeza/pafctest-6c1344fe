@@ -43,12 +43,15 @@ export function ReportTracker() {
       if (repErr) throw repErr;
       return { cacheRows: cacheRows || [], reports: reports || [] };
     },
-    staleTime: 1000 * 60 * 5,
+    staleTime: 1000 * 30,
+    refetchOnWindowFocus: true,
   });
 
   const teams = useMemo(() => {
     if (!data) return [];
-    const today = new Date().toISOString().slice(0, 10);
+    const now = new Date();
+    const today = now.toISOString().slice(0, 10);
+    const nowMinutes = now.getHours() * 60 + now.getMinutes();
 
     // Index reports by date for quick lookup
     const reportsByDate = new Map<string, typeof data.reports>();
@@ -73,7 +76,13 @@ export function ReportTracker() {
         const played: PlayedMatch[] = [];
         for (const f of fixtures) {
           const iso = parseFaDate(f.date);
-          if (!iso || iso >= today) continue;
+          if (!iso || iso > today) continue;
+          if (iso === today) {
+            // Only count today's games once kick-off (plus an hour) has passed
+            const tm = (f.time || "").match(/^(\d{1,2}):(\d{2})/);
+            const kickoff = tm ? parseInt(tm[1]) * 60 + parseInt(tm[2]) : 0;
+            if (nowMinutes < kickoff + 60) continue;
+          }
           const isHome = f.homeTeam.includes("Peterborough Ath");
           const opponent = isHome ? f.awayTeam : f.homeTeam;
           const key = `${iso}|${opponent}`;
