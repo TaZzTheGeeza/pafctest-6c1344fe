@@ -43,12 +43,15 @@ export function ReportTracker() {
       if (repErr) throw repErr;
       return { cacheRows: cacheRows || [], reports: reports || [] };
     },
-    staleTime: 1000 * 60 * 5,
+    staleTime: 1000 * 30,
+    refetchOnWindowFocus: true,
   });
 
   const teams = useMemo(() => {
     if (!data) return [];
-    const today = new Date().toISOString().slice(0, 10);
+    const now = new Date();
+    const today = now.toISOString().slice(0, 10);
+    const nowMinutes = now.getHours() * 60 + now.getMinutes();
 
     // Index reports by date for quick lookup
     const reportsByDate = new Map<string, typeof data.reports>();
