@@ -76,7 +76,13 @@ export function ReportTracker() {
         const played: PlayedMatch[] = [];
         for (const f of fixtures) {
           const iso = parseFaDate(f.date);
-          if (!iso || iso >= today) continue;
+          if (!iso || iso > today) continue;
+          if (iso === today) {
+            // Only count today's games once kick-off (plus an hour) has passed
+            const tm = (f.time || "").match(/^(\d{1,2}):(\d{2})/);
+            const kickoff = tm ? parseInt(tm[1]) * 60 + parseInt(tm[2]) : 0;
+            if (nowMinutes < kickoff + 60) continue;
+          }
           const isHome = f.homeTeam.includes("Peterborough Ath");
           const opponent = isHome ? f.awayTeam : f.homeTeam;
           const key = `${iso}|${opponent}`;
