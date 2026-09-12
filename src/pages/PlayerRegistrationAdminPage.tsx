@@ -960,11 +960,17 @@ function RegistrationDetail({ registration: r, onClose, onDelete, onSaved }: {
   const handlePhotoRemove = async () => {
     if (!form.photo_url) return;
     if (!confirm("Remove this photo?")) return;
-    if (!/^https?:\/\//i.test(form.photo_url)) {
-      await supabase.storage.from("registration-photos").remove([form.photo_url]);
+    const previous = form.photo_url;
+    const { error } = await supabase
+      .from("player_registrations")
+      .update({ photo_url: null })
+      .eq("id", r.id);
+    if (error) { toast.error(error.message); return; }
+    if (!/^https?:\/\//i.test(previous)) {
+      await supabase.storage.from("registration-photos").remove([previous]);
     }
     set("photo_url", null);
-    toast.success("Photo removed - click Save to persist");
+    toast.success("Photo removed");
   };
 
   const save = async () => {
