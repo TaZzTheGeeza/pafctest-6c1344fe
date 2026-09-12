@@ -78,6 +78,7 @@ export function HubMatchReports({ teamSlug }: { teamSlug: string }) {
             potmPlayers={findPOTM(report)}
             expanded={expandedId === report.id}
             onToggle={() => setExpandedId(expandedId === report.id ? null : report.id)}
+            teamSlug={teamSlug}
           />
         </div>
       ))}
