@@ -205,13 +205,18 @@ export function TeamStatsTable({ ageGroup }: { ageGroup: string }) {
                 <td className="px-2 py-3">
                   <span className="font-display text-sm font-medium">{player.first_name}</span>
                 </td>
-                <td className={`text-center px-2 py-3 text-sm font-bold ${sortBy === "goals" ? "text-primary" : "text-foreground"}`}>
+                <td className={`text-center px-2 py-3 text-sm font-bold ${activeSort === "goals" ? "text-primary" : "text-foreground"}`}>
                   {player.goals}
                 </td>
-                <td className={`text-center px-2 py-3 text-sm font-bold ${sortBy === "assists" ? "text-primary" : "text-foreground"}`}>
+                <td className={`text-center px-2 py-3 text-sm font-bold ${activeSort === "assists" ? "text-primary" : "text-foreground"}`}>
                   {player.assists}
                 </td>
-                <td className={`text-center px-2 py-3 text-sm font-bold ${sortBy === "potm_awards" ? "text-primary" : "text-foreground"}`}>
+                {isCurrentSeason && (
+                  <td className={`text-center px-2 py-3 text-sm font-bold ${activeSort === "saves" ? "text-primary" : "text-foreground"}`}>
+                    {player.saves ?? 0}
+                  </td>
+                )}
+                <td className={`text-center px-2 py-3 text-sm font-bold ${activeSort === "potm_awards" ? "text-primary" : "text-foreground"}`}>
                   {player.potm_awards}
                 </td>
               </tr>

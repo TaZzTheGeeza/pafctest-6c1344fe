@@ -63,6 +63,7 @@ export function MatchDetailPanel({ teamSlug, teamName, opponent, matchDate }: Ma
 
   const goalScorers = matchStats?.filter((s) => s.goals > 0) || [];
   const assistMakers = matchStats?.filter((s) => s.assists > 0) || [];
+  const saveMakers = matchStats?.filter((s) => (s as any).saves > 0) || [];
   const appearances = matchStats?.filter((s) => s.appeared) || [];
 
   const hasData = report || (potmList && potmList.length > 0) || (matchStats && matchStats.length > 0);
