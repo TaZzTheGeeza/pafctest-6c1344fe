@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { BarChart3, Trophy, Target, Users, Award, Loader2 } from "lucide-react";
+import { BarChart3, Trophy, Target, Users, Award, Loader2, Hand } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface PlayerStat {
@@ -9,11 +9,12 @@ interface PlayerStat {
   shirt_number: number | null;
   goals: number;
   assists: number;
+  saves: number;
   appearances: number;
   potm_awards: number;
 }
 
-type SortKey = "goals" | "assists" | "potm_awards";
+type SortKey = "goals" | "assists" | "saves" | "potm_awards";
 
 const CURRENT_SEASON = "2026/27";
 
@@ -46,7 +47,7 @@ export function TeamStatsTable({ ageGroup }: { ageGroup: string }) {
       if (season === CURRENT_SEASON) {
         const { data } = await supabase
           .from("player_stats")
-          .select("id, first_name, shirt_number, goals, assists, appearances, potm_awards, position")
+          .select("id, first_name, shirt_number, goals, assists, saves, appearances, potm_awards, position")
           .eq("age_group", ageGroup)
           .order("goals", { ascending: false });
         rows = data || [];
@@ -65,14 +66,17 @@ export function TeamStatsTable({ ageGroup }: { ageGroup: string }) {
     fetch();
   }, [ageGroup, season]);
 
-  const sorted = [...players].sort((a, b) => b[sortBy] - a[sortBy]);
+  
 
+  const isCurrentSeason = season === CURRENT_SEASON;
   const tabs: { key: SortKey; label: string; icon: typeof Trophy }[] = [
     { key: "goals", label: "Goals", icon: Target },
     { key: "assists", label: "Assists", icon: Users },
-    
+    ...(isCurrentSeason ? [{ key: "saves" as SortKey, label: "Saves", icon: Hand }] : []),
     { key: "potm_awards", label: "POTM", icon: Award },
   ];
+  const activeSort: SortKey = !isCurrentSeason && sortBy === "saves" ? "goals" : sortBy;
+  const sorted = [...players].sort((a, b) => (b[activeSort] ?? 0) - (a[activeSort] ?? 0));
 
   const seasonSelector = (
     <div className="flex items-center justify-end">
@@ -133,14 +137,14 @@ export function TeamStatsTable({ ageGroup }: { ageGroup: string }) {
           </div>
           <div>
             <p className="text-[10px] font-display tracking-widest text-primary uppercase mb-0.5">
-              Top {tabs.find((t) => t.key === sortBy)?.label} Leader
+              Top {tabs.find((t) => t.key === activeSort)?.label} Leader
             </p>
             <p className="font-display font-bold text-sm">
               {topPlayer.first_name}
               {topPlayer.shirt_number ? ` (#${topPlayer.shirt_number})` : ""}
             </p>
             <p className="text-xs text-muted-foreground">
-              {topPlayer[sortBy]} {tabs.find((t) => t.key === sortBy)?.label.toLowerCase()}
+              {topPlayer[activeSort] ?? 0} {tabs.find((t) => t.key === activeSort)?.label.toLowerCase()}
             </p>
           </div>
         </div>
@@ -153,7 +157,7 @@ export function TeamStatsTable({ ageGroup }: { ageGroup: string }) {
             key={tab.key}
             onClick={() => setSortBy(tab.key)}
             className={`flex-1 flex items-center justify-center gap-1.5 text-xs font-display tracking-wider py-2 rounded-md transition-all ${
-              sortBy === tab.key
+              activeSort === tab.key
                 ? "bg-primary text-primary-foreground"
                 : "text-muted-foreground hover:text-foreground"
             }`}
@@ -177,6 +181,11 @@ export function TeamStatsTable({ ageGroup }: { ageGroup: string }) {
               <th className="text-center px-2 py-3">
                 <Users className="h-3 w-3 mx-auto" />
               </th>
+              {isCurrentSeason && (
+                <th className="text-center px-2 py-3">
+                  <Hand className="h-3 w-3 mx-auto" />
+                </th>
+              )}
               <th className="text-center px-2 py-3">
                 <Award className="h-3 w-3 mx-auto" />
               </th>
@@ -196,13 +205,18 @@ export function TeamStatsTable({ ageGroup }: { ageGroup: string }) {
                 <td className="px-2 py-3">
                   <span className="font-display text-sm font-medium">{player.first_name}</span>
                 </td>
-                <td className={`text-center px-2 py-3 text-sm font-bold ${sortBy === "goals" ? "text-primary" : "text-foreground"}`}>
+                <td className={`text-center px-2 py-3 text-sm font-bold ${activeSort === "goals" ? "text-primary" : "text-foreground"}`}>
                   {player.goals}
                 </td>
-                <td className={`text-center px-2 py-3 text-sm font-bold ${sortBy === "assists" ? "text-primary" : "text-foreground"}`}>
+                <td className={`text-center px-2 py-3 text-sm font-bold ${activeSort === "assists" ? "text-primary" : "text-foreground"}`}>
                   {player.assists}
                 </td>
-                <td className={`text-center px-2 py-3 text-sm font-bold ${sortBy === "potm_awards" ? "text-primary" : "text-foreground"}`}>
+                {isCurrentSeason && (
+                  <td className={`text-center px-2 py-3 text-sm font-bold ${activeSort === "saves" ? "text-primary" : "text-foreground"}`}>
+                    {player.saves ?? 0}
+                  </td>
+                )}
+                <td className={`text-center px-2 py-3 text-sm font-bold ${activeSort === "potm_awards" ? "text-primary" : "text-foreground"}`}>
                   {player.potm_awards}
                 </td>
               </tr>

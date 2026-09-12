@@ -56,7 +56,7 @@ export function MatchReportTab({
     queryFn: async () => {
       const { data } = await supabase
         .from("match_player_stats")
-        .select("player_stat_id, goals, assists")
+        .select("player_stat_id, goals, assists, saves")
         .eq("team_slug", teamSlug)
         .eq("opponent", opponent)
         .eq("match_date", dbDate);
@@ -68,6 +68,7 @@ export function MatchReportTab({
   const [awayScore, setAwayScore] = useState(fixture.awayScore?.toString() || "0");
   const [goalEntries, setGoalEntries] = useState<GoalEntry[]>([]);
   const [assistEntries, setAssistEntries] = useState<AssistEntry[]>([]);
+  const [saveEntries, setSaveEntries] = useState<AssistEntry[]>([]);
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -88,17 +89,23 @@ export function MatchReportTab({
       const assists: AssistEntry[] = existingStats
         .filter(s => s.assists > 0)
         .map(s => ({ playerId: s.player_stat_id, count: s.assists }));
+      const saves: AssistEntry[] = existingStats
+        .filter(s => (s as any).saves > 0)
+        .map(s => ({ playerId: s.player_stat_id, count: (s as any).saves }));
       if (goals.length > 0) setGoalEntries(goals);
       if (assists.length > 0) setAssistEntries(assists);
+      if (saves.length > 0) setSaveEntries(saves);
       setLoaded(true);
     }
   }, [existingReport, existingStats, roster, loaded]);
 
   const addGoalEntry = () => setGoalEntries([...goalEntries, { playerId: "", count: 1 }]);
   const addAssistEntry = () => setAssistEntries([...assistEntries, { playerId: "", count: 1 }]);
+  const addSaveEntry = () => setSaveEntries([...saveEntries, { playerId: "", count: 1 }]);
 
   const removeGoalEntry = (i: number) => setGoalEntries(goalEntries.filter((_, idx) => idx !== i));
   const removeAssistEntry = (i: number) => setAssistEntries(assistEntries.filter((_, idx) => idx !== i));
+  const removeSaveEntry = (i: number) => setSaveEntries(saveEntries.filter((_, idx) => idx !== i));
 
   const updateGoalEntry = (i: number, field: keyof GoalEntry, val: string | number) => {
     const next = [...goalEntries];
@@ -111,6 +118,14 @@ export function MatchReportTab({
     next[i] = { ...next[i], [field]: val };
     setAssistEntries(next);
   };
+
+  const updateSaveEntry = (i: number, field: keyof AssistEntry, val: string | number) => {
+    const next = [...saveEntries];
+    next[i] = { ...next[i], [field]: val };
+    setSaveEntries(next);
+  };
+
+
 
 
   const handleSave = async () => {
@@ -186,18 +201,24 @@ export function MatchReportTab({
         });
       }
 
-      // Save per-match player stats (goals & assists)
-      const playerMap = new Map<string, { goals: number; assists: number }>();
+      // Save per-match player stats (goals, assists & saves)
+      const playerMap = new Map<string, { goals: number; assists: number; saves: number }>();
 
       for (const entry of goalEntries.filter(e => e.playerId)) {
-        const existing = playerMap.get(entry.playerId) || { goals: 0, assists: 0 };
+        const existing = playerMap.get(entry.playerId) || { goals: 0, assists: 0, saves: 0 };
         existing.goals += entry.count;
         playerMap.set(entry.playerId, existing);
       }
 
       for (const entry of assistEntries.filter(e => e.playerId)) {
-        const existing = playerMap.get(entry.playerId) || { goals: 0, assists: 0 };
+        const existing = playerMap.get(entry.playerId) || { goals: 0, assists: 0, saves: 0 };
         existing.assists += entry.count;
+        playerMap.set(entry.playerId, existing);
+      }
+
+      for (const entry of saveEntries.filter(e => e.playerId)) {
+        const existing = playerMap.get(entry.playerId) || { goals: 0, assists: 0, saves: 0 };
+        existing.saves += entry.count;
         playerMap.set(entry.playerId, existing);
       }
 
@@ -209,6 +230,7 @@ export function MatchReportTab({
           opponent,
           goals: stats.goals,
           assists: stats.assists,
+          saves: stats.saves,
           appeared: false,
           potm: false,
         }));
@@ -345,6 +367,45 @@ export function MatchReportTab({
                 className="h-8 w-16 text-sm text-center"
               />
               <Button size="sm" variant="ghost" onClick={() => removeAssistEntry(i)} className="h-8 w-8 p-0">
+                <Trash2 className="h-3 w-3 text-destructive" />
+              </Button>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Goalkeeper Saves */}
+      <div>
+        <div className="flex items-center justify-between mb-2">
+          <Label className="text-xs">Goalkeeper Saves</Label>
+          <Button size="sm" variant="ghost" onClick={addSaveEntry} className="h-7 text-xs gap-1">
+            <Plus className="h-3 w-3" />Add
+          </Button>
+        </div>
+        {saveEntries.length === 0 && (
+          <p className="text-xs text-muted-foreground italic">No saves - click Add to log</p>
+        )}
+        <div className="space-y-2">
+          {saveEntries.map((entry, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <Select value={entry.playerId} onValueChange={(v) => updateSaveEntry(i, "playerId", v)}>
+                <SelectTrigger className="h-8 text-sm flex-1">
+                  <SelectValue placeholder="Select goalkeeper" />
+                </SelectTrigger>
+                <SelectContent>
+                  {roster.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      {p.shirt_number ? `#${p.shirt_number} ` : ""}{p.first_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Input
+                type="number" min="1" value={entry.count}
+                onChange={(e) => updateSaveEntry(i, "count", parseInt(e.target.value) || 1)}
+                className="h-8 w-16 text-sm text-center"
+              />
+              <Button size="sm" variant="ghost" onClick={() => removeSaveEntry(i)} className="h-8 w-8 p-0">
                 <Trash2 className="h-3 w-3 text-destructive" />
               </Button>
             </div>

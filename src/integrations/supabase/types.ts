@@ -991,6 +991,7 @@ export type Database = {
           opponent: string
           player_stat_id: string
           potm: boolean
+          saves: number
           team_slug: string
         }
         Insert: {
@@ -1003,6 +1004,7 @@ export type Database = {
           opponent: string
           player_stat_id: string
           potm?: boolean
+          saves?: number
           team_slug: string
         }
         Update: {
@@ -1015,6 +1017,7 @@ export type Database = {
           opponent?: string
           player_stat_id?: string
           potm?: boolean
+          saves?: number
           team_slug?: string
         }
         Relationships: [
@@ -1736,6 +1739,7 @@ export type Database = {
           photo_url: string | null
           position: string | null
           potm_awards: number
+          saves: number
           shirt_number: number | null
           team_name: string
           updated_at: string
@@ -1751,6 +1755,7 @@ export type Database = {
           photo_url?: string | null
           position?: string | null
           potm_awards?: number
+          saves?: number
           shirt_number?: number | null
           team_name: string
           updated_at?: string
@@ -1766,6 +1771,7 @@ export type Database = {
           photo_url?: string | null
           position?: string | null
           potm_awards?: number
+          saves?: number
           shirt_number?: number | null
           team_name?: string
           updated_at?: string
