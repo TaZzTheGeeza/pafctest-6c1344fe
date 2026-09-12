@@ -937,12 +937,20 @@ function RegistrationDetail({ registration: r, onClose, onDelete, onSaved }: {
         .from("registration-photos")
         .upload(path, file, { upsert: true, contentType: file.type });
       if (upErr) throw upErr;
+      // Save straight away so the photo can't be lost if the page reloads
+      // after returning from the phone's photo picker.
+      const { error: saveErr } = await supabase
+        .from("player_registrations")
+        .update({ photo_url: path })
+        .eq("id", r.id);
+      if (saveErr) throw saveErr;
       // Remove previous photo if it was a storage path (not a legacy https URL)
       if (form.photo_url && !/^https?:\/\//i.test(form.photo_url)) {
         await supabase.storage.from("registration-photos").remove([form.photo_url]);
       }
       set("photo_url", path);
-      toast.success("Photo updated - click Save to persist");
+      toast.success("Photo saved");
+      await onSaved();
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : "Upload failed");
     } finally {
