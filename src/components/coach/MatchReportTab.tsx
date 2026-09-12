@@ -119,6 +119,14 @@ export function MatchReportTab({
     setAssistEntries(next);
   };
 
+  const updateSaveEntry = (i: number, field: keyof AssistEntry, val: string | number) => {
+    const next = [...saveEntries];
+    next[i] = { ...next[i], [field]: val };
+    setSaveEntries(next);
+  };
+
+
+
 
   const handleSave = async () => {
     setSaving(true);
