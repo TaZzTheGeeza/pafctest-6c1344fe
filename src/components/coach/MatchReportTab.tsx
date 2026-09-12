@@ -56,7 +56,7 @@ export function MatchReportTab({
     queryFn: async () => {
       const { data } = await supabase
         .from("match_player_stats")
-        .select("player_stat_id, goals, assists")
+        .select("player_stat_id, goals, assists, saves")
         .eq("team_slug", teamSlug)
         .eq("opponent", opponent)
         .eq("match_date", dbDate);
@@ -68,6 +68,7 @@ export function MatchReportTab({
   const [awayScore, setAwayScore] = useState(fixture.awayScore?.toString() || "0");
   const [goalEntries, setGoalEntries] = useState<GoalEntry[]>([]);
   const [assistEntries, setAssistEntries] = useState<AssistEntry[]>([]);
+  const [saveEntries, setSaveEntries] = useState<AssistEntry[]>([]);
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -88,17 +89,23 @@ export function MatchReportTab({
       const assists: AssistEntry[] = existingStats
         .filter(s => s.assists > 0)
         .map(s => ({ playerId: s.player_stat_id, count: s.assists }));
+      const saves: AssistEntry[] = existingStats
+        .filter(s => (s as any).saves > 0)
+        .map(s => ({ playerId: s.player_stat_id, count: (s as any).saves }));
       if (goals.length > 0) setGoalEntries(goals);
       if (assists.length > 0) setAssistEntries(assists);
+      if (saves.length > 0) setSaveEntries(saves);
       setLoaded(true);
     }
   }, [existingReport, existingStats, roster, loaded]);
 
   const addGoalEntry = () => setGoalEntries([...goalEntries, { playerId: "", count: 1 }]);
   const addAssistEntry = () => setAssistEntries([...assistEntries, { playerId: "", count: 1 }]);
+  const addSaveEntry = () => setSaveEntries([...saveEntries, { playerId: "", count: 1 }]);
 
   const removeGoalEntry = (i: number) => setGoalEntries(goalEntries.filter((_, idx) => idx !== i));
   const removeAssistEntry = (i: number) => setAssistEntries(assistEntries.filter((_, idx) => idx !== i));
+  const removeSaveEntry = (i: number) => setSaveEntries(saveEntries.filter((_, idx) => idx !== i));
 
   const updateGoalEntry = (i: number, field: keyof GoalEntry, val: string | number) => {
     const next = [...goalEntries];
