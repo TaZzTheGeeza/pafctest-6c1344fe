@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { Trophy, Star, ChevronDown, ChevronUp, Pencil, Target, Sparkles, FileText, ZoomIn } from "lucide-react";
+import { Trophy, Star, ChevronDown, ChevronUp, Pencil, Target, Sparkles, FileText, ZoomIn, Share2 } from "lucide-react";
+import { toast } from "sonner";
 
 export interface MatchReport {
   id: string;
@@ -47,6 +48,7 @@ export function MatchReportCard({
   onToggle,
   canEdit = false,
   onEdit,
+  teamSlug,
 }: {
   report: MatchReport;
   potmPlayers: POTMAward[];
@@ -54,6 +56,7 @@ export function MatchReportCard({
   onToggle: () => void;
   canEdit?: boolean;
   onEdit?: (report: MatchReport) => void;
+  teamSlug?: string;
 }) {
   const isWin = report.home_score > report.away_score;
   const isDraw = report.home_score === report.away_score;
