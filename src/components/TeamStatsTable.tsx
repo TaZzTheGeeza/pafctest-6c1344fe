@@ -137,14 +137,14 @@ export function TeamStatsTable({ ageGroup }: { ageGroup: string }) {
           </div>
           <div>
             <p className="text-[10px] font-display tracking-widest text-primary uppercase mb-0.5">
-              Top {tabs.find((t) => t.key === sortBy)?.label} Leader
+              Top {tabs.find((t) => t.key === activeSort)?.label} Leader
             </p>
             <p className="font-display font-bold text-sm">
               {topPlayer.first_name}
               {topPlayer.shirt_number ? ` (#${topPlayer.shirt_number})` : ""}
             </p>
             <p className="text-xs text-muted-foreground">
-              {topPlayer[sortBy]} {tabs.find((t) => t.key === sortBy)?.label.toLowerCase()}
+              {topPlayer[activeSort] ?? 0} {tabs.find((t) => t.key === activeSort)?.label.toLowerCase()}
             </p>
           </div>
         </div>
@@ -157,7 +157,7 @@ export function TeamStatsTable({ ageGroup }: { ageGroup: string }) {
             key={tab.key}
             onClick={() => setSortBy(tab.key)}
             className={`flex-1 flex items-center justify-center gap-1.5 text-xs font-display tracking-wider py-2 rounded-md transition-all ${
-              sortBy === tab.key
+              activeSort === tab.key
                 ? "bg-primary text-primary-foreground"
                 : "text-muted-foreground hover:text-foreground"
             }`}
@@ -181,6 +181,11 @@ export function TeamStatsTable({ ageGroup }: { ageGroup: string }) {
               <th className="text-center px-2 py-3">
                 <Users className="h-3 w-3 mx-auto" />
               </th>
+              {isCurrentSeason && (
+                <th className="text-center px-2 py-3">
+                  <Hand className="h-3 w-3 mx-auto" />
+                </th>
+              )}
               <th className="text-center px-2 py-3">
                 <Award className="h-3 w-3 mx-auto" />
               </th>
