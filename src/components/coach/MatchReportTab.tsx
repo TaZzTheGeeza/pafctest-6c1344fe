@@ -201,18 +201,24 @@ export function MatchReportTab({
         });
       }
 
-      // Save per-match player stats (goals & assists)
-      const playerMap = new Map<string, { goals: number; assists: number }>();
+      // Save per-match player stats (goals, assists & saves)
+      const playerMap = new Map<string, { goals: number; assists: number; saves: number }>();
 
       for (const entry of goalEntries.filter(e => e.playerId)) {
-        const existing = playerMap.get(entry.playerId) || { goals: 0, assists: 0 };
+        const existing = playerMap.get(entry.playerId) || { goals: 0, assists: 0, saves: 0 };
         existing.goals += entry.count;
         playerMap.set(entry.playerId, existing);
       }
 
       for (const entry of assistEntries.filter(e => e.playerId)) {
-        const existing = playerMap.get(entry.playerId) || { goals: 0, assists: 0 };
+        const existing = playerMap.get(entry.playerId) || { goals: 0, assists: 0, saves: 0 };
         existing.assists += entry.count;
+        playerMap.set(entry.playerId, existing);
+      }
+
+      for (const entry of saveEntries.filter(e => e.playerId)) {
+        const existing = playerMap.get(entry.playerId) || { goals: 0, assists: 0, saves: 0 };
+        existing.saves += entry.count;
         playerMap.set(entry.playerId, existing);
       }
 
@@ -224,6 +230,7 @@ export function MatchReportTab({
           opponent,
           goals: stats.goals,
           assists: stats.assists,
+          saves: stats.saves,
           appeared: false,
           potm: false,
         }));
@@ -360,6 +367,45 @@ export function MatchReportTab({
                 className="h-8 w-16 text-sm text-center"
               />
               <Button size="sm" variant="ghost" onClick={() => removeAssistEntry(i)} className="h-8 w-8 p-0">
+                <Trash2 className="h-3 w-3 text-destructive" />
+              </Button>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Goalkeeper Saves */}
+      <div>
+        <div className="flex items-center justify-between mb-2">
+          <Label className="text-xs">Goalkeeper Saves</Label>
+          <Button size="sm" variant="ghost" onClick={addSaveEntry} className="h-7 text-xs gap-1">
+            <Plus className="h-3 w-3" />Add
+          </Button>
+        </div>
+        {saveEntries.length === 0 && (
+          <p className="text-xs text-muted-foreground italic">No saves - click Add to log</p>
+        )}
+        <div className="space-y-2">
+          {saveEntries.map((entry, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <Select value={entry.playerId} onValueChange={(v) => updateSaveEntry(i, "playerId", v)}>
+                <SelectTrigger className="h-8 text-sm flex-1">
+                  <SelectValue placeholder="Select goalkeeper" />
+                </SelectTrigger>
+                <SelectContent>
+                  {roster.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      {p.shirt_number ? `#${p.shirt_number} ` : ""}{p.first_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Input
+                type="number" min="1" value={entry.count}
+                onChange={(e) => updateSaveEntry(i, "count", parseInt(e.target.value) || 1)}
+                className="h-8 w-16 text-sm text-center"
+              />
+              <Button size="sm" variant="ghost" onClick={() => removeSaveEntry(i)} className="h-8 w-8 p-0">
                 <Trash2 className="h-3 w-3 text-destructive" />
               </Button>
             </div>
