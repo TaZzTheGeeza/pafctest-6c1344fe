@@ -66,7 +66,7 @@ export function TeamStatsTable({ ageGroup }: { ageGroup: string }) {
     fetch();
   }, [ageGroup, season]);
 
-  const sorted = [...players].sort((a, b) => b[sortBy] - a[sortBy]);
+  
 
   const isCurrentSeason = season === CURRENT_SEASON;
   const tabs: { key: SortKey; label: string; icon: typeof Trophy }[] = [
