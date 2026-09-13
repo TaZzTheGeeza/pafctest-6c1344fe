@@ -1,15 +1,22 @@
+import { faTeamConfigs } from "./faFixtureConfig";
+
 export interface LeagueTableConfig {
   divisionSeason?: string;
   tableUrl?: string;
+  fixtureUrl?: string;
   faUrl: string;
   highlightTeams: string[];
 }
 
 /**
- * FA Full-Time league table config per team slug (canonical CLUB_TEAMS slugs).
- * Only teams whose age group plays competitive league football (U12+) have tables.
+ * League table config per team slug (canonical CLUB_TEAMS slugs).
+ *
+ * Explicit entries below pin a known FA table URL. Every other U12+ team is
+ * derived automatically from the same FA Full-Time fixture links used for
+ * fixtures - the edge function discovers the division's table from the
+ * fixture page itself, so fixtures and tables always share one source.
  */
-export const LEAGUE_TABLE_CONFIG: Record<string, LeagueTableConfig> = {
+const EXPLICIT: Record<string, LeagueTableConfig> = {
   u13s: {
     divisionSeason: "189349138",
     faUrl: "https://fulltime.thefa.com/table.html?divisionseason=189349138",
@@ -25,4 +32,28 @@ export const LEAGUE_TABLE_CONFIG: Record<string, LeagueTableConfig> = {
     faUrl: "https://fulltime.thefa.com/table.html?selectedSeason=233257866&selectedDivision=682264182&activeTab=1",
     highlightTeams: ["Peterborough Ath U14 Gold"],
   },
+};
+
+// FA age-group IDs: U12 = 11, U13 = 10, U14 = 9, U15 = 8. Competitive league
+// football (and therefore league tables) starts at U12.
+function ageGroupId(fixtureUrl: string): number | null {
+  const m = fixtureUrl.match(/selectedFixtureGroupAgeGroup=(\d+)/);
+  return m ? parseInt(m[1], 10) : null;
+}
+
+const derived: Record<string, LeagueTableConfig> = {};
+for (const cfg of faTeamConfigs) {
+  if (EXPLICIT[cfg.slug] || !cfg.fixtureUrl) continue;
+  const age = ageGroupId(cfg.fixtureUrl);
+  if (age === null || age > 11) continue; // younger than U12 - no league table
+  derived[cfg.slug] = {
+    fixtureUrl: cfg.fixtureUrl,
+    faUrl: cfg.fixtureUrl,
+    highlightTeams: [`Peterborough Ath ${cfg.team}`],
+  };
+}
+
+export const LEAGUE_TABLE_CONFIG: Record<string, LeagueTableConfig> = {
+  ...derived,
+  ...EXPLICIT,
 };

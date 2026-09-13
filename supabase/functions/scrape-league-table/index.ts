@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { fetchFaHtml } from "../_shared/faFetch.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -38,17 +39,74 @@ Deno.serve(async (req) => {
     });
   }
 
-  try {
-    const { divisionSeason, tableUrl } = await req.json();
+  const isAllowedFaUrl = (u: string) => {
+    try {
+      const parsed = new URL(u);
+      return parsed.protocol === 'https:' && parsed.hostname === 'fulltime.thefa.com';
+    } catch {
+      return false;
+    }
+  };
 
-    if (!divisionSeason && !tableUrl) {
+  const fetchFaPage = async (u: string): Promise<{ ok: true; html: string } | { ok: false; status: number; reason?: string }> => {
+    try {
+      // Routed through Firecrawl (same as fixtures) - the FA site 403s plain server requests.
+      return { ok: true, html: await fetchFaHtml(u, { budgetMs: 90_000 }) };
+    } catch (e) {
+      const reason = e instanceof Error ? e.message : String(e);
+      console.warn(`FA fetch failed for ${u}: ${reason}`);
+      return { ok: false, status: 502, reason };
+    }
+  };
+
+  try {
+    const { divisionSeason, tableUrl, fixtureUrl } = await req.json();
+
+    if (!divisionSeason && !tableUrl && !fixtureUrl) {
       return new Response(
-        JSON.stringify({ success: false, error: 'divisionSeason or tableUrl is required' }),
+        JSON.stringify({ success: false, error: 'divisionSeason, tableUrl or fixtureUrl is required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const url = tableUrl || `https://fulltime.thefa.com/table.html?divisionseason=${divisionSeason}`;
+    let resolvedTableUrl = tableUrl;
+
+    // Discover the division table from the team's fixture page - the same URL
+    // used for fixtures carries a link to its league table, so tables and
+    // fixtures always share one source.
+    if (!resolvedTableUrl && !divisionSeason && fixtureUrl) {
+      if (!isAllowedFaUrl(fixtureUrl)) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Only https://fulltime.thefa.com URLs are allowed' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      console.log('Discovering league table from fixture page:', fixtureUrl);
+      const fixturePage = await fetchFaPage(fixtureUrl);
+      if (!fixturePage.ok) {
+        return new Response(
+          JSON.stringify({ success: false, error: `FA site returned ${fixturePage.status}${fixturePage.reason ? ` (${fixturePage.reason})` : ''}` }),
+          { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      const tableLink = fixturePage.html.match(/href="([^"]*table\.html[^"]*)"/i);
+      if (!tableLink) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Could not find a league table link on the fixture page' }),
+          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      resolvedTableUrl = tableLink[1]
+        .replace(/&amp;/g, '&')
+        .replace(/&#0?39;|&apos;/g, "'")
+        .replace(/&quot;/g, '"');
+      if (resolvedTableUrl.startsWith('/')) {
+        resolvedTableUrl = `https://fulltime.thefa.com${resolvedTableUrl}`;
+      }
+      console.log('Discovered table URL:', resolvedTableUrl);
+    }
+
+    const url = resolvedTableUrl || `https://fulltime.thefa.com/table.html?divisionseason=${divisionSeason}`;
 
     // SSRF guard - only allow scraping the FA Full-Time host over HTTPS.
     try {
@@ -68,21 +126,15 @@ Deno.serve(async (req) => {
 
     console.log('Scraping league table from:', url);
 
-    const response = await fetch(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        'Accept': 'text/html,application/xhtml+xml',
-      },
-    });
-
-    if (!response.ok) {
+    const tablePage = await fetchFaPage(url);
+    if (!tablePage.ok) {
       return new Response(
-        JSON.stringify({ success: false, error: `FA site returned ${response.status}` }),
+        JSON.stringify({ success: false, error: 'The FA site is not responding right now - please try again shortly' }),
         { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const html = await response.text();
+    const html = tablePage.html;
 
     // Extract division name from title
     const titleMatch = html.match(/<title>Table \| ([^|]+)/);
