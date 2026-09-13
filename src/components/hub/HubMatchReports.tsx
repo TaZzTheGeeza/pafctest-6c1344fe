@@ -101,9 +101,18 @@ export function HubMatchReports({ teamSlug }: { teamSlug: string }) {
             expanded={expandedId === report.id}
             onToggle={() => setExpandedId(expandedId === report.id ? null : report.id)}
             teamSlug={teamSlug}
+            canEdit={canManage(report)}
+            onEdit={setEditing}
+            onDelete={handleDelete}
           />
         </div>
       ))}
+
+      <MatchReportEditDialog
+        report={editing}
+        onClose={() => setEditing(null)}
+        onSaved={refresh}
+      />
     </div>
   );
 }
