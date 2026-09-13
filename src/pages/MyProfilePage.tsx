@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { TeamAccessRequest } from "@/components/hub/TeamAccessRequest";
+import { Button } from "@/components/ui/button";
 import { CheckForUpdatesButton } from "@/components/CheckForUpdatesButton";
 import {
   User, Trophy, FileText, Calendar, Loader2,
