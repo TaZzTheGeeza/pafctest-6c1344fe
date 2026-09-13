@@ -51,7 +51,8 @@ Deno.serve(async (req) => {
   const fetchFaPage = async (u: string): Promise<{ ok: true; html: string } | { ok: false; status: number; reason?: string }> => {
     try {
       // Routed through Firecrawl (same as fixtures) - the FA site 403s plain server requests.
-      return { ok: true, html: await fetchFaHtml(u, { budgetMs: 90_000 }) };
+      // No waitFor: the table is server-rendered, so waiting only adds latency.
+      return { ok: true, html: await fetchFaHtml(u, { budgetMs: 150_000, waitFor: 0 }) };
     } catch (e) {
       const reason = e instanceof Error ? e.message : String(e);
       console.warn(`FA fetch failed for ${u}: ${reason}`);
