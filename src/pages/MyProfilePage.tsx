@@ -9,7 +9,7 @@ import { CheckForUpdatesButton } from "@/components/CheckForUpdatesButton";
 import {
   User, Trophy, FileText, Calendar, Loader2,
   Activity, Award, Star, ArrowLeft, Camera, Pencil, Check, X, UserPlus, Shield,
-  ShoppingBag, Download, Image, Package
+  ShoppingBag, Download, Image, Package, Shirt
 } from "lucide-react";
 import { toast } from "sonner";
 
