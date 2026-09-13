@@ -13,7 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Loader2, Save } from "lucide-react";
+import { Loader2, Save, Camera, Trophy, X } from "lucide-react";
 import { toast } from "sonner";
 import type { MatchReport } from "@/components/MatchReportCard";
 
