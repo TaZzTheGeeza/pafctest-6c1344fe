@@ -180,6 +180,12 @@ Deno.serve(async (req) => {
     // Extract table data between <table class="cell-dividers"> and </table>
     const tableMatch = html.match(/<table class="cell-dividers">([\s\S]*?)<\/table>/);
     if (!tableMatch) {
+      if (cached) {
+        return new Response(
+          JSON.stringify({ success: true, divisionName: cached.divisionName, standings: cached.standings, cached: true, stale: true, updatedAt: new Date(cached.at).toISOString() }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
       return new Response(
         JSON.stringify({ success: false, error: 'Could not find league table on page' }),
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
