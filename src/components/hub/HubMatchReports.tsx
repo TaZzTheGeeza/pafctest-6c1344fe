@@ -47,6 +47,22 @@ export function HubMatchReports({ teamSlug }: { teamSlug: string }) {
     enabled: !!teamName,
   });
 
+  const canManage = (report: MatchReport) =>
+    isAdmin || (isCoach && !!user && report.created_by === user.id);
+
+  const refresh = () => queryClient.invalidateQueries({ queryKey: ["hub-match-reports", teamSlug] });
+
+  const handleDelete = async (report: MatchReport) => {
+    if (!confirm("Delete this match report? This cannot be undone.")) return;
+    const { error } = await supabase.from("match_reports").delete().eq("id", report.id);
+    if (error) {
+      toast.error(error.message || "Failed to delete report");
+      return;
+    }
+    toast.success("Match report deleted");
+    refresh();
+  };
+
   const findPOTM = (report: MatchReport) =>
     potmAwards?.filter(
       (p) => p.age_group === report.age_group && p.award_date === report.match_date
