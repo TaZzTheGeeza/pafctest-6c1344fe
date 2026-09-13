@@ -118,6 +118,15 @@ export function MatchReportEditDialog({
         })
         .eq("id", report.id);
       if (error) throw error;
+
+      for (const award of awards) {
+        const { error: potmError } = await supabase
+          .from("player_of_the_match")
+          .update({ reason: award.reason?.trim() || null })
+          .eq("id", award.id);
+        if (potmError) throw potmError;
+      }
+
       toast.success("Match report updated");
       onSaved();
       onClose();
