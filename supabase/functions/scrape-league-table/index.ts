@@ -16,6 +16,10 @@ interface LeagueRow {
   points: number;
 }
 
+// Last good table per URL, reused while fresh and as a fallback when the FA site stalls.
+const tableCache = new Map<string, { divisionName: string; standings: LeagueRow[]; at: number }>();
+const FRESH_MS = 30 * 60 * 1000;
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
