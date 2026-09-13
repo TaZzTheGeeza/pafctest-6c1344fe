@@ -161,7 +161,7 @@ Deno.serve(async (req) => {
     if (!tablePage.ok) {
       if (cached) {
         return new Response(
-          JSON.stringify({ success: true, divisionName: cached.divisionName, standings: cached.standings, cached: true, stale: true }),
+          JSON.stringify({ success: true, divisionName: cached.divisionName, standings: cached.standings, cached: true, stale: true, updatedAt: new Date(cached.at).toISOString() }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
