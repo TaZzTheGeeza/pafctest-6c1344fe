@@ -76,6 +76,10 @@ export function AiReportAssistant({
       toast.error("Pick the fixture/opponent first.");
       return;
     }
+    if (!notes.trim()) {
+      toast.error("Write a few lines about the match first (or use Voice note), then the AI will polish it.");
+      return;
+    }
     setBusy(tone);
     try {
       const { data, error } = await supabase.functions.invoke("generate-match-report", {

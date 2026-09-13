@@ -42,6 +42,10 @@ export function AiPotmAssistant({
       toast.error("Choose the player first.");
       return;
     }
+    if (!reason.trim()) {
+      toast.error("Write a short line about why they earned it first, then the AI will polish it.");
+      return;
+    }
     setBusy(tone);
     try {
       const { data, error } = await supabase.functions.invoke("generate-match-report", {
