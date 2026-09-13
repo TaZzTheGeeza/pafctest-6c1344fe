@@ -7,6 +7,7 @@ import {
   Pencil, Trash2, Save, X,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 // ─── Types ───
 
@@ -192,6 +193,8 @@ function FixtureGroupCard({ group, isExpanded, onToggle, onRefresh }: {
 // ─── Editable Report Section ───
 
 function ReportSection({ report: r, onRefresh }: { report: any; onRefresh: () => void }) {
+  const { user, isAdmin } = useAuth();
+  const canManage = isAdmin || (!!user && r.created_by === user.id);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -278,14 +281,18 @@ function ReportSection({ report: r, onRefresh }: { report: any; onRefresh: () =>
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <span className="font-display font-bold text-foreground text-sm">{r.home_score} - {r.away_score}</span>
-        <div className="flex items-center gap-1">
-          <button onClick={() => setEditing(true)} className="p-1 text-muted-foreground hover:text-primary transition-colors" title="Edit report">
-            <Pencil className="h-3.5 w-3.5" />
-          </button>
-          <button onClick={handleDelete} disabled={deleting} className="p-1 text-muted-foreground hover:text-destructive transition-colors" title="Delete report">
-            {deleting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
-          </button>
-        </div>
+        {canManage ? (
+          <div className="flex items-center gap-1">
+            <button onClick={() => setEditing(true)} className="p-1 text-muted-foreground hover:text-primary transition-colors" title="Edit report">
+              <Pencil className="h-3.5 w-3.5" />
+            </button>
+            <button onClick={handleDelete} disabled={deleting} className="p-1 text-muted-foreground hover:text-destructive transition-colors" title="Delete report">
+              {deleting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+            </button>
+          </div>
+        ) : (
+          <span className="text-[10px] text-muted-foreground">Submitted by another coach</span>
+        )}
       </div>
 
       {r.goal_scorers && (

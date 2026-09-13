@@ -1,14 +1,20 @@
 import { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { MatchReportCard, type MatchReport, type POTMAward } from "@/components/MatchReportCard";
+import { MatchReportEditDialog } from "@/components/MatchReportEditDialog";
 import { CLUB_TEAMS } from "@/lib/teamConfig";
 import { ClipboardList } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 export function HubMatchReports({ teamSlug }: { teamSlug: string }) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [editing, setEditing] = useState<MatchReport | null>(null);
   const [searchParams] = useSearchParams();
+  const { user, isCoach, isAdmin } = useAuth();
+  const queryClient = useQueryClient();
   const teamName = CLUB_TEAMS.find((t) => t.slug === teamSlug)?.name || "";
 
   const { data: reports, isLoading } = useQuery({
@@ -40,6 +46,22 @@ export function HubMatchReports({ teamSlug }: { teamSlug: string }) {
     },
     enabled: !!teamName,
   });
+
+  const canManage = (report: MatchReport) =>
+    isAdmin || (isCoach && !!user && report.created_by === user.id);
+
+  const refresh = () => queryClient.invalidateQueries({ queryKey: ["hub-match-reports", teamSlug] });
+
+  const handleDelete = async (report: MatchReport) => {
+    if (!confirm("Delete this match report? This cannot be undone.")) return;
+    const { error } = await supabase.from("match_reports").delete().eq("id", report.id);
+    if (error) {
+      toast.error(error.message || "Failed to delete report");
+      return;
+    }
+    toast.success("Match report deleted");
+    refresh();
+  };
 
   const findPOTM = (report: MatchReport) =>
     potmAwards?.filter(
@@ -79,9 +101,18 @@ export function HubMatchReports({ teamSlug }: { teamSlug: string }) {
             expanded={expandedId === report.id}
             onToggle={() => setExpandedId(expandedId === report.id ? null : report.id)}
             teamSlug={teamSlug}
+            canEdit={canManage(report)}
+            onEdit={setEditing}
+            onDelete={handleDelete}
           />
         </div>
       ))}
+
+      <MatchReportEditDialog
+        report={editing}
+        onClose={() => setEditing(null)}
+        onSaved={refresh}
+      />
     </div>
   );
 }

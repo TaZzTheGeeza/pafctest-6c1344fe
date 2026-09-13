@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { Trophy, Star, ChevronDown, ChevronUp, Pencil, Target, Sparkles, FileText, ZoomIn, Share2 } from "lucide-react";
+import { Trophy, Star, ChevronDown, ChevronUp, Pencil, Target, Sparkles, FileText, ZoomIn, Share2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 export interface MatchReport {
@@ -17,6 +17,7 @@ export interface MatchReport {
   goal_scorers: string | null;
   assists: string | null;
   notes: string | null;
+  created_by?: string | null;
 }
 
 export interface POTMAward {
@@ -48,6 +49,7 @@ export function MatchReportCard({
   onToggle,
   canEdit = false,
   onEdit,
+  onDelete,
   teamSlug,
 }: {
   report: MatchReport;
@@ -56,6 +58,7 @@ export function MatchReportCard({
   onToggle: () => void;
   canEdit?: boolean;
   onEdit?: (report: MatchReport) => void;
+  onDelete?: (report: MatchReport) => void;
   teamSlug?: string;
 }) {
   const isWin = report.home_score > report.away_score;
@@ -183,6 +186,19 @@ export function MatchReportCard({
                   className="p-1.5 rounded-md hover:bg-primary/10 text-primary border border-primary/30"
                 >
                   <Pencil className="h-3.5 w-3.5" />
+                </button>
+              )}
+              {canEdit && onDelete && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete(report);
+                  }}
+                  title="Delete match report"
+                  className="p-1.5 rounded-md hover:bg-destructive/10 text-destructive border border-destructive/30"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
                 </button>
               )}
               {expanded ? (
@@ -367,6 +383,20 @@ export function MatchReportCard({
                     >
                       <Pencil className="h-3.5 w-3.5" />
                       Edit Report
+                    </Button>
+                  )}
+                  {canEdit && onDelete && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDelete(report);
+                      }}
+                      className="gap-1.5 text-destructive border-destructive/40 hover:bg-destructive/10"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                      Delete
                     </Button>
                   )}
                 </div>

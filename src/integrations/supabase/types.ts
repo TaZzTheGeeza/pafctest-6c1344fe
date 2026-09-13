@@ -1089,6 +1089,7 @@ export type Database = {
           assists: string | null
           away_score: number
           created_at: string
+          created_by: string | null
           goal_scorers: string | null
           home_score: number
           id: string
@@ -1102,6 +1103,7 @@ export type Database = {
           assists?: string | null
           away_score?: number
           created_at?: string
+          created_by?: string | null
           goal_scorers?: string | null
           home_score?: number
           id?: string
@@ -1115,6 +1117,7 @@ export type Database = {
           assists?: string | null
           away_score?: number
           created_at?: string
+          created_by?: string | null
           goal_scorers?: string | null
           home_score?: number
           id?: string
