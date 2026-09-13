@@ -17,8 +17,8 @@ interface LeagueRow {
 }
 
 // Last good table per URL, reused while fresh and as a fallback when the FA site stalls.
-const tableCache = new Map<string, { divisionName: string; standings: LeagueRow[]; at: number }>();
-const FRESH_MS = 30 * 60 * 1000;
+// Kept in the database so it survives cold starts and is shared by every visitor.
+const FRESH_MS = 6 * 60 * 60 * 1000;
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
