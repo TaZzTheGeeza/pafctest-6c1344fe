@@ -28,7 +28,7 @@ import { OrdersTab } from "@/components/dashboard/OrdersTab";
 import { ShopProductsManager } from "@/components/dashboard/ShopProductsManager";
 import { KitManager } from "@/components/dashboard/KitManager";
 import { ReportTracker } from "@/components/dashboard/ReportTracker";
-import { ClipboardCheck } from "lucide-react";
+import { ClipboardCheck, Shirt } from "lucide-react";
 import { TreasurerPaymentsBoard } from "@/components/dashboard/TreasurerPaymentsBoard";
 import { RolePermissionManager } from "@/components/dashboard/RolePermissionManager";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
