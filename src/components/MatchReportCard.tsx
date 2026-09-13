@@ -17,6 +17,7 @@ export interface MatchReport {
   goal_scorers: string | null;
   assists: string | null;
   notes: string | null;
+  created_by?: string | null;
 }
 
 export interface POTMAward {
