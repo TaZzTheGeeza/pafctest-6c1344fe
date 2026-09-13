@@ -104,6 +104,12 @@ Deno.serve(async (req) => {
         resolvedTableUrl = `https://fulltime.thefa.com${resolvedTableUrl}`;
       }
       console.log('Discovered table URL:', resolvedTableUrl);
+      if (discoverOnly) {
+        return new Response(
+          JSON.stringify({ success: true, tableUrl: resolvedTableUrl }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
     }
 
     const url = resolvedTableUrl || `https://fulltime.thefa.com/table.html?divisionseason=${divisionSeason}`;
