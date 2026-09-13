@@ -42,6 +42,10 @@ export function AiPotmAssistant({
       toast.error("Choose the player first.");
       return;
     }
+    if (!reason.trim()) {
+      toast.error("Write a short line about why they earned it first, then the AI will polish it.");
+      return;
+    }
     setBusy(tone);
     try {
       const { data, error } = await supabase.functions.invoke("generate-match-report", {
@@ -120,7 +124,7 @@ export function AiPotmAssistant({
       <div className="flex flex-wrap gap-2">
         <Button type="button" size="sm" onClick={() => generate("standard")} disabled={disabled} className="h-7 text-xs gap-1">
           {busy === "standard" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
-          Write reason
+          Polish my reason
         </Button>
         <Button type="button" size="sm" variant="outline" onClick={() => generate("short")} disabled={disabled} className="h-7 text-xs">
           {busy === "short" ? <Loader2 className="h-3 w-3 animate-spin" /> : "One line"}

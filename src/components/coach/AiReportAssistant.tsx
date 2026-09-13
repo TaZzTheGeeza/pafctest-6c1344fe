@@ -76,6 +76,10 @@ export function AiReportAssistant({
       toast.error("Pick the fixture/opponent first.");
       return;
     }
+    if (!notes.trim()) {
+      toast.error("Write a few lines about the match first (or use Voice note), then the AI will polish it.");
+      return;
+    }
     setBusy(tone);
     try {
       const { data, error } = await supabase.functions.invoke("generate-match-report", {
@@ -152,13 +156,13 @@ export function AiReportAssistant({
         <p className="text-xs font-display tracking-wider">AI Write-Up Helper</p>
       </div>
       <p className="text-[11px] text-muted-foreground">
-        Uses the score, scorers, assists and Player of the Match above. Add rough notes (typed or spoken)
-        for more detail - you can edit the result before saving.
+        Write your own rough notes in the box first (typed or spoken) - the AI then polishes YOUR words into a
+        proper report. It won't invent anything you didn't mention.
       </p>
       <div className="flex flex-wrap gap-2">
         <Button type="button" size="sm" onClick={() => generate("standard")} disabled={disabled} className="h-8 text-xs gap-1">
           {busy === "standard" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
-          Write report
+          Polish my write-up
         </Button>
         <Button type="button" size="sm" variant="outline" onClick={() => generate("short")} disabled={disabled} className="h-8 text-xs">
           {busy === "short" ? <Loader2 className="h-3 w-3 animate-spin" /> : "Short summary"}
