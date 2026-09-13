@@ -32,6 +32,9 @@ export function MatchReportEditDialog({
   const [assists, setAssists] = useState("");
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
+  const [awards, setAwards] = useState<PotmRow[]>([]);
+  const [uploadingId, setUploadingId] = useState<string | null>(null);
+  const fileInputs = useRef<Record<string, HTMLInputElement | null>>({});
 
   useEffect(() => {
     if (!report) return;
@@ -40,7 +43,57 @@ export function MatchReportEditDialog({
     setScorers(report.goal_scorers ?? "");
     setAssists(report.assists ?? "");
     setNotes(report.notes ?? "");
+
+    supabase
+      .from("player_of_the_match")
+      .select("id, player_name, reason, photo_url, shirt_number")
+      .eq("age_group", report.age_group)
+      .eq("award_date", report.match_date)
+      .then(({ data }) => setAwards((data as PotmRow[]) || []));
   }, [report]);
+
+  const handlePhotoChange = async (award: PotmRow, file: File) => {
+    if (file.size > 20 * 1024 * 1024) {
+      toast.error("Photo must be under 20MB");
+      return;
+    }
+    setUploadingId(award.id);
+    try {
+      const photoUrl = await uploadPotmPhoto(file, {
+        playerName: award.player_name,
+        awardDate: report?.match_date,
+      });
+      const { error } = await supabase
+        .from("player_of_the_match")
+        .update({ photo_url: photoUrl })
+        .eq("id", award.id);
+      if (error) throw error;
+      setAwards((prev) => prev.map((a) => (a.id === award.id ? { ...a, photo_url: photoUrl } : a)));
+      toast.success("Photo updated");
+      onSaved();
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to update photo");
+    } finally {
+      setUploadingId(null);
+      if (fileInputs.current[award.id]) fileInputs.current[award.id]!.value = "";
+    }
+  };
+
+  const handlePhotoRemove = async (award: PotmRow) => {
+    if (!confirm(`Remove the photo for ${award.player_name}?`)) return;
+    const { error } = await supabase
+      .from("player_of_the_match")
+      .update({ photo_url: null })
+      .eq("id", award.id);
+    if (error) {
+      toast.error(error.message || "Failed to remove photo");
+      return;
+    }
+    setAwards((prev) => prev.map((a) => (a.id === award.id ? { ...a, photo_url: null } : a)));
+    toast.success("Photo removed");
+    onSaved();
+  };
+
 
   const handleSave = async () => {
     if (!report) return;
