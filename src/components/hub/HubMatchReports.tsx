@@ -1,14 +1,20 @@
 import { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { MatchReportCard, type MatchReport, type POTMAward } from "@/components/MatchReportCard";
+import { MatchReportEditDialog } from "@/components/MatchReportEditDialog";
 import { CLUB_TEAMS } from "@/lib/teamConfig";
 import { ClipboardList } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 export function HubMatchReports({ teamSlug }: { teamSlug: string }) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [editing, setEditing] = useState<MatchReport | null>(null);
   const [searchParams] = useSearchParams();
+  const { user, isCoach, isAdmin } = useAuth();
+  const queryClient = useQueryClient();
   const teamName = CLUB_TEAMS.find((t) => t.slug === teamSlug)?.name || "";
 
   const { data: reports, isLoading } = useQuery({
