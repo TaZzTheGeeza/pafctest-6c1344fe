@@ -16,6 +16,10 @@ interface LeagueRow {
   points: number;
 }
 
+// Last good table per URL, reused while fresh and as a fallback when the FA site stalls.
+const tableCache = new Map<string, { divisionName: string; standings: LeagueRow[]; at: number }>();
+const FRESH_MS = 30 * 60 * 1000;
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -51,7 +55,8 @@ Deno.serve(async (req) => {
   const fetchFaPage = async (u: string): Promise<{ ok: true; html: string } | { ok: false; status: number; reason?: string }> => {
     try {
       // Routed through Firecrawl (same as fixtures) - the FA site 403s plain server requests.
-      return { ok: true, html: await fetchFaHtml(u, { budgetMs: 90_000 }) };
+      // No waitFor: the table is server-rendered, so waiting only adds latency.
+      return { ok: true, html: await fetchFaHtml(u, { budgetMs: 150_000, waitFor: 0 }) };
     } catch (e) {
       const reason = e instanceof Error ? e.message : String(e);
       console.warn(`FA fetch failed for ${u}: ${reason}`);
@@ -130,10 +135,24 @@ Deno.serve(async (req) => {
       );
     }
 
+    const cached = tableCache.get(url);
+    if (cached && Date.now() - cached.at < FRESH_MS) {
+      return new Response(
+        JSON.stringify({ success: true, divisionName: cached.divisionName, standings: cached.standings, cached: true }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     console.log('Scraping league table from:', url);
 
     const tablePage = await fetchFaPage(url);
     if (!tablePage.ok) {
+      if (cached) {
+        return new Response(
+          JSON.stringify({ success: true, divisionName: cached.divisionName, standings: cached.standings, cached: true, stale: true }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
       return new Response(
         JSON.stringify({ success: false, error: 'The FA site is not responding right now - please try again shortly' }),
         { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -191,6 +210,7 @@ Deno.serve(async (req) => {
     }
 
     console.log(`Parsed ${rows.length} teams from ${divisionName}`);
+    if (rows.length) tableCache.set(url, { divisionName, standings: rows, at: Date.now() });
 
     return new Response(
       JSON.stringify({ success: true, divisionName, standings: rows }),
