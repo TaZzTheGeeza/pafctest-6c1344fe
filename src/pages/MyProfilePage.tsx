@@ -265,6 +265,7 @@ export default function MyProfilePage() {
   const TABS = [
     { key: "overview", label: "Overview", icon: User },
     { key: "orders", label: "My Orders", icon: Package },
+    { key: "kit", label: "Kit", icon: Shirt },
     { key: "purchases", label: "Purchases", icon: ShoppingBag },
 
     { key: "stats", label: "Stats", icon: Activity },
@@ -477,6 +478,21 @@ export default function MyProfilePage() {
                   </div>
                 )}
               </div>
+            </div>
+          )}
+
+          {/* Kit requests */}
+          {activeTab === "kit" && (
+            <div className="bg-card border border-border rounded-xl p-5">
+              <h3 className="text-sm font-display tracking-wider uppercase text-muted-foreground mb-2 flex items-center gap-2">
+                <Shirt className="h-4 w-4 text-primary" /> Match Day Kit
+              </h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Every player gets one kit set free. Request replacements, track their status and see everything your child has been given.
+              </p>
+              <Button asChild>
+                <Link to="/kit">Open Kit Requests</Link>
+              </Button>
             </div>
           )}
 
