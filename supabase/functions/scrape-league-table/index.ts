@@ -137,10 +137,20 @@ Deno.serve(async (req) => {
       );
     }
 
-    const cached = tableCache.get(url);
+    const serviceClient = createClient(supabaseUrl, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+    const { data: savedRow } = await serviceClient
+      .from('league_tables')
+      .select('division_name, standings, updated_at')
+      .eq('table_url', url)
+      .maybeSingle();
+
+    const cached = savedRow
+      ? { divisionName: savedRow.division_name as string, standings: savedRow.standings as LeagueRow[], at: new Date(savedRow.updated_at as string).getTime() }
+      : null;
+
     if (cached && Date.now() - cached.at < FRESH_MS) {
       return new Response(
-        JSON.stringify({ success: true, divisionName: cached.divisionName, standings: cached.standings, cached: true }),
+        JSON.stringify({ success: true, divisionName: cached.divisionName, standings: cached.standings, cached: true, updatedAt: savedRow!.updated_at }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
