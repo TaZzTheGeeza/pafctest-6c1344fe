@@ -7,6 +7,7 @@ import {
   Pencil, Trash2, Save, X,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 // ─── Types ───
 
@@ -192,6 +193,8 @@ function FixtureGroupCard({ group, isExpanded, onToggle, onRefresh }: {
 // ─── Editable Report Section ───
 
 function ReportSection({ report: r, onRefresh }: { report: any; onRefresh: () => void }) {
+  const { user, isAdmin } = useAuth();
+  const canManage = isAdmin || (!!user && r.created_by === user.id);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
