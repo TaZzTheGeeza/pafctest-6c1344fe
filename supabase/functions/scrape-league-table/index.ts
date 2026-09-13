@@ -60,7 +60,7 @@ Deno.serve(async (req) => {
   };
 
   try {
-    const { divisionSeason, tableUrl, fixtureUrl } = await req.json();
+    const { divisionSeason, tableUrl, fixtureUrl, discoverOnly } = await req.json();
 
     if (!divisionSeason && !tableUrl && !fixtureUrl) {
       return new Response(
