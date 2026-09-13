@@ -17,6 +17,14 @@ import { Loader2, Save, Camera, Trophy, X } from "lucide-react";
 import { toast } from "sonner";
 import type { MatchReport } from "@/components/MatchReportCard";
 
+interface PotmRow {
+  id: string;
+  player_name: string;
+  reason: string | null;
+  photo_url: string | null;
+  shirt_number: number | null;
+}
+
 export function MatchReportEditDialog({
   report,
   onClose,
