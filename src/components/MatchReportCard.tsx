@@ -49,6 +49,7 @@ export function MatchReportCard({
   onToggle,
   canEdit = false,
   onEdit,
+  onDelete,
   teamSlug,
 }: {
   report: MatchReport;
@@ -57,6 +58,7 @@ export function MatchReportCard({
   onToggle: () => void;
   canEdit?: boolean;
   onEdit?: (report: MatchReport) => void;
+  onDelete?: (report: MatchReport) => void;
   teamSlug?: string;
 }) {
   const isWin = report.home_score > report.away_score;
