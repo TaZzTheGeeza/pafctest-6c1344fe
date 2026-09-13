@@ -246,6 +246,24 @@ export default function HubPage() {
       {activeTab === "availability" && activeTeam && <FixtureAvailability teamSlug={activeTeam} />}
       {activeTab === "reports" && activeTeam && <HubMatchReports teamSlug={activeTeam} />}
       {activeTab === "stats" && activeTeam && <TeamStatsTable ageGroup={getAgeGroup(activeTeam)} />}
+      {activeTab === "league" && activeTeam && activeTeamAge >= 12 && (
+        LEAGUE_TABLE_CONFIG[activeTeam] ? (
+          <LeagueTable
+            divisionSeason={LEAGUE_TABLE_CONFIG[activeTeam].divisionSeason}
+            tableUrl={LEAGUE_TABLE_CONFIG[activeTeam].tableUrl}
+            highlightTeams={LEAGUE_TABLE_CONFIG[activeTeam].highlightTeams}
+            faUrl={LEAGUE_TABLE_CONFIG[activeTeam].faUrl}
+          />
+        ) : (
+          <div className="bg-card border border-border rounded-xl p-8 text-center">
+            <Trophy className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+            <h3 className="font-display text-sm font-bold mb-1">League Table Coming Soon</h3>
+            <p className="text-xs text-muted-foreground">
+              The league table for {activeTeamName} hasn't been linked yet. Once the division is confirmed on FA Full-Time it will appear here.
+            </p>
+          </div>
+        )
+      )}
       {activeTab === "carpool" && activeTeam && <CarpoolBoard teamSlug={activeTeam} />}
       {activeTab === "attendance" && activeTeam && (isCoach || isAdmin) && <AttendanceStats teamSlug={activeTeam} />}
       {activeTab === "guardian" && activeTeam && <GuardianManager teamSlug={activeTeam} teamName={activeTeamName || ""} />}
