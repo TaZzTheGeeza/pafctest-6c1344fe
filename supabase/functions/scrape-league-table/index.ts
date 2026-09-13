@@ -222,7 +222,11 @@ Deno.serve(async (req) => {
     }
 
     console.log(`Parsed ${rows.length} teams from ${divisionName}`);
-    if (rows.length) tableCache.set(url, { divisionName, standings: rows, at: Date.now() });
+    if (rows.length) {
+      await serviceClient
+        .from('league_tables')
+        .upsert({ table_url: url, division_name: divisionName, standings: rows, updated_at: new Date().toISOString() }, { onConflict: 'table_url' });
+    }
 
     return new Response(
       JSON.stringify({ success: true, divisionName, standings: rows }),
