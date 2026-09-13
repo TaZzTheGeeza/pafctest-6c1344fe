@@ -308,6 +308,7 @@ function TeamDetail({ team }: { team: TeamData }) {
                     <LeagueTable
                       divisionSeason={leagueTableConfig[team.slug].divisionSeason}
                       tableUrl={leagueTableConfig[team.slug].tableUrl}
+                      fixtureUrl={leagueTableConfig[team.slug].fixtureUrl}
                       highlightTeams={leagueTableConfig[team.slug].highlightTeams}
                       faUrl={leagueTableConfig[team.slug].faUrl}
                     />

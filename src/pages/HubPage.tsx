@@ -251,6 +251,7 @@ export default function HubPage() {
           <LeagueTable
             divisionSeason={LEAGUE_TABLE_CONFIG[activeTeam].divisionSeason}
             tableUrl={LEAGUE_TABLE_CONFIG[activeTeam].tableUrl}
+            fixtureUrl={LEAGUE_TABLE_CONFIG[activeTeam].fixtureUrl}
             highlightTeams={LEAGUE_TABLE_CONFIG[activeTeam].highlightTeams}
             faUrl={LEAGUE_TABLE_CONFIG[activeTeam].faUrl}
           />

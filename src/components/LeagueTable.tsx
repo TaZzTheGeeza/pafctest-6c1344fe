@@ -17,16 +17,17 @@ interface LeagueRow {
 interface LeagueTableProps {
   divisionSeason?: string;
   tableUrl?: string;
+  fixtureUrl?: string;
   highlightTeams?: string[];
   faUrl: string;
 }
 
-export function LeagueTable({ divisionSeason, tableUrl, highlightTeams = [], faUrl }: LeagueTableProps) {
+export function LeagueTable({ divisionSeason, tableUrl, fixtureUrl, highlightTeams = [], faUrl }: LeagueTableProps) {
   const { data, isLoading, error } = useQuery({
-    queryKey: ["league-table", divisionSeason || tableUrl],
+    queryKey: ["league-table", divisionSeason || tableUrl || fixtureUrl],
     queryFn: async () => {
       const { data, error } = await supabase.functions.invoke("scrape-league-table", {
-        body: { divisionSeason, tableUrl },
+        body: { divisionSeason, tableUrl, fixtureUrl },
       });
       if (error) throw error;
       if (!data.success) throw new Error(data.error);
