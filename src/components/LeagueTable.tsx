@@ -65,17 +65,28 @@ export function LeagueTable({ divisionSeason, tableUrl, fixtureUrl, highlightTea
           </div>
         )}
 
-        {error && (
+        {error && !isFetching && (
           <div className="text-center py-6">
-            <p className="text-sm text-muted-foreground mb-2">Unable to load league table</p>
-            <a
-              href={faUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
-            >
-              View on FA Full-Time <ExternalLink className="w-3 h-3" />
-            </a>
+            <p className="text-sm text-muted-foreground mb-1">Standings are not available right now</p>
+            <p className="text-xs text-muted-foreground mb-3">
+              The FA Full-Time site isn't responding. Try again in a few minutes.
+            </p>
+            <div className="flex items-center justify-center gap-4">
+              <button
+                onClick={() => refetch()}
+                className="text-xs font-display tracking-wider text-primary hover:underline"
+              >
+                Try again
+              </button>
+              <a
+                href={faUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+              >
+                View on FA Full-Time <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
           </div>
         )}
 
