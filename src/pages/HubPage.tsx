@@ -79,6 +79,15 @@ const playerHubItems = [
     borderColor: "border-green-400/20",
   },
   {
+    title: "Match Day Kit",
+    description: "Request replacement kit and see everything your child has been given.",
+    icon: Shirt,
+    path: "/kit",
+    color: "text-primary",
+    bgColor: "bg-primary/10",
+    borderColor: "border-primary/20",
+  },
+  {
     title: "Club Documents",
     description: "Access player forms, codes of conduct, and essential paperwork.",
     icon: FileText,
