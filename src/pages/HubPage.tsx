@@ -7,7 +7,7 @@ import { TeamChat } from "@/components/hub/TeamChat";
 import { PaymentCenter } from "@/components/hub/PaymentCenter";
 import { NotificationCenter } from "@/components/hub/NotificationCenter";
 import { TeamMemberManager } from "@/components/hub/TeamMemberManager";
-import { MessageSquare, CreditCard, Bell, CalendarCheck, Users, Shield, ChevronDown, Car, TrendingUp, UserPlus, User, FileText, ChevronRight, ChevronLeft, Video, Sparkles, Award, ClipboardList, MapPin, BarChart3 } from "lucide-react";
+import { MessageSquare, CreditCard, Bell, CalendarCheck, Users, Shield, ChevronDown, Car, TrendingUp, UserPlus, User, FileText, ChevronRight, ChevronLeft, Video, Sparkles, Award, ClipboardList, MapPin, BarChart3, Trophy, Table2 } from "lucide-react";
 import { PlayerRosterManager } from "@/components/hub/PlayerRosterManager";
 import { AwardsVoting } from "@/components/hub/AwardsVoting";
 import { FixtureAvailability } from "@/components/hub/FixtureAvailability";
@@ -19,6 +19,8 @@ import { TeamAccessRequest } from "@/components/hub/TeamAccessRequest";
 import PitchBookingsPanel from "@/components/hub/PitchBookingsPanel";
 import { HubMatchReports } from "@/components/hub/HubMatchReports";
 import { TeamStatsTable } from "@/components/TeamStatsTable";
+import { LeagueTable } from "@/components/LeagueTable";
+import { LEAGUE_TABLE_CONFIG } from "@/lib/leagueTableConfig";
 import { getAgeGroup } from "@/hooks/useTeamRoster";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -226,8 +228,11 @@ export default function HubPage() {
     ? [...ALL_CLUB_TEAM_SLUGS]
     : ALL_CLUB_TEAM_SLUGS.filter((slug) => myTeams.includes(slug));
 
+  const activeTeamAge = activeTeam ? parseInt(activeTeam.match(/\d+/)?.[0] || "0", 10) : 0;
+
     const allTabs = [
     ...tabs,
+    ...(activeTeamAge >= 12 ? [{ id: "league", label: "League Table", icon: Table2 }] : []),
     ...((isAdmin || isCoach) ? [{ id: "pitch-bookings", label: "Pitch Bookings", icon: MapPin }] : []),
     ...((isAdmin || isCoach) ? [{ id: "members", label: "Members", icon: Users }] : []),
     ...(isAdmin ? [{ id: "roster", label: "Roster", icon: ClipboardList }] : []),
@@ -241,6 +246,24 @@ export default function HubPage() {
       {activeTab === "availability" && activeTeam && <FixtureAvailability teamSlug={activeTeam} />}
       {activeTab === "reports" && activeTeam && <HubMatchReports teamSlug={activeTeam} />}
       {activeTab === "stats" && activeTeam && <TeamStatsTable ageGroup={getAgeGroup(activeTeam)} />}
+      {activeTab === "league" && activeTeam && activeTeamAge >= 12 && (
+        LEAGUE_TABLE_CONFIG[activeTeam] ? (
+          <LeagueTable
+            divisionSeason={LEAGUE_TABLE_CONFIG[activeTeam].divisionSeason}
+            tableUrl={LEAGUE_TABLE_CONFIG[activeTeam].tableUrl}
+            highlightTeams={LEAGUE_TABLE_CONFIG[activeTeam].highlightTeams}
+            faUrl={LEAGUE_TABLE_CONFIG[activeTeam].faUrl}
+          />
+        ) : (
+          <div className="bg-card border border-border rounded-xl p-8 text-center">
+            <Trophy className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+            <h3 className="font-display text-sm font-bold mb-1">League Table Coming Soon</h3>
+            <p className="text-xs text-muted-foreground">
+              The league table for {activeTeamName} hasn't been linked yet. Once the division is confirmed on FA Full-Time it will appear here.
+            </p>
+          </div>
+        )
+      )}
       {activeTab === "carpool" && activeTeam && <CarpoolBoard teamSlug={activeTeam} />}
       {activeTab === "attendance" && activeTeam && (isCoach || isAdmin) && <AttendanceStats teamSlug={activeTeam} />}
       {activeTab === "guardian" && activeTeam && <GuardianManager teamSlug={activeTeam} teamName={activeTeamName || ""} />}
