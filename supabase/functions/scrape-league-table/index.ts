@@ -58,7 +58,7 @@ Deno.serve(async (req) => {
       // No waitFor: the table is server-rendered, so waiting only adds latency.
       // Short budget: if the FA site (or the scraping service) is busy we fall back to the
       // saved table rather than leaving the page spinning for minutes.
-      return { ok: true, html: await fetchFaHtml(u, { budgetMs: 35_000, waitFor: 0 }) };
+      return { ok: true, html: await fetchFaHtml(u, { budgetMs: 20_000, waitFor: 0 }) };
     } catch (e) {
       const reason = e instanceof Error ? e.message : String(e);
       console.warn(`FA fetch failed for ${u}: ${reason}`);
