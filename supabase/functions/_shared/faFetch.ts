@@ -5,6 +5,8 @@ const FIRECRAWL_GATEWAY = "https://connector-gateway.lovable.dev/firecrawl/v2";
 interface FetchOpts {
   /** Hard time budget in ms. Once exceeded we stop retrying and throw. */
   budgetMs?: number;
+  /** ms Firecrawl waits for dynamic content before returning the HTML. */
+  waitFor?: number;
 }
 
 export async function fetchFaHtml(url: string, opts: FetchOpts = {}): Promise<string> {
