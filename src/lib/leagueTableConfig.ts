@@ -32,6 +32,28 @@ const EXPLICIT: Record<string, LeagueTableConfig> = {
     faUrl: "https://fulltime.thefa.com/table.html?selectedSeason=233257866&selectedDivision=682264182&activeTab=1",
     highlightTeams: ["Peterborough Ath U14 Gold"],
   },
+  // Discovered from each team's FA fixture page (same links as fixtures) -
+  // all three U12 squads play in the same division.
+  "u12s-black": {
+    tableUrl: "https://fulltime.thefa.com/table.html?league=1137979&selectedSeason=585452548&selectedFixtureGroupAgeGroup=11&previousSelectedFixtureGroupAgeGroup=11&selectedDivision=232674486&selectedCompetition=0&selectedFixtureGroupKey=1_745511588",
+    faUrl: "https://fulltime.thefa.com/table.html?league=1137979&selectedSeason=585452548&selectedFixtureGroupAgeGroup=11&previousSelectedFixtureGroupAgeGroup=11&selectedDivision=232674486&selectedCompetition=0&selectedFixtureGroupKey=1_745511588",
+    highlightTeams: ["Peterborough Ath U12 Black"],
+  },
+  "u12s-gold": {
+    tableUrl: "https://fulltime.thefa.com/table.html?league=1137979&selectedSeason=585452548&selectedFixtureGroupAgeGroup=11&previousSelectedFixtureGroupAgeGroup=11&selectedDivision=232674486&selectedCompetition=0&selectedFixtureGroupKey=1_745511588",
+    faUrl: "https://fulltime.thefa.com/table.html?league=1137979&selectedSeason=585452548&selectedFixtureGroupAgeGroup=11&previousSelectedFixtureGroupAgeGroup=11&selectedDivision=232674486&selectedCompetition=0&selectedFixtureGroupKey=1_745511588",
+    highlightTeams: ["Peterborough Ath U12 Gold"],
+  },
+  "u12s-white": {
+    tableUrl: "https://fulltime.thefa.com/table.html?league=1137979&selectedSeason=585452548&selectedFixtureGroupAgeGroup=11&previousSelectedFixtureGroupAgeGroup=11&selectedDivision=232674486&selectedCompetition=0&selectedFixtureGroupKey=1_745511588",
+    faUrl: "https://fulltime.thefa.com/table.html?league=1137979&selectedSeason=585452548&selectedFixtureGroupAgeGroup=11&previousSelectedFixtureGroupAgeGroup=11&selectedDivision=232674486&selectedCompetition=0&selectedFixtureGroupKey=1_745511588",
+    highlightTeams: ["Peterborough Ath U12 White"],
+  },
+  u15s: {
+    tableUrl: "https://fulltime.thefa.com/table.html?league=6486466&selectedSeason=816327485&selectedFixtureGroupAgeGroup=8&previousSelectedFixtureGroupAgeGroup=8&selectedDivision=738996122&selectedCompetition=0&selectedFixtureGroupKey=1_445949539",
+    faUrl: "https://fulltime.thefa.com/table.html?league=6486466&selectedSeason=816327485&selectedFixtureGroupAgeGroup=8&previousSelectedFixtureGroupAgeGroup=8&selectedDivision=738996122&selectedCompetition=0&selectedFixtureGroupKey=1_445949539",
+    highlightTeams: ["Peterborough Ath U15"],
+  },
 };
 
 // FA age-group IDs: U12 = 11, U13 = 10, U14 = 9, U15 = 8. Competitive league
