@@ -23,7 +23,7 @@ interface LeagueTableProps {
 }
 
 export function LeagueTable({ divisionSeason, tableUrl, fixtureUrl, highlightTeams = [], faUrl }: LeagueTableProps) {
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, isFetching, error, refetch } = useQuery({
     queryKey: ["league-table", divisionSeason || tableUrl || fixtureUrl],
     queryFn: async () => {
       const { data, error } = await supabase.functions.invoke("scrape-league-table", {
@@ -33,6 +33,7 @@ export function LeagueTable({ divisionSeason, tableUrl, fixtureUrl, highlightTea
       if (!data.success) throw new Error(data.error);
       return data as { divisionName: string; standings: LeagueRow[] };
     },
+    retry: false,
     staleTime: 1000 * 60 * 30, // cache 30 mins
   });
 
