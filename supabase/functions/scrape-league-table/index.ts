@@ -135,10 +135,24 @@ Deno.serve(async (req) => {
       );
     }
 
+    const cached = tableCache.get(url);
+    if (cached && Date.now() - cached.at < FRESH_MS) {
+      return new Response(
+        JSON.stringify({ success: true, divisionName: cached.divisionName, standings: cached.standings, cached: true }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     console.log('Scraping league table from:', url);
 
     const tablePage = await fetchFaPage(url);
     if (!tablePage.ok) {
+      if (cached) {
+        return new Response(
+          JSON.stringify({ success: true, divisionName: cached.divisionName, standings: cached.standings, cached: true, stale: true }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
       return new Response(
         JSON.stringify({ success: false, error: 'The FA site is not responding right now - please try again shortly' }),
         { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
