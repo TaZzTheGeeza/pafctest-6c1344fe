@@ -26,6 +26,7 @@ import { TeamRequestsManager } from "@/components/dashboard/TeamRequestsManager"
 import { AdminNotificationComposer } from "@/components/dashboard/AdminNotificationComposer";
 import { OrdersTab } from "@/components/dashboard/OrdersTab";
 import { ShopProductsManager } from "@/components/dashboard/ShopProductsManager";
+import { KitManager } from "@/components/dashboard/KitManager";
 import { ReportTracker } from "@/components/dashboard/ReportTracker";
 import { ClipboardCheck } from "lucide-react";
 import { TreasurerPaymentsBoard } from "@/components/dashboard/TreasurerPaymentsBoard";
@@ -1002,6 +1003,10 @@ export default function DashboardPage() {
 
           {activeSection === "products" && isAdmin && (
             <ShopProductsManager />
+          )}
+
+          {activeSection === "kit" && isAdmin && (
+            <KitManager focusRequestId={searchParams.get("request")} />
           )}
 
           {activeSection === "tracker" && isAdmin && (
