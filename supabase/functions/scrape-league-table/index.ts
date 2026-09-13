@@ -210,6 +210,7 @@ Deno.serve(async (req) => {
     }
 
     console.log(`Parsed ${rows.length} teams from ${divisionName}`);
+    if (rows.length) tableCache.set(url, { divisionName, standings: rows, at: Date.now() });
 
     return new Response(
       JSON.stringify({ success: true, divisionName, standings: rows }),
