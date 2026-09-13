@@ -38,7 +38,7 @@ export async function fetchFaHtml(url: string, opts: FetchOpts = {}): Promise<st
           url,
           formats: ["html"],
           onlyMainContent: false,
-          waitFor: 2000,
+          waitFor: opts.waitFor ?? 2000,
         }),
         signal: AbortSignal.timeout(Math.max(5_000, Math.min(remaining, 45_000))),
       });
