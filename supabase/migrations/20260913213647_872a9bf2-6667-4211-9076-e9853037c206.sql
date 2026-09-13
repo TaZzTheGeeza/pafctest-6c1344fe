@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.kit_request_update_guard() FROM anon, authenticated;

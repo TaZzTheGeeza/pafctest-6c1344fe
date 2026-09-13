@@ -938,6 +938,187 @@ export type Database = {
           },
         ]
       }
+      kit_issues: {
+        Row: {
+          created_at: string
+          id: string
+          issued_at: string
+          issued_by: string | null
+          item_name: string
+          kit_item_id: string | null
+          note: string | null
+          player_name: string
+          player_registration_id: string | null
+          request_id: string | null
+          size: string | null
+          team_slug: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          issued_at?: string
+          issued_by?: string | null
+          item_name: string
+          kit_item_id?: string | null
+          note?: string | null
+          player_name: string
+          player_registration_id?: string | null
+          request_id?: string | null
+          size?: string | null
+          team_slug?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          issued_at?: string
+          issued_by?: string | null
+          item_name?: string
+          kit_item_id?: string | null
+          note?: string | null
+          player_name?: string
+          player_registration_id?: string | null
+          request_id?: string | null
+          size?: string | null
+          team_slug?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kit_issues_kit_item_id_fkey"
+            columns: ["kit_item_id"]
+            isOneToOne: false
+            referencedRelation: "kit_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kit_issues_player_registration_id_fkey"
+            columns: ["player_registration_id"]
+            isOneToOne: false
+            referencedRelation: "player_registrations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kit_issues_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "kit_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kit_items: {
+        Row: {
+          active: boolean
+          category: string
+          created_at: string
+          id: string
+          name: string
+          photo_url: string | null
+          sizes: string[]
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          category?: string
+          created_at?: string
+          id?: string
+          name: string
+          photo_url?: string | null
+          sizes?: string[]
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          category?: string
+          created_at?: string
+          id?: string
+          name?: string
+          photo_url?: string | null
+          sizes?: string[]
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      kit_requests: {
+        Row: {
+          admin_note: string | null
+          charge_amount: number | null
+          chargeable: boolean
+          created_at: string
+          handed_out_at: string | null
+          id: string
+          kit_item_id: string
+          player_name: string
+          player_registration_id: string | null
+          reason: string
+          reason_detail: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          size: string
+          status: string
+          team_slug: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_note?: string | null
+          charge_amount?: number | null
+          chargeable?: boolean
+          created_at?: string
+          handed_out_at?: string | null
+          id?: string
+          kit_item_id: string
+          player_name: string
+          player_registration_id?: string | null
+          reason: string
+          reason_detail: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          size: string
+          status?: string
+          team_slug: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_note?: string | null
+          charge_amount?: number | null
+          chargeable?: boolean
+          created_at?: string
+          handed_out_at?: string | null
+          id?: string
+          kit_item_id?: string
+          player_name?: string
+          player_registration_id?: string | null
+          reason?: string
+          reason_detail?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          size?: string
+          status?: string
+          team_slug?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kit_requests_kit_item_id_fkey"
+            columns: ["kit_item_id"]
+            isOneToOne: false
+            referencedRelation: "kit_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kit_requests_player_registration_id_fkey"
+            columns: ["player_registration_id"]
+            isOneToOne: false
+            referencedRelation: "player_registrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       league_tables: {
         Row: {
           division_name: string

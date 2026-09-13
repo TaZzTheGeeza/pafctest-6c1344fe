@@ -26,8 +26,9 @@ import { TeamRequestsManager } from "@/components/dashboard/TeamRequestsManager"
 import { AdminNotificationComposer } from "@/components/dashboard/AdminNotificationComposer";
 import { OrdersTab } from "@/components/dashboard/OrdersTab";
 import { ShopProductsManager } from "@/components/dashboard/ShopProductsManager";
+import { KitManager } from "@/components/dashboard/KitManager";
 import { ReportTracker } from "@/components/dashboard/ReportTracker";
-import { ClipboardCheck } from "lucide-react";
+import { ClipboardCheck, Shirt } from "lucide-react";
 import { TreasurerPaymentsBoard } from "@/components/dashboard/TreasurerPaymentsBoard";
 import { RolePermissionManager } from "@/components/dashboard/RolePermissionManager";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
@@ -76,7 +77,7 @@ const ADMIN_LINKS = [
   { label: "Pitch Bookings Admin", path: "/pitch-bookings-admin", icon: MapPin, desc: "Approve or decline pitch booking requests" },
 ];
 
-type DashboardSection = "overview" | "users" | "requests" | "enquiries" | "messages" | "notifications" | "orders" | "products" | "report" | "stats" | "manage" | "finances" | "permissions" | "tracker";
+type DashboardSection = "overview" | "users" | "requests" | "enquiries" | "messages" | "notifications" | "orders" | "products" | "report" | "stats" | "manage" | "finances" | "permissions" | "tracker" | "kit";
 
 export default function DashboardPage() {
   const { user, isAdmin, isCoach, isTreasurer } = useAuth();
@@ -107,7 +108,7 @@ export default function DashboardPage() {
   // Handle section from URL params (e.g. /dashboard?section=messages)
   useEffect(() => {
     const section = searchParams.get("section");
-    if (section && ["overview", "users", "requests", "enquiries", "messages", "notifications", "orders", "products", "report", "stats", "manage", "finances", "permissions", "tracker"].includes(section)) {
+    if (section && ["overview", "users", "requests", "enquiries", "messages", "notifications", "orders", "products", "report", "stats", "manage", "finances", "permissions", "tracker", "kit"].includes(section)) {
       setActiveSection(section as DashboardSection);
     }
   }, [searchParams]);
@@ -483,6 +484,7 @@ export default function DashboardPage() {
     { key: "orders", label: "Orders", icon: ShoppingBag, adminOnly: true, group: "main" },
     { key: "products", label: "Shop Products", icon: Package, adminOnly: true, group: "main" },
     { key: "tracker", label: "Report Tracker", icon: ClipboardCheck, adminOnly: true, group: "main" },
+    { key: "kit", label: "Kit", icon: Shirt, adminOnly: true, group: "main" },
     { key: "users", label: "Users", icon: Users, adminOnly: true, group: "users" },
     { key: "requests", label: "Requests", icon: UserPlusIcon, adminOnly: true, group: "users" },
     { key: "permissions", label: "Permissions", icon: Shield, adminOnly: true, group: "users" },
@@ -1002,6 +1004,10 @@ export default function DashboardPage() {
 
           {activeSection === "products" && isAdmin && (
             <ShopProductsManager />
+          )}
+
+          {activeSection === "kit" && isAdmin && (
+            <KitManager focusRequestId={searchParams.get("request")} />
           )}
 
           {activeSection === "tracker" && isAdmin && (
