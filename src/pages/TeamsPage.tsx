@@ -8,8 +8,6 @@ import { Clock, MapPin, Calendar, ChevronRight, Shield, Trophy, TrendingUp, BarC
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { TeamTradingCards } from "@/components/showcase/TeamTradingCards";
 import { TeamStatsTable } from "@/components/TeamStatsTable";
-import { LeagueTable } from "@/components/LeagueTable";
-import { LEAGUE_TABLE_CONFIG } from "@/lib/leagueTableConfig";
 import { useTeamFixtures, FAFixture } from "@/hooks/useTeamFixtures";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,7 +18,6 @@ import { SEO } from "@/components/SEO";
 import { CLUB_TEAMS } from "@/lib/teamConfig";
 import { useVenueAddresses } from "@/hooks/useVenueAddresses";
 
-const leagueTableConfig = LEAGUE_TABLE_CONFIG;
 
 interface TeamData {
   slug: string;
@@ -301,17 +298,6 @@ function TeamDetail({ team }: { team: TeamData }) {
                         })}
                       </div>
                     </div>
-                  )}
-
-                  {/* League Table */}
-                  {leagueTableConfig[team.slug] && (
-                    <LeagueTable
-                      divisionSeason={leagueTableConfig[team.slug].divisionSeason}
-                      tableUrl={leagueTableConfig[team.slug].tableUrl}
-                      fixtureUrl={leagueTableConfig[team.slug].fixtureUrl}
-                      highlightTeams={leagueTableConfig[team.slug].highlightTeams}
-                      faUrl={leagueTableConfig[team.slug].faUrl}
-                    />
                   )}
 
                   {/* Player Stats - restricted to player/coach/admin */}
