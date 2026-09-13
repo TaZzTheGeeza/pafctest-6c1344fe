@@ -183,6 +183,84 @@ export function MatchReportEditDialog({
             <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={4} placeholder="Match summary, key moments..." />
           </div>
 
+          {awards.length > 0 && (
+            <div className="space-y-3 border-t border-border pt-4">
+              <Label className="text-xs flex items-center gap-1.5">
+                <Trophy className="h-3.5 w-3.5 text-primary" />
+                Player of the Match
+              </Label>
+              {awards.map((award) => (
+                <div key={award.id} className="border border-border rounded-lg p-3 space-y-2">
+                  <p className="text-sm font-semibold">
+                    {award.player_name}
+                    {award.shirt_number ? ` #${award.shirt_number}` : ""}
+                  </p>
+                  <div className="flex items-start gap-3">
+                    {award.photo_url ? (
+                      <div className="relative shrink-0">
+                        <img
+                          src={award.photo_url}
+                          alt={award.player_name}
+                          className="h-20 w-20 rounded-lg object-cover border border-border"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handlePhotoRemove(award)}
+                          title="Remove photo"
+                          className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-0.5"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="h-20 w-20 shrink-0 rounded-lg border border-dashed border-border flex items-center justify-center text-[10px] text-muted-foreground text-center px-1">
+                        No photo
+                      </div>
+                    )}
+                    <div className="space-y-2 flex-1">
+                      <input
+                        ref={(el) => { fileInputs.current[award.id] = el; }}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handlePhotoChange(award, file);
+                        }}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="h-8 text-xs"
+                        disabled={uploadingId === award.id}
+                        onClick={() => fileInputs.current[award.id]?.click()}
+                      >
+                        {uploadingId === award.id ? (
+                          <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
+                        ) : (
+                          <Camera className="h-3.5 w-3.5 mr-1" />
+                        )}
+                        {award.photo_url ? "Change Photo" : "Add Photo"}
+                      </Button>
+                      <Textarea
+                        rows={2}
+                        className="text-sm"
+                        placeholder="Reason for the award..."
+                        value={award.reason ?? ""}
+                        onChange={(e) =>
+                          setAwards((prev) =>
+                            prev.map((a) => (a.id === award.id ? { ...a, reason: e.target.value } : a))
+                          )
+                        }
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
           <p className="text-[11px] text-muted-foreground">
             Note: This edits the public report only. To change individual player stats (goals/assists per player), use the Coach Panel.
           </p>
