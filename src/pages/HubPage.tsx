@@ -7,7 +7,7 @@ import { TeamChat } from "@/components/hub/TeamChat";
 import { PaymentCenter } from "@/components/hub/PaymentCenter";
 import { NotificationCenter } from "@/components/hub/NotificationCenter";
 import { TeamMemberManager } from "@/components/hub/TeamMemberManager";
-import { MessageSquare, CreditCard, Bell, CalendarCheck, Users, Shield, ChevronDown, Car, TrendingUp, UserPlus, User, FileText, ChevronRight, ChevronLeft, Video, Sparkles, Award, ClipboardList, MapPin, BarChart3 } from "lucide-react";
+import { MessageSquare, CreditCard, Bell, CalendarCheck, Users, Shield, ChevronDown, Car, TrendingUp, UserPlus, User, FileText, ChevronRight, ChevronLeft, Video, Sparkles, Award, ClipboardList, MapPin, BarChart3, Trophy, Table2 } from "lucide-react";
 import { PlayerRosterManager } from "@/components/hub/PlayerRosterManager";
 import { AwardsVoting } from "@/components/hub/AwardsVoting";
 import { FixtureAvailability } from "@/components/hub/FixtureAvailability";
@@ -228,8 +228,11 @@ export default function HubPage() {
     ? [...ALL_CLUB_TEAM_SLUGS]
     : ALL_CLUB_TEAM_SLUGS.filter((slug) => myTeams.includes(slug));
 
+  const activeTeamAge = activeTeam ? parseInt(activeTeam.match(/\d+/)?.[0] || "0", 10) : 0;
+
     const allTabs = [
     ...tabs,
+    ...(activeTeamAge >= 12 ? [{ id: "league", label: "League Table", icon: Table2 }] : []),
     ...((isAdmin || isCoach) ? [{ id: "pitch-bookings", label: "Pitch Bookings", icon: MapPin }] : []),
     ...((isAdmin || isCoach) ? [{ id: "members", label: "Members", icon: Users }] : []),
     ...(isAdmin ? [{ id: "roster", label: "Roster", icon: ClipboardList }] : []),
