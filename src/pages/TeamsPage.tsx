@@ -9,6 +9,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { TeamTradingCards } from "@/components/showcase/TeamTradingCards";
 import { TeamStatsTable } from "@/components/TeamStatsTable";
 import { LeagueTable } from "@/components/LeagueTable";
+import { LEAGUE_TABLE_CONFIG } from "@/lib/leagueTableConfig";
 import { useTeamFixtures, FAFixture } from "@/hooks/useTeamFixtures";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";

@@ -19,6 +19,8 @@ import { TeamAccessRequest } from "@/components/hub/TeamAccessRequest";
 import PitchBookingsPanel from "@/components/hub/PitchBookingsPanel";
 import { HubMatchReports } from "@/components/hub/HubMatchReports";
 import { TeamStatsTable } from "@/components/TeamStatsTable";
+import { LeagueTable } from "@/components/LeagueTable";
+import { LEAGUE_TABLE_CONFIG } from "@/lib/leagueTableConfig";
 import { getAgeGroup } from "@/hooks/useTeamRoster";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
