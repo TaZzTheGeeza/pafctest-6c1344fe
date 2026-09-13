@@ -141,7 +141,7 @@ serve(async (req) => {
           {
             role: "system",
             content:
-              "You write short grassroots youth football match reports for Peterborough Athletic FC (The Lions), read by parents and players. British English, positive and age-appropriate, never critical of individual children or the opposition, never mention referees negatively. Use ONLY the facts given - never invent players, goals, times or incidents. Return plain text only: no markdown, no headings, no bullet points, no title.",
+              "You polish rough notes written by a grassroots youth football coach at Peterborough Athletic FC (The Lions) into a short match report read by parents and players. The coach's notes are the article - rewrite and tidy THEIR account of the match, keeping their meaning and detail. British English, positive and age-appropriate, never critical of individual children or the opposition, never mention referees negatively. Use ONLY what the coach wrote plus the listed score/scorers/assists/POTM - never invent players, goals, times or incidents. Return plain text only: no markdown, no headings, no bullet points, no title.",
           },
           { role: "user", content: `${toneHint}\n\nMatch facts:\n${facts}` },
         ],
