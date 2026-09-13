@@ -17,8 +17,8 @@ interface LeagueRow {
 }
 
 // Last good table per URL, reused while fresh and as a fallback when the FA site stalls.
-const tableCache = new Map<string, { divisionName: string; standings: LeagueRow[]; at: number }>();
-const FRESH_MS = 30 * 60 * 1000;
+// Kept in the database so it survives cold starts and is shared by every visitor.
+const FRESH_MS = 6 * 60 * 60 * 1000;
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -56,7 +56,9 @@ Deno.serve(async (req) => {
     try {
       // Routed through Firecrawl (same as fixtures) - the FA site 403s plain server requests.
       // No waitFor: the table is server-rendered, so waiting only adds latency.
-      return { ok: true, html: await fetchFaHtml(u, { budgetMs: 150_000, waitFor: 0 }) };
+      // Short budget: if the FA site (or the scraping service) is busy we fall back to the
+      // saved table rather than leaving the page spinning for minutes.
+      return { ok: true, html: await fetchFaHtml(u, { budgetMs: 20_000, waitFor: 0 }) };
     } catch (e) {
       const reason = e instanceof Error ? e.message : String(e);
       console.warn(`FA fetch failed for ${u}: ${reason}`);
@@ -135,10 +137,20 @@ Deno.serve(async (req) => {
       );
     }
 
-    const cached = tableCache.get(url);
+    const serviceClient = createClient(supabaseUrl, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+    const { data: savedRow } = await serviceClient
+      .from('league_tables')
+      .select('division_name, standings, updated_at')
+      .eq('table_url', url)
+      .maybeSingle();
+
+    const cached = savedRow
+      ? { divisionName: savedRow.division_name as string, standings: savedRow.standings as LeagueRow[], at: new Date(savedRow.updated_at as string).getTime() }
+      : null;
+
     if (cached && Date.now() - cached.at < FRESH_MS) {
       return new Response(
-        JSON.stringify({ success: true, divisionName: cached.divisionName, standings: cached.standings, cached: true }),
+        JSON.stringify({ success: true, divisionName: cached.divisionName, standings: cached.standings, cached: true, updatedAt: savedRow!.updated_at }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -149,7 +161,7 @@ Deno.serve(async (req) => {
     if (!tablePage.ok) {
       if (cached) {
         return new Response(
-          JSON.stringify({ success: true, divisionName: cached.divisionName, standings: cached.standings, cached: true, stale: true }),
+          JSON.stringify({ success: true, divisionName: cached.divisionName, standings: cached.standings, cached: true, stale: true, updatedAt: new Date(cached.at).toISOString() }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
@@ -168,6 +180,12 @@ Deno.serve(async (req) => {
     // Extract table data between <table class="cell-dividers"> and </table>
     const tableMatch = html.match(/<table class="cell-dividers">([\s\S]*?)<\/table>/);
     if (!tableMatch) {
+      if (cached) {
+        return new Response(
+          JSON.stringify({ success: true, divisionName: cached.divisionName, standings: cached.standings, cached: true, stale: true, updatedAt: new Date(cached.at).toISOString() }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
       return new Response(
         JSON.stringify({ success: false, error: 'Could not find league table on page' }),
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -210,7 +228,11 @@ Deno.serve(async (req) => {
     }
 
     console.log(`Parsed ${rows.length} teams from ${divisionName}`);
-    if (rows.length) tableCache.set(url, { divisionName, standings: rows, at: Date.now() });
+    if (rows.length) {
+      await serviceClient
+        .from('league_tables')
+        .upsert({ table_url: url, division_name: divisionName, standings: rows, updated_at: new Date().toISOString() }, { onConflict: 'table_url' });
+    }
 
     return new Response(
       JSON.stringify({ success: true, divisionName, standings: rows }),

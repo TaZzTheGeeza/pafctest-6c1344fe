@@ -938,6 +938,27 @@ export type Database = {
           },
         ]
       }
+      league_tables: {
+        Row: {
+          division_name: string
+          standings: Json
+          table_url: string
+          updated_at: string
+        }
+        Insert: {
+          division_name: string
+          standings: Json
+          table_url: string
+          updated_at?: string
+        }
+        Update: {
+          division_name?: string
+          standings?: Json
+          table_url?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       live_matches: {
         Row: {
           age_group: string

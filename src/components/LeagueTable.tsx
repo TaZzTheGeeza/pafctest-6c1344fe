@@ -23,7 +23,7 @@ interface LeagueTableProps {
 }
 
 export function LeagueTable({ divisionSeason, tableUrl, fixtureUrl, highlightTeams = [], faUrl }: LeagueTableProps) {
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, isFetching, error, refetch } = useQuery({
     queryKey: ["league-table", divisionSeason || tableUrl || fixtureUrl],
     queryFn: async () => {
       const { data, error } = await supabase.functions.invoke("scrape-league-table", {
@@ -33,6 +33,7 @@ export function LeagueTable({ divisionSeason, tableUrl, fixtureUrl, highlightTea
       if (!data.success) throw new Error(data.error);
       return data as { divisionName: string; standings: LeagueRow[] };
     },
+    retry: false,
     staleTime: 1000 * 60 * 30, // cache 30 mins
   });
 
@@ -57,24 +58,35 @@ export function LeagueTable({ divisionSeason, tableUrl, fixtureUrl, highlightTea
       </div>
 
       <div className="p-4">
-        {isLoading && (
+        {(isLoading || isFetching) && (
           <div className="flex items-center justify-center py-8">
             <Loader2 className="w-5 h-5 animate-spin text-primary" />
             <span className="ml-2 text-sm text-muted-foreground">Loading standings...</span>
           </div>
         )}
 
-        {error && (
+        {error && !isFetching && (
           <div className="text-center py-6">
-            <p className="text-sm text-muted-foreground mb-2">Unable to load league table</p>
-            <a
-              href={faUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
-            >
-              View on FA Full-Time <ExternalLink className="w-3 h-3" />
-            </a>
+            <p className="text-sm text-muted-foreground mb-1">Standings are not available right now</p>
+            <p className="text-xs text-muted-foreground mb-3">
+              The FA Full-Time site isn't responding. Try again in a few minutes.
+            </p>
+            <div className="flex items-center justify-center gap-4">
+              <button
+                onClick={() => refetch()}
+                className="text-xs font-display tracking-wider text-primary hover:underline"
+              >
+                Try again
+              </button>
+              <a
+                href={faUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+              >
+                View on FA Full-Time <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
           </div>
         )}
 
