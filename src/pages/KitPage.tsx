@@ -48,6 +48,7 @@ interface KitRequest {
   reason: string;
   reason_detail: string;
   status: string;
+  initials: string | null;
   chargeable: boolean;
   charge_amount: number | null;
   admin_note: string | null;
@@ -62,6 +63,11 @@ interface KitIssue {
   size: string | null;
   issued_at: string;
   note: string | null;
+}
+
+/** Training tops are the only item personalised with the player's initials. */
+function isTrainingTop(item: { name: string } | null) {
+  return !!item && item.name.toLowerCase().includes("training top");
 }
 
 export default function KitPage() {
@@ -81,6 +87,7 @@ export default function KitPage() {
   const [reasonDetail, setReasonDetail] = useState("");
   const [heightCm, setHeightCm] = useState("");
   const [careAgreed, setCareAgreed] = useState(false);
+  const [initials, setInitials] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -139,6 +146,7 @@ export default function KitPage() {
     setReasonDetail("");
     setHeightCm("");
     setCareAgreed(false);
+    setInitials("");
     setDialogOpen(true);
   }
 
@@ -158,6 +166,14 @@ export default function KitPage() {
       toast.error("Please agree to the kit care instructions");
       return;
     }
+    const wantsInitials = isTrainingTop(dialogItem);
+    const cleanInitials = initials.trim().toUpperCase();
+    if (wantsInitials && !/^[A-Z]{2,3}$/.test(cleanInitials)) {
+      toast.error("Please add the initials for the training top", {
+        description: "Two or three letters, for example JM.",
+      });
+      return;
+    }
     setSubmitting(true);
     const { data: inserted, error } = await supabase
       .from("kit_requests" as any)
@@ -172,6 +188,7 @@ export default function KitPage() {
         reason_detail: reasonDetail.trim(),
         care_agreed: true,
         care_agreed_at: new Date().toISOString(),
+        initials: wantsInitials ? cleanInitials : null,
       } as any)
       .select("id")
       .single();
@@ -334,6 +351,7 @@ export default function KitPage() {
                         <p className="text-sm font-semibold text-foreground">{r.kit_items?.name || "Kit item"} - size {r.size}</p>
                         <p className="text-xs text-muted-foreground">
                           {r.player_name} - requested {format(new Date(r.created_at), "d MMM yyyy")}
+                          {r.initials ? ` - initials ${r.initials}` : ""}
                         </p>
                         {r.chargeable && (
                           <p className="text-xs text-amber-400 mt-0.5">
@@ -474,6 +492,22 @@ export default function KitPage() {
                   Required - first kit is free, so every replacement needs a genuine reason.
                 </p>
               </div>
+
+              {isTrainingTop(dialogItem) && (
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Initials for the training top</label>
+                  <Input
+                    value={initials}
+                    onChange={(e) => setInitials(e.target.value.replace(/[^a-zA-Z]/g, "").toUpperCase().slice(0, 3))}
+                    placeholder="e.g. JM"
+                    maxLength={3}
+                    className="h-9 text-sm uppercase tracking-widest w-28"
+                  />
+                  <p className="text-[10px] text-muted-foreground mt-1">
+                    Two or three letters, printed on the chest. The training top is the only item with initials.
+                  </p>
+                </div>
+              )}
 
               <div className="bg-background/50 border border-border rounded-lg p-3 space-y-3">
                 <div className="flex items-center gap-2 mb-1">

@@ -1,0 +1,1 @@
+ALTER TABLE public.kit_requests ADD COLUMN IF NOT EXISTS initials TEXT;
