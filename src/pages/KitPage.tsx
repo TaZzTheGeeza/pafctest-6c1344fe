@@ -64,6 +64,11 @@ interface KitIssue {
   note: string | null;
 }
 
+/** Training tops are the only item personalised with the player's initials. */
+function isTrainingTop(item: { name: string } | null) {
+  return !!item && item.name.toLowerCase().includes("training top");
+}
+
 export default function KitPage() {
   const { user } = useAuth();
   const [items, setItems] = useState<KitItem[]>([]);
