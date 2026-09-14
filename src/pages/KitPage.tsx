@@ -14,12 +14,15 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   KIT_REASONS, KIT_STATUS_LABELS, KIT_STATUS_COLORS,
   MACRON_SIZE_GUIDE, suggestSize,
+  KIT_CARE_AGREEMENT_TEXT, KIT_CARE_AGREEMENT_LABEL,
 } from "@/lib/kitConfig";
+import kitWashingInstructions from "@/assets/kit-washing-instructions.png.asset.json";
 
 interface KitItem {
   id: string;
