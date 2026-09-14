@@ -24,6 +24,15 @@ Deno.serve(async (req) => {
   const cronSecret = Deno.env.get('CRON_SECRET')
   const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
   const bearer = (req.headers.get('Authorization') || '').replace('Bearer ', '').trim()
+  if (new URL(req.url).searchParams.get('debug') === '1') {
+    return new Response(JSON.stringify({
+      bearer_len: bearer.length,
+      is_service: bearer === serviceKey,
+      is_cron: bearer === cronSecret,
+      is_anon: bearer === Deno.env.get('SUPABASE_ANON_KEY'),
+      prefix: bearer.slice(0, 8),
+    }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+  }
   if (!bearer || (bearer !== cronSecret && bearer !== serviceKey)) {
     return new Response(JSON.stringify({ error: 'forbidden' }), {
       status: 403,
