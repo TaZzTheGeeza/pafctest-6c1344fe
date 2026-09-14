@@ -63,12 +63,19 @@ interface Registration {
   preferred_age_group: string | null;
 }
 
+interface RosterPlayer {
+  first_name: string;
+  shirt_number: number | null;
+  age_group: string;
+}
+
 export function KitManager({ focusRequestId }: { focusRequestId?: string | null }) {
   const { user } = useAuth();
   const [items, setItems] = useState<KitItem[]>([]);
   const [requests, setRequests] = useState<KitRequest[]>([]);
   const [issues, setIssues] = useState<KitIssue[]>([]);
   const [registrations, setRegistrations] = useState<Registration[]>([]);
+  const [roster, setRoster] = useState<RosterPlayer[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<"requests" | "register" | "items">("requests");
   const [statusFilter, setStatusFilter] = useState("open");
@@ -108,17 +115,28 @@ export function KitManager({ focusRequestId }: { focusRequestId?: string | null 
 
   async function loadAll() {
     setLoading(true);
-    const [itemsRes, reqsRes, issuesRes, regsRes] = await Promise.all([
+    const [itemsRes, reqsRes, issuesRes, regsRes, rosterRes] = await Promise.all([
       supabase.from("kit_items" as any).select("*").order("sort_order"),
       supabase.from("kit_requests" as any).select("*, kit_items(id, name, photo_url)").order("created_at", { ascending: false }),
       supabase.from("kit_issues" as any).select("*").order("issued_at", { ascending: false }),
       supabase.from("player_registrations").select("id, child_name, preferred_age_group").order("child_name"),
+      supabase.from("player_stats").select("first_name, shirt_number, age_group"),
     ]);
     setItems((itemsRes.data as any) || []);
     setRequests((reqsRes.data as any) || []);
     setIssues((issuesRes.data as any) || []);
     setRegistrations(regsRes.data || []);
+    setRoster((rosterRes.data as any) || []);
     setLoading(false);
+  }
+
+  function shirtNumberFor(playerName: string, teamSlug?: string | null): number | null {
+    const first = playerName.trim().split(/\s+/)[0].toLowerCase();
+    const matches = roster.filter((p) => p.first_name.trim().split(/\s+/)[0].toLowerCase() === first);
+    if (!matches.length) return null;
+    const ageDigits = (teamSlug || "").match(/u(\d+)/)?.[1];
+    const inTeam = ageDigits ? matches.find((p) => p.age_group.replace(/\D/g, "") === ageDigits) : undefined;
+    return (inTeam ?? matches.find((p) => p.shirt_number != null))?.shirt_number ?? null;
   }
 
   async function notifyParent(r: KitRequest, title: string, message: string) {
@@ -444,6 +462,11 @@ export function KitManager({ focusRequestId }: { focusRequestId?: string | null 
                           </p>
                           <p className="text-xs text-muted-foreground">
                             {r.player_name}{r.team_slug ? ` (${r.team_slug.toUpperCase()})` : ""} - {format(new Date(r.created_at), "d MMM yyyy")}
+                            {shirtNumberFor(r.player_name, r.team_slug) != null && (
+                              <span className="ml-2 inline-flex items-center gap-0.5 text-[10px] font-display font-bold bg-primary/15 text-primary border border-primary/30 px-1.5 py-0.5 rounded">
+                                #{shirtNumberFor(r.player_name, r.team_slug)}
+                              </span>
+                            )}
                           </p>
                           <p className="text-xs text-muted-foreground mt-1">
                             <span className="text-foreground/80 font-medium">{KIT_REASON_LABELS[r.reason] || r.reason}:</span> {r.reason_detail}
@@ -783,6 +806,14 @@ export function KitManager({ focusRequestId }: { focusRequestId?: string | null 
                   Initials to print: <span className="font-semibold tracking-widest text-primary">{reviewRequest.initials}</span>
                 </p>
               )}
+              <p className="text-sm text-foreground">
+                Shirt number for printing:{" "}
+                {shirtNumberFor(reviewRequest.player_name, reviewRequest.team_slug) != null ? (
+                  <span className="font-semibold text-primary">#{shirtNumberFor(reviewRequest.player_name, reviewRequest.team_slug)}</span>
+                ) : (
+                  <span className="text-muted-foreground">not on record</span>
+                )}
+              </p>
               {reviewAction === "approve" && (
                 <div className="bg-background/50 border border-border rounded-lg p-3 space-y-3">
                   <label className="flex items-center gap-2 text-sm text-foreground">
