@@ -33,10 +33,17 @@ Deno.serve(async (req) => {
     }
   } catch { /* not a jwt */ }
 
-  if (new URL(req.url).searchParams.get('debug') === '1') {
-    return new Response(JSON.stringify({ jwtRole }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+  const supabase = createClient(Deno.env.get('SUPABASE_URL')!, serviceKey)
+
+  let authorised = bearer === cronSecret || bearer === serviceKey || jwtRole === 'service_role'
+  if (!authorised && jwtRole === 'authenticated') {
+    const { data: userData } = await supabase.auth.getUser(bearer)
+    const uid = userData?.user?.id
+    if (uid) {
+      const { data: isAdmin } = await supabase.rpc('has_role', { _user_id: uid, _role: 'admin' })
+      authorised = isAdmin === true
+    }
   }
-  const authorised = bearer === cronSecret || bearer === serviceKey || jwtRole === 'service_role'
   if (!bearer || !authorised) {
     return new Response(JSON.stringify({ error: 'forbidden' }), {
       status: 403,
@@ -46,8 +53,6 @@ Deno.serve(async (req) => {
 
   let payload: { testEmail?: string; dryRun?: boolean } = {}
   try { payload = await req.json() } catch { /* no body */ }
-
-  const supabase = createClient(Deno.env.get('SUPABASE_URL')!, serviceKey)
 
   // Parents with at least one registered player
   const { data: regs, error: rErr } = await supabase
