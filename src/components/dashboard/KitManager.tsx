@@ -777,6 +777,11 @@ export function KitManager({ focusRequestId }: { focusRequestId?: string | null 
                   </span>
                 )}
               </div>
+              {reviewRequest.initials && (
+                <p className="text-sm text-foreground">
+                  Initials to print: <span className="font-semibold tracking-widest text-primary">{reviewRequest.initials}</span>
+                </p>
+              )}
               {reviewAction === "approve" && (
                 <div className="bg-background/50 border border-border rounded-lg p-3 space-y-3">
                   <label className="flex items-center gap-2 text-sm text-foreground">
