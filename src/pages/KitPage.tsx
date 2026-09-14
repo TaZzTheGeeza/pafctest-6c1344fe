@@ -476,6 +476,35 @@ export default function KitPage() {
                 </p>
               </div>
 
+              <div className="bg-background/50 border border-border rounded-lg p-3 space-y-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <Info className="h-4 w-4 text-primary" />
+                  <p className="text-xs font-semibold text-foreground">Kit care agreement</p>
+                </div>
+                <a
+                  href={kitWashingInstructions.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block rounded-lg border border-border overflow-hidden hover:border-primary/50 transition-colors"
+                >
+                  <img
+                    src={kitWashingInstructions.url}
+                    alt="Kit washing instructions"
+                    className="w-full max-h-40 object-contain bg-white"
+                  />
+                  <p className="text-[10px] text-center text-muted-foreground py-1">Tap to view full instructions</p>
+                </a>
+                <p className="text-[11px] text-muted-foreground whitespace-pre-line">{KIT_CARE_AGREEMENT_TEXT}</p>
+                <label className="flex items-start gap-2.5 text-sm text-foreground cursor-pointer">
+                  <Checkbox
+                    checked={careAgreed}
+                    onCheckedChange={(v) => setCareAgreed(!!v)}
+                    className="mt-0.5"
+                  />
+                  <span>{KIT_CARE_AGREEMENT_LABEL}</span>
+                </label>
+              </div>
+
               <Button className="w-full" onClick={submitRequest} disabled={submitting}>
                 {submitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <CheckCircle className="h-4 w-4 mr-2" />}
                 Send request
