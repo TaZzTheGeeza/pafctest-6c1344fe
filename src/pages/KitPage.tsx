@@ -155,7 +155,7 @@ export default function KitPage() {
       .from("kit_requests" as any)
       .insert({
         user_id: user.id,
-        player_registration_id: reg.id,
+        player_registration_id: reg.registered ? reg.id : null,
         player_name: reg.child_name,
         team_slug: (reg.preferred_age_group || "").toLowerCase(),
         kit_item_id: dialogItem.id,
