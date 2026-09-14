@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import {
   Shirt, Loader2, Package, History, Settings2, CheckCircle, XCircle,
-  Download, Hand, Search, PoundSterling,
+  Download, Hand, Search, PoundSterling, User, Trash2, ChevronRight, AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -86,6 +86,10 @@ export function KitManager({ focusRequestId }: { focusRequestId?: string | null 
 
   const [registerTeam, setRegisterTeam] = useState("all");
   const [registerSearch, setRegisterSearch] = useState("");
+  const [registerView, setRegisterView] = useState<"players" | "items">("players");
+  const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null);
+  const [editIssue, setEditIssue] = useState<KitIssue | null>(null);
+  const [editIssueSize, setEditIssueSize] = useState("");
 
   const [editItem, setEditItem] = useState<KitItem | null>(null);
   const [editSizes, setEditSizes] = useState("");
@@ -285,6 +289,80 @@ export function KitManager({ focusRequestId }: { focusRequestId?: string | null 
     a.href = URL.createObjectURL(blob);
     a.download = `kit-register-${format(new Date(), "yyyy-MM-dd")}.csv`;
     a.click();
+  }
+
+  // --- Player-level view of the register -------------------------------
+  const playerKey = (name: string, team: string | null) =>
+    `${name.trim().toLowerCase()}|${(team || "").toLowerCase()}`;
+
+  const players = useMemo(() => {
+    const map = new Map<string, {
+      key: string; name: string; team: string | null;
+      issues: KitIssue[]; lastIssued: string;
+    }>();
+    for (const i of issues) {
+      if (registerTeam !== "all" && i.team_slug !== registerTeam) continue;
+      const key = playerKey(i.player_name, i.team_slug);
+      const entry = map.get(key) || { key, name: i.player_name.trim(), team: i.team_slug, issues: [], lastIssued: i.issued_at };
+      entry.issues.push(i);
+      if (new Date(i.issued_at) > new Date(entry.lastIssued)) entry.lastIssued = i.issued_at;
+      map.set(key, entry);
+    }
+    let list = Array.from(map.values());
+    if (registerSearch) {
+      const q = registerSearch.toLowerCase();
+      list = list.filter((p) => p.name.toLowerCase().includes(q));
+    }
+    return list.sort((a, b) => a.name.localeCompare(b.name));
+  }, [issues, registerTeam, registerSearch]);
+
+  const activePlayer = useMemo(
+    () => players.find((p) => p.key === selectedPlayer) || null,
+    [players, selectedPlayer]
+  );
+
+  const playerRequests = useMemo(() => {
+    if (!activePlayer) return [];
+    return requests.filter(
+      (r) => playerKey(r.player_name, r.team_slug) === activePlayer.key
+    );
+  }, [requests, activePlayer]);
+
+  /** Which of the core garments a player has on record. */
+  function kitGaps(list: KitIssue[]) {
+    const has = (word: string) => list.some((i) => i.item_name.toLowerCase().includes(word));
+    return {
+      shirt: has("shirt"), shorts: has("shorts"), socks: has("socks"),
+      goalkeeper: list.some((i) => i.item_name.toLowerCase().includes("goalkeeper")),
+    };
+  }
+
+  async function saveIssueSize() {
+    if (!editIssue) return;
+    const { error } = await supabase
+      .from("kit_issues" as any)
+      .update({ size: editIssueSize.trim() || null } as any)
+      .eq("id", editIssue.id);
+    if (error) { toast.error("Could not save the size", { description: error.message }); return; }
+    setIssues((prev) => prev.map((i) => (i.id === editIssue.id ? { ...i, size: editIssueSize.trim() || null } : i)));
+    setEditIssue(null);
+    toast.success("Size updated");
+  }
+
+  async function deleteIssue(id: string) {
+    const { error } = await supabase.from("kit_issues" as any).delete().eq("id", id);
+    if (error) { toast.error("Could not remove that entry", { description: error.message }); return; }
+    setIssues((prev) => prev.filter((i) => i.id !== id));
+    toast.success("Entry removed from the register");
+  }
+
+  function handoutForPlayer(name: string) {
+    const reg = registrations.find((r) => r.child_name.trim().toLowerCase() === name.trim().toLowerCase());
+    setHandoutReg(reg?.id || "");
+    setRegSearch(name);
+    setHandoutItem(""); setHandoutSize(""); setHandoutNote("");
+    setSelectedPlayer(null);
+    setHandoutOpen(true);
   }
 
   const filteredRegs = useMemo(() => {
