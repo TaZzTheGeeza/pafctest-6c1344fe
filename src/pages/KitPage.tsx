@@ -139,6 +139,7 @@ export default function KitPage() {
     setReason("");
     setReasonDetail("");
     setHeightCm("");
+    setCareAgreed(false);
     setDialogOpen(true);
   }
 
