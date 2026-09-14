@@ -39,6 +39,7 @@ interface KitRequest {
   chargeable: boolean;
   charge_amount: number | null;
   admin_note: string | null;
+  initials: string | null;
   care_agreed: boolean;
   care_agreed_at: string | null;
   created_at: string;
