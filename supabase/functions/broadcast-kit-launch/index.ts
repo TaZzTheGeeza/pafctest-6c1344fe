@@ -33,6 +33,9 @@ Deno.serve(async (req) => {
     }
   } catch { /* not a jwt */ }
 
+  if (new URL(req.url).searchParams.get('debug') === '1') {
+    return new Response(JSON.stringify({ jwtRole }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+  }
   const authorised = bearer === cronSecret || bearer === serviceKey || jwtRole === 'service_role'
   if (!bearer || !authorised) {
     return new Response(JSON.stringify({ error: 'forbidden' }), {
