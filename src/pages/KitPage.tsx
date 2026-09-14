@@ -30,10 +30,13 @@ interface KitItem {
 }
 
 interface Registration {
+  /** Registration id when the player is registered, otherwise a guardian-derived key. */
   id: string;
   child_name: string;
   child_dob: string | null;
   preferred_age_group: string | null;
+  /** False when the player comes from a guardian link rather than a registration. */
+  registered?: boolean;
 }
 
 interface KitRequest {
@@ -84,14 +87,31 @@ export default function KitPage() {
 
   async function loadAll() {
     setLoading(true);
-    const [itemsRes, regsRes, reqsRes, issuesRes] = await Promise.all([
+    const [itemsRes, regsRes, guardiansRes, reqsRes, issuesRes] = await Promise.all([
       supabase.from("kit_items" as any).select("*").eq("active", true).order("sort_order"),
       supabase.from("player_registrations").select("id, child_name, child_dob, preferred_age_group").eq("user_id", user!.id).order("child_name"),
+      supabase.from("guardians").select("id, player_name, team_slug").eq("parent_user_id", user!.id),
       supabase.from("kit_requests" as any).select("*, kit_items(name, photo_url)").eq("user_id", user!.id).order("created_at", { ascending: false }),
       supabase.from("kit_issues" as any).select("id, player_name, item_name, size, issued_at, note").order("issued_at", { ascending: false }),
     ]);
     setItems((itemsRes.data as any) || []);
-    setRegistrations(regsRes.data || []);
+
+    const regs: Registration[] = (regsRes.data || []).map((r) => ({ ...r, registered: true }));
+    const known = new Set(regs.map((r) => r.child_name.trim().toLowerCase()));
+    for (const g of guardiansRes.data || []) {
+      const name = (g.player_name || "").trim();
+      if (!name || known.has(name.toLowerCase())) continue;
+      known.add(name.toLowerCase());
+      regs.push({
+        id: `guardian:${g.id}`,
+        child_name: name,
+        child_dob: null,
+        preferred_age_group: g.team_slug || null,
+        registered: false,
+      });
+    }
+    regs.sort((a, b) => a.child_name.localeCompare(b.child_name));
+    setRegistrations(regs);
     setRequests((reqsRes.data as any) || []);
     setIssues((issuesRes.data as any) || []);
     setLoading(false);
@@ -135,7 +155,7 @@ export default function KitPage() {
       .from("kit_requests" as any)
       .insert({
         user_id: user.id,
-        player_registration_id: reg.id,
+        player_registration_id: reg.registered ? reg.id : null,
         player_name: reg.child_name,
         team_slug: (reg.preferred_age_group || "").toLowerCase(),
         kit_item_id: dialogItem.id,
