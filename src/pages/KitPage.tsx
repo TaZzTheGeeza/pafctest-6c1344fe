@@ -182,6 +182,7 @@ export default function KitPage() {
         reason_detail: reasonDetail.trim(),
         care_agreed: true,
         care_agreed_at: new Date().toISOString(),
+        initials: wantsInitials ? cleanInitials : null,
       } as any)
       .select("id")
       .single();
