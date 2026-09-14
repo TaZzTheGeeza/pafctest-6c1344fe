@@ -480,19 +480,6 @@ export default function KitPage() {
                   <Info className="h-4 w-4 text-primary" />
                   <p className="text-xs font-semibold text-foreground">Kit care agreement</p>
                 </div>
-                <a
-                  href={kitWashingInstructions.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block rounded-lg border border-border overflow-hidden hover:border-primary/50 transition-colors"
-                >
-                  <img
-                    src={kitWashingInstructions.url}
-                    alt="Kit washing instructions"
-                    className="w-full max-h-40 object-contain bg-white"
-                  />
-                  <p className="text-[10px] text-center text-muted-foreground py-1">Tap to view full instructions</p>
-                </a>
                 <p className="text-[11px] text-muted-foreground whitespace-pre-line">{KIT_CARE_AGREEMENT_TEXT}</p>
                 <label className="flex items-start gap-2.5 text-sm text-foreground cursor-pointer">
                   <Checkbox
