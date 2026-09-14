@@ -70,3 +70,16 @@ export function suggestSize(heightCm: number): SizeGuideRow | null {
   const next = MACRON_SIZE_GUIDE.find((r) => heightCm < r.heightCm[0]);
   return next || MACRON_SIZE_GUIDE[MACRON_SIZE_GUIDE.length - 1];
 }
+
+export const KIT_CARE_AGREEMENT_TEXT = `Before requesting kit, please confirm you understand the following care instructions:
+
+- Wash at 30C, inside out, with similar colours
+- Do not bleach
+- Do not use fabric softener
+- Do not tumble dry
+- Do not iron over any print or badge
+- Protect the vinyl names, numbers and club badge
+
+I agree to follow these care instructions. I understand that if an item is damaged or worn out because it was not cared for correctly, the club may charge for a replacement.`;
+
+export const KIT_CARE_AGREEMENT_LABEL = "I agree to the kit care instructions above";
