@@ -491,6 +491,22 @@ export default function KitPage() {
                 </p>
               </div>
 
+              {isTrainingTop(dialogItem) && (
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Initials for the training top</label>
+                  <Input
+                    value={initials}
+                    onChange={(e) => setInitials(e.target.value.replace(/[^a-zA-Z]/g, "").toUpperCase().slice(0, 3))}
+                    placeholder="e.g. JM"
+                    maxLength={3}
+                    className="h-9 text-sm uppercase tracking-widest w-28"
+                  />
+                  <p className="text-[10px] text-muted-foreground mt-1">
+                    Two or three letters, printed on the chest. The training top is the only item with initials.
+                  </p>
+                </div>
+              )}
+
               <div className="bg-background/50 border border-border rounded-lg p-3 space-y-3">
                 <div className="flex items-center gap-2 mb-1">
                   <Info className="h-4 w-4 text-primary" />
