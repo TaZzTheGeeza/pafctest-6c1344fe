@@ -1051,6 +1051,7 @@ export type Database = {
           created_at: string
           handed_out_at: string | null
           id: string
+          initials: string | null
           kit_item_id: string
           player_name: string
           player_registration_id: string | null
@@ -1073,6 +1074,7 @@ export type Database = {
           created_at?: string
           handed_out_at?: string | null
           id?: string
+          initials?: string | null
           kit_item_id: string
           player_name: string
           player_registration_id?: string | null
@@ -1095,6 +1097,7 @@ export type Database = {
           created_at?: string
           handed_out_at?: string | null
           id?: string
+          initials?: string | null
           kit_item_id?: string
           player_name?: string
           player_registration_id?: string | null
