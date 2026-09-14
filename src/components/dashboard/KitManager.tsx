@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import {
   Shirt, Loader2, Package, History, Settings2, CheckCircle, XCircle,
-  Download, Hand, Search, PoundSterling, User, Trash2, ChevronRight, AlertTriangle,
+  Download, Hand, Search, PoundSterling, User, Trash2, ChevronRight, AlertTriangle, Info,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
