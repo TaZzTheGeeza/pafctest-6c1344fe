@@ -63,12 +63,19 @@ interface Registration {
   preferred_age_group: string | null;
 }
 
+interface RosterPlayer {
+  first_name: string;
+  shirt_number: number | null;
+  age_group: string;
+}
+
 export function KitManager({ focusRequestId }: { focusRequestId?: string | null }) {
   const { user } = useAuth();
   const [items, setItems] = useState<KitItem[]>([]);
   const [requests, setRequests] = useState<KitRequest[]>([]);
   const [issues, setIssues] = useState<KitIssue[]>([]);
   const [registrations, setRegistrations] = useState<Registration[]>([]);
+  const [roster, setRoster] = useState<RosterPlayer[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<"requests" | "register" | "items">("requests");
   const [statusFilter, setStatusFilter] = useState("open");
