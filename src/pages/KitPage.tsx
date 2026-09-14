@@ -30,10 +30,13 @@ interface KitItem {
 }
 
 interface Registration {
+  /** Registration id when the player is registered, otherwise a guardian-derived key. */
   id: string;
   child_name: string;
   child_dob: string | null;
   preferred_age_group: string | null;
+  /** False when the player comes from a guardian link rather than a registration. */
+  registered?: boolean;
 }
 
 interface KitRequest {
