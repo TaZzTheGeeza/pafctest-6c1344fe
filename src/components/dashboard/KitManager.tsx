@@ -763,9 +763,20 @@ export function KitManager({ focusRequestId }: { focusRequestId?: string | null 
           </DialogHeader>
           {reviewRequest && (
             <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                {reviewRequest.player_name} - size {reviewRequest.size}
-              </p>
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-sm text-muted-foreground">
+                  {reviewRequest.player_name} - size {reviewRequest.size}
+                </p>
+                {reviewRequest.care_agreed ? (
+                  <span className="inline-flex items-center gap-1 text-[10px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
+                    <CheckCircle className="h-3 w-3" /> Care agreement confirmed
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 text-[10px] text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full">
+                    <Info className="h-3 w-3" /> No care agreement
+                  </span>
+                )}
+              </div>
               {reviewAction === "approve" && (
                 <div className="bg-background/50 border border-border rounded-lg p-3 space-y-3">
                   <label className="flex items-center gap-2 text-sm text-foreground">
