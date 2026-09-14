@@ -48,6 +48,7 @@ interface KitRequest {
   reason: string;
   reason_detail: string;
   status: string;
+  initials: string | null;
   chargeable: boolean;
   charge_amount: number | null;
   admin_note: string | null;
