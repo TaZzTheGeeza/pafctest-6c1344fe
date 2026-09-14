@@ -22,7 +22,6 @@ import {
   MACRON_SIZE_GUIDE, suggestSize,
   KIT_CARE_AGREEMENT_TEXT, KIT_CARE_AGREEMENT_LABEL,
 } from "@/lib/kitConfig";
-import kitWashingInstructions from "@/assets/kit-washing-instructions.png.asset.json";
 
 interface KitItem {
   id: string;
