@@ -155,6 +155,10 @@ export default function KitPage() {
       });
       return;
     }
+    if (!careAgreed) {
+      toast.error("Please agree to the kit care instructions");
+      return;
+    }
     setSubmitting(true);
     const { data: inserted, error } = await supabase
       .from("kit_requests" as any)
@@ -167,6 +171,8 @@ export default function KitPage() {
         size,
         reason,
         reason_detail: reasonDetail.trim(),
+        care_agreed: true,
+        care_agreed_at: new Date().toISOString(),
       } as any)
       .select("id")
       .single();
