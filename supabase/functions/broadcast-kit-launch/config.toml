@@ -1,0 +1,2 @@
+[functions.broadcast-kit-launch]
+verify_jwt = false
