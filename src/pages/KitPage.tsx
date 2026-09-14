@@ -351,6 +351,7 @@ export default function KitPage() {
                         <p className="text-sm font-semibold text-foreground">{r.kit_items?.name || "Kit item"} - size {r.size}</p>
                         <p className="text-xs text-muted-foreground">
                           {r.player_name} - requested {format(new Date(r.created_at), "d MMM yyyy")}
+                          {r.initials ? ` - initials ${r.initials}` : ""}
                         </p>
                         {r.chargeable && (
                           <p className="text-xs text-amber-400 mt-0.5">
