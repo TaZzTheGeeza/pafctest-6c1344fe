@@ -160,6 +160,14 @@ export default function KitPage() {
       toast.error("Please agree to the kit care instructions");
       return;
     }
+    const wantsInitials = isTrainingTop(dialogItem);
+    const cleanInitials = initials.trim().toUpperCase();
+    if (wantsInitials && !/^[A-Z]{2,3}$/.test(cleanInitials)) {
+      toast.error("Please add the initials for the training top", {
+        description: "Two or three letters, for example JM.",
+      });
+      return;
+    }
     setSubmitting(true);
     const { data: inserted, error } = await supabase
       .from("kit_requests" as any)
