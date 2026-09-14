@@ -130,27 +130,43 @@ Deno.serve(async (req) => {
     result.in_app = error ? `failed: ${error.message}` : targetIds.length
   }
 
+  const callFn = async (name: string, body: unknown) => {
+    const res = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/${name}`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${serviceKey}`,
+        apikey: serviceKey,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    })
+    const text = await res.text()
+    return { ok: res.ok, status: res.status, text }
+  }
+
   // 2. Push
   if (targetIds.length) {
-    const { data: push, error: pushErr } = await supabase.functions.invoke('send-push-notification', {
-      body: { userIds: targetIds, title: TITLE, message: 'Request replacement or missing match day kit in the Hub.', link: LINK, tag: `kit-launch-${runId}` },
+    const push = await callFn('send-push-notification', {
+      userIds: targetIds,
+      title: TITLE,
+      message: 'Request replacement or missing match day kit in the Hub.',
+      link: LINK,
+      tag: `kit-launch-${runId}`,
     })
-    result.push = pushErr ? `failed: ${pushErr.message}` : push
+    result.push = push.ok ? push.text : `failed [${push.status}]: ${push.text}`
   }
 
   // 3. Email
   let ok = 0
   const failures: string[] = []
   for (const p of recipients) {
-    const { error } = await supabase.functions.invoke('send-app-email', {
-      body: {
-        templateName: 'admin-broadcast',
-        recipientEmail: p.email,
-        idempotencyKey: `kit-launch-${runId}-${p.id}`,
-        templateData: { title: TITLE, message: MESSAGE, actionUrl: ACTION_URL, ctaLabel: 'Open Match Day Kit' },
-      },
+    const sent = await callFn('send-app-email', {
+      templateName: 'admin-broadcast',
+      recipientEmail: p.email,
+      idempotencyKey: `kit-launch-${runId}-${p.id}`,
+      templateData: { title: TITLE, message: MESSAGE, actionUrl: ACTION_URL, ctaLabel: 'Open Match Day Kit' },
     })
-    if (error) failures.push(p.email); else ok++
+    if (!sent.ok) failures.push(`${p.email} [${sent.status}] ${sent.text.slice(0, 200)}`); else ok++
     await new Promise((r) => setTimeout(r, 250))
   }
   result.email_sent = ok
