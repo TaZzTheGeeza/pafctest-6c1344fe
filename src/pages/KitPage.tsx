@@ -140,6 +140,7 @@ export default function KitPage() {
     setReasonDetail("");
     setHeightCm("");
     setCareAgreed(false);
+    setInitials("");
     setDialogOpen(true);
   }
 
