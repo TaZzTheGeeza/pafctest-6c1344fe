@@ -462,6 +462,11 @@ export function KitManager({ focusRequestId }: { focusRequestId?: string | null 
                           </p>
                           <p className="text-xs text-muted-foreground">
                             {r.player_name}{r.team_slug ? ` (${r.team_slug.toUpperCase()})` : ""} - {format(new Date(r.created_at), "d MMM yyyy")}
+                            {shirtNumberFor(r.player_name, r.team_slug) != null && (
+                              <span className="ml-2 inline-flex items-center gap-0.5 text-[10px] font-display font-bold bg-primary/15 text-primary border border-primary/30 px-1.5 py-0.5 rounded">
+                                #{shirtNumberFor(r.player_name, r.team_slug)}
+                              </span>
+                            )}
                           </p>
                           <p className="text-xs text-muted-foreground mt-1">
                             <span className="text-foreground/80 font-medium">{KIT_REASON_LABELS[r.reason] || r.reason}:</span> {r.reason_detail}
@@ -801,6 +806,14 @@ export function KitManager({ focusRequestId }: { focusRequestId?: string | null 
                   Initials to print: <span className="font-semibold tracking-widest text-primary">{reviewRequest.initials}</span>
                 </p>
               )}
+              <p className="text-sm text-foreground">
+                Shirt number for printing:{" "}
+                {shirtNumberFor(reviewRequest.player_name, reviewRequest.team_slug) != null ? (
+                  <span className="font-semibold text-primary">#{shirtNumberFor(reviewRequest.player_name, reviewRequest.team_slug)}</span>
+                ) : (
+                  <span className="text-muted-foreground">not on record</span>
+                )}
+              </p>
               {reviewAction === "approve" && (
                 <div className="bg-background/50 border border-border rounded-lg p-3 space-y-3">
                   <label className="flex items-center gap-2 text-sm text-foreground">
