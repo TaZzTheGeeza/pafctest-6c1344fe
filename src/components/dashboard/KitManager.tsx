@@ -115,17 +115,28 @@ export function KitManager({ focusRequestId }: { focusRequestId?: string | null 
 
   async function loadAll() {
     setLoading(true);
-    const [itemsRes, reqsRes, issuesRes, regsRes] = await Promise.all([
+    const [itemsRes, reqsRes, issuesRes, regsRes, rosterRes] = await Promise.all([
       supabase.from("kit_items" as any).select("*").order("sort_order"),
       supabase.from("kit_requests" as any).select("*, kit_items(id, name, photo_url)").order("created_at", { ascending: false }),
       supabase.from("kit_issues" as any).select("*").order("issued_at", { ascending: false }),
       supabase.from("player_registrations").select("id, child_name, preferred_age_group").order("child_name"),
+      supabase.from("player_stats").select("first_name, shirt_number, age_group"),
     ]);
     setItems((itemsRes.data as any) || []);
     setRequests((reqsRes.data as any) || []);
     setIssues((issuesRes.data as any) || []);
     setRegistrations(regsRes.data || []);
+    setRoster((rosterRes.data as any) || []);
     setLoading(false);
+  }
+
+  function shirtNumberFor(playerName: string, teamSlug?: string | null): number | null {
+    const first = playerName.trim().split(/\s+/)[0].toLowerCase();
+    const matches = roster.filter((p) => p.first_name.trim().split(/\s+/)[0].toLowerCase() === first);
+    if (!matches.length) return null;
+    const ageDigits = (teamSlug || "").match(/u(\d+)/)?.[1];
+    const inTeam = ageDigits ? matches.find((p) => p.age_group.replace(/\D/g, "") === ageDigits) : undefined;
+    return (inTeam ?? matches.find((p) => p.shirt_number != null))?.shirt_number ?? null;
   }
 
   async function notifyParent(r: KitRequest, title: string, message: string) {
