@@ -530,26 +530,206 @@ export function KitManager({ focusRequestId }: { focusRequestId?: string | null 
             <Button size="sm" onClick={() => setHandoutOpen(true)}>
               <Hand className="h-3.5 w-3.5 mr-1" /> Record a handout
             </Button>
+            <div className="flex rounded-lg border border-border overflow-hidden ml-auto">
+              {(["players", "items"] as const).map((v) => (
+                <button
+                  key={v}
+                  onClick={() => setRegisterView(v)}
+                  className={`px-3 h-9 text-xs font-medium transition-colors ${
+                    registerView === v ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {v === "players" ? "By player" : "All items"}
+                </button>
+              ))}
+            </div>
           </div>
-          <p className="text-xs text-muted-foreground mb-3">{filteredIssues.length} item{filteredIssues.length === 1 ? "" : "s"} issued</p>
-          <div className="space-y-2">
-            {filteredIssues.slice(0, 100).map((i) => (
-              <div key={i.id} className="flex items-center gap-3 bg-background border border-border rounded-lg px-3 py-2.5">
-                <Shirt className="h-4 w-4 text-primary shrink-0" />
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm text-foreground font-medium truncate">{i.item_name}{i.size ? ` - ${i.size}` : ""}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {i.player_name}{i.team_slug ? ` (${i.team_slug.toUpperCase()})` : ""} - {format(new Date(i.issued_at), "d MMM yyyy")}{i.note ? ` - ${i.note}` : ""}
-                  </p>
-                </div>
+
+          {registerView === "players" ? (
+            <>
+              <p className="text-xs text-muted-foreground mb-3">
+                {players.length} player{players.length === 1 ? "" : "s"} on the register - click a player for their full kit history
+              </p>
+              <div className="space-y-2">
+                {players.map((p) => {
+                  const gaps = kitGaps(p.issues);
+                  const missing = ["shirt", "shorts", "socks"].filter((k) => !(gaps as any)[k]);
+                  return (
+                    <button
+                      key={p.key}
+                      onClick={() => setSelectedPlayer(p.key)}
+                      className="w-full flex items-center gap-3 bg-background border border-border rounded-lg px-3 py-2.5 text-left hover:border-primary/50 transition-colors"
+                    >
+                      <div className="h-8 w-8 rounded-full bg-primary/15 flex items-center justify-center shrink-0">
+                        <User className="h-4 w-4 text-primary" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium text-foreground truncate">
+                          {p.name}{p.team ? ` (${p.team.toUpperCase()})` : ""}
+                          {gaps.goalkeeper && <span className="ml-2 text-[10px] text-primary">GK</span>}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {p.issues.length} item{p.issues.length === 1 ? "" : "s"} - last {format(new Date(p.lastIssued), "d MMM yyyy")}
+                        </p>
+                      </div>
+                      {missing.length > 0 && (
+                        <span className="hidden sm:flex items-center gap-1 text-[11px] text-amber-400 shrink-0">
+                          <AlertTriangle className="h-3 w-3" /> no {missing.join(", ")}
+                        </span>
+                      )}
+                      <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                    </button>
+                  );
+                })}
+                {players.length === 0 && (
+                  <p className="text-xs text-muted-foreground text-center py-6">No players match those filters</p>
+                )}
               </div>
-            ))}
-            {filteredIssues.length > 100 && (
-              <p className="text-xs text-muted-foreground text-center py-2">Showing the first 100 - use the filters or export for the full register.</p>
-            )}
-          </div>
+            </>
+          ) : (
+            <>
+              <p className="text-xs text-muted-foreground mb-3">{filteredIssues.length} item{filteredIssues.length === 1 ? "" : "s"} issued</p>
+              <div className="space-y-2">
+                {filteredIssues.slice(0, 100).map((i) => (
+                  <button
+                    key={i.id}
+                    onClick={() => setSelectedPlayer(playerKey(i.player_name, i.team_slug))}
+                    className="w-full flex items-center gap-3 bg-background border border-border rounded-lg px-3 py-2.5 text-left hover:border-primary/50 transition-colors"
+                  >
+                    <Shirt className="h-4 w-4 text-primary shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm text-foreground font-medium truncate">{i.item_name}{i.size ? ` - ${i.size}` : ""}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {i.player_name}{i.team_slug ? ` (${i.team_slug.toUpperCase()})` : ""} - {format(new Date(i.issued_at), "d MMM yyyy")}{i.note ? ` - ${i.note}` : ""}
+                      </p>
+                    </div>
+                    <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                  </button>
+                ))}
+                {filteredIssues.length > 100 && (
+                  <p className="text-xs text-muted-foreground text-center py-2">Showing the first 100 - use the filters or export for the full register.</p>
+                )}
+              </div>
+            </>
+          )}
         </>
       )}
+
+      {/* Player kit history */}
+      <Dialog open={!!activePlayer} onOpenChange={(open) => !open && setSelectedPlayer(null)}>
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-display">
+              {activePlayer?.name}{activePlayer?.team ? ` (${activePlayer.team.toUpperCase()})` : ""}
+            </DialogTitle>
+          </DialogHeader>
+          {activePlayer && (() => {
+            const gaps = kitGaps(activePlayer.issues);
+            const sizes = Array.from(new Set(activePlayer.issues.map((i) => i.size).filter(Boolean))) as string[];
+            const replacements = activePlayer.issues.filter((i) => (i.note || "").toLowerCase().includes("replacement"));
+            return (
+              <div className="space-y-4">
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { label: "Items issued", value: String(activePlayer.issues.length) },
+                    { label: "Replacements", value: String(replacements.length) },
+                    { label: "Sizes on record", value: sizes.length ? sizes.join(", ") : "None" },
+                  ].map((s) => (
+                    <div key={s.label} className="bg-background border border-border rounded-lg p-2.5">
+                      <p className="text-[10px] uppercase tracking-wide text-muted-foreground">{s.label}</p>
+                      <p className="text-sm font-semibold text-foreground truncate">{s.value}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    { key: "shirt", label: "Shirt" },
+                    { key: "shorts", label: "Shorts" },
+                    { key: "socks", label: "Socks" },
+                  ].map((g) => (
+                    <span
+                      key={g.key}
+                      className={`text-[11px] px-2 py-1 rounded-full border ${
+                        (gaps as any)[g.key]
+                          ? "border-primary/40 text-primary"
+                          : "border-amber-500/40 text-amber-400"
+                      }`}
+                    >
+                      {(gaps as any)[g.key] ? `${g.label} issued` : `No ${g.label.toLowerCase()} on record`}
+                    </span>
+                  ))}
+                  {gaps.goalkeeper && (
+                    <span className="text-[11px] px-2 py-1 rounded-full border border-primary/40 text-primary">Goalkeeper kit</span>
+                  )}
+                </div>
+
+                <div>
+                  <p className="text-xs font-semibold text-foreground mb-2">Kit history</p>
+                  <div className="space-y-2">
+                    {activePlayer.issues.map((i) => (
+                      <div key={i.id} className="flex items-center gap-2 bg-background border border-border rounded-lg px-3 py-2">
+                        <Shirt className="h-4 w-4 text-primary shrink-0" />
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm text-foreground truncate">{i.item_name}{i.size ? ` - ${i.size}` : ""}</p>
+                          <p className="text-xs text-muted-foreground truncate">
+                            {format(new Date(i.issued_at), "d MMM yyyy")}{i.note ? ` - ${i.note}` : ""}
+                          </p>
+                        </div>
+                        <Button size="sm" variant="ghost" className="text-xs shrink-0"
+                          onClick={() => { setEditIssue(i); setEditIssueSize(i.size || ""); }}>
+                          {i.size ? "Size" : "Add size"}
+                        </Button>
+                        <Button size="sm" variant="ghost" className="text-xs text-destructive shrink-0"
+                          onClick={() => deleteIssue(i.id)}>
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {playerRequests.length > 0 && (
+                  <div>
+                    <p className="text-xs font-semibold text-foreground mb-2">Requests</p>
+                    <div className="space-y-2">
+                      {playerRequests.map((r) => (
+                        <div key={r.id} className="bg-background border border-border rounded-lg px-3 py-2">
+                          <div className="flex items-center justify-between gap-2">
+                            <p className="text-sm text-foreground truncate">{r.kit_items?.name || "Kit item"} - {r.size}</p>
+                            <span className={`text-[10px] px-2 py-0.5 rounded-full border ${KIT_STATUS_COLORS[r.status] || ""}`}>
+                              {KIT_STATUS_LABELS[r.status] || r.status}
+                            </span>
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            {format(new Date(r.created_at), "d MMM yyyy")} - {KIT_REASON_LABELS[r.reason] || r.reason}: {r.reason_detail}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <Button className="w-full" onClick={() => handoutForPlayer(activePlayer.name)}>
+                  <Hand className="h-4 w-4 mr-2" /> Record a handout for {activePlayer.name.split(" ")[0]}
+                </Button>
+              </div>
+            );
+          })()}
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit a recorded size */}
+      <Dialog open={!!editIssue} onOpenChange={(open) => !open && setEditIssue(null)}>
+        <DialogContent className="max-w-xs">
+          <DialogHeader>
+            <DialogTitle className="font-display">Size for {editIssue?.item_name}</DialogTitle>
+          </DialogHeader>
+          <Input value={editIssueSize} onChange={(e) => setEditIssueSize(e.target.value)} placeholder="e.g. 3XS" />
+          <Button onClick={saveIssueSize}>Save size</Button>
+        </DialogContent>
+      </Dialog>
+
 
       {tab === "items" && (
         <div className="space-y-2">
