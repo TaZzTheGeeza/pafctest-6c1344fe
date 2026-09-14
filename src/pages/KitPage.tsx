@@ -14,11 +14,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   KIT_REASONS, KIT_STATUS_LABELS, KIT_STATUS_COLORS,
   MACRON_SIZE_GUIDE, suggestSize,
+  KIT_CARE_AGREEMENT_TEXT, KIT_CARE_AGREEMENT_LABEL,
 } from "@/lib/kitConfig";
 
 interface KitItem {
@@ -78,6 +80,7 @@ export default function KitPage() {
   const [reason, setReason] = useState("");
   const [reasonDetail, setReasonDetail] = useState("");
   const [heightCm, setHeightCm] = useState("");
+  const [careAgreed, setCareAgreed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -135,6 +138,7 @@ export default function KitPage() {
     setReason("");
     setReasonDetail("");
     setHeightCm("");
+    setCareAgreed(false);
     setDialogOpen(true);
   }
 
@@ -150,6 +154,10 @@ export default function KitPage() {
       });
       return;
     }
+    if (!careAgreed) {
+      toast.error("Please agree to the kit care instructions");
+      return;
+    }
     setSubmitting(true);
     const { data: inserted, error } = await supabase
       .from("kit_requests" as any)
@@ -162,6 +170,8 @@ export default function KitPage() {
         size,
         reason,
         reason_detail: reasonDetail.trim(),
+        care_agreed: true,
+        care_agreed_at: new Date().toISOString(),
       } as any)
       .select("id")
       .single();
@@ -463,6 +473,35 @@ export default function KitPage() {
                 <p className="text-[10px] text-muted-foreground mt-1">
                   Required - first kit is free, so every replacement needs a genuine reason.
                 </p>
+              </div>
+
+              <div className="bg-background/50 border border-border rounded-lg p-3 space-y-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <Info className="h-4 w-4 text-primary" />
+                  <p className="text-xs font-semibold text-foreground">Kit care agreement</p>
+                </div>
+                <a
+                  href="/kit-washing-instructions.png"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block rounded-lg border border-border overflow-hidden hover:border-primary/50 transition-colors bg-white"
+                >
+                  <img
+                    src="/kit-washing-instructions.png"
+                    alt="Kit washing instructions"
+                    className="w-full max-h-40 object-contain"
+                  />
+                  <p className="text-[10px] text-center text-muted-foreground py-1">Tap to view full instructions</p>
+                </a>
+                <p className="text-[11px] text-muted-foreground whitespace-pre-line">{KIT_CARE_AGREEMENT_TEXT}</p>
+                <label className="flex items-start gap-2.5 text-sm text-foreground cursor-pointer">
+                  <Checkbox
+                    checked={careAgreed}
+                    onCheckedChange={(v) => setCareAgreed(!!v)}
+                    className="mt-0.5"
+                  />
+                  <span>{KIT_CARE_AGREEMENT_LABEL}</span>
+                </label>
               </div>
 
               <Button className="w-full" onClick={submitRequest} disabled={submitting}>

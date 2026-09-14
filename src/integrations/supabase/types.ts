@@ -1044,6 +1044,8 @@ export type Database = {
       kit_requests: {
         Row: {
           admin_note: string | null
+          care_agreed: boolean
+          care_agreed_at: string | null
           charge_amount: number | null
           chargeable: boolean
           created_at: string
@@ -1064,6 +1066,8 @@ export type Database = {
         }
         Insert: {
           admin_note?: string | null
+          care_agreed?: boolean
+          care_agreed_at?: string | null
           charge_amount?: number | null
           chargeable?: boolean
           created_at?: string
@@ -1084,6 +1088,8 @@ export type Database = {
         }
         Update: {
           admin_note?: string | null
+          care_agreed?: boolean
+          care_agreed_at?: string | null
           charge_amount?: number | null
           chargeable?: boolean
           created_at?: string
