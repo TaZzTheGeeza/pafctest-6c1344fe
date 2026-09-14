@@ -81,6 +81,7 @@ export default function KitPage() {
   const [reasonDetail, setReasonDetail] = useState("");
   const [heightCm, setHeightCm] = useState("");
   const [careAgreed, setCareAgreed] = useState(false);
+  const [initials, setInitials] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
