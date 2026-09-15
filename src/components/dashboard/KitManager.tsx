@@ -332,7 +332,13 @@ export function KitManager({ focusRequestId }: { focusRequestId?: string | null 
     let list = Array.from(map.values());
     if (registerSearch) {
       const q = registerSearch.toLowerCase();
-      list = list.filter((p) => p.name.toLowerCase().includes(q));
+      // Match on the player's name or on any item they have been given, so a
+      // search like "shorts" still lists the players holding that item.
+      list = list.filter(
+        (p) =>
+          p.name.toLowerCase().includes(q) ||
+          p.issues.some((i) => i.item_name.toLowerCase().includes(q))
+      );
     }
     return list.sort((a, b) => a.name.localeCompare(b.name));
   }, [issues, registerTeam, registerSearch]);
