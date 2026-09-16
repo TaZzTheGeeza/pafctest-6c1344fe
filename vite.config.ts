@@ -28,7 +28,10 @@ export default defineConfig(({ mode }) => ({
         skipWaiting: true,
         clientsClaim: true,
         cleanupOutdatedCaches: true,
-        navigateFallbackDenylist: [/^\/~oauth/, /^\/auth(?:\/|$)/],
+        // index.html is deliberately not precached, so there is no precached URL to
+        // bind a navigation fallback to. Leaving the default ('index.html') would make
+        // sw.js throw non-precached-url on install and kill push handling too.
+        navigateFallback: null,
         runtimeCaching: [
           {
             urlPattern: ({ request }) => request.mode === "navigate",
