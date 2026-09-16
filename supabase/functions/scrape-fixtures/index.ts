@@ -263,7 +263,7 @@ Deno.serve(async (req) => {
         // Teams refresh in the same window, which trips Firecrawl's shared rate limit.
         // Stagger each background refresh and give it a much larger budget so retries
         // can actually wait out the advertised 429 window.
-        const stagger = Math.floor(Math.random() * 45_000);
+        const stagger = Math.floor(Math.random() * 150_000);
         EdgeRuntime.waitUntil(
           (async () => {
             await new Promise((r) => setTimeout(r, stagger));

@@ -66,6 +66,13 @@ export async function fetchFaHtml(url: string, opts: FetchOpts = {}): Promise<st
       }
       if (!res.ok) {
         lastError = `Firecrawl returned ${res.status}: ${raw.slice(0, 200)}`;
+        // Safe Mode / site-restriction blocks are a permanent account-level setting.
+        // Retrying burns the time budget and the shared rate limit for no benefit.
+        if (raw.includes("SCRAPE_SITE_RESTRICTION_BLOCKED") || raw.includes("Safe Mode is enabled")) {
+          lastError =
+            "Firecrawl Safe Mode is blocking fulltime.thefa.com - allow this site in the Firecrawl account settings";
+          break;
+        }
         continue;
       }
       const json = JSON.parse(raw);
