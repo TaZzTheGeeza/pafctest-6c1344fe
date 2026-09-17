@@ -94,6 +94,14 @@ export function KitManager({ focusRequestId }: { focusRequestId?: string | null 
   const [handoutNote, setHandoutNote] = useState("");
   const [regSearch, setRegSearch] = useState("");
 
+  const [manualOpen, setManualOpen] = useState(false);
+  const [manualReg, setManualReg] = useState("");
+  const [manualItem, setManualItem] = useState("");
+  const [manualSize, setManualSize] = useState("");
+  const [manualInitials, setManualInitials] = useState("");
+  const [manualReason, setManualReason] = useState("outgrown");
+  const [manualDetail, setManualDetail] = useState("");
+
   const [registerTeam, setRegisterTeam] = useState("all");
   const [registerSearch, setRegisterSearch] = useState("");
   const [registerView, setRegisterView] = useState<"players" | "items">("players");
