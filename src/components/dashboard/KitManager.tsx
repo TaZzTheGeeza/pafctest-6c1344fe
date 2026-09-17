@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { KIT_REASON_LABELS, KIT_STATUS_LABELS, KIT_STATUS_COLORS } from "@/lib/kitConfig";
+import { KIT_REASONS, KIT_REASON_LABELS, KIT_STATUS_LABELS, KIT_STATUS_COLORS } from "@/lib/kitConfig";
 import { CLUB_TEAMS } from "@/lib/teamConfig";
 
 interface KitItem {
