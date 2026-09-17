@@ -126,7 +126,7 @@ export function FixtureAvailability({ teamSlug }: Props) {
     });
   };
 
-  const addToCalendar = (item: AvailabilityItem) => {
+  const buildIcsEvent = (item: AvailabilityItem) => {
     const [dd, mm, yy] = item.date.split("/").map(Number);
     const year = 2000 + yy;
     let hh = 10, mi = 0;
@@ -145,10 +145,7 @@ export function FixtureAvailability({ teamSlug }: Props) {
     const esc = (s: string) => s.replace(/[\\,;]/g, (m) => "\\" + m).replace(/\n/g, "\\n");
     const location = item.venue ? getDirectionsAddress(item.venue) : "";
     const uid = `${item.key}-${Date.now()}@pafc`;
-    const ics = [
-      "BEGIN:VCALENDAR",
-      "VERSION:2.0",
-      "PRODID:-//PAFC//Hub//EN",
+    return [
       "BEGIN:VEVENT",
       `UID:${uid}`,
       `DTSTAMP:${fmt(new Date())}`,
@@ -157,19 +154,42 @@ export function FixtureAvailability({ teamSlug }: Props) {
       `SUMMARY:${esc(item.title)}`,
       location ? `LOCATION:${esc(location)}` : "",
       "END:VEVENT",
+    ].filter(Boolean);
+  };
+
+  const downloadIcs = (items: AvailabilityItem[], filename: string) => {
+    const ics = [
+      "BEGIN:VCALENDAR",
+      "VERSION:2.0",
+      "PRODID:-//PAFC//Hub//EN",
+      ...items.flatMap(buildIcsEvent),
       "END:VCALENDAR",
-    ].filter(Boolean).join("\r\n");
+    ].join("\r\n");
     const blob = new Blob([ics], { type: "text/calendar;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${item.title.replace(/[^a-z0-9]+/gi, "-")}.ics`;
+    a.download = filename;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+
+  const addToCalendar = (item: AvailabilityItem) => {
+    downloadIcs([item], `${item.title.replace(/[^a-z0-9]+/gi, "-")}.ics`);
     toast.success("Calendar event downloaded");
   };
+
+  const addAllToCalendar = (items: AvailabilityItem[]) => {
+    if (items.length === 0) {
+      toast.error("Nothing to add to your calendar");
+      return;
+    }
+    downloadIcs(items, `pafc-${teamSlug}-fixtures.ics`);
+    toast.success(`${items.length} fixtures and events downloaded`);
+  };
+
 
   const { data: availability = [], isLoading: availLoading } = useQuery({
     queryKey: ["fixture-availability", teamSlug],
@@ -529,7 +549,19 @@ export function FixtureAvailability({ teamSlug }: Props) {
         </div>
       )}
 
+      <div className="flex justify-end">
+        <button
+          onClick={() => addAllToCalendar(allItems)}
+          title="Download every upcoming fixture and event as one calendar file"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-primary/40 bg-primary/10 px-3 py-1.5 text-[11px] font-display uppercase tracking-wider text-primary hover:bg-primary/20 transition-colors"
+        >
+          <Calendar className="w-3 h-3" />
+          Add all to calendar ({allItems.length})
+        </button>
+      </div>
+
       <div className="bg-card border border-border rounded-xl p-3 space-y-2">
+
         <input
           type="text"
           value={searchQuery}
