@@ -913,6 +913,100 @@ export function KitManager({ focusRequestId }: { focusRequestId?: string | null 
         </DialogContent>
       </Dialog>
 
+      {/* Manual request dialog */}
+      <Dialog open={manualOpen} onOpenChange={setManualOpen}>
+        <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-display">Add a request manually</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-[11px] text-muted-foreground">
+              For kit asked for in person. It goes into the requests list as pending so it can be approved and handed out as normal.
+            </p>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Player</label>
+              <Input
+                placeholder="Search players"
+                value={regSearch}
+                onChange={(e) => setRegSearch(e.target.value)}
+                className="h-9 text-sm mb-2"
+              />
+              <Select value={manualReg} onValueChange={setManualReg}>
+                <SelectTrigger><SelectValue placeholder="Choose a player" /></SelectTrigger>
+                <SelectContent>
+                  {filteredRegs.map((r) => (
+                    <SelectItem key={r.id} value={r.id}>
+                      {r.child_name}{r.preferred_age_group ? ` (${r.preferred_age_group})` : ""}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Item</label>
+              <Select value={manualItem} onValueChange={(v) => { setManualItem(v); setManualSize(""); }}>
+                <SelectTrigger><SelectValue placeholder="Choose an item" /></SelectTrigger>
+                <SelectContent>
+                  {items.filter((i) => i.active).map((i) => (
+                    <SelectItem key={i.id} value={i.id}>{i.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Size</label>
+              {(() => {
+                const chosen = items.find((i) => i.id === manualItem);
+                if (chosen?.sizes?.length) {
+                  return (
+                    <Select value={manualSize} onValueChange={setManualSize}>
+                      <SelectTrigger><SelectValue placeholder="Choose a size" /></SelectTrigger>
+                      <SelectContent>
+                        {chosen.sizes.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  );
+                }
+                return <Input value={manualSize} onChange={(e) => setManualSize(e.target.value)} placeholder="e.g. 3XS" className="h-9 text-sm" />;
+              })()}
+            </div>
+            {items.find((i) => i.id === manualItem)?.name.toLowerCase().includes("training top") && (
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Initials to print (optional)</label>
+                <Input
+                  value={manualInitials}
+                  onChange={(e) => setManualInitials(e.target.value.toUpperCase().slice(0, 3))}
+                  placeholder="e.g. JM"
+                  className="h-9 text-sm uppercase"
+                />
+              </div>
+            )}
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Reason</label>
+              <Select value={manualReason} onValueChange={setManualReason}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {KIT_REASONS.map((r) => <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Details</label>
+              <Textarea
+                value={manualDetail}
+                onChange={(e) => setManualDetail(e.target.value)}
+                rows={3}
+                placeholder="e.g. Asked at training, shirt has split at the seam"
+                maxLength={400}
+              />
+            </div>
+            <Button className="w-full" onClick={saveManualRequest} disabled={saving}>
+              {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null} Add request
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Direct handout dialog */}
       <Dialog open={handoutOpen} onOpenChange={setHandoutOpen}>
         <DialogContent className="max-w-md">
