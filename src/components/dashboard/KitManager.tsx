@@ -482,6 +482,18 @@ export function KitManager({ focusRequestId }: { focusRequestId?: string | null 
               </SelectContent>
             </Select>
             <p className="text-xs text-muted-foreground">{openRequests.length} request{openRequests.length === 1 ? "" : "s"}</p>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-9 text-xs ml-auto"
+              onClick={() => {
+                setManualReg(""); setManualItem(""); setManualSize(""); setManualInitials("");
+                setManualReason("outgrown"); setManualDetail(""); setRegSearch("");
+                setManualOpen(true);
+              }}
+            >
+              <Package className="h-3.5 w-3.5 mr-1" /> Add a request manually
+            </Button>
           </div>
 
           {openRequests.length === 0 ? (
