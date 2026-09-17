@@ -250,6 +250,36 @@ export function KitManager({ focusRequestId }: { focusRequestId?: string | null 
     loadAll();
   }
 
+  async function saveManualRequest() {
+    const reg = registrations.find((r) => r.id === manualReg);
+    const item = items.find((i) => i.id === manualItem);
+    if (!reg || !item || !user) { toast.error("Choose a player and an item"); return; }
+    if (!manualSize.trim()) { toast.error("Add a size"); return; }
+    if (!manualDetail.trim()) { toast.error("Add a short note about why this kit is needed"); return; }
+    const isTrainingTop = item.name.toLowerCase().includes("training top");
+    setSaving(true);
+    const { error } = await supabase.from("kit_requests" as any).insert({
+      user_id: user.id,
+      player_registration_id: reg.id,
+      player_name: reg.child_name,
+      team_slug: (reg.preferred_age_group || "").toLowerCase().replace(/\s+/g, "-"),
+      kit_item_id: item.id,
+      size: manualSize.trim(),
+      reason: manualReason,
+      reason_detail: manualDetail.trim(),
+      initials: isTrainingTop && manualInitials.trim() ? manualInitials.trim().toUpperCase() : null,
+      care_agreed: true,
+      care_agreed_at: new Date().toISOString(),
+      admin_note: "Entered manually by an admin",
+    } as any);
+    setSaving(false);
+    if (error) { toast.error("Could not add that request", { description: error.message }); return; }
+    toast.success("Request added");
+    setManualOpen(false);
+    setManualReg(""); setManualItem(""); setManualSize(""); setManualInitials(""); setManualReason("outgrown"); setManualDetail(""); setRegSearch("");
+    loadAll();
+  }
+
   async function saveHandout() {
     const reg = registrations.find((r) => r.id === handoutReg);
     const item = items.find((i) => i.id === handoutItem);
