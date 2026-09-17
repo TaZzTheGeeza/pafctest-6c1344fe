@@ -549,7 +549,19 @@ export function FixtureAvailability({ teamSlug }: Props) {
         </div>
       )}
 
+      <div className="flex justify-end">
+        <button
+          onClick={() => addAllToCalendar(allItems)}
+          title="Download every upcoming fixture and event as one calendar file"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-primary/40 bg-primary/10 px-3 py-1.5 text-[11px] font-display uppercase tracking-wider text-primary hover:bg-primary/20 transition-colors"
+        >
+          <Calendar className="w-3 h-3" />
+          Add all to calendar ({allItems.length})
+        </button>
+      </div>
+
       <div className="bg-card border border-border rounded-xl p-3 space-y-2">
+
         <input
           type="text"
           value={searchQuery}
