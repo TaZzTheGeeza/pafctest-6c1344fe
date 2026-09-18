@@ -134,10 +134,28 @@ function timeAgo(iso: string) {
   return `${Math.round(hours / 24)}d ago`;
 }
 
+function parseFixtureDate(date: string, time?: string): Date | null {
+  const m = date.match(/(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);
+  if (!m) return null;
+  const [, d, mo, y] = m;
+  const year = y.length === 2 ? 2000 + Number(y) : Number(y);
+  const [hh, mm] = (time || "").match(/(\d{1,2}):(\d{2})/)?.slice(1) ?? ["12", "00"];
+  return new Date(year, Number(mo) - 1, Number(d), Number(hh), Number(mm));
+}
+
 function ChildFixtureCard({ child, availability }: { child: Child; availability: AvailabilityRow[] }) {
   const slug = child.teamSlug ?? undefined;
   const { data, isLoading, isError } = useTeamFixtures(slug);
-  const next = data?.fixtures?.[0];
+  const next = useMemo(() => {
+    const list = data?.fixtures ?? [];
+    const cutoff = Date.now() - 3 * 60 * 60 * 1000;
+    const upcoming = list
+      .map((f) => ({ f, at: parseFixtureDate(f.date, f.time) }))
+      .filter((x) => x.at && x.at.getTime() >= cutoff)
+      .sort((a, b) => a.at!.getTime() - b.at!.getTime());
+    return upcoming[0]?.f;
+  }, [data]);
+
 
   const answered = useMemo(() => {
     if (!next || !slug) return true;
