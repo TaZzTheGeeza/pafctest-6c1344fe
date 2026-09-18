@@ -50,6 +50,7 @@ import DashboardPage from "./pages/DashboardPage.tsx";
 import AdminPlayerProfilePage from "./pages/AdminPlayerProfilePage.tsx";
 import MyProfilePage from "./pages/MyProfilePage.tsx";
 import KitPage from "./pages/KitPage.tsx";
+import ParentHomePage from "./pages/ParentHomePage.tsx";
 import BulkDocumentUploadPage from "./pages/BulkDocumentUploadPage.tsx";
 import SafeguardingReportsPage from "./pages/SafeguardingReportsPage.tsx";
 import PafcTvPage from "./pages/PafcTvPage.tsx";
@@ -151,6 +152,7 @@ function AppContent() {
         <Route path="/admin/safeguarding-reports" element={<SafeguardingReportsPage />} />
         <Route path="/my-profile" element={<RoleGate requiredRole="authenticated"><MyProfilePage /></RoleGate>} />
         <Route path="/kit" element={<RoleGate requiredRole="authenticated"><KitPage /></RoleGate>} />
+        <Route path="/parent-home" element={<RoleGate requiredRole="authenticated"><ParentHomePage /></RoleGate>} />
         <Route path="/auth" element={<AuthPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/meetings" element={<RoleGate requiredRole="player"><MeetingsPage /></RoleGate>} />

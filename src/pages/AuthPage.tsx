@@ -28,7 +28,7 @@ export default function AuthPage() {
   const { user, loading } = useAuth();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const redirectTo = searchParams.get("redirect") || "/";
+  const redirectTo = searchParams.get("redirect") || "/parent-home";
   const inviteToken = searchParams.get("invite");
   const inviteTeamSlugParam = searchParams.get("team") || getInviteTeamFromRedirect(redirectTo);
   const inviteTeamNameParam = searchParams.get("teamName");

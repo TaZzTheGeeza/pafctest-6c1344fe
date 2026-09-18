@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, ChevronDown, Trophy, ShoppingBag, LogIn, Newspaper, CalendarDays, Image, Award, Clock, UserPlus, FileText, Shield, Info, Heart, MessageSquare, Settings, Youtube, User, Sparkles } from "lucide-react";
+import { Menu, X, ChevronDown, Trophy, ShoppingBag, LogIn, Newspaper, CalendarDays, Image, Award, Clock, UserPlus, FileText, Shield, Info, Heart, MessageSquare, Settings, Youtube, User, Users, Sparkles } from "lucide-react";
 
 import { ShopCartDrawer } from "@/components/shop/ShopCartDrawer";
 import { NotificationBell } from "@/components/hub/NotificationBell";
@@ -200,6 +200,9 @@ export function Navbar() {
             )}
             {user ? (
               <>
+                <Link to="/parent-home" className="font-display text-[10px] tracking-[0.15em] uppercase text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
+                  <Users className="h-3 w-3" /> My Family
+                </Link>
                 <Link to="/my-profile" className="font-display text-[10px] tracking-[0.15em] uppercase text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
                   <User className="h-3 w-3" /> My Profile
                 </Link>
@@ -332,6 +335,9 @@ export function Navbar() {
             )}
             {user ? (
               <>
+                <Link to="/parent-home" onClick={() => setIsOpen(false)} className="flex items-center justify-center gap-2 w-full font-display text-sm tracking-wider py-2.5 rounded-md border border-primary/40 text-primary hover:bg-primary/10 transition-colors mt-2">
+                  <Users className="h-4 w-4" /> My Family
+                </Link>
                 <Link to="/my-profile" onClick={() => setIsOpen(false)} className="flex items-center justify-center gap-2 w-full font-display text-sm tracking-wider py-2.5 rounded-md border border-border text-muted-foreground hover:text-primary transition-colors mt-2">
                   <User className="h-4 w-4" /> My Profile
                 </Link>
