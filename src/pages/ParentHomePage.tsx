@@ -189,7 +189,7 @@ function ChildFixtureCard({ child, availability }: { child: Child; availability:
             )}
             {slug && (
               <Link
-                to={`/hub?tab=fixtures&team=${slug}`}
+                to={`/hub?tab=availability&team=${slug}`}
                 className="mt-4 w-full py-2 bg-primary text-primary-foreground font-bold text-[10px] uppercase tracking-widest hover:opacity-90 transition-opacity text-center rounded-sm"
               >
                 View & Confirm Availability
@@ -301,7 +301,7 @@ export default function ParentHomePage() {
               ` ${when.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}`,
             location: e.location,
             team: e.team,
-            link: "/calendar",
+            link: "/events",
           });
         }
         for (const e of (hubEventsRes.data as any[]) || []) {
@@ -316,7 +316,7 @@ export default function ParentHomePage() {
               (e.event_time ? ` ${e.event_time}` : ""),
             location: e.venue,
             team: teamNameFromSlug(e.team_slug),
-            link: `/hub?tab=fixtures&team=${e.team_slug}`,
+            link: `/hub?tab=availability&team=${e.team_slug}`,
           });
         }
         events.sort((a, b) => (a.when?.getTime() ?? 0) - (b.when?.getTime() ?? 0));
@@ -347,7 +347,7 @@ export default function ParentHomePage() {
     }
     for (const c of children) {
       if (c.registered && c.paymentStatus && c.paymentStatus !== "paid" && c.paymentStatus !== "active") {
-        list.push({ id: `reg-${c.key}`, label: `Registration payment for ${c.name.split(" ")[0]}`, amount: null, to: "/my-profile" });
+        list.push({ id: `reg-${c.key}`, label: `Registration payment for ${c.name.split(" ")[0]}`, amount: null, to: "/my-profile?tab=overview" });
       }
     }
     return list;
@@ -389,6 +389,9 @@ export default function ParentHomePage() {
   }, [availability]);
 
   // 8. Latest report per team
+  const primaryTeam = useMemo(() => children.find((c) => c.teamSlug)?.teamSlug ?? null, [children]);
+  const teamQuery = (tab: string) => `/hub?tab=${tab}${primaryTeam ? `&team=${primaryTeam}` : ""}`;
+
   const latestReports = useMemo(() => {
     const seen = new Set<string>();
     const out: ReportRow[] = [];
@@ -521,7 +524,7 @@ export default function ParentHomePage() {
                       <h3 className="text-foreground font-display uppercase text-lg flex items-center gap-2">
                         <Bell className="h-4 w-4 text-primary" /> Latest Alerts
                       </h3>
-                      <Link to="/hub" className="text-primary text-[10px] font-bold uppercase tracking-wider">View all</Link>
+                      <Link to={teamQuery("notifications")} className="text-primary text-[10px] font-bold uppercase tracking-wider">View all</Link>
                     </div>
                     {notifications.length === 0 ? (
                       <p className="text-muted-foreground text-xs">Nothing new right now.</p>
@@ -530,7 +533,7 @@ export default function ParentHomePage() {
                         {notifications.slice(0, 3).map((n) => (
                           <Link
                             key={n.id}
-                            to={n.link || "/hub"}
+                            to={n.link || teamQuery("notifications")}
                             className="block bg-muted/40 hover:bg-muted transition-colors p-3 rounded"
                           >
                             <p className="text-foreground text-sm font-semibold flex items-center gap-2">
@@ -618,7 +621,7 @@ export default function ParentHomePage() {
                     ) : (
                       <div className="space-y-3">
                         {docIssues.map((d) => (
-                          <Link key={d.id} to="/my-profile" className="block bg-muted/40 hover:bg-muted transition-colors p-3 rounded">
+                          <Link key={d.id} to="/my-profile?tab=documents" className="block bg-muted/40 hover:bg-muted transition-colors p-3 rounded">
                             <p className="text-foreground text-sm font-semibold">{d.child}</p>
                             <p className="text-muted-foreground text-xs mt-1">Missing: {d.missing.join(", ")}</p>
                           </Link>
@@ -636,7 +639,7 @@ export default function ParentHomePage() {
                         <CalendarDays className="h-5 w-5 text-primary" /> Next Fixtures
                       </h3>
                       <Link
-                        to="/hub?tab=fixtures"
+                        to={teamQuery("availability")}
                         className="text-primary text-xs font-bold uppercase tracking-widest border border-primary/40 px-3 py-1 hover:bg-primary hover:text-primary-foreground transition-all rounded-sm"
                       >
                         View All
@@ -663,7 +666,7 @@ export default function ParentHomePage() {
                         <h3 className="text-foreground font-display uppercase text-xl flex items-center gap-2">
                           <Trophy className="h-5 w-5 text-primary" /> Season Stats
                         </h3>
-                        <Link to="/hub?tab=stats" className="text-primary text-[10px] font-bold uppercase tracking-wider">Full stats</Link>
+                        <Link to={teamQuery("stats")} className="text-primary text-[10px] font-bold uppercase tracking-wider">Full stats</Link>
                       </div>
                       <div className="grid sm:grid-cols-2 gap-4">
                         {childStats.map(({ child, row }) => (
@@ -695,7 +698,7 @@ export default function ParentHomePage() {
                       <h3 className="text-foreground font-display uppercase text-xl flex items-center gap-2">
                         <CalendarDays className="h-5 w-5 text-primary" /> This Week For Your Family
                       </h3>
-                      <Link to="/calendar" className="text-primary text-[10px] font-bold uppercase tracking-wider">Club calendar</Link>
+                      <Link to="/events" className="text-primary text-[10px] font-bold uppercase tracking-wider">Club calendar</Link>
                     </div>
                     {weekEvents.length === 0 ? (
                       <p className="text-muted-foreground text-sm">Nothing scheduled in the next seven days.</p>
@@ -732,7 +735,7 @@ export default function ParentHomePage() {
                           <p className="text-muted-foreground text-xs mt-1">
                             Marked available across your last {attendance.total} answers.
                           </p>
-                          <Link to="/hub?tab=fixtures" className="inline-block mt-4 text-primary text-[10px] font-bold uppercase tracking-wider">
+                          <Link to={teamQuery("availability")} className="inline-block mt-4 text-primary text-[10px] font-bold uppercase tracking-wider">
                             Answer upcoming games
                           </Link>
                         </>
@@ -781,9 +784,9 @@ export default function ParentHomePage() {
                   {/* Quick links */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {[
-                      { to: "/hub?tab=payments", icon: Wallet, label: "Payments" },
+                      { to: teamQuery("payments"), icon: Wallet, label: "Payments" },
                       { to: "/kit", icon: Shirt, label: "Match Day Kit" },
-                      { to: "/hub?tab=reports", icon: FileText, label: "Match Reports" },
+                      { to: teamQuery("reports"), icon: FileText, label: "Match Reports" },
                       { to: "/my-profile", icon: Settings, label: "My Profile" },
                     ].map(({ to, icon: Icon, label }) => (
                       <Link
