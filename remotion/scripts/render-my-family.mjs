@@ -25,7 +25,7 @@ await renderMedia({
   composition,
   serveUrl,
   codec: "h264",
-  outputLocation: "/tmp/my-family-explainer-v2.mp4",
+  outputLocation: "/mnt/documents/my-family-explainer-v4-clean-voice.mp4",
   puppeteerInstance: browser,
   concurrency: 1,
   crf: 18,

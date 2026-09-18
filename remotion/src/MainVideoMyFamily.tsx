@@ -136,7 +136,6 @@ export const MainVideoMyFamily: React.FC = () => (
     <ScreenshotScene from={2415} duration={375} eyebrow="ONE FAMILY VIEW" title="Forms, events and shortcuts" body="Check forms and consents, this week's club activity and quick links to payments, kit, reports and your profile." x={-930} y={-1160} scale={1.45} align="left" />
     <Sequence from={2790} durationInFrames={345}><Outro /></Sequence>
 
-    <Audio src={staticFile("audio/my-family-bed.m4a")} loop volume={0.1} />
     <Sequence from={12}><Audio src={staticFile("audio/my-family/intro.wav")} volume={1} /></Sequence>
     <Sequence from={315}><Audio src={staticFile("audio/my-family/purpose.wav")} volume={1} /></Sequence>
     <Sequence from={735}><Audio src={staticFile("audio/my-family/alerts.wav")} volume={1} /></Sequence>
