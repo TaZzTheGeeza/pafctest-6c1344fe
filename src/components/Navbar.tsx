@@ -200,6 +200,9 @@ export function Navbar() {
             )}
             {user ? (
               <>
+                <Link to="/parent-home" className="font-display text-[10px] tracking-[0.15em] uppercase text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
+                  <Users className="h-3 w-3" /> My Family
+                </Link>
                 <Link to="/my-profile" className="font-display text-[10px] tracking-[0.15em] uppercase text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
                   <User className="h-3 w-3" /> My Profile
                 </Link>
