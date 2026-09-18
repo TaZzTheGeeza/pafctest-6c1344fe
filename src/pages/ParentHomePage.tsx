@@ -189,7 +189,7 @@ function ChildFixtureCard({ child, availability }: { child: Child; availability:
             )}
             {slug && (
               <Link
-                to={`/hub?tab=fixtures&team=${slug}`}
+                to={`/hub?tab=availability&team=${slug}`}
                 className="mt-4 w-full py-2 bg-primary text-primary-foreground font-bold text-[10px] uppercase tracking-widest hover:opacity-90 transition-opacity text-center rounded-sm"
               >
                 View & Confirm Availability
@@ -301,7 +301,7 @@ export default function ParentHomePage() {
               ` ${when.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}`,
             location: e.location,
             team: e.team,
-            link: "/calendar",
+            link: "/events",
           });
         }
         for (const e of (hubEventsRes.data as any[]) || []) {
@@ -316,7 +316,7 @@ export default function ParentHomePage() {
               (e.event_time ? ` ${e.event_time}` : ""),
             location: e.venue,
             team: teamNameFromSlug(e.team_slug),
-            link: `/hub?tab=fixtures&team=${e.team_slug}`,
+            link: `/hub?tab=availability&team=${e.team_slug}`,
           });
         }
         events.sort((a, b) => (a.when?.getTime() ?? 0) - (b.when?.getTime() ?? 0));
@@ -636,7 +636,7 @@ export default function ParentHomePage() {
                         <CalendarDays className="h-5 w-5 text-primary" /> Next Fixtures
                       </h3>
                       <Link
-                        to="/hub?tab=fixtures"
+                        to="/hub?tab=availability"
                         className="text-primary text-xs font-bold uppercase tracking-widest border border-primary/40 px-3 py-1 hover:bg-primary hover:text-primary-foreground transition-all rounded-sm"
                       >
                         View All
@@ -695,7 +695,7 @@ export default function ParentHomePage() {
                       <h3 className="text-foreground font-display uppercase text-xl flex items-center gap-2">
                         <CalendarDays className="h-5 w-5 text-primary" /> This Week For Your Family
                       </h3>
-                      <Link to="/calendar" className="text-primary text-[10px] font-bold uppercase tracking-wider">Club calendar</Link>
+                      <Link to="/events" className="text-primary text-[10px] font-bold uppercase tracking-wider">Club calendar</Link>
                     </div>
                     {weekEvents.length === 0 ? (
                       <p className="text-muted-foreground text-sm">Nothing scheduled in the next seven days.</p>
@@ -732,7 +732,7 @@ export default function ParentHomePage() {
                           <p className="text-muted-foreground text-xs mt-1">
                             Marked available across your last {attendance.total} answers.
                           </p>
-                          <Link to="/hub?tab=fixtures" className="inline-block mt-4 text-primary text-[10px] font-bold uppercase tracking-wider">
+                          <Link to="/hub?tab=availability" className="inline-block mt-4 text-primary text-[10px] font-bold uppercase tracking-wider">
                             Answer upcoming games
                           </Link>
                         </>
