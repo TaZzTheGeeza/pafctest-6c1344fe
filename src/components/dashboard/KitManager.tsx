@@ -127,7 +127,7 @@ export function KitManager({ focusRequestId }: { focusRequestId?: string | null 
       supabase.from("kit_items" as any).select("*").order("sort_order"),
       supabase.from("kit_requests" as any).select("*, kit_items(id, name, photo_url)").order("created_at", { ascending: false }),
       supabase.from("kit_issues" as any).select("*").order("issued_at", { ascending: false }),
-      supabase.from("player_registrations").select("id, child_name, preferred_age_group").order("child_name"),
+      supabase.from("player_registrations").select("id, child_name, preferred_age_group, user_id").order("child_name"),
       supabase.from("player_stats").select("first_name, shirt_number, age_group"),
     ]);
     setItems((itemsRes.data as any) || []);
