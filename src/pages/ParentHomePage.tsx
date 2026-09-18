@@ -259,10 +259,14 @@ export default function ParentHomePage() {
 
       const kids: Child[] = [];
       const known = new Set<string>();
+      const knownFirst = new Set<string>();
+      const firstOf = (n: string) => n.trim().toLowerCase().split(/\s+/)[0] || "";
       for (const r of (regsRes.data as any[]) || []) {
         const name = (r.child_name || "").trim();
         if (!name) continue;
+        if (known.has(name.toLowerCase())) continue;
         known.add(name.toLowerCase());
+        knownFirst.add(firstOf(name));
         kids.push({
           key: r.id,
           name,
@@ -277,8 +281,9 @@ export default function ParentHomePage() {
       }
       for (const g of guardiansRes.data || []) {
         const name = (g.player_name || "").trim();
-        if (!name || known.has(name.toLowerCase())) continue;
+        if (!name || known.has(name.toLowerCase()) || knownFirst.has(firstOf(name))) continue;
         known.add(name.toLowerCase());
+        knownFirst.add(firstOf(name));
         kids.push({
           key: `guardian:${g.id}`,
           name,
