@@ -347,7 +347,7 @@ export default function ParentHomePage() {
     }
     for (const c of children) {
       if (c.registered && c.paymentStatus && c.paymentStatus !== "paid" && c.paymentStatus !== "active") {
-        list.push({ id: `reg-${c.key}`, label: `Registration payment for ${c.name.split(" ")[0]}`, amount: null, to: "/my-profile" });
+        list.push({ id: `reg-${c.key}`, label: `Registration payment for ${c.name.split(" ")[0]}`, amount: null, to: "/my-profile?tab=overview" });
       }
     }
     return list;
@@ -524,7 +524,7 @@ export default function ParentHomePage() {
                       <h3 className="text-foreground font-display uppercase text-lg flex items-center gap-2">
                         <Bell className="h-4 w-4 text-primary" /> Latest Alerts
                       </h3>
-                      <Link to="/hub" className="text-primary text-[10px] font-bold uppercase tracking-wider">View all</Link>
+                      <Link to={teamQuery("notifications")} className="text-primary text-[10px] font-bold uppercase tracking-wider">View all</Link>
                     </div>
                     {notifications.length === 0 ? (
                       <p className="text-muted-foreground text-xs">Nothing new right now.</p>
@@ -533,7 +533,7 @@ export default function ParentHomePage() {
                         {notifications.slice(0, 3).map((n) => (
                           <Link
                             key={n.id}
-                            to={n.link || "/hub"}
+                            to={n.link || teamQuery("notifications")}
                             className="block bg-muted/40 hover:bg-muted transition-colors p-3 rounded"
                           >
                             <p className="text-foreground text-sm font-semibold flex items-center gap-2">
@@ -621,7 +621,7 @@ export default function ParentHomePage() {
                     ) : (
                       <div className="space-y-3">
                         {docIssues.map((d) => (
-                          <Link key={d.id} to="/my-profile" className="block bg-muted/40 hover:bg-muted transition-colors p-3 rounded">
+                          <Link key={d.id} to="/my-profile?tab=documents" className="block bg-muted/40 hover:bg-muted transition-colors p-3 rounded">
                             <p className="text-foreground text-sm font-semibold">{d.child}</p>
                             <p className="text-muted-foreground text-xs mt-1">Missing: {d.missing.join(", ")}</p>
                           </Link>
@@ -639,7 +639,7 @@ export default function ParentHomePage() {
                         <CalendarDays className="h-5 w-5 text-primary" /> Next Fixtures
                       </h3>
                       <Link
-                        to="/hub?tab=availability"
+                        to={teamQuery("availability")}
                         className="text-primary text-xs font-bold uppercase tracking-widest border border-primary/40 px-3 py-1 hover:bg-primary hover:text-primary-foreground transition-all rounded-sm"
                       >
                         View All
@@ -666,7 +666,7 @@ export default function ParentHomePage() {
                         <h3 className="text-foreground font-display uppercase text-xl flex items-center gap-2">
                           <Trophy className="h-5 w-5 text-primary" /> Season Stats
                         </h3>
-                        <Link to="/hub?tab=stats" className="text-primary text-[10px] font-bold uppercase tracking-wider">Full stats</Link>
+                        <Link to={teamQuery("stats")} className="text-primary text-[10px] font-bold uppercase tracking-wider">Full stats</Link>
                       </div>
                       <div className="grid sm:grid-cols-2 gap-4">
                         {childStats.map(({ child, row }) => (
@@ -735,7 +735,7 @@ export default function ParentHomePage() {
                           <p className="text-muted-foreground text-xs mt-1">
                             Marked available across your last {attendance.total} answers.
                           </p>
-                          <Link to="/hub?tab=availability" className="inline-block mt-4 text-primary text-[10px] font-bold uppercase tracking-wider">
+                          <Link to={teamQuery("availability")} className="inline-block mt-4 text-primary text-[10px] font-bold uppercase tracking-wider">
                             Answer upcoming games
                           </Link>
                         </>
@@ -784,9 +784,9 @@ export default function ParentHomePage() {
                   {/* Quick links */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {[
-                      { to: "/hub?tab=payments", icon: Wallet, label: "Payments" },
+                      { to: teamQuery("payments"), icon: Wallet, label: "Payments" },
                       { to: "/kit", icon: Shirt, label: "Match Day Kit" },
-                      { to: "/hub?tab=reports", icon: FileText, label: "Match Reports" },
+                      { to: teamQuery("reports"), icon: FileText, label: "Match Reports" },
                       { to: "/my-profile", icon: Settings, label: "My Profile" },
                     ].map(({ to, icon: Icon, label }) => (
                       <Link
