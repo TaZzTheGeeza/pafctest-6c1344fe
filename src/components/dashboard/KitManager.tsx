@@ -258,11 +258,12 @@ export function KitManager({ focusRequestId }: { focusRequestId?: string | null 
     if (!manualDetail.trim()) { toast.error("Add a short note about why this kit is needed"); return; }
     const isTrainingTop = item.name.toLowerCase().includes("training top");
     setSaving(true);
+    const parentUserId = (reg as any).user_id as string | null;
     const { error } = await supabase.from("kit_requests" as any).insert({
-      user_id: user.id,
+      user_id: parentUserId || user.id,
       player_registration_id: reg.id,
       player_name: reg.child_name,
-      team_slug: (reg.preferred_age_group || "").toLowerCase().replace(/\s+/g, "-"),
+      team_slug: (reg.preferred_age_group || "").toLowerCase() || null,
       kit_item_id: item.id,
       size: manualSize.trim(),
       reason: manualReason,
@@ -274,7 +275,7 @@ export function KitManager({ focusRequestId }: { focusRequestId?: string | null 
     } as any);
     setSaving(false);
     if (error) { toast.error("Could not add that request", { description: error.message }); return; }
-    toast.success("Request added");
+    toast.success(parentUserId ? "Request added for the parent" : "Request added (no parent account linked, so the family will not see it online)");
     setManualOpen(false);
     setManualReg(""); setManualItem(""); setManualSize(""); setManualInitials(""); setManualReason("outgrown"); setManualDetail(""); setRegSearch("");
     loadAll();
