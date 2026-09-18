@@ -242,7 +242,11 @@ export default function ParentHomePage() {
         supabase
           .from("player_registrations")
           .select("id, child_name, preferred_age_group, photo_url, consent_medical, consent_photography, declaration_confirmed, payment_status")
-          .eq("user_id", user.id),
+          .or(
+            user.email
+              ? `user_id.eq.${user.id},email.eq.${user.email}`
+              : `user_id.eq.${user.id}`
+          ),
         supabase.from("guardians").select("id, player_name, team_slug").eq("parent_user_id", user.id),
         supabase.from("kit_requests" as any).select("id, player_name, status, size, chargeable, charge_amount, created_at, kit_items(name)").eq("user_id", user.id).order("created_at", { ascending: false }),
         supabase.from("shop_orders").select("id, created_at, status, progress_status, total_cents, items").eq("user_id", user.id).order("created_at", { ascending: false }).limit(10),
