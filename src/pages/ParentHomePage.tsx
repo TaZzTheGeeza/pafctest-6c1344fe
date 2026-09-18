@@ -242,7 +242,11 @@ export default function ParentHomePage() {
         supabase
           .from("player_registrations")
           .select("id, child_name, preferred_age_group, photo_url, consent_medical, consent_photography, declaration_confirmed, payment_status")
-          .eq("user_id", user.id),
+          .or(
+            user.email
+              ? `user_id.eq.${user.id},email.eq.${user.email}`
+              : `user_id.eq.${user.id}`
+          ),
         supabase.from("guardians").select("id, player_name, team_slug").eq("parent_user_id", user.id),
         supabase.from("kit_requests" as any).select("id, player_name, status, size, chargeable, charge_amount, created_at, kit_items(name)").eq("user_id", user.id).order("created_at", { ascending: false }),
         supabase.from("shop_orders").select("id, created_at, status, progress_status, total_cents, items").eq("user_id", user.id).order("created_at", { ascending: false }).limit(10),
@@ -255,10 +259,14 @@ export default function ParentHomePage() {
 
       const kids: Child[] = [];
       const known = new Set<string>();
+      const knownFirst = new Set<string>();
+      const firstOf = (n: string) => n.trim().toLowerCase().split(/\s+/)[0] || "";
       for (const r of (regsRes.data as any[]) || []) {
         const name = (r.child_name || "").trim();
         if (!name) continue;
+        if (known.has(name.toLowerCase())) continue;
         known.add(name.toLowerCase());
+        knownFirst.add(firstOf(name));
         kids.push({
           key: r.id,
           name,
@@ -273,8 +281,9 @@ export default function ParentHomePage() {
       }
       for (const g of guardiansRes.data || []) {
         const name = (g.player_name || "").trim();
-        if (!name || known.has(name.toLowerCase())) continue;
+        if (!name || known.has(name.toLowerCase()) || knownFirst.has(firstOf(name))) continue;
         known.add(name.toLowerCase());
+        knownFirst.add(firstOf(name));
         kids.push({
           key: `guardian:${g.id}`,
           name,
