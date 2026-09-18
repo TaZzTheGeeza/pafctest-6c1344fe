@@ -9,7 +9,7 @@ import {
   useCurrentFrame,
 } from "remotion";
 
-export const MY_FAMILY_TOTAL = 1260;
+export const MY_FAMILY_TOTAL = 3135;
 const GOLD = "#d6a43b";
 const OFF_WHITE = "#f5f1e8";
 const SCREENSHOT = staticFile("screenshots/my-family-hires.png");
@@ -127,14 +127,23 @@ const Outro: React.FC = () => {
 
 export const MainVideoMyFamily: React.FC = () => (
   <AbsoluteFill style={{ backgroundColor: "#090909" }}>
-    <Sequence from={0} durationInFrames={150}><Intro /></Sequence>
-    <ScreenshotScene from={150} duration={170} eyebrow="WHY IT WAS CREATED" title="No more hunting around" body="My Family brings each child's club information together, so parents can quickly see what needs attention and where to go next." x={-970} y={-210} scale={1.5} align="left" />
-    <ScreenshotScene from={320} duration={170} eyebrow="WHAT NEEDS YOUR ATTENTION" title="Actions and alerts" body="See availability reminders, kit updates, payment prompts and club messages. Every item links directly to the right place." x={0} y={-250} scale={1.55} align="right" />
-    <ScreenshotScene from={490} duration={170} eyebrow="WHAT'S COMING UP" title="Fixtures and availability" body="View the next match for each linked child, check the real date, time and venue, then confirm availability in one tap." x={-1030} y={-220} scale={1.55} align="left" />
-    <ScreenshotScene from={660} duration={170} eyebrow="FOLLOW THEIR SEASON" title="Stats and match reports" body="Keep up with goals, assists, Player of the Match awards and the latest team reports, all connected to your child's team." x={-990} y={-780} scale={1.5} align="left" />
-    <ScreenshotScene from={830} duration={170} eyebrow="KEEP TRACK OF REQUESTS" title="Kit and shop orders" body="Follow kit requests from approval to collection, check shop order progress and see when something needs action." x={0} y={-870} scale={1.5} align="right" />
-    <ScreenshotScene from={1000} duration={140} eyebrow="ONE FAMILY VIEW" title="Forms, events and shortcuts" body="Check forms and consents, this week's club activity and quick links to payments, kit, reports and your profile." x={-930} y={-1160} scale={1.45} align="left" />
-    <Sequence from={1140} durationInFrames={120}><Outro /></Sequence>
-    <Audio src={staticFile("audio/my-family-bed.m4a")} loop volume={0.34} />
+    <Sequence from={0} durationInFrames={300}><Intro /></Sequence>
+    <ScreenshotScene from={300} duration={420} eyebrow="WHY IT WAS CREATED" title="No more hunting around" body="My Family brings each child's club information together, so parents can quickly see what needs attention and where to go next." x={-970} y={-210} scale={1.5} align="left" />
+    <ScreenshotScene from={720} duration={435} eyebrow="WHAT NEEDS YOUR ATTENTION" title="Actions and alerts" body="See availability reminders, kit updates, payment prompts and club messages. Every item links directly to the right place." x={0} y={-250} scale={1.55} align="right" />
+    <ScreenshotScene from={1155} duration={435} eyebrow="WHAT'S COMING UP" title="Fixtures and availability" body="View the next match for each linked child, check the real date, time and venue, then confirm availability in one tap." x={-1030} y={-220} scale={1.55} align="left" />
+    <ScreenshotScene from={1590} duration={375} eyebrow="FOLLOW THEIR SEASON" title="Stats and match reports" body="Keep up with goals, assists, Player of the Match awards and the latest team reports, all connected to your child's team." x={-990} y={-780} scale={1.5} align="left" />
+    <ScreenshotScene from={1965} duration={450} eyebrow="KEEP TRACK OF REQUESTS" title="Kit and shop orders" body="Follow kit requests from approval to collection, check shop order progress and see when something needs action." x={0} y={-870} scale={1.5} align="right" />
+    <ScreenshotScene from={2415} duration={375} eyebrow="ONE FAMILY VIEW" title="Forms, events and shortcuts" body="Check forms and consents, this week's club activity and quick links to payments, kit, reports and your profile." x={-930} y={-1160} scale={1.45} align="left" />
+    <Sequence from={2790} durationInFrames={345}><Outro /></Sequence>
+
+    <Audio src={staticFile("audio/my-family-bed.m4a")} loop volume={0.1} />
+    <Sequence from={12}><Audio src={staticFile("audio/my-family/intro.wav")} volume={1} /></Sequence>
+    <Sequence from={315}><Audio src={staticFile("audio/my-family/purpose.wav")} volume={1} /></Sequence>
+    <Sequence from={735}><Audio src={staticFile("audio/my-family/alerts.wav")} volume={1} /></Sequence>
+    <Sequence from={1170}><Audio src={staticFile("audio/my-family/fixtures.wav")} volume={1} /></Sequence>
+    <Sequence from={1605}><Audio src={staticFile("audio/my-family/stats.wav")} volume={1} /></Sequence>
+    <Sequence from={1980}><Audio src={staticFile("audio/my-family/kit.wav")} volume={1} /></Sequence>
+    <Sequence from={2430}><Audio src={staticFile("audio/my-family/forms.wav")} volume={1} /></Sequence>
+    <Sequence from={2805}><Audio src={staticFile("audio/my-family/outro.wav")} volume={1} /></Sequence>
   </AbsoluteFill>
 );
