@@ -4,6 +4,7 @@ import { MainVideoV2 } from "./MainVideoV2";
 import { MainVideoSales, TOTAL_FRAMES as SALES_TOTAL } from "./MainVideoSales";
 import { MainVideoMagna, TOTAL as MAGNA_TOTAL } from "./MainVideoMagna";
 import { MainVideoYourClub, TOTAL as YC_TOTAL } from "./MainVideoYourClub";
+import { MainVideoMyFamily, MY_FAMILY_TOTAL } from "./MainVideoMyFamily";
 
 const V2_SCENES = [462, 347, 506, 474, 553, 552, 893, 370, 564, 526, 531, 1017, 943, 709, 614];
 const V2_TRANS = 20;
@@ -47,6 +48,14 @@ export const RemotionRoot: React.FC = () => (
       id="your-club-overview"
       component={MainVideoYourClub}
       durationInFrames={YC_TOTAL}
+      fps={30}
+      width={1920}
+      height={1080}
+    />
+    <Composition
+      id="my-family-explainer-v2"
+      component={MainVideoMyFamily}
+      durationInFrames={MY_FAMILY_TOTAL}
       fps={30}
       width={1920}
       height={1080}
