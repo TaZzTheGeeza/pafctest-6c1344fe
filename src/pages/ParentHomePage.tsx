@@ -389,6 +389,9 @@ export default function ParentHomePage() {
   }, [availability]);
 
   // 8. Latest report per team
+  const primaryTeam = useMemo(() => children.find((c) => c.teamSlug)?.teamSlug ?? null, [children]);
+  const teamQuery = (tab: string) => `/hub?tab=${tab}${primaryTeam ? `&team=${primaryTeam}` : ""}`;
+
   const latestReports = useMemo(() => {
     const seen = new Set<string>();
     const out: ReportRow[] = [];
