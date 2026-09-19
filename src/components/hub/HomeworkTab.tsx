@@ -459,6 +459,35 @@ export default function HomeworkTab({ teamSlug }: { teamSlug: string }) {
                     </p>
                   )}
                   {sub?.note && <p className="text-sm text-muted-foreground mt-2 italic">"{sub.note}"</p>}
+                  {sub && (questionsByTask[task.id] || []).length > 0 && (
+                    <div className="mt-3 border-t border-border pt-3 space-y-1">
+                      {(() => {
+                        const qs = questionsByTask[task.id] || [];
+                        const ans = answersBySubmission[sub.id] || [];
+                        const score = scoreLabel(qs, ans);
+                        return (
+                          <>
+                            <p className="text-[10px] font-display uppercase tracking-widest text-primary">
+                              Answers{score ? ` - scored ${score}` : ""}
+                            </p>
+                            {qs.map((q, qi) => {
+                              const a = ans.find((x) => x.question_id === q.id);
+                              return (
+                                <p key={q.id} className="text-sm text-foreground flex gap-1">
+                                  {a?.is_correct === true && <Check className="h-3.5 w-3.5 text-emerald-500 mt-0.5 shrink-0" />}
+                                  {a?.is_correct === false && <X className="h-3.5 w-3.5 text-destructive mt-0.5 shrink-0" />}
+                                  <span>
+                                    <span className="text-muted-foreground">{qi + 1}. {q.prompt} </span>
+                                    {answerText(a?.answer)}
+                                  </span>
+                                </p>
+                              );
+                            })}
+                          </>
+                        );
+                      })()}
+                    </div>
+                  )}
                   {sub?.proof_path && sub.proof_type === "image" && proofUrls[sub.id] && (
                     <img
                       src={proofUrls[sub.id]}
