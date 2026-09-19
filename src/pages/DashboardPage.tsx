@@ -28,7 +28,8 @@ import { OrdersTab } from "@/components/dashboard/OrdersTab";
 import { ShopProductsManager } from "@/components/dashboard/ShopProductsManager";
 import { KitManager } from "@/components/dashboard/KitManager";
 import { ReportTracker } from "@/components/dashboard/ReportTracker";
-import { ClipboardCheck, Shirt } from "lucide-react";
+import { ClipboardCheck, Shirt, BookOpen } from "lucide-react";
+import HomeworkManager from "@/components/dashboard/HomeworkManager";
 import { TreasurerPaymentsBoard } from "@/components/dashboard/TreasurerPaymentsBoard";
 import { RolePermissionManager } from "@/components/dashboard/RolePermissionManager";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
@@ -77,7 +78,7 @@ const ADMIN_LINKS = [
   { label: "Pitch Bookings Admin", path: "/pitch-bookings-admin", icon: MapPin, desc: "Approve or decline pitch booking requests" },
 ];
 
-type DashboardSection = "overview" | "users" | "requests" | "enquiries" | "messages" | "notifications" | "orders" | "products" | "report" | "stats" | "manage" | "finances" | "permissions" | "tracker" | "kit";
+type DashboardSection = "overview" | "users" | "requests" | "enquiries" | "messages" | "notifications" | "orders" | "products" | "report" | "stats" | "homework" | "manage" | "finances" | "permissions" | "tracker" | "kit";
 
 export default function DashboardPage() {
   const { user, isAdmin, isCoach, isTreasurer } = useAuth();
@@ -108,7 +109,7 @@ export default function DashboardPage() {
   // Handle section from URL params (e.g. /dashboard?section=messages)
   useEffect(() => {
     const section = searchParams.get("section");
-    if (section && ["overview", "users", "requests", "enquiries", "messages", "notifications", "orders", "products", "report", "stats", "manage", "finances", "permissions", "tracker", "kit"].includes(section)) {
+    if (section && ["overview", "users", "requests", "enquiries", "messages", "notifications", "orders", "products", "report", "stats", "homework", "manage", "finances", "permissions", "tracker", "kit"].includes(section)) {
       setActiveSection(section as DashboardSection);
     }
   }, [searchParams]);
@@ -490,6 +491,7 @@ export default function DashboardPage() {
     { key: "permissions", label: "Permissions", icon: Shield, adminOnly: true, group: "users" },
     { key: "report", label: "Match Report", icon: FileText, coachOnly: true, group: "coach" },
     { key: "stats", label: "Player Stats", icon: BarChart3, coachOnly: true, group: "coach" },
+    { key: "homework", label: "Homework", icon: BookOpen, coachOnly: true, group: "coach" },
     { key: "manage", label: "Manage", icon: Settings, coachOnly: true, group: "coach" },
   ];
 
@@ -987,6 +989,11 @@ export default function DashboardPage() {
           {activeSection === "stats" && showCoachTools && (
             <div className="max-w-2xl mx-auto">
               <PlayerStatsForm allowedAgeGroups={effectiveAgeGroups} />
+            </div>
+          )}
+          {activeSection === "homework" && showCoachTools && (
+            <div className="max-w-3xl mx-auto">
+              <HomeworkManager />
             </div>
           )}
           {activeSection === "manage" && showCoachTools && (

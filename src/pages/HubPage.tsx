@@ -7,10 +7,11 @@ import { TeamChat } from "@/components/hub/TeamChat";
 import { PaymentCenter } from "@/components/hub/PaymentCenter";
 import { NotificationCenter } from "@/components/hub/NotificationCenter";
 import { TeamMemberManager } from "@/components/hub/TeamMemberManager";
-import { MessageSquare, CreditCard, Bell, CalendarCheck, Users, Shield, ChevronDown, TrendingUp, UserPlus, User, FileText, ChevronRight, ChevronLeft, Video, Sparkles, Award, ClipboardList, MapPin, BarChart3, Shirt } from "lucide-react";
+import { MessageSquare, CreditCard, Bell, CalendarCheck, Users, Shield, ChevronDown, TrendingUp, UserPlus, User, FileText, ChevronRight, ChevronLeft, Video, Sparkles, Award, ClipboardList, MapPin, BarChart3, Shirt, BookOpen } from "lucide-react";
 import { PlayerRosterManager } from "@/components/hub/PlayerRosterManager";
 import { AwardsVoting } from "@/components/hub/AwardsVoting";
 import { FixtureAvailability } from "@/components/hub/FixtureAvailability";
+import HomeworkTab from "@/components/hub/HomeworkTab";
 
 import { AttendanceStats } from "@/components/hub/AttendanceStats";
 import { GuardianManager } from "@/components/hub/GuardianManager";
@@ -37,6 +38,7 @@ const tabs = [
   { id: "availability", label: "Fixtures & Events", icon: CalendarCheck },
   { id: "reports", label: "Match Reports", icon: ClipboardList },
   { id: "stats", label: "Stats", icon: BarChart3 },
+  { id: "homework", label: "Homework", icon: BookOpen },
   
   { id: "attendance", label: "Attendance", icon: TrendingUp },
   { id: "guardian", label: "Guardian", icon: UserPlus },
@@ -252,6 +254,7 @@ export default function HubPage() {
       {activeTab === "availability" && activeTeam && <FixtureAvailability teamSlug={activeTeam} />}
       {activeTab === "reports" && activeTeam && <HubMatchReports teamSlug={activeTeam} />}
       {activeTab === "stats" && activeTeam && <TeamStatsTable ageGroup={getAgeGroup(activeTeam)} />}
+      {activeTab === "homework" && activeTeam && <HomeworkTab teamSlug={activeTeam} />}
       
       {activeTab === "attendance" && activeTeam && (isCoach || isAdmin) && <AttendanceStats teamSlug={activeTeam} />}
       {activeTab === "guardian" && activeTeam && <GuardianManager teamSlug={activeTeam} teamName={activeTeamName || ""} />}

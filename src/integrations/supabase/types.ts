@@ -659,6 +659,188 @@ export type Database = {
         }
         Relationships: []
       }
+      homework_feedback: {
+        Row: {
+          coach_id: string
+          comment: string
+          created_at: string
+          id: string
+          submission_id: string
+        }
+        Insert: {
+          coach_id: string
+          comment: string
+          created_at?: string
+          id?: string
+          submission_id: string
+        }
+        Update: {
+          coach_id?: string
+          comment?: string
+          created_at?: string
+          id?: string
+          submission_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "homework_feedback_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "homework_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      homework_stars: {
+        Row: {
+          citation: string | null
+          created_at: string
+          id: string
+          player_name: string
+          player_registration_id: string | null
+          set_by: string | null
+          task_id: string | null
+          team_slug: string
+          week_start: string
+        }
+        Insert: {
+          citation?: string | null
+          created_at?: string
+          id?: string
+          player_name: string
+          player_registration_id?: string | null
+          set_by?: string | null
+          task_id?: string | null
+          team_slug: string
+          week_start: string
+        }
+        Update: {
+          citation?: string | null
+          created_at?: string
+          id?: string
+          player_name?: string
+          player_registration_id?: string | null
+          set_by?: string | null
+          task_id?: string | null
+          team_slug?: string
+          week_start?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "homework_stars_player_registration_id_fkey"
+            columns: ["player_registration_id"]
+            isOneToOne: false
+            referencedRelation: "player_registrations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "homework_stars_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "homework_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      homework_submissions: {
+        Row: {
+          coach_liked: boolean
+          completed_at: string
+          created_at: string
+          id: string
+          note: string | null
+          player_name: string
+          player_registration_id: string | null
+          proof_path: string | null
+          proof_type: string | null
+          task_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          coach_liked?: boolean
+          completed_at?: string
+          created_at?: string
+          id?: string
+          note?: string | null
+          player_name?: string
+          player_registration_id?: string | null
+          proof_path?: string | null
+          proof_type?: string | null
+          task_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          coach_liked?: boolean
+          completed_at?: string
+          created_at?: string
+          id?: string
+          note?: string | null
+          player_name?: string
+          player_registration_id?: string | null
+          proof_path?: string | null
+          proof_type?: string | null
+          task_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "homework_submissions_player_registration_id_fkey"
+            columns: ["player_registration_id"]
+            isOneToOne: false
+            referencedRelation: "player_registrations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "homework_submissions_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "homework_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      homework_tasks: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          drill_media_path: string | null
+          drill_media_type: string | null
+          due_date: string | null
+          id: string
+          team_slug: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          drill_media_path?: string | null
+          drill_media_type?: string | null
+          due_date?: string | null
+          id?: string
+          team_slug: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          drill_media_path?: string | null
+          drill_media_type?: string | null
+          due_date?: string | null
+          id?: string
+          team_slug?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       hub_availability_events: {
         Row: {
           created_at: string

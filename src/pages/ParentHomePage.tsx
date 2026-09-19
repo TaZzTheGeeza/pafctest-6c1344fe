@@ -11,7 +11,7 @@ import { KIT_STATUS_LABELS } from "@/lib/kitConfig";
 import {
   Loader2, AlertCircle, Package, ShoppingBag, Shirt, CalendarDays,
   FileText, Settings, Wallet, CheckCircle2, MapPin, Bell, Trophy,
-  ClipboardCheck, FileWarning, Share2, CircleDollarSign,
+  ClipboardCheck, FileWarning, Share2, CircleDollarSign, BookOpen,
 } from "lucide-react";
 
 interface Child {
@@ -813,6 +813,7 @@ export default function ParentHomePage() {
                     {[
                       { to: teamQuery("payments"), icon: Wallet, label: "Payments" },
                       { to: "/kit", icon: Shirt, label: "Match Day Kit" },
+                      { to: teamQuery("homework"), icon: BookOpen, label: "Homework" },
                       { to: teamQuery("reports"), icon: FileText, label: "Match Reports" },
                       { to: "/my-profile", icon: Settings, label: "My Profile" },
                     ].map(({ to, icon: Icon, label }) => (
