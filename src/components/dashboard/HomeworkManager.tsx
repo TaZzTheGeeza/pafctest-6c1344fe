@@ -7,10 +7,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { uploadHomeworkMedia, getHomeworkMediaUrl, notifyNewHomework, notifyHomeworkFeedback } from "@/lib/homework";
 import { CLUB_TEAMS } from "@/lib/teamConfig";
+import QuestionBuilder from "@/components/homework/QuestionBuilder";
+import {
+  HomeworkAnswer, HomeworkQuestion, QuestionDraft, answerText, fetchAnswers, fetchDrafts, fetchQuestions,
+  saveQuestions, scoreLabel, validateDrafts,
+} from "@/lib/homeworkQuestions";
 
 const teamLabel = (slug: string) => CLUB_TEAMS.find((t) => t.slug === slug)?.name || slug;
 import {
   BookOpen, Loader2, Plus, Trash2, Heart, MessageSquare, Star, Pencil, ChevronDown, ChevronRight, Send, Video, ImageIcon,
+  Check, X,
 } from "lucide-react";
 
 interface Task {
@@ -87,6 +93,10 @@ export default function HomeworkManager() {
   const [commentDrafts, setCommentDrafts] = useState<Record<string, string>>({});
   const [starDrafts, setStarDrafts] = useState<Record<string, { player: string; citation: string }>>({});
   const [proofUrls, setProofUrls] = useState<Record<string, string>>({});
+  const [questionDrafts, setQuestionDrafts] = useState<QuestionDraft[]>([]);
+  const [editQuestionDrafts, setEditQuestionDrafts] = useState<QuestionDraft[]>([]);
+  const [questionsByTask, setQuestionsByTask] = useState<Record<string, HomeworkQuestion[]>>({});
+  const [answersBySubmission, setAnswersBySubmission] = useState<Record<string, HomeworkAnswer[]>>({});
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -106,6 +116,15 @@ export default function HomeworkManager() {
       setSubmissions((subsRes.data || []) as Submission[]);
       setFeedback((feedbackRes.data || []) as FeedbackRow[]);
       setStars((starsRes.data || []) as StarRow[]);
+
+      const taskIds = (tasksRes || []).map((t: any) => t.id);
+      const submissionIds = (subsRes.data || []).map((s: any) => s.id);
+      const [questionMap, answerMap] = await Promise.all([
+        fetchQuestions(taskIds).catch(() => ({})),
+        fetchAnswers(submissionIds).catch(() => ({})),
+      ]);
+      setQuestionsByTask(questionMap);
+      setAnswersBySubmission(answerMap);
     } catch (err: any) {
       toast({ title: "Could not load homework", description: err.message, variant: "destructive" });
     } finally {
@@ -138,6 +157,11 @@ export default function HomeworkManager() {
       toast({ title: "Add a title", variant: "destructive" });
       return;
     }
+    const questionProblem = validateDrafts(questionDrafts);
+    if (questionProblem) {
+      toast({ title: "Check the question sheet", description: questionProblem, variant: "destructive" });
+      return;
+    }
     setSaving(true);
     try {
       let drill: { path: string; type: "image" | "video" } | null = null;
@@ -158,10 +182,15 @@ export default function HomeworkManager() {
         .single();
       if (error) throw error;
 
+      if (created?.id && questionDrafts.length) {
+        await saveQuestions(created.id, questionDrafts);
+      }
+
       setTitle("");
       setDescription("");
       setDueDate("");
       setDrillFile(null);
+      setQuestionDrafts([]);
       toast({ title: "Homework set", description: `Notifying the ${teamLabel(teamSlug)} squad...` });
       await notifyNewHomework(
         {
@@ -171,6 +200,7 @@ export default function HomeworkManager() {
           due_date: dueDate || null,
         },
         teamLabel(teamSlug),
+        questionDrafts.length,
       );
       await load();
       if (created?.id) setExpanded(created.id);
@@ -181,13 +211,24 @@ export default function HomeworkManager() {
     }
   };
 
-  const startEdit = (task: Task) => {
+  const startEdit = async (task: Task) => {
     setEditingId(task.id);
     setEditDraft({ title: task.title, description: task.description || "", due_date: task.due_date || "" });
+    setEditQuestionDrafts([]);
+    try {
+      setEditQuestionDrafts(await fetchDrafts(task.id));
+    } catch {
+      setEditQuestionDrafts([]);
+    }
   };
 
   const saveEdit = async () => {
     if (!editingId) return;
+    const questionProblem = validateDrafts(editQuestionDrafts);
+    if (questionProblem) {
+      toast({ title: "Check the question sheet", description: questionProblem, variant: "destructive" });
+      return;
+    }
     const { error } = await supabase
       .from("homework_tasks")
       .update({
@@ -198,6 +239,12 @@ export default function HomeworkManager() {
       .eq("id", editingId);
     if (error) {
       toast({ title: "Could not save changes", description: error.message, variant: "destructive" });
+      return;
+    }
+    try {
+      await saveQuestions(editingId, editQuestionDrafts);
+    } catch (err: any) {
+      toast({ title: "Could not save the questions", description: err.message, variant: "destructive" });
       return;
     }
     setEditingId(null);
@@ -377,6 +424,9 @@ export default function HomeworkManager() {
             {drillFile && <p className="text-[10px] text-muted-foreground">{drillFile.name}</p>}
           </div>
         </div>
+        <div className="mt-5 border-t border-border pt-4">
+          <QuestionBuilder drafts={questionDrafts} onChange={setQuestionDrafts} />
+        </div>
         <Button onClick={createTask} disabled={saving} className="mt-4">
           {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <BookOpen className="h-4 w-4 mr-2" />}
           {saving ? "Setting homework..." : "Set Homework & Notify Team"}
@@ -443,8 +493,9 @@ export default function HomeworkManager() {
                     <div className="border-t border-border bg-muted/30 p-4 space-y-3">
                       <Input value={editDraft.title} onChange={(e) => setEditDraft((d) => ({ ...d, title: e.target.value }))} placeholder="Title" />
                       <Textarea value={editDraft.description} onChange={(e) => setEditDraft((d) => ({ ...d, description: e.target.value }))} placeholder="Details" className="min-h-[70px]" />
+                      <Input type="date" value={editDraft.due_date} onChange={(e) => setEditDraft((d) => ({ ...d, due_date: e.target.value }))} className="w-48" />
+                      <QuestionBuilder drafts={editQuestionDrafts} onChange={setEditQuestionDrafts} />
                       <div className="flex items-center gap-2">
-                        <Input type="date" value={editDraft.due_date} onChange={(e) => setEditDraft((d) => ({ ...d, due_date: e.target.value }))} className="w-48" />
                         <Button size="sm" onClick={saveEdit}>Save</Button>
                         <Button size="sm" variant="ghost" onClick={() => setEditingId(null)}>Cancel</Button>
                       </div>
@@ -522,6 +573,35 @@ export default function HomeworkManager() {
                                   </button>
                                 </div>
                                 {sub.note && <p className="text-xs text-muted-foreground italic">"{sub.note}"</p>}
+                                {(questionsByTask[task.id] || []).length > 0 && (
+                                  <div className="border-t border-border pt-2 space-y-1">
+                                    {(() => {
+                                      const qs = questionsByTask[task.id] || [];
+                                      const ans = answersBySubmission[sub.id] || [];
+                                      const score = scoreLabel(qs, ans);
+                                      return (
+                                        <>
+                                          <p className="text-[10px] font-display uppercase tracking-widest text-primary">
+                                            Answers{score ? ` - scored ${score}` : ""}
+                                          </p>
+                                          {qs.map((q, qi) => {
+                                            const a = ans.find((x) => x.question_id === q.id);
+                                            return (
+                                              <p key={q.id} className="text-xs text-foreground flex gap-1">
+                                                {a?.is_correct === true && <Check className="h-3 w-3 text-emerald-500 mt-0.5 shrink-0" />}
+                                                {a?.is_correct === false && <X className="h-3 w-3 text-destructive mt-0.5 shrink-0" />}
+                                                <span>
+                                                  <span className="text-muted-foreground">{qi + 1}. {q.prompt} </span>
+                                                  {answerText(a?.answer)}
+                                                </span>
+                                              </p>
+                                            );
+                                          })}
+                                        </>
+                                      );
+                                    })()}
+                                  </div>
+                                )}
                                 {sub.proof_path && sub.proof_type === "image" && proofUrls[sub.id] && (
                                   <img src={proofUrls[sub.id]} alt={`Proof from ${sub.player_name}`} className="w-32 rounded-sm border border-border" loading="lazy" />
                                 )}
