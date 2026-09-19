@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { uploadHomeworkMedia, getHomeworkMediaUrl, notifyNewHomework, notifyHomeworkFeedback } from "@/lib/homework";
 import { CLUB_TEAMS } from "@/lib/teamConfig";
 import QuestionBuilder from "@/components/homework/QuestionBuilder";
+import HomeworkAiAssistant from "@/components/homework/HomeworkAiAssistant";
 import {
   HomeworkAnswer, HomeworkQuestion, QuestionDraft, answerText, fetchAnswers, fetchDrafts, fetchQuestions,
   saveQuestions, scoreLabel, validateDrafts,
@@ -375,6 +376,16 @@ export default function HomeworkManager() {
         <h3 className="text-primary font-display uppercase text-lg mb-4 flex items-center gap-2">
           <Plus className="h-4 w-4" /> Set Homework
         </h3>
+        <div className="mb-4">
+          <HomeworkAiAssistant
+            teamName={teamLabel(teamSlug)}
+            onResult={({ title: t, description: d, questions }) => {
+              if (t) setTitle(t);
+              if (d) setDescription(d);
+              if (questions.length) setQuestionDrafts(questions);
+            }}
+          />
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1">
             <label className="text-xs font-display uppercase tracking-wider text-muted-foreground">Team</label>
