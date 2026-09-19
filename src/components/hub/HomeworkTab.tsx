@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { uploadHomeworkMedia, getHomeworkMediaUrl } from "@/lib/homework";
 import { teamLabel } from "@/lib/teamConfig";
-import { BookOpen, Check, Heart, MessageSquare, Star, Upload, Video, Image as ImageIcon, Loader2 } from "lucide-react";
+import { BookOpen, Check, Heart, MessageSquare, Star, Upload, Video, Loader2 } from "lucide-react";
 
 interface Task {
   id: string;
