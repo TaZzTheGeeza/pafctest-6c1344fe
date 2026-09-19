@@ -1,6 +1,6 @@
 # Roadmap
 
-- [ ] Homework feature (Option 3): DB schema + proof uploads, parent homework page (Homework proof portal design), coach creation/feedback/Star of the Week, Hub tab + My Family card, triple notifications
+- [x] Homework feature (Option 3): DB schema + proof uploads, parent homework page (Homework proof portal design), coach creation/feedback/Star of the Week, Hub tab + My Family card, triple notifications
 
 - [x] Manually entered Shopify orders #1012-#1016 from screenshots into Orders section
 - [x] Copied all 22 product images off Shopify CDN into club storage (club-photos/shop)
