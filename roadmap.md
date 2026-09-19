@@ -10,4 +10,4 @@
 - [ ] Remove league table feature (Hub + Teams) until FA tables work again
 - [ ] Kit request feature: schema, parent page, admin dashboard section, seed initial kits, notifications
 - [x] Create short coach Homework feature video with real screenshots and scene-matched AI voiceover
-- [ ] Create parent practical-homework showcase video with real screens, training footage, and scene-matched narration
+- [x] Create parent practical-homework showcase video with real screens, training footage, and scene-matched narration
