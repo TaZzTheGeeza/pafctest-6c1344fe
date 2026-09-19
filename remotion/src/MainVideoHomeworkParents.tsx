@@ -3,7 +3,7 @@ import {
   AbsoluteFill,
   Audio,
   Img,
-  OffthreadVideo,
+  Video,
   Sequence,
   interpolate,
   spring,
@@ -115,7 +115,7 @@ const FootageScene: React.FC<BaseSceneProps & { video: string; align?: "left" | 
   const zoom = interpolate(frame, [0, 330], [1.02, 1.08], { extrapolateRight: "clamp" });
   return (
     <AbsoluteFill style={{ backgroundColor: "#050505", overflow: "hidden" }}>
-      <OffthreadVideo src={staticFile(`video/homework-parent/${video}`)} muted loop style={{ width: "100%", height: "100%", objectFit: "cover", transform: `scale(${zoom})` }} />
+      <Video src={staticFile(`video/homework-parent/${video}`)} muted loop style={{ width: "100%", height: "100%", objectFit: "cover", transform: `scale(${zoom})` }} />
       <AbsoluteFill style={{ background: align === "left" ? "linear-gradient(90deg, rgba(5,5,5,.96) 0%, rgba(5,5,5,.78) 37%, rgba(5,5,5,.08) 75%)" : "linear-gradient(270deg, rgba(5,5,5,.96) 0%, rgba(5,5,5,.78) 37%, rgba(5,5,5,.08) 75%)" }} />
       <TextBlock {...text} align={align} />
       <Footer />
@@ -130,7 +130,7 @@ const Intro: React.FC = () => {
   const reveal = spring({ frame: frame - 5, fps, durationInFrames: 38, config: { damping: 17, stiffness: 110 } });
   return (
     <AbsoluteFill style={{ backgroundColor: "#050505", overflow: "hidden" }}>
-      <OffthreadVideo src={staticFile("video/homework-parent/proud-finish.mp4")} muted loop style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.68, transform: `scale(${1 + frame / 6500})` }} />
+      <Video src={staticFile("video/homework-parent/proud-finish.mp4")} muted loop style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.68, transform: `scale(${1 + frame / 6500})` }} />
       <AbsoluteFill style={{ background: "linear-gradient(90deg, rgba(5,5,5,.98) 0%, rgba(5,5,5,.8) 48%, rgba(5,5,5,.12) 100%)" }} />
       <div style={{ position: "absolute", left: 120, top: 220, width: 1120, color: PAPER, fontFamily: inter, opacity: reveal, transform: `translateY(${(1 - reveal) * 40}px)` }}>
         <div style={{ color: GOLD, fontFamily: oswald, fontSize: 28, fontWeight: 700 }}>NEW FOR PAFC FAMILIES</div>
