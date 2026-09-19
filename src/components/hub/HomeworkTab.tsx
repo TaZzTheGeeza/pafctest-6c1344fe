@@ -6,9 +6,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { uploadHomeworkMedia, getHomeworkMediaUrl } from "@/lib/homework";
 import { CLUB_TEAMS } from "@/lib/teamConfig";
+import AnswerSheet from "@/components/homework/AnswerSheet";
+import {
+  HomeworkAnswer, HomeworkQuestion, answerText, fetchAnswers, fetchQuestions, missingRequired, saveAnswers, scoreLabel,
+} from "@/lib/homeworkQuestions";
 
 const teamLabel = (slug: string) => CLUB_TEAMS.find((t) => t.slug === slug)?.name || slug;
-import { BookOpen, Check, Heart, MessageSquare, Star, Upload, Video, Loader2 } from "lucide-react";
+import { BookOpen, Check, Heart, MessageSquare, Star, Upload, Video, Loader2, X } from "lucide-react";
 
 interface Task {
   id: string;
@@ -76,6 +80,9 @@ export default function HomeworkTab({ teamSlug }: { teamSlug: string }) {
   const [uploadingTaskId, setUploadingTaskId] = useState<string | null>(null);
   const [proofUrls, setProofUrls] = useState<Record<string, string>>({});
   const [drillUrls, setDrillUrls] = useState<Record<string, string>>({});
+  const [questionsByTask, setQuestionsByTask] = useState<Record<string, HomeworkQuestion[]>>({});
+  const [answersBySubmission, setAnswersBySubmission] = useState<Record<string, HomeworkAnswer[]>>({});
+  const [answerDrafts, setAnswerDrafts] = useState<Record<string, Record<string, any>>>({});
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
@@ -148,6 +155,13 @@ export default function HomeworkTab({ teamSlug }: { teamSlug: string }) {
         .order("week_start", { ascending: false })
         .limit(1);
       setStar(starRow?.[0] || null);
+
+      const [questionMap, answerMap] = await Promise.all([
+        fetchQuestions((tasksRes.data || []).map((t: any) => t.id)).catch(() => ({})),
+        fetchAnswers(subIds).catch(() => ({})),
+      ]);
+      setQuestionsByTask(questionMap);
+      setAnswersBySubmission(answerMap);
     } catch (err: any) {
       console.error("homework load failed", err);
       toast({ title: "Could not load homework", description: err.message || "Please try again.", variant: "destructive" });
