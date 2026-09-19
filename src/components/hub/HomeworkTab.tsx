@@ -372,6 +372,12 @@ export default function HomeworkTab({ teamSlug }: { teamSlug: string }) {
                   <DrillVideo path={task.drill_media_path} title={task.title} />
                 )}
 
+                <AnswerSheet
+                  questions={questionsByTask[task.id] || []}
+                  answers={answerDrafts[task.id] || {}}
+                  onChange={(next) => setAnswerDrafts((d) => ({ ...d, [task.id]: next }))}
+                />
+
                 <div className="mt-4 space-y-3">
                   <Textarea
                     placeholder="Add a quick note for the coach (optional)"
@@ -409,7 +415,8 @@ export default function HomeworkTab({ teamSlug }: { teamSlug: string }) {
                       onClick={() => markDone(task, null)}
                       className="text-xs font-display uppercase tracking-wider"
                     >
-                      <Check className="h-3.5 w-3.5 mr-1" /> Mark as Done
+                      <Check className="h-3.5 w-3.5 mr-1" />
+                      {(questionsByTask[task.id] || []).length ? "Submit Answers" : "Mark as Done"}
                     </Button>
                   </div>
                   <p className="text-[10px] text-muted-foreground">
