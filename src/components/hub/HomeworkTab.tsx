@@ -222,25 +222,46 @@ export default function HomeworkTab({ teamSlug }: { teamSlug: string }) {
 
   const markDone = async (task: Task, file: File | null) => {
     if (!user || !selectedChild) return;
+    const questions = questionsByTask[task.id] || [];
+    const drafts = answerDrafts[task.id] || {};
+    const missing = missingRequired(questions, drafts);
+    if (missing.length) {
+      toast({
+        title: "Answer the questions first",
+        description: `${missing.length} question${missing.length === 1 ? "" : "s"} still need${missing.length === 1 ? "s" : ""} an answer.`,
+        variant: "destructive",
+      });
+      return;
+    }
     setUploadingTaskId(task.id);
     try {
       let proof: { path: string; type: "image" | "video" } | null = null;
       if (file) proof = await uploadHomeworkMedia(file, "proof");
-      const { error } = await supabase.from("homework_submissions").insert({
-        task_id: task.id,
-        player_registration_id: selectedChild.id,
-        player_name: selectedChild.name,
-        user_id: user.id,
-        proof_path: proof?.path ?? null,
-        proof_type: proof?.type ?? null,
-        note: notes[task.id]?.trim() || null,
-      });
+      const { data: submission, error } = await supabase
+        .from("homework_submissions")
+        .insert({
+          task_id: task.id,
+          player_registration_id: selectedChild.id,
+          player_name: selectedChild.name,
+          user_id: user.id,
+          proof_path: proof?.path ?? null,
+          proof_type: proof?.type ?? null,
+          note: notes[task.id]?.trim() || null,
+        })
+        .select("id")
+        .single();
       if (error) throw error;
+
+      if (submission?.id && questions.length) {
+        await saveAnswers(submission.id, questions, drafts);
+      }
+
       toast({
-        title: file ? "Homework submitted" : "Marked as done",
+        title: questions.length ? "Answers sent" : file ? "Homework submitted" : "Marked as done",
         description: file ? "Your photo or video is with the coach." : "Your coach can see this is complete.",
       });
       setNotes((n) => ({ ...n, [task.id]: "" }));
+      setAnswerDrafts((d) => ({ ...d, [task.id]: {} }));
       await load();
     } catch (err: any) {
       toast({ title: "Could not submit homework", description: err.message, variant: "destructive" });
