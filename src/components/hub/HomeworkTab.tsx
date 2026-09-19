@@ -1,12 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { uploadHomeworkMedia, getHomeworkMediaUrl } from "@/lib/homework";
-import { teamLabel, normalizeClubTeamSlugs } from "@/lib/teamConfig";
+import { teamLabel } from "@/lib/teamConfig";
 import { BookOpen, Check, Heart, MessageSquare, Star, Upload, Video, Image as ImageIcon, Loader2 } from "lucide-react";
 
 interface Task {
@@ -468,9 +467,3 @@ function DrillVideo({ path, title }: { path: string; title: string }) {
   return <video src={url} controls className="mt-4 w-full max-w-sm rounded-sm border border-border" aria-label={`${title} drill video`} />;
 }
 
-export function HomeworkProofIcon({ type }: { type: string | null }) {
-  return type === "video" ? <Video className="h-4 w-4" /> : <ImageIcon className="h-4 w-4" />;
-}
-
-// Keep teamConfig helpers referenced so tree-shaking keeps canonical slugs in sync.
-export const _teamSlugs = normalizeClubTeamSlugs;
