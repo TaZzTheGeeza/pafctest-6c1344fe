@@ -6,7 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { uploadHomeworkMedia, getHomeworkMediaUrl, notifyNewHomework, notifyHomeworkFeedback } from "@/lib/homework";
-import { CLUB_TEAMS, teamLabel } from "@/lib/teamConfig";
+import { CLUB_TEAMS } from "@/lib/teamConfig";
+
+const teamLabel = (slug: string) => CLUB_TEAMS.find((t) => t.slug === slug)?.name || slug;
 import {
   BookOpen, Loader2, Plus, Trash2, Heart, MessageSquare, Star, Pencil, ChevronDown, ChevronRight, Send, Video, ImageIcon,
 } from "lucide-react";

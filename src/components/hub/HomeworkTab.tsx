@@ -5,7 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { uploadHomeworkMedia, getHomeworkMediaUrl } from "@/lib/homework";
-import { teamLabel } from "@/lib/teamConfig";
+import { CLUB_TEAMS } from "@/lib/teamConfig";
+
+const teamLabel = (slug: string) => CLUB_TEAMS.find((t) => t.slug === slug)?.name || slug;
 import { BookOpen, Check, Heart, MessageSquare, Star, Upload, Video, Loader2 } from "lucide-react";
 
 interface Task {
