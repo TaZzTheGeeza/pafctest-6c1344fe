@@ -24,6 +24,7 @@ const TYPE_LINKS: Record<string, string> = {
   tournament: "/tournament-admin",
   admin_broadcast: "/hub?tab=notifications",
   chat: "/hub?tab=chat",
+  homework: "/hub?tab=homework",
 };
 
 function withTeam(path: string, teamSlug?: string | null) {
