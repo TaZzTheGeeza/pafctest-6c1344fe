@@ -106,20 +106,24 @@ export async function notifyNewHomework(task: {
   title: string;
   description: string | null;
   due_date: string | null;
-}, teamName: string) {
+}, teamName: string, questionCount = 0) {
   const dueLabel = task.due_date
     ? new Date(`${task.due_date}T00:00`).toLocaleDateString("en-GB", {
         weekday: "long", day: "numeric", month: "long",
       })
     : null;
 
+  const sheetLabel = questionCount
+    ? ` There ${questionCount === 1 ? "is 1 question" : `are ${questionCount} questions`} to answer.`
+    : "";
+
   await notifyTeamMembersSafe({
     teamSlug: task.team_slug,
     notification: {
       title: `New homework: ${task.title}`,
       message: dueLabel
-        ? `${teamName} homework set - due ${dueLabel}. Upload your child's proof in the Hub.`
-        : `${teamName} homework set. Upload your child's proof in the Hub.`,
+        ? `${teamName} homework set - due ${dueLabel}.${sheetLabel} Open the Hub to complete it.`
+        : `${teamName} homework set.${sheetLabel} Open the Hub to complete it.`,
       type: "homework",
       link: `/hub?tab=homework&team=${encodeURIComponent(task.team_slug)}`,
     },
@@ -129,7 +133,9 @@ export async function notifyNewHomework(task: {
         title: task.title,
         teamName,
         dueDate: dueLabel,
-        message: task.description || "Open the Hub to see the full task and upload your child's proof.",
+        message: task.description
+          ? `${task.description}${sheetLabel}`
+          : `Open the Hub to see the full task and complete it.${sheetLabel}`,
       },
       idempotencyPrefix: `homework-${task.title.slice(0, 24).replace(/\W+/g, "-").toLowerCase()}`,
     },
