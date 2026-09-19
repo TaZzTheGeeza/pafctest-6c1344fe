@@ -15,7 +15,7 @@ await renderMedia({
   composition,
   serveUrl,
   codec: "h264",
-  outputLocation: "/mnt/documents/pafc-practical-homework-for-parents.mp4",
+  outputLocation: "/mnt/documents/pafc-practical-homework-for-parents-v2.mp4",
   puppeteerInstance: browser,
   concurrency: 1,
   crf: 18,
