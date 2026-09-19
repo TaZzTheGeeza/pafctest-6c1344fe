@@ -89,11 +89,21 @@ serve(async (req) => {
 
     const unwrap = (obj: any): any => {
       if (!obj || typeof obj !== "object") return {};
+      if (Array.isArray(obj)) {
+        for (const item of obj) {
+          const candidate = unwrap(item);
+          if (candidate.title || candidate.description) return candidate;
+        }
+        return {};
+      }
       if (obj.title || obj.description) return obj;
       for (const key of ["homework", "task", "result", "data", "output"]) {
         const nested = obj[key];
-        if (nested && typeof nested === "object" && (nested.title || nested.description)) {
-          return { ...nested, questions: nested.questions ?? obj.questions };
+        if (nested && typeof nested === "object") {
+          const candidate = unwrap(nested);
+          if (candidate.title || candidate.description) {
+            return { ...candidate, questions: candidate.questions ?? obj.questions };
+          }
         }
       }
       return obj;
