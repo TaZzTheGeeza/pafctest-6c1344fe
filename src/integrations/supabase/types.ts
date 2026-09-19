@@ -659,6 +659,48 @@ export type Database = {
         }
         Relationships: []
       }
+      homework_answers: {
+        Row: {
+          answer: Json | null
+          created_at: string
+          id: string
+          is_correct: boolean | null
+          question_id: string
+          submission_id: string
+        }
+        Insert: {
+          answer?: Json | null
+          created_at?: string
+          id?: string
+          is_correct?: boolean | null
+          question_id: string
+          submission_id: string
+        }
+        Update: {
+          answer?: Json | null
+          created_at?: string
+          id?: string
+          is_correct?: boolean | null
+          question_id?: string
+          submission_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "homework_answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "homework_questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "homework_answers_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "homework_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       homework_feedback: {
         Row: {
           coach_id: string
@@ -687,6 +729,79 @@ export type Database = {
             columns: ["submission_id"]
             isOneToOne: false
             referencedRelation: "homework_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      homework_question_keys: {
+        Row: {
+          correct_answers: Json
+          created_at: string
+          question_id: string
+          updated_at: string
+        }
+        Insert: {
+          correct_answers?: Json
+          created_at?: string
+          question_id: string
+          updated_at?: string
+        }
+        Update: {
+          correct_answers?: Json
+          created_at?: string
+          question_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "homework_question_keys_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: true
+            referencedRelation: "homework_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      homework_questions: {
+        Row: {
+          created_at: string
+          id: string
+          options: Json
+          position: number
+          prompt: string
+          question_type: string
+          required: boolean
+          task_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          options?: Json
+          position?: number
+          prompt: string
+          question_type?: string
+          required?: boolean
+          task_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          options?: Json
+          position?: number
+          prompt?: string
+          question_type?: string
+          required?: boolean
+          task_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "homework_questions_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "homework_tasks"
             referencedColumns: ["id"]
           },
         ]
