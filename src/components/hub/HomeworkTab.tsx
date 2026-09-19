@@ -96,8 +96,7 @@ export default function HomeworkTab({ teamSlug }: { teamSlug: string }) {
         .order("due_date", { ascending: true, nullsFirst: false });
 
       // Children: direct registrations for this account, plus guardian links.
-      const regPromise = supabase
-        .from("player_registrations")
+      const regPromise = (supabase.from("player_registrations") as any)
         .select("id, first_name, last_name")
         .eq("team_slug", teamSlug)
         .or(`user_id.eq.${user.id},email.eq.${user.email?.toLowerCase()}`);
