@@ -49,58 +49,87 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) return json({ error: "AI service not configured" }, 500);
 
-    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: [
-          {
-            role: "system",
-            content:
-              "You help a grassroots youth football coach at Peterborough Athletic FC turn a short idea into a ready-to-set homework task for children and their parents. British English, warm, simple and age-appropriate. Keep the practice safe, doable at home or in a garden/park with one ball, and give clear repetitions or a time. Never invent club events or fixtures. Reply with JSON only.",
-          },
-          {
-            role: "user",
-            content: [
-              `Coach's idea: ${idea}`,
-              teamName ? `Team: ${teamName}` : "",
-              ageHint ? `Age group: ${ageHint}` : "",
-              "",
-              "Return json in exactly this shape:",
-              '{"title": string, "description": string, "questions": [{"question_type": "multiple_choice|multi_select|written|true_false|number", "prompt": string, "options": string[], "correct": string[], "required": boolean}]}',
-              "",
-              "Rules:",
-              "- title: short and punchy, under 60 characters.",
-              `- description: 2-4 short sentences telling the child exactly what to practise, how many reps, and what to film or note.`,
-              includeQuestions
-                ? `- questions: exactly ${questionCount} simple check-in questions about the drill or how it went. Mix the types. multiple_choice and multi_select need 3-4 options; true_false uses options ["True","False"]; written and number use an empty options array. Put the correct option(s) in "correct" when there is a right answer, otherwise use an empty array (e.g. opinion questions). Keep every prompt child-friendly.`
-                : '- questions: return an empty array [].',
-            ]
-              .filter(Boolean)
-              .join("\n"),
-          },
-        ],
-        response_format: { type: "json_object" },
-      }),
-    });
+    const userPrompt = [
+      `Coach's idea: ${idea}`,
+      teamName ? `Team: ${teamName}` : "",
+      ageHint ? `Age group: ${ageHint}` : "",
+      "",
+      "Return json in exactly this shape:",
+      '{"title": string, "description": string, "questions": [{"question_type": "multiple_choice|multi_select|written|true_false|number", "prompt": string, "options": string[], "correct": string[], "required": boolean}]}',
+      "",
+      "Rules:",
+      "- title: short and punchy, under 60 characters.",
+      `- description: 2-4 short sentences telling the child exactly what to practise, how many reps, and what to film or note.`,
+      includeQuestions
+        ? `- questions: exactly ${questionCount} simple check-in questions about the drill or how it went. Mix the types. multiple_choice and multi_select need 3-4 options; true_false uses options ["True","False"]; written and number use an empty options array. Put the correct option(s) in "correct" when there is a right answer, otherwise use an empty array (e.g. opinion questions). Keep every prompt child-friendly.`
+        : '- questions: return an empty array [].',
+      "",
+      "Never reply with an empty object. Always fill in title and description.",
+    ]
+      .filter(Boolean)
+      .join("\n");
 
-    if (!res.ok) {
-      if (res.status === 429) return json({ error: "AI is busy right now, please try again in a moment." }, 429);
-      if (res.status === 402) return json({ error: "AI credits exhausted. Please top up in workspace settings." }, 402);
-      console.error("AI gateway error:", res.status, await res.text().catch(() => ""));
-      return json({ error: "Could not build that homework, please try again." }, 500);
+    const callAi = async () =>
+      await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "google/gemini-3-flash-preview",
+          messages: [
+            {
+              role: "system",
+              content:
+                "You help a grassroots youth football coach at Peterborough Athletic FC turn a short idea into a ready-to-set homework task for children and their parents. British English, warm, simple and age-appropriate. Keep the practice safe, doable at home or in a garden/park with one ball, and give clear repetitions or a time. Never invent club events or fixtures. Reply with JSON only.",
+            },
+            { role: "user", content: userPrompt },
+          ],
+          response_format: { type: "json_object" },
+        }),
+      });
+
+    const unwrap = (obj: any): any => {
+      if (!obj || typeof obj !== "object") return {};
+      if (obj.title || obj.description) return obj;
+      for (const key of ["homework", "task", "result", "data", "output"]) {
+        const nested = obj[key];
+        if (nested && typeof nested === "object" && (nested.title || nested.description)) {
+          return { ...nested, questions: nested.questions ?? obj.questions };
+        }
+      }
+      return obj;
+    };
+
+    let parsed: any = null;
+    let lastRaw = "";
+    for (let attempt = 0; attempt < 2 && !parsed; attempt++) {
+      const res = await callAi();
+      if (!res.ok) {
+        if (res.status === 429) return json({ error: "AI is busy right now, please try again in a moment." }, 429);
+        if (res.status === 402) return json({ error: "AI credits exhausted. Please top up in workspace settings." }, 402);
+        console.error("AI gateway error:", res.status, await res.text().catch(() => ""));
+        return json({ error: "Could not build that homework, please try again." }, 500);
+      }
+      const data = await res.json();
+      lastRaw = (data.choices?.[0]?.message?.content || "").trim();
+      try {
+        const candidate = unwrap(
+          JSON.parse(lastRaw.replace(/^```json/i, "").replace(/^```/, "").replace(/```$/, "").trim()),
+        );
+        if (String(candidate?.title || "").trim() || String(candidate?.description || "").trim()) {
+          parsed = candidate;
+        } else {
+          console.warn("Empty AI homework output, attempt", attempt + 1, lastRaw.slice(0, 300));
+        }
+      } catch {
+        console.warn("Unparseable AI output, attempt", attempt + 1, lastRaw.slice(0, 300));
+      }
     }
 
-    const data = await res.json();
-    const raw = (data.choices?.[0]?.message?.content || "").trim();
-    let parsed: any;
-    try {
-      parsed = JSON.parse(raw.replace(/^```json/i, "").replace(/^```/, "").replace(/```$/, "").trim());
-    } catch {
-      console.error("Unparseable AI output:", raw.slice(0, 500));
+    if (!parsed) {
+      console.error("AI homework unusable after retry:", lastRaw.slice(0, 500));
       return json({ error: "The AI reply was not usable, please try again." }, 502);
     }
+
 
     const questions = Array.isArray(parsed?.questions) ? parsed.questions : [];
     const cleaned = questions
