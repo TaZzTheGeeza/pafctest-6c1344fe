@@ -9,3 +9,4 @@
 - [ ] Ben to place a real GoCardless Instant Bank Pay test order end-to-end
 - [ ] Remove league table feature (Hub + Teams) until FA tables work again
 - [ ] Kit request feature: schema, parent page, admin dashboard section, seed initial kits, notifications
+- [ ] Create short coach Homework feature video with real screenshots and scene-matched AI voiceover
