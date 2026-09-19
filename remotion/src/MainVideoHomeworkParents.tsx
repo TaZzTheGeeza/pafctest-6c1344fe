@@ -3,7 +3,6 @@ import {
   AbsoluteFill,
   Audio,
   Img,
-  Video,
   Sequence,
   interpolate,
   spring,
@@ -21,9 +20,9 @@ const GOLD = "#c9a84c";
 const PAPER = "#f5f1e8";
 const MUTED = "#d8d4ca";
 const FPS = 30;
-const SPEED = 1.2;
 
-const scenes = [285, 285, 200, 300, 235, 220, 230, 255];
+// Every scene includes the full narration duration plus 1.5 seconds of breathing room.
+const scenes = [410, 407, 299, 439, 363, 333, 345, 373];
 export const HOMEWORK_PARENT_TOTAL = scenes.reduce((sum, value) => sum + value, 0);
 
 type BaseSceneProps = {
@@ -105,21 +104,7 @@ const ScreenshotScene: React.FC<BaseSceneProps & { image: string; crop?: "top" |
       <AbsoluteFill style={{ background: align === "left" ? "linear-gradient(90deg, #050505 0%, #050505 38%, transparent 69%)" : "linear-gradient(270deg, #050505 0%, #050505 38%, transparent 69%)" }} />
       <TextBlock {...text} align={align} />
       <Footer />
-      <Audio src={staticFile(`audio/homework-parent/${text.audio}.wav`)} playbackRate={SPEED} />
-    </AbsoluteFill>
-  );
-};
-
-const FootageScene: React.FC<BaseSceneProps & { video: string; align?: "left" | "right" }> = ({ video, align = "left", ...text }) => {
-  const frame = useCurrentFrame();
-  const zoom = interpolate(frame, [0, 330], [1.02, 1.08], { extrapolateRight: "clamp" });
-  return (
-    <AbsoluteFill style={{ backgroundColor: "#050505", overflow: "hidden" }}>
-      <Video src={staticFile(`video/homework-parent/${video}`)} muted loop style={{ width: "100%", height: "100%", objectFit: "cover", transform: `scale(${zoom})` }} />
-      <AbsoluteFill style={{ background: align === "left" ? "linear-gradient(90deg, rgba(5,5,5,.96) 0%, rgba(5,5,5,.78) 37%, rgba(5,5,5,.08) 75%)" : "linear-gradient(270deg, rgba(5,5,5,.96) 0%, rgba(5,5,5,.78) 37%, rgba(5,5,5,.08) 75%)" }} />
-      <TextBlock {...text} align={align} />
-      <Footer />
-      <Audio src={staticFile(`audio/homework-parent/${text.audio}.wav`)} playbackRate={SPEED} />
+      <Audio src={staticFile(`audio/homework-parent/${text.audio}.wav`)} />
     </AbsoluteFill>
   );
 };
@@ -130,7 +115,7 @@ const Intro: React.FC = () => {
   const reveal = spring({ frame: frame - 5, fps, durationInFrames: 38, config: { damping: 17, stiffness: 110 } });
   return (
     <AbsoluteFill style={{ backgroundColor: "#050505", overflow: "hidden" }}>
-      <Video src={staticFile("video/homework-parent/proud-finish.mp4")} muted loop style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.68, transform: `scale(${1 + frame / 6500})` }} />
+      <Img src={staticFile("screenshots/homework-parent/01-homework-overview.png")} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top", opacity: 0.46, transform: `scale(${1 + frame / 12000})` }} />
       <AbsoluteFill style={{ background: "linear-gradient(90deg, rgba(5,5,5,.98) 0%, rgba(5,5,5,.8) 48%, rgba(5,5,5,.12) 100%)" }} />
       <div style={{ position: "absolute", left: 120, top: 220, width: 1120, color: PAPER, fontFamily: inter, opacity: reveal, transform: `translateY(${(1 - reveal) * 40}px)` }}>
         <div style={{ color: GOLD, fontFamily: oswald, fontSize: 28, fontWeight: 700 }}>NEW FOR PAFC FAMILIES</div>
@@ -138,7 +123,7 @@ const Intro: React.FC = () => {
         <div style={{ width: 128 * reveal, height: 8, backgroundColor: GOLD, margin: "32px 0" }} />
         <div style={{ color: MUTED, fontSize: 36, lineHeight: 1.35, maxWidth: 940 }}>Practical football homework is coming gradually to the PAFC Hub.</div>
       </div>
-      <Audio src={staticFile("audio/homework-parent/01-intro.wav")} playbackRate={SPEED} />
+      <Audio src={staticFile("audio/homework-parent/01-intro.wav")} />
     </AbsoluteFill>
   );
 };
@@ -154,7 +139,7 @@ const Outro: React.FC = () => {
         <div style={{ fontFamily: oswald, fontSize: 96, fontWeight: 700, lineHeight: 1.02, margin: "30px 0" }}>MORE TOUCHES.<br />MORE CONFIDENCE.</div>
         <div style={{ color: MUTED, fontSize: 34, lineHeight: 1.4 }}>Look out for new activities in your child's team Hub.</div>
       </div>
-      <Audio src={staticFile("audio/homework-parent/08-close.wav")} playbackRate={SPEED} />
+      <Audio src={staticFile("audio/homework-parent/08-close.wav")} />
     </AbsoluteFill>
   );
 };
@@ -172,10 +157,10 @@ export const MainVideoHomeworkParents: React.FC = () => {
         <ScreenshotScene image="02-active-task-u14s-gold.png" audio="03-watch" number="02" kicker="Watch together" title="Learn before they practise" body="Any coaching clip plays inside the homework page, keeping the whole activity together." crop="middle" align="right" />
       </Sequence>
       <Sequence from={next(scenes[3])} durationInFrames={scenes[3]}>
-        <FootageScene video="dribbling.mp4" audio="04-practise" number="03" kicker="The practical part" title="Ball out. Give it a go." body="A safe space and a few minutes are enough. Effort and improvement matter more than perfection." />
+        <ScreenshotScene image="02-active-task-u14s-gold.png" audio="04-practise" number="03" kicker="The practical part" title="Ball out. Give it a go." body="A safe space and a few minutes are enough. Effort and improvement matter more than perfection." crop="middle" />
       </Sequence>
       <Sequence from={next(scenes[4])} durationInFrames={scenes[4]}>
-        <FootageScene video="recording-proof.mp4" audio="05-proof" number="04" kicker="Share their effort" title="Record and upload" body="Take a short photo or video and upload it securely. Only their coaches can see it." align="right" />
+        <ScreenshotScene image="02-active-task-u14s-gold.png" audio="05-proof" number="04" kicker="Share their effort" title="Record and upload" body="Take a short photo or video and upload it securely. Only their coaches can see it." crop="bottom" align="right" />
       </Sequence>
       <Sequence from={next(scenes[5])} durationInFrames={scenes[5]}>
         <ScreenshotScene image="02-active-task-u14s-gold.png" audio="06-answers" number="05" kicker="Reflect and complete" title="Answer the questions" body="Help your child record their score and what they learned, then mark the activity complete." crop="middle" />
