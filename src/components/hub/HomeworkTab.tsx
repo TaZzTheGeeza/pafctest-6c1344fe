@@ -98,7 +98,7 @@ export default function HomeworkTab({ teamSlug }: { teamSlug: string }) {
       // Children: direct registrations for this account, plus guardian links.
       const regPromise = supabase
         .from("player_registrations")
-        .select("id, player_first_name, player_last_name")
+        .select("id, first_name, last_name")
         .eq("team_slug", teamSlug)
         .or(`user_id.eq.${user.id},email.eq.${user.email?.toLowerCase()}`);
 
@@ -114,9 +114,9 @@ export default function HomeworkTab({ teamSlug }: { teamSlug: string }) {
 
       setTasks((tasksRes.data || []) as Task[]);
 
-      const kids: Child[] = (regRes.data || []).map((r) => ({
+      const kids: Child[] = ((regRes.data || []) as any[]).map((r) => ({
         id: r.id,
-        name: `${r.player_first_name ?? ""} ${r.player_last_name ?? ""}`.trim(),
+        name: `${r.first_name ?? ""} ${r.last_name ?? ""}`.trim(),
       }));
       const guardianKids: Child[] = (guardianRes.data || []).map((g) => ({
         id: null,
