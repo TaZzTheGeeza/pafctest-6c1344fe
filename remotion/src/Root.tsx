@@ -5,6 +5,7 @@ import { MainVideoSales, TOTAL_FRAMES as SALES_TOTAL } from "./MainVideoSales";
 import { MainVideoMagna, TOTAL as MAGNA_TOTAL } from "./MainVideoMagna";
 import { MainVideoYourClub, TOTAL as YC_TOTAL } from "./MainVideoYourClub";
 import { MainVideoMyFamily, MY_FAMILY_TOTAL } from "./MainVideoMyFamily";
+import { MainVideoHomework, HOMEWORK_TOTAL } from "./MainVideoHomework";
 
 const V2_SCENES = [462, 347, 506, 474, 553, 552, 893, 370, 564, 526, 531, 1017, 943, 709, 614];
 const V2_TRANS = 20;
@@ -56,6 +57,14 @@ export const RemotionRoot: React.FC = () => (
       id="my-family-explainer-v2"
       component={MainVideoMyFamily}
       durationInFrames={MY_FAMILY_TOTAL}
+      fps={30}
+      width={1920}
+      height={1080}
+    />
+    <Composition
+      id="homework-coach-showcase"
+      component={MainVideoHomework}
+      durationInFrames={HOMEWORK_TOTAL}
       fps={30}
       width={1920}
       height={1080}
