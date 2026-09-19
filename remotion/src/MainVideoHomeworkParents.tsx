@@ -23,7 +23,7 @@ const MUTED = "#d8d4ca";
 const FPS = 30;
 const SPEED = 1.2;
 
-const scenes = [315, 310, 220, 340, 260, 245, 255, 285];
+const scenes = [285, 285, 200, 300, 235, 220, 230, 255];
 export const HOMEWORK_PARENT_TOTAL = scenes.reduce((sum, value) => sum + value, 0);
 
 type BaseSceneProps = {
