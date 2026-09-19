@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { uploadHomeworkMedia, getHomeworkMediaUrl } from "@/lib/homework";
 import { CLUB_TEAMS } from "@/lib/teamConfig";
 import AnswerSheet from "@/components/homework/AnswerSheet";
+import YouTubeEmbed from "@/components/homework/YouTubeEmbed";
 import {
   HomeworkAnswer, HomeworkQuestion, answerText, fetchAnswers, fetchQuestions, missingRequired, saveAnswers, scoreLabel,
 } from "@/lib/homeworkQuestions";
@@ -21,6 +22,7 @@ interface Task {
   description: string | null;
   drill_media_path: string | null;
   drill_media_type: string | null;
+  youtube_url: string | null;
   due_date: string | null;
   created_at: string;
 }
@@ -370,6 +372,8 @@ export default function HomeworkTab({ teamSlug }: { teamSlug: string }) {
                 {task.drill_media_path && task.drill_media_type === "video" && (
                   <DrillVideo path={task.drill_media_path} title={task.title} />
                 )}
+
+                <YouTubeEmbed url={task.youtube_url} title={task.title} />
 
                 <AnswerSheet
                   questions={questionsByTask[task.id] || []}

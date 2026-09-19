@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { uploadHomeworkMedia, getHomeworkMediaUrl, notifyNewHomework, notifyHomeworkFeedback } from "@/lib/homework";
 import { CLUB_TEAMS } from "@/lib/teamConfig";
+import YouTubeEmbed, { youtubeId } from "@/components/homework/YouTubeEmbed";
 import QuestionBuilder from "@/components/homework/QuestionBuilder";
 import HomeworkAiAssistant from "@/components/homework/HomeworkAiAssistant";
 import {
@@ -27,6 +28,7 @@ interface Task {
   description: string | null;
   drill_media_path: string | null;
   drill_media_type: string | null;
+  youtube_url: string | null;
   due_date: string | null;
   created_by: string | null;
 }
@@ -86,10 +88,11 @@ export default function HomeworkManager() {
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [drillFile, setDrillFile] = useState<File | null>(null);
+  const [youtubeUrl, setYoutubeUrl] = useState("");
 
   // edit form
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editDraft, setEditDraft] = useState({ title: "", description: "", due_date: "" });
+  const [editDraft, setEditDraft] = useState({ title: "", description: "", due_date: "", youtube_url: "" });
 
   const [commentDrafts, setCommentDrafts] = useState<Record<string, string>>({});
   const [starDrafts, setStarDrafts] = useState<Record<string, { player: string; citation: string }>>({});
@@ -177,6 +180,7 @@ export default function HomeworkManager() {
           due_date: dueDate || null,
           drill_media_path: drill?.path ?? null,
           drill_media_type: drill?.type ?? null,
+          youtube_url: youtubeUrl.trim() || null,
           created_by: user?.id,
         })
         .select("id")
@@ -191,6 +195,7 @@ export default function HomeworkManager() {
       setDescription("");
       setDueDate("");
       setDrillFile(null);
+      setYoutubeUrl("");
       setQuestionDrafts([]);
       toast({ title: "Homework set", description: `Notifying the ${teamLabel(teamSlug)} squad...` });
       await notifyNewHomework(
@@ -214,7 +219,7 @@ export default function HomeworkManager() {
 
   const startEdit = async (task: Task) => {
     setEditingId(task.id);
-    setEditDraft({ title: task.title, description: task.description || "", due_date: task.due_date || "" });
+    setEditDraft({ title: task.title, description: task.description || "", due_date: task.due_date || "", youtube_url: task.youtube_url || "" });
     setEditQuestionDrafts([]);
     try {
       setEditQuestionDrafts(await fetchDrafts(task.id));
@@ -236,6 +241,7 @@ export default function HomeworkManager() {
         title: editDraft.title.trim(),
         description: editDraft.description.trim() || null,
         due_date: editDraft.due_date || null,
+        youtube_url: editDraft.youtube_url.trim() || null,
       })
       .eq("id", editingId);
     if (error) {
@@ -434,6 +440,20 @@ export default function HomeworkManager() {
             />
             {drillFile && <p className="text-[10px] text-muted-foreground">{drillFile.name}</p>}
           </div>
+          <div className="md:col-span-2 space-y-1">
+            <label className="text-xs font-display uppercase tracking-wider text-muted-foreground">
+              YouTube link (optional)
+            </label>
+            <Input
+              value={youtubeUrl}
+              onChange={(e) => setYoutubeUrl(e.target.value)}
+              placeholder="https://www.youtube.com/watch?v=..."
+            />
+            {youtubeUrl.trim() && !youtubeId(youtubeUrl) && (
+              <p className="text-[10px] text-destructive">That does not look like a YouTube link.</p>
+            )}
+            <YouTubeEmbed url={youtubeUrl} title="Homework video preview" />
+          </div>
         </div>
         <div className="mt-5 border-t border-border pt-4">
           <QuestionBuilder drafts={questionDrafts} onChange={setQuestionDrafts} />
@@ -504,6 +524,11 @@ export default function HomeworkManager() {
                     <div className="border-t border-border bg-muted/30 p-4 space-y-3">
                       <Input value={editDraft.title} onChange={(e) => setEditDraft((d) => ({ ...d, title: e.target.value }))} placeholder="Title" />
                       <Textarea value={editDraft.description} onChange={(e) => setEditDraft((d) => ({ ...d, description: e.target.value }))} placeholder="Details" className="min-h-[70px]" />
+                      <Input
+                        value={editDraft.youtube_url}
+                        onChange={(e) => setEditDraft((d) => ({ ...d, youtube_url: e.target.value }))}
+                        placeholder="YouTube link (optional)"
+                      />
                       <Input type="date" value={editDraft.due_date} onChange={(e) => setEditDraft((d) => ({ ...d, due_date: e.target.value }))} className="w-48" />
                       <QuestionBuilder drafts={editQuestionDrafts} onChange={setEditQuestionDrafts} />
                       <div className="flex items-center gap-2">
@@ -516,6 +541,7 @@ export default function HomeworkManager() {
                   {isOpen && (
                     <div className="border-t border-border p-4 space-y-4">
                       {task.description && <p className="text-sm text-muted-foreground whitespace-pre-line">{task.description}</p>}
+                      <YouTubeEmbed url={task.youtube_url} title={task.title} />
 
                       {/* Star of the week for this team */}
                       <div className="bg-primary/5 border border-primary/20 rounded-sm p-3">
