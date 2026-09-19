@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.mark_homework_answer() FROM PUBLIC, anon, authenticated;

@@ -6,9 +6,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { uploadHomeworkMedia, getHomeworkMediaUrl } from "@/lib/homework";
 import { CLUB_TEAMS } from "@/lib/teamConfig";
+import AnswerSheet from "@/components/homework/AnswerSheet";
+import {
+  HomeworkAnswer, HomeworkQuestion, answerText, fetchAnswers, fetchQuestions, missingRequired, saveAnswers, scoreLabel,
+} from "@/lib/homeworkQuestions";
 
 const teamLabel = (slug: string) => CLUB_TEAMS.find((t) => t.slug === slug)?.name || slug;
-import { BookOpen, Check, Heart, MessageSquare, Star, Upload, Video, Loader2 } from "lucide-react";
+import { BookOpen, Check, Heart, MessageSquare, Star, Upload, Video, Loader2, X } from "lucide-react";
 
 interface Task {
   id: string;
@@ -76,6 +80,9 @@ export default function HomeworkTab({ teamSlug }: { teamSlug: string }) {
   const [uploadingTaskId, setUploadingTaskId] = useState<string | null>(null);
   const [proofUrls, setProofUrls] = useState<Record<string, string>>({});
   const [drillUrls, setDrillUrls] = useState<Record<string, string>>({});
+  const [questionsByTask, setQuestionsByTask] = useState<Record<string, HomeworkQuestion[]>>({});
+  const [answersBySubmission, setAnswersBySubmission] = useState<Record<string, HomeworkAnswer[]>>({});
+  const [answerDrafts, setAnswerDrafts] = useState<Record<string, Record<string, any>>>({});
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
@@ -89,9 +96,8 @@ export default function HomeworkTab({ teamSlug }: { teamSlug: string }) {
         .order("due_date", { ascending: true, nullsFirst: false });
 
       // Children: direct registrations for this account, plus guardian links.
-      const regPromise = supabase
-        .from("player_registrations")
-        .select("id, player_first_name, player_last_name")
+      const regPromise = (supabase.from("player_registrations") as any)
+        .select("id, first_name, last_name")
         .eq("team_slug", teamSlug)
         .or(`user_id.eq.${user.id},email.eq.${user.email?.toLowerCase()}`);
 
@@ -107,9 +113,9 @@ export default function HomeworkTab({ teamSlug }: { teamSlug: string }) {
 
       setTasks((tasksRes.data || []) as Task[]);
 
-      const kids: Child[] = (regRes.data || []).map((r) => ({
+      const kids: Child[] = ((regRes.data || []) as any[]).map((r) => ({
         id: r.id,
-        name: `${r.player_first_name ?? ""} ${r.player_last_name ?? ""}`.trim(),
+        name: `${r.first_name ?? ""} ${r.last_name ?? ""}`.trim(),
       }));
       const guardianKids: Child[] = (guardianRes.data || []).map((g) => ({
         id: null,
@@ -148,6 +154,13 @@ export default function HomeworkTab({ teamSlug }: { teamSlug: string }) {
         .order("week_start", { ascending: false })
         .limit(1);
       setStar(starRow?.[0] || null);
+
+      const [questionMap, answerMap] = await Promise.all([
+        fetchQuestions((tasksRes.data || []).map((t: any) => t.id)).catch(() => ({})),
+        fetchAnswers(subIds).catch(() => ({})),
+      ]);
+      setQuestionsByTask(questionMap);
+      setAnswersBySubmission(answerMap);
     } catch (err: any) {
       console.error("homework load failed", err);
       toast({ title: "Could not load homework", description: err.message || "Please try again.", variant: "destructive" });
@@ -208,25 +221,46 @@ export default function HomeworkTab({ teamSlug }: { teamSlug: string }) {
 
   const markDone = async (task: Task, file: File | null) => {
     if (!user || !selectedChild) return;
+    const questions = questionsByTask[task.id] || [];
+    const drafts = answerDrafts[task.id] || {};
+    const missing = missingRequired(questions, drafts);
+    if (missing.length) {
+      toast({
+        title: "Answer the questions first",
+        description: `${missing.length} question${missing.length === 1 ? "" : "s"} still need${missing.length === 1 ? "s" : ""} an answer.`,
+        variant: "destructive",
+      });
+      return;
+    }
     setUploadingTaskId(task.id);
     try {
       let proof: { path: string; type: "image" | "video" } | null = null;
       if (file) proof = await uploadHomeworkMedia(file, "proof");
-      const { error } = await supabase.from("homework_submissions").insert({
-        task_id: task.id,
-        player_registration_id: selectedChild.id,
-        player_name: selectedChild.name,
-        user_id: user.id,
-        proof_path: proof?.path ?? null,
-        proof_type: proof?.type ?? null,
-        note: notes[task.id]?.trim() || null,
-      });
+      const { data: submission, error } = await supabase
+        .from("homework_submissions")
+        .insert({
+          task_id: task.id,
+          player_registration_id: selectedChild.id,
+          player_name: selectedChild.name,
+          user_id: user.id,
+          proof_path: proof?.path ?? null,
+          proof_type: proof?.type ?? null,
+          note: notes[task.id]?.trim() || null,
+        })
+        .select("id")
+        .single();
       if (error) throw error;
+
+      if (submission?.id && questions.length) {
+        await saveAnswers(submission.id, questions, drafts);
+      }
+
       toast({
-        title: file ? "Homework submitted" : "Marked as done",
+        title: questions.length ? "Answers sent" : file ? "Homework submitted" : "Marked as done",
         description: file ? "Your photo or video is with the coach." : "Your coach can see this is complete.",
       });
       setNotes((n) => ({ ...n, [task.id]: "" }));
+      setAnswerDrafts((d) => ({ ...d, [task.id]: {} }));
       await load();
     } catch (err: any) {
       toast({ title: "Could not submit homework", description: err.message, variant: "destructive" });
@@ -337,6 +371,12 @@ export default function HomeworkTab({ teamSlug }: { teamSlug: string }) {
                   <DrillVideo path={task.drill_media_path} title={task.title} />
                 )}
 
+                <AnswerSheet
+                  questions={questionsByTask[task.id] || []}
+                  answers={answerDrafts[task.id] || {}}
+                  onChange={(next) => setAnswerDrafts((d) => ({ ...d, [task.id]: next }))}
+                />
+
                 <div className="mt-4 space-y-3">
                   <Textarea
                     placeholder="Add a quick note for the coach (optional)"
@@ -374,7 +414,8 @@ export default function HomeworkTab({ teamSlug }: { teamSlug: string }) {
                       onClick={() => markDone(task, null)}
                       className="text-xs font-display uppercase tracking-wider"
                     >
-                      <Check className="h-3.5 w-3.5 mr-1" /> Mark as Done
+                      <Check className="h-3.5 w-3.5 mr-1" />
+                      {(questionsByTask[task.id] || []).length ? "Submit Answers" : "Mark as Done"}
                     </Button>
                   </div>
                   <p className="text-[10px] text-muted-foreground">
@@ -417,6 +458,35 @@ export default function HomeworkTab({ teamSlug }: { teamSlug: string }) {
                     </p>
                   )}
                   {sub?.note && <p className="text-sm text-muted-foreground mt-2 italic">"{sub.note}"</p>}
+                  {sub && (questionsByTask[task.id] || []).length > 0 && (
+                    <div className="mt-3 border-t border-border pt-3 space-y-1">
+                      {(() => {
+                        const qs = questionsByTask[task.id] || [];
+                        const ans = answersBySubmission[sub.id] || [];
+                        const score = scoreLabel(qs, ans);
+                        return (
+                          <>
+                            <p className="text-[10px] font-display uppercase tracking-widest text-primary">
+                              Answers{score ? ` - scored ${score}` : ""}
+                            </p>
+                            {qs.map((q, qi) => {
+                              const a = ans.find((x) => x.question_id === q.id);
+                              return (
+                                <p key={q.id} className="text-sm text-foreground flex gap-1">
+                                  {a?.is_correct === true && <Check className="h-3.5 w-3.5 text-emerald-500 mt-0.5 shrink-0" />}
+                                  {a?.is_correct === false && <X className="h-3.5 w-3.5 text-destructive mt-0.5 shrink-0" />}
+                                  <span>
+                                    <span className="text-muted-foreground">{qi + 1}. {q.prompt} </span>
+                                    {answerText(a?.answer)}
+                                  </span>
+                                </p>
+                              );
+                            })}
+                          </>
+                        );
+                      })()}
+                    </div>
+                  )}
                   {sub?.proof_path && sub.proof_type === "image" && proofUrls[sub.id] && (
                     <img
                       src={proofUrls[sub.id]}
