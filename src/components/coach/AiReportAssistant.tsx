@@ -60,7 +60,7 @@ export function AiReportAssistant({
   notes: string;
   onNotesChange: (text: string) => void;
 }) {
-  const [busy, setBusy] = useState<null | "short" | "standard" | "upbeat">(null);
+  const [busy, setBusy] = useState(false);
   const [recording, setRecording] = useState(false);
   const [transcribing, setTranscribing] = useState(false);
   const recRef = useRef<{
