@@ -362,6 +362,14 @@ export default function HomeworkManager() {
     await load();
   };
 
+  const shareHomework = (task: Task) => {
+    const link = `https://www.pa-fc.uk/hub?tab=homework&team=${task.team_slug}`;
+    const lines = [`⚽ New homework for ${teamLabel(task.team_slug)}: ${task.title}`];
+    if (task.due_date) lines.push(`📅 Due: ${task.due_date}`);
+    lines.push(`📋 View it and upload proof here: ${link}`);
+    window.open(`https://wa.me/?text=${encodeURIComponent(lines.join("\n"))}`, "_blank");
+  };
+
   const submissionsByTask = useCallback(
     (taskId: string) => submissions.filter((s) => s.task_id === taskId),
     [submissions],
