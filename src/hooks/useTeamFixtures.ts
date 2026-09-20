@@ -16,9 +16,6 @@ export interface FAFixture {
   type: "fixture" | "result";
   homeScore?: number;
   awayScore?: number;
-  /** Set when a coach has manually changed the time/venue for this fixture. */
-  overrideNote?: string;
-  isOverridden?: boolean;
 }
 
 export interface FATeamData {
@@ -75,36 +72,10 @@ async function fetchTeamFixtures(
     throw new Error(data?.error || "Failed to fetch fixtures");
   }
 
-  const fixtures: FAFixture[] = data.fixtures || [];
-  const results: FAFixture[] = data.results || [];
-
-  // Coaches can override kick-off time / venue for last minute changes.
-  const { data: overrides } = await supabase
-    .from("fa_fixture_overrides")
-    .select("fixture_date, opponent, kickoff_time, venue, note")
-    .eq("team_slug", slug);
-
-  const applyOverrides = (list: FAFixture[]) =>
-    list.map((f) => {
-      const isHome = f.homeTeam.includes("Peterborough Ath");
-      const opponent = isHome ? f.awayTeam : f.homeTeam;
-      const o = (overrides ?? []).find(
-        (x) => x.fixture_date === f.date && x.opponent === opponent,
-      );
-      if (!o) return f;
-      return {
-        ...f,
-        time: o.kickoff_time || f.time,
-        venue: o.venue || f.venue,
-        overrideNote: o.note || undefined,
-        isOverridden: true,
-      } as FAFixture;
-    });
-
   return {
     team: config.team,
-    fixtures: applyOverrides(fixtures),
-    results: applyOverrides(results),
+    fixtures: data.fixtures || [],
+    results: data.results || [],
   };
 }
 
