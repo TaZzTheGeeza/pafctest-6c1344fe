@@ -562,19 +562,43 @@ export default function HomeworkManager() {
                     >
                       <Pencil className="h-4 w-4" />
                     </span>
-                    <span
-                      role="button"
-                      tabIndex={0}
-                      className="p-2 text-muted-foreground hover:text-primary"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        shareHomework(task);
-                      }}
-                      aria-label="Share homework on WhatsApp"
-                      title="Share on WhatsApp"
-                    >
-                      <Share2 className="h-4 w-4" />
-                    </span>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          className="p-2 text-muted-foreground hover:text-primary outline-none"
+                          onPointerDown={(e) => e.stopPropagation()}
+                          onClick={(e) => e.stopPropagation()}
+                          onKeyDown={(e) => e.stopPropagation()}
+                          aria-label="Share homework"
+                          title="Share homework"
+                        >
+                          <Share2 className="h-4 w-4" />
+                        </span>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-52">
+                        <DropdownMenuItem onSelect={() => shareWhatsapp(task)}>
+                          <MessageSquare className="h-4 w-4 mr-2" /> WhatsApp
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => copyText(homeworkShare(task).link, "Link copied")}>
+                          <Link className="h-4 w-4 mr-2" /> Copy link
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => copyText(homeworkShare(task).message, "Message copied")}>
+                          <Copy className="h-4 w-4 mr-2" /> Copy message
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => shareEmail(task)}>
+                          <Send className="h-4 w-4 mr-2" /> Email
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => shareSms(task)}>
+                          <Smartphone className="h-4 w-4 mr-2" /> Text message
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onSelect={() => shareNative(task)}>
+                          <Share2 className="h-4 w-4 mr-2" /> More options...
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                     <span
                       role="button"
                       tabIndex={0}
