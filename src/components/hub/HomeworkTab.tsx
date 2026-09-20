@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { uploadHomeworkMedia, getHomeworkMediaUrl } from "@/lib/homework";
-import { CLUB_TEAMS } from "@/lib/teamConfig";
+import { CLUB_TEAMS, normalizeClubTeamNames } from "@/lib/teamConfig";
 import AnswerSheet from "@/components/homework/AnswerSheet";
 import YouTubeEmbed from "@/components/homework/YouTubeEmbed";
 import {
@@ -49,6 +49,9 @@ interface Feedback {
 }
 
 interface Child {
+  /** Stable selector key (registration id, or a guardian-derived key). */
+  key: string;
+  /** Registration id when the child has a registration form, otherwise null. */
   id: string | null;
   name: string;
 }
@@ -98,10 +101,14 @@ export default function HomeworkTab({ teamSlug }: { teamSlug: string }) {
         .order("due_date", { ascending: true, nullsFirst: false });
 
       // Children: direct registrations for this account, plus guardian links.
-      const regPromise = (supabase.from("player_registrations") as any)
-        .select("id, first_name, last_name")
-        .eq("team_slug", teamSlug)
-        .or(`user_id.eq.${user.id},email.eq.${user.email?.toLowerCase()}`);
+      const regPromise = supabase
+        .from("player_registrations")
+        .select("id, child_name, preferred_age_group")
+        .or(
+          user.email
+            ? `user_id.eq.${user.id},email.eq.${user.email}`
+            : `user_id.eq.${user.id}`,
+        );
 
       const guardianPromise = supabase
         .from("guardians")
@@ -115,11 +122,21 @@ export default function HomeworkTab({ teamSlug }: { teamSlug: string }) {
 
       setTasks((tasksRes.data || []) as Task[]);
 
-      const kids: Child[] = ((regRes.data || []) as any[]).map((r) => ({
-        id: r.id,
-        name: `${r.first_name ?? ""} ${r.last_name ?? ""}`.trim(),
-      }));
+      const teamName = CLUB_TEAMS.find((t) => t.slug === teamSlug)?.name;
+      const kids: Child[] = ((regRes.data || []) as any[])
+        .filter((r) =>
+          teamName
+            ? normalizeClubTeamNames([r.preferred_age_group || ""]).includes(teamName)
+            : true,
+        )
+        .map((r) => ({
+          key: r.id as string,
+          id: r.id as string,
+          name: (r.child_name || "").trim(),
+        }))
+        .filter((c) => c.name);
       const guardianKids: Child[] = (guardianRes.data || []).map((g) => ({
+        key: `guardian:${g.player_name}`,
         id: null,
         name: g.player_name,
       }));
@@ -128,7 +145,9 @@ export default function HomeworkTab({ teamSlug }: { teamSlug: string }) {
         if (!merged.some((k) => k.name.toLowerCase() === gk.name.toLowerCase())) merged.push(gk);
       }
       setChildren(merged);
-      if (merged.length > 0 && !selectedChildId) setSelectedChildId(merged[0].id);
+      if (merged.length > 0 && !merged.some((k) => k.key === selectedChildId)) {
+        setSelectedChildId(merged[0].key);
+      }
 
       const { data: subs } = await supabase
         .from("homework_submissions")
@@ -201,7 +220,7 @@ export default function HomeworkTab({ teamSlug }: { teamSlug: string }) {
   }, [submissions, tasks]);
 
   const selectedChild = useMemo(
-    () => children.find((c) => c.id === selectedChildId) || children[0] || null,
+    () => children.find((c) => c.key === selectedChildId) || children[0] || null,
     [children, selectedChildId],
   );
 
@@ -319,10 +338,10 @@ export default function HomeworkTab({ teamSlug }: { teamSlug: string }) {
         <div className="flex flex-wrap gap-2">
           {children.map((c) => (
             <button
-              key={c.id || c.name}
-              onClick={() => setSelectedChildId(c.id)}
+              key={c.key}
+              onClick={() => setSelectedChildId(c.key)}
               className={`px-4 py-2 rounded-sm text-xs font-display uppercase tracking-wider border transition-colors ${
-                selectedChild?.name === c.name
+                selectedChild?.key === c.key
                   ? "bg-primary text-primary-foreground border-primary"
                   : "bg-card text-muted-foreground border-border hover:border-primary/40"
               }`}
