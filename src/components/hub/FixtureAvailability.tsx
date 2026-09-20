@@ -9,6 +9,7 @@ import { Check, X, HelpCircle, Loader2, MapPin, Clock, Navigation, ChevronDown, 
 import { toast } from "sonner";
 import { AddAvailabilityEventDialog } from "./AddAvailabilityEventDialog";
 import { EditAvailabilityEventDialog } from "./EditAvailabilityEventDialog";
+import { EditFaFixtureDialog } from "./EditFaFixtureDialog";
 import { ReminderPreviewDialog } from "./ReminderPreviewDialog";
 import { CoachFixturePanel } from "@/components/CoachFixturePanel";
 import { useVenueAddresses } from "@/hooks/useVenueAddresses";
@@ -59,6 +60,8 @@ interface AvailabilityItem {
   opponent: string;
   isCustom: boolean;
   customEventId?: string;
+  isOverridden?: boolean;
+  overrideNote?: string;
 }
 
 function fixtureToItem(f: FAFixture): AvailabilityItem {
@@ -73,6 +76,8 @@ function fixtureToItem(f: FAFixture): AvailabilityItem {
     isHome,
     opponent,
     isCustom: false,
+    isOverridden: f.isOverridden,
+    overrideNote: f.overrideNote,
   };
 }
 
@@ -98,6 +103,7 @@ export function FixtureAvailability({ teamSlug }: Props) {
   const [reminderItem, setReminderItem] = useState<AvailabilityItem | null>(null);
   const [editingVenue, setEditingVenue] = useState<string | null>(null);
   const [editingEvent, setEditingEvent] = useState<CustomEvent | null>(null);
+  const [editingFixture, setEditingFixture] = useState<AvailabilityItem | null>(null);
   const [venueInput, setVenueInput] = useState("");
   const [typeFilter, setTypeFilter] = useState<"all" | "fixtures" | "events">("all");
   const [statusFilter, setStatusFilter] = useState<"all" | "available" | "maybe" | "unavailable" | "none">("all");
