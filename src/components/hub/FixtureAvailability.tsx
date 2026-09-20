@@ -9,6 +9,7 @@ import { Check, X, HelpCircle, Loader2, MapPin, Clock, Navigation, ChevronDown, 
 import { toast } from "sonner";
 import { AddAvailabilityEventDialog } from "./AddAvailabilityEventDialog";
 import { EditAvailabilityEventDialog } from "./EditAvailabilityEventDialog";
+import { EditFaFixtureDialog } from "./EditFaFixtureDialog";
 import { ReminderPreviewDialog } from "./ReminderPreviewDialog";
 import { CoachFixturePanel } from "@/components/CoachFixturePanel";
 import { useVenueAddresses } from "@/hooks/useVenueAddresses";
@@ -59,6 +60,8 @@ interface AvailabilityItem {
   opponent: string;
   isCustom: boolean;
   customEventId?: string;
+  isOverridden?: boolean;
+  overrideNote?: string;
 }
 
 function fixtureToItem(f: FAFixture): AvailabilityItem {
@@ -73,6 +76,8 @@ function fixtureToItem(f: FAFixture): AvailabilityItem {
     isHome,
     opponent,
     isCustom: false,
+    isOverridden: f.isOverridden,
+    overrideNote: f.overrideNote,
   };
 }
 
@@ -98,6 +103,7 @@ export function FixtureAvailability({ teamSlug }: Props) {
   const [reminderItem, setReminderItem] = useState<AvailabilityItem | null>(null);
   const [editingVenue, setEditingVenue] = useState<string | null>(null);
   const [editingEvent, setEditingEvent] = useState<CustomEvent | null>(null);
+  const [editingFixture, setEditingFixture] = useState<AvailabilityItem | null>(null);
   const [venueInput, setVenueInput] = useState("");
   const [typeFilter, setTypeFilter] = useState<"all" | "fixtures" | "events">("all");
   const [statusFilter, setStatusFilter] = useState<"all" | "available" | "maybe" | "unavailable" | "none">("all");
@@ -665,6 +671,14 @@ export function FixtureAvailability({ teamSlug }: Props) {
 
                 <div className="flex flex-wrap items-center gap-3 mt-1 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{item.date} · {item.time}</span>
+                  {item.isOverridden && (
+                    <span
+                      title={item.overrideNote || "Changed by the coach"}
+                      className="px-1.5 py-0.5 rounded text-[10px] font-display tracking-wider uppercase bg-primary/15 text-primary"
+                    >
+                      Updated
+                    </span>
+                  )}
                   {item.venue && <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{item.venue}</span>}
                   {item.venue && (
                     <button
@@ -701,6 +715,9 @@ export function FixtureAvailability({ teamSlug }: Props) {
                     </button>
                   )}
                 </div>
+                {item.overrideNote && (
+                  <p className="mt-1 text-xs text-primary">{item.overrideNote}</p>
+                )}
                 {editingVenue === item.key && item.venue && (
                   <div className="mt-2 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                     <input
@@ -777,6 +794,16 @@ export function FixtureAvailability({ teamSlug }: Props) {
                   >
                     <Send className="h-3.5 w-3.5" />
                     <span>Remind</span>
+                  </button>
+                )}
+                {!item.isCustom && (isCoach || isAdmin) && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setEditingFixture(item); }}
+                    title="Change the kick-off time or venue for this fixture"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-border text-xs font-semibold text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                    <span>Edit</span>
                   </button>
                 )}
                 {item.isCustom && (isCoach || isAdmin) && (
@@ -966,6 +993,18 @@ export function FixtureAvailability({ teamSlug }: Props) {
         <EditAvailabilityEventDialog
           event={editingEvent}
           onClose={() => setEditingEvent(null)}
+        />
+      )}
+
+      {editingFixture && (
+        <EditFaFixtureDialog
+          teamSlug={teamSlug}
+          fixtureDate={editingFixture.date}
+          opponent={editingFixture.opponent}
+          title={editingFixture.title}
+          currentTime={editingFixture.time}
+          currentVenue={editingFixture.venue}
+          onClose={() => setEditingFixture(null)}
         />
       )}
     </div>
