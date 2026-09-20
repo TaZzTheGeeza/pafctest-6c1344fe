@@ -19,6 +19,7 @@ import { DateInput } from "@/components/ui/date-input";
 import { POTMCardPreview } from "@/components/coach/POTMCardPreview";
 import { CLUB_TEAMS } from "@/lib/teamConfig";
 import { AiReportAssistant } from "@/components/coach/AiReportAssistant";
+import { AiPotmAssistant } from "@/components/coach/AiPotmAssistant";
 
 
 
@@ -492,6 +493,16 @@ export function POTMForm({
           <div>
             <label className="block text-xs font-display tracking-wider text-muted-foreground mb-1">Reason for Award</label>
             <textarea value={entry.reason} onChange={(e) => updateEntry(i, "reason", e.target.value)} placeholder="What made this player stand out?" rows={2} className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground resize-none" />
+            <AiPotmAssistant
+              context={{
+                playerName: entry.player_name,
+                teamName: ownAgeGroup,
+                opponent: ownMatchDescription,
+                matchDate: ownMatchDate,
+              }}
+              reason={entry.reason}
+              onReasonChange={(text) => updateEntry(i, "reason", text)}
+            />
           </div>
 
           <div className="space-y-3">
