@@ -164,12 +164,6 @@ export function AiReportAssistant({
           {busy === "standard" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
           Polish my write-up
         </Button>
-        <Button type="button" size="sm" variant="outline" onClick={() => generate("short")} disabled={disabled} className="h-8 text-xs">
-          {busy === "short" ? <Loader2 className="h-3 w-3 animate-spin" /> : "Short summary"}
-        </Button>
-        <Button type="button" size="sm" variant="outline" onClick={() => generate("upbeat")} disabled={disabled} className="h-8 text-xs">
-          {busy === "upbeat" ? <Loader2 className="h-3 w-3 animate-spin" /> : "Upbeat tone"}
-        </Button>
         <Button
           type="button"
           size="sm"
