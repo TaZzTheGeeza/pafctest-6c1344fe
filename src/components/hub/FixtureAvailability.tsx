@@ -671,6 +671,11 @@ export function FixtureAvailability({ teamSlug }: Props) {
 
                 <div className="flex flex-wrap items-center gap-3 mt-1 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{item.date} · {item.time}</span>
+                  {item.isOverridden && (
+                    <span className="px-1.5 py-0.5 rounded text-[10px] font-display tracking-wider uppercase bg-primary/15 text-primary">
+                      Updated
+                    </span>
+                  )}
                   {item.venue && <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{item.venue}</span>}
                   {item.venue && (
                     <button
