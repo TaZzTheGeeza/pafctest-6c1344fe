@@ -147,7 +147,7 @@ export function AiReportAssistant({
     }
   };
 
-  const disabled = busy !== null || transcribing || recording;
+  const disabled = busy || transcribing || recording;
 
   return (
     <div className="rounded-lg border border-border bg-secondary/40 p-3 space-y-2">
@@ -160,8 +160,8 @@ export function AiReportAssistant({
         proper report. It won't invent anything you didn't mention.
       </p>
       <div className="flex flex-wrap gap-2">
-        <Button type="button" size="sm" onClick={() => generate("standard")} disabled={disabled} className="h-8 text-xs gap-1">
-          {busy === "standard" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+        <Button type="button" size="sm" onClick={generate} disabled={disabled} className="h-8 text-xs gap-1">
+          {busy ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
           Polish my write-up
         </Button>
         <Button
@@ -169,7 +169,7 @@ export function AiReportAssistant({
           size="sm"
           variant={recording ? "destructive" : "outline"}
           onClick={recording ? stopRecording : startRecording}
-          disabled={busy !== null || transcribing}
+          disabled={busy || transcribing}
           className="h-8 text-xs gap-1"
         >
           {transcribing ? (
