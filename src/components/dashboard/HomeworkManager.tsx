@@ -18,7 +18,7 @@ import {
 const teamLabel = (slug: string) => CLUB_TEAMS.find((t) => t.slug === slug)?.name || slug;
 import {
   BookOpen, Loader2, Plus, Trash2, Heart, MessageSquare, Star, Pencil, ChevronDown, ChevronRight, Send, Video, ImageIcon,
-  Check, X,
+  Check, X, Share2,
 } from "lucide-react";
 
 interface Task {
@@ -197,7 +197,7 @@ export default function HomeworkManager() {
       setDrillFile(null);
       setYoutubeUrl("");
       setQuestionDrafts([]);
-      toast({ title: "Homework set", description: `Notifying the ${teamLabel(teamSlug)} squad...` });
+      toast({ title: "Homework set", description: `Notifying the ${teamLabel(teamSlug)} squad. Tap the share icon next to the task to send it on WhatsApp too.` });
       await notifyNewHomework(
         {
           team_slug: teamSlug,
@@ -362,6 +362,14 @@ export default function HomeworkManager() {
     await load();
   };
 
+  const shareHomework = (task: Task) => {
+    const link = `https://www.pa-fc.uk/hub?tab=homework&team=${task.team_slug}`;
+    const lines = [`⚽ New homework for ${teamLabel(task.team_slug)}: ${task.title}`];
+    if (task.due_date) lines.push(`📅 Due: ${task.due_date}`);
+    lines.push(`📋 View it and upload proof here: ${link}`);
+    window.open(`https://wa.me/?text=${encodeURIComponent(lines.join("\n"))}`, "_blank");
+  };
+
   const submissionsByTask = useCallback(
     (taskId: string) => submissions.filter((s) => s.task_id === taskId),
     [submissions],
@@ -505,6 +513,19 @@ export default function HomeworkManager() {
                       aria-label="Edit homework"
                     >
                       <Pencil className="h-4 w-4" />
+                    </span>
+                    <span
+                      role="button"
+                      tabIndex={0}
+                      className="p-2 text-muted-foreground hover:text-primary"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        shareHomework(task);
+                      }}
+                      aria-label="Share homework on WhatsApp"
+                      title="Share on WhatsApp"
+                    >
+                      <Share2 className="h-4 w-4" />
                     </span>
                     <span
                       role="button"
