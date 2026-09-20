@@ -365,14 +365,57 @@ export default function HomeworkManager() {
     await load();
   };
 
-  const shareHomework = (task: Task) => {
+  const homeworkShare = (task: Task) => {
     const link = `https://www.pa-fc.uk/hub?tab=homework&team=${task.team_slug}`;
     const lines = [`⚽ New homework for ${teamLabel(task.team_slug)}: ${task.title}`];
     if (task.due_date) lines.push(`📅 Due: ${task.due_date}`);
     lines.push(`📋 View it and upload proof here: ${link}`);
-    const text = encodeURIComponent(lines.join("\n"));
+    return { link, message: lines.join("\n") };
+  };
+
+  const copyText = async (value: string, label: string) => {
+    try {
+      await navigator.clipboard.writeText(value);
+      toast({ title: label });
+    } catch {
+      const ta = document.createElement("textarea");
+      ta.value = value;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+      toast({ title: label });
+    }
+  };
+
+  const shareNative = async (task: Task) => {
+    const { link, message } = homeworkShare(task);
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: `Homework: ${task.title}`, text: message, url: link });
+        return;
+      } catch {
+        /* user cancelled or the share sheet failed - fall back to copying */
+      }
+    }
+    await copyText(`${message}`, "Homework copied - paste it wherever you like");
+  };
+
+  const shareWhatsapp = (task: Task) => {
+    const { message } = homeworkShare(task);
+    const text = encodeURIComponent(message);
     const isMobile = /android|iphone|ipad|ipod/i.test(navigator.userAgent);
     window.open(isMobile ? `whatsapp://send?text=${text}` : `https://web.whatsapp.com/send?text=${text}`, "_blank");
+  };
+
+  const shareEmail = (task: Task) => {
+    const { message } = homeworkShare(task);
+    window.location.href = `mailto:?subject=${encodeURIComponent(`Homework: ${task.title}`)}&body=${encodeURIComponent(`${message}\n`)}`;
+  };
+
+  const shareSms = (task: Task) => {
+    const { message } = homeworkShare(task);
+    window.location.href = `sms:?&body=${encodeURIComponent(message)}`;
   };
 
   const submissionsByTask = useCallback(
