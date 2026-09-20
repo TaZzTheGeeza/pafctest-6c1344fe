@@ -71,7 +71,7 @@ export function AiReportAssistant({
     chunks: Float32Array[];
   } | null>(null);
 
-  const generate = async (tone: "short" | "standard" | "upbeat") => {
+  const generate = async () => {
     if (!context.opponent) {
       toast.error("Pick the fixture/opponent first.");
       return;
@@ -80,10 +80,10 @@ export function AiReportAssistant({
       toast.error("Write a few lines about the match first (or use Voice note), then the AI will polish it.");
       return;
     }
-    setBusy(tone);
+    setBusy(true);
     try {
       const { data, error } = await supabase.functions.invoke("generate-match-report", {
-        body: { ...context, notes, tone },
+        body: { ...context, notes, tone: "standard" },
       });
       if (error) throw new Error((data as any)?.error || error.message);
       if ((data as any)?.error) throw new Error((data as any).error);
@@ -94,7 +94,7 @@ export function AiReportAssistant({
     } catch (e: any) {
       toast.error(e?.message || "Could not write the report");
     } finally {
-      setBusy(null);
+      setBusy(false);
     }
   };
 
