@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { uploadHomeworkMedia, getHomeworkMediaUrl } from "@/lib/homework";
-import { CLUB_TEAMS } from "@/lib/teamConfig";
+import { CLUB_TEAMS, normalizeClubTeamNames } from "@/lib/teamConfig";
 import AnswerSheet from "@/components/homework/AnswerSheet";
 import YouTubeEmbed from "@/components/homework/YouTubeEmbed";
 import {
@@ -338,10 +338,10 @@ export default function HomeworkTab({ teamSlug }: { teamSlug: string }) {
         <div className="flex flex-wrap gap-2">
           {children.map((c) => (
             <button
-              key={c.id || c.name}
-              onClick={() => setSelectedChildId(c.id)}
+              key={c.key}
+              onClick={() => setSelectedChildId(c.key)}
               className={`px-4 py-2 rounded-sm text-xs font-display uppercase tracking-wider border transition-colors ${
-                selectedChild?.name === c.name
+                selectedChild?.key === c.key
                   ? "bg-primary text-primary-foreground border-primary"
                   : "bg-card text-muted-foreground border-border hover:border-primary/40"
               }`}
