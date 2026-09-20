@@ -26,7 +26,7 @@ export function AiPotmAssistant({
   reason: string;
   onReasonChange: (text: string) => void;
 }) {
-  const [busy, setBusy] = useState<null | "standard" | "short" | "upbeat">(null);
+  const [busy, setBusy] = useState(false);
   const [recording, setRecording] = useState(false);
   const [transcribing, setTranscribing] = useState(false);
   const recRef = useRef<{
