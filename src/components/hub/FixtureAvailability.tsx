@@ -785,6 +785,16 @@ export function FixtureAvailability({ teamSlug }: Props) {
                     <span>Remind</span>
                   </button>
                 )}
+                {!item.isCustom && (isCoach || isAdmin) && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setEditingFixture(item); }}
+                    title="Change the kick-off time or venue for this fixture"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-border text-xs font-semibold text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                    <span>Edit</span>
+                  </button>
+                )}
                 {item.isCustom && (isCoach || isAdmin) && (
                   <button
                     onClick={(e) => {
@@ -972,6 +982,18 @@ export function FixtureAvailability({ teamSlug }: Props) {
         <EditAvailabilityEventDialog
           event={editingEvent}
           onClose={() => setEditingEvent(null)}
+        />
+      )}
+
+      {editingFixture && (
+        <EditFaFixtureDialog
+          teamSlug={teamSlug}
+          fixtureDate={editingFixture.date}
+          opponent={editingFixture.opponent}
+          title={editingFixture.title}
+          currentTime={editingFixture.time}
+          currentVenue={editingFixture.venue}
+          onClose={() => setEditingFixture(null)}
         />
       )}
     </div>
