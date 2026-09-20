@@ -18,7 +18,7 @@ import {
 const teamLabel = (slug: string) => CLUB_TEAMS.find((t) => t.slug === slug)?.name || slug;
 import {
   BookOpen, Loader2, Plus, Trash2, Heart, MessageSquare, Star, Pencil, ChevronDown, ChevronRight, Send, Video, ImageIcon,
-  Check, X,
+  Check, X, Share2,
 } from "lucide-react";
 
 interface Task {
