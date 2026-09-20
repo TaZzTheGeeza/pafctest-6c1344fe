@@ -517,6 +517,19 @@ export default function HomeworkManager() {
                     <span
                       role="button"
                       tabIndex={0}
+                      className="p-2 text-muted-foreground hover:text-primary"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        shareHomework(task);
+                      }}
+                      aria-label="Share homework on WhatsApp"
+                      title="Share on WhatsApp"
+                    >
+                      <Share2 className="h-4 w-4" />
+                    </span>
+                    <span
+                      role="button"
+                      tabIndex={0}
                       className="p-2 text-muted-foreground hover:text-destructive"
                       onClick={(e) => {
                         e.stopPropagation();
