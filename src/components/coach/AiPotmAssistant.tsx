@@ -131,7 +131,7 @@ export function AiPotmAssistant({
           size="sm"
           variant={recording ? "destructive" : "outline"}
           onClick={recording ? stopRecording : startRecording}
-          disabled={busy !== null || transcribing}
+          disabled={busy || transcribing}
           className="h-7 text-xs gap-1"
         >
           {transcribing ? (
