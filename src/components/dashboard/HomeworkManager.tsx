@@ -6,6 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { uploadHomeworkMedia, getHomeworkMediaUrl, notifyNewHomework, notifyHomeworkFeedback } from "@/lib/homework";
+import {
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 import { CLUB_TEAMS } from "@/lib/teamConfig";
 import YouTubeEmbed, { youtubeId } from "@/components/homework/YouTubeEmbed";
 import QuestionBuilder from "@/components/homework/QuestionBuilder";
@@ -18,7 +21,7 @@ import {
 const teamLabel = (slug: string) => CLUB_TEAMS.find((t) => t.slug === slug)?.name || slug;
 import {
   BookOpen, Loader2, Plus, Trash2, Heart, MessageSquare, Star, Pencil, ChevronDown, ChevronRight, Send, Video, ImageIcon,
-  Check, X, Share2,
+  Check, X, Share2, Link, Copy, Smartphone,
 } from "lucide-react";
 
 interface Task {
@@ -362,14 +365,57 @@ export default function HomeworkManager() {
     await load();
   };
 
-  const shareHomework = (task: Task) => {
+  const homeworkShare = (task: Task) => {
     const link = `https://www.pa-fc.uk/hub?tab=homework&team=${task.team_slug}`;
     const lines = [`⚽ New homework for ${teamLabel(task.team_slug)}: ${task.title}`];
     if (task.due_date) lines.push(`📅 Due: ${task.due_date}`);
     lines.push(`📋 View it and upload proof here: ${link}`);
-    const text = encodeURIComponent(lines.join("\n"));
+    return { link, message: lines.join("\n") };
+  };
+
+  const copyText = async (value: string, label: string) => {
+    try {
+      await navigator.clipboard.writeText(value);
+      toast({ title: label });
+    } catch {
+      const ta = document.createElement("textarea");
+      ta.value = value;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+      toast({ title: label });
+    }
+  };
+
+  const shareNative = async (task: Task) => {
+    const { link, message } = homeworkShare(task);
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: `Homework: ${task.title}`, text: message, url: link });
+        return;
+      } catch {
+        /* user cancelled or the share sheet failed - fall back to copying */
+      }
+    }
+    await copyText(`${message}`, "Homework copied - paste it wherever you like");
+  };
+
+  const shareWhatsapp = (task: Task) => {
+    const { message } = homeworkShare(task);
+    const text = encodeURIComponent(message);
     const isMobile = /android|iphone|ipad|ipod/i.test(navigator.userAgent);
     window.open(isMobile ? `whatsapp://send?text=${text}` : `https://web.whatsapp.com/send?text=${text}`, "_blank");
+  };
+
+  const shareEmail = (task: Task) => {
+    const { message } = homeworkShare(task);
+    window.location.href = `mailto:?subject=${encodeURIComponent(`Homework: ${task.title}`)}&body=${encodeURIComponent(`${message}\n`)}`;
+  };
+
+  const shareSms = (task: Task) => {
+    const { message } = homeworkShare(task);
+    window.location.href = `sms:?&body=${encodeURIComponent(message)}`;
   };
 
   const submissionsByTask = useCallback(
@@ -516,19 +562,43 @@ export default function HomeworkManager() {
                     >
                       <Pencil className="h-4 w-4" />
                     </span>
-                    <span
-                      role="button"
-                      tabIndex={0}
-                      className="p-2 text-muted-foreground hover:text-primary"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        shareHomework(task);
-                      }}
-                      aria-label="Share homework on WhatsApp"
-                      title="Share on WhatsApp"
-                    >
-                      <Share2 className="h-4 w-4" />
-                    </span>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          className="p-2 text-muted-foreground hover:text-primary outline-none"
+                          onPointerDown={(e) => e.stopPropagation()}
+                          onClick={(e) => e.stopPropagation()}
+                          onKeyDown={(e) => e.stopPropagation()}
+                          aria-label="Share homework"
+                          title="Share homework"
+                        >
+                          <Share2 className="h-4 w-4" />
+                        </span>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-52">
+                        <DropdownMenuItem onSelect={() => shareWhatsapp(task)}>
+                          <MessageSquare className="h-4 w-4 mr-2" /> WhatsApp
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => copyText(homeworkShare(task).link, "Link copied")}>
+                          <Link className="h-4 w-4 mr-2" /> Copy link
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => copyText(homeworkShare(task).message, "Message copied")}>
+                          <Copy className="h-4 w-4 mr-2" /> Copy message
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => shareEmail(task)}>
+                          <Send className="h-4 w-4 mr-2" /> Email
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => shareSms(task)}>
+                          <Smartphone className="h-4 w-4 mr-2" /> Text message
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onSelect={() => shareNative(task)}>
+                          <Share2 className="h-4 w-4 mr-2" /> More options...
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                     <span
                       role="button"
                       tabIndex={0}
