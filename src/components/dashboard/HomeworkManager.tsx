@@ -197,7 +197,7 @@ export default function HomeworkManager() {
       setDrillFile(null);
       setYoutubeUrl("");
       setQuestionDrafts([]);
-      toast({ title: "Homework set", description: `Notifying the ${teamLabel(teamSlug)} squad...` });
+      toast({ title: "Homework set", description: `Notifying the ${teamLabel(teamSlug)} squad. Tap the share icon next to the task to send it on WhatsApp too.` });
       await notifyNewHomework(
         {
           team_slug: teamSlug,
