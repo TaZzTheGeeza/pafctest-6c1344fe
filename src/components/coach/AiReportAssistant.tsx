@@ -60,7 +60,7 @@ export function AiReportAssistant({
   notes: string;
   onNotesChange: (text: string) => void;
 }) {
-  const [busy, setBusy] = useState<null | "short" | "standard" | "upbeat">(null);
+  const [busy, setBusy] = useState(false);
   const [recording, setRecording] = useState(false);
   const [transcribing, setTranscribing] = useState(false);
   const recRef = useRef<{
@@ -71,7 +71,7 @@ export function AiReportAssistant({
     chunks: Float32Array[];
   } | null>(null);
 
-  const generate = async (tone: "short" | "standard" | "upbeat") => {
+  const generate = async () => {
     if (!context.opponent) {
       toast.error("Pick the fixture/opponent first.");
       return;
@@ -80,10 +80,10 @@ export function AiReportAssistant({
       toast.error("Write a few lines about the match first (or use Voice note), then the AI will polish it.");
       return;
     }
-    setBusy(tone);
+    setBusy(true);
     try {
       const { data, error } = await supabase.functions.invoke("generate-match-report", {
-        body: { ...context, notes, tone },
+        body: { ...context, notes, tone: "standard" },
       });
       if (error) throw new Error((data as any)?.error || error.message);
       if ((data as any)?.error) throw new Error((data as any).error);
@@ -94,7 +94,7 @@ export function AiReportAssistant({
     } catch (e: any) {
       toast.error(e?.message || "Could not write the report");
     } finally {
-      setBusy(null);
+      setBusy(false);
     }
   };
 
@@ -147,7 +147,7 @@ export function AiReportAssistant({
     }
   };
 
-  const disabled = busy !== null || transcribing || recording;
+  const disabled = busy || transcribing || recording;
 
   return (
     <div className="rounded-lg border border-border bg-secondary/40 p-3 space-y-2">
@@ -160,22 +160,16 @@ export function AiReportAssistant({
         proper report. It won't invent anything you didn't mention.
       </p>
       <div className="flex flex-wrap gap-2">
-        <Button type="button" size="sm" onClick={() => generate("standard")} disabled={disabled} className="h-8 text-xs gap-1">
-          {busy === "standard" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+        <Button type="button" size="sm" onClick={generate} disabled={disabled} className="h-8 text-xs gap-1">
+          {busy ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
           Polish my write-up
-        </Button>
-        <Button type="button" size="sm" variant="outline" onClick={() => generate("short")} disabled={disabled} className="h-8 text-xs">
-          {busy === "short" ? <Loader2 className="h-3 w-3 animate-spin" /> : "Short summary"}
-        </Button>
-        <Button type="button" size="sm" variant="outline" onClick={() => generate("upbeat")} disabled={disabled} className="h-8 text-xs">
-          {busy === "upbeat" ? <Loader2 className="h-3 w-3 animate-spin" /> : "Upbeat tone"}
         </Button>
         <Button
           type="button"
           size="sm"
           variant={recording ? "destructive" : "outline"}
           onClick={recording ? stopRecording : startRecording}
-          disabled={busy !== null || transcribing}
+          disabled={busy || transcribing}
           className="h-8 text-xs gap-1"
         >
           {transcribing ? (
