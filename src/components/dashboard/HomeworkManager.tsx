@@ -367,7 +367,9 @@ export default function HomeworkManager() {
     const lines = [`⚽ New homework for ${teamLabel(task.team_slug)}: ${task.title}`];
     if (task.due_date) lines.push(`📅 Due: ${task.due_date}`);
     lines.push(`📋 View it and upload proof here: ${link}`);
-    window.open(`https://wa.me/?text=${encodeURIComponent(lines.join("\n"))}`, "_blank");
+    const text = encodeURIComponent(lines.join("\n"));
+    const isMobile = /android|iphone|ipad|ipod/i.test(navigator.userAgent);
+    window.open(isMobile ? `whatsapp://send?text=${text}` : `https://web.whatsapp.com/send?text=${text}`, "_blank");
   };
 
   const submissionsByTask = useCallback(
