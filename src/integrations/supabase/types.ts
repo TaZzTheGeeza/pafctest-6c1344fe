@@ -525,6 +525,45 @@ export type Database = {
         }
         Relationships: []
       }
+      fa_fixture_overrides: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          fixture_date: string
+          id: string
+          kickoff_time: string | null
+          note: string | null
+          opponent: string
+          team_slug: string
+          updated_at: string
+          venue: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          fixture_date: string
+          id?: string
+          kickoff_time?: string | null
+          note?: string | null
+          opponent: string
+          team_slug: string
+          updated_at?: string
+          venue?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          fixture_date?: string
+          id?: string
+          kickoff_time?: string | null
+          note?: string | null
+          opponent?: string
+          team_slug?: string
+          updated_at?: string
+          venue?: string | null
+        }
+        Relationships: []
+      }
       fixture_availability: {
         Row: {
           created_at: string
