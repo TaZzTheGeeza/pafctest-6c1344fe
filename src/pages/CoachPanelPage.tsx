@@ -496,9 +496,9 @@ export function POTMForm({
             <AiPotmAssistant
               context={{
                 playerName: entry.player_name,
-                teamName: ownAgeGroup,
-                opponent: ownMatchDescription,
-                matchDate: ownMatchDate,
+                teamName: ageGroup,
+                opponent: matchDescription,
+                matchDate: matchDate,
               }}
               reason={entry.reason}
               onReasonChange={(text) => updateEntry(i, "reason", text)}
