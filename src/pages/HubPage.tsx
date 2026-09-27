@@ -243,7 +243,7 @@ export default function HubPage() {
     ...tabs,
     ...((isAdmin || isCoach) ? [{ id: "pitch-bookings", label: "Pitch Bookings", icon: MapPin }] : []),
     ...((isAdmin || isCoach) ? [{ id: "members", label: "Members", icon: Users }] : []),
-    ...(isAdmin ? [{ id: "roster", label: "Roster", icon: ClipboardList }] : []),
+    ...((isAdmin || isCoach) ? [{ id: "roster", label: "Roster", icon: ClipboardList }] : []),
   ].filter((t) => !(t.id === "awards" && (activeTeam === "u6s" || !presentationEnabled)));
 
   const renderContent = () => (
@@ -259,7 +259,7 @@ export default function HubPage() {
       {activeTab === "attendance" && activeTeam && (isCoach || isAdmin) && <AttendanceStats teamSlug={activeTeam} />}
       {activeTab === "guardian" && activeTeam && <GuardianManager teamSlug={activeTeam} teamName={activeTeamName || ""} />}
       {activeTab === "members" && activeTeam && (isAdmin || isCoach) && <TeamMemberManager teamSlug={activeTeam} teamName={activeTeamName || ""} />}
-      {activeTab === "roster" && activeTeam && isAdmin && <PlayerRosterManager teamSlug={activeTeam} teamName={activeTeamName || ""} />}
+      {activeTab === "roster" && activeTeam && (isAdmin || isCoach) && <PlayerRosterManager teamSlug={activeTeam} teamName={activeTeamName || ""} adminMode={isAdmin} />}
       {activeTab === "meetings" && <HubMeetingsEmbed />}
       {activeTab === "pitch-bookings" && (isAdmin || isCoach) && <PitchBookingsPanel />}
 
