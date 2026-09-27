@@ -30,7 +30,7 @@ const POSITIONS = ["Goalkeeper", "Defender", "Midfielder", "Forward"];
 
 const defaultTeamName = (ageGroup: string) => `Peterborough Athletic ${ageGroup}s`.replace(/s+s$/, "s");
 
-export function PlayerRosterManager({ teamSlug, teamName }: { teamSlug: string; teamName: string }) {
+export function PlayerRosterManager({ teamSlug, teamName, adminMode = false }: { teamSlug: string; teamName: string; adminMode?: boolean }) {
   const ageGroup = getAgeGroup(teamSlug);
   const [players, setPlayers] = useState<Player[]>([]);
   const [guardians, setGuardians] = useState<GuardianLink[]>([]);
@@ -356,19 +356,23 @@ export function PlayerRosterManager({ teamSlug, teamName }: { teamSlug: string; 
                       </div>
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
-                      <button
-                        onClick={() => { setLinkingFor(isLinking ? null : p.id); setParentSearch(""); setParentResults([]); }}
-                        className="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-secondary transition-colors"
-                        title="Link parent"
-                      >
-                        <Link2 className="h-4 w-4" />
-                      </button>
+                      {adminMode && (
+                        <button
+                          onClick={() => { setLinkingFor(isLinking ? null : p.id); setParentSearch(""); setParentResults([]); }}
+                          className="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-secondary transition-colors"
+                          title="Link parent"
+                        >
+                          <Link2 className="h-4 w-4" />
+                        </button>
+                      )}
                       <button onClick={() => startEdit(p)} className="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-secondary transition-colors" title="Edit">
                         <Pencil className="h-4 w-4" />
                       </button>
-                      <button onClick={() => remove(p)} className="p-2 rounded-lg text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors" title="Remove">
-                        <Trash2 className="h-4 w-4" />
-                      </button>
+                      {adminMode && (
+                        <button onClick={() => remove(p)} className="p-2 rounded-lg text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors" title="Remove">
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
                     </div>
                   </div>
 
@@ -379,9 +383,11 @@ export function PlayerRosterManager({ teamSlug, teamName }: { teamSlug: string; 
                         <span key={g.id} className="inline-flex items-center gap-1.5 text-[11px] bg-secondary/70 border border-border rounded-full pl-2 pr-1 py-0.5 font-display">
                           <UserPlus className="h-3 w-3 text-primary" />
                           <span className="text-foreground">{g.parent_name || g.parent_email || "Unknown parent"}</span>
-                          <button onClick={() => unlinkGuardian(g.id)} className="text-muted-foreground hover:text-red-400 rounded-full p-0.5">
-                            <X className="h-3 w-3" />
-                          </button>
+                          {adminMode && (
+                            <button onClick={() => unlinkGuardian(g.id)} className="text-muted-foreground hover:text-red-400 rounded-full p-0.5">
+                              <X className="h-3 w-3" />
+                            </button>
+                          )}
                         </span>
                       ))}
                     </div>
