@@ -243,7 +243,7 @@ export function PlayerRosterManager({ teamSlug, teamName, adminMode = false }: {
       <div className="flex items-center justify-between gap-3 bg-card border border-border rounded-xl p-4">
         <div>
           <h2 className="font-display text-lg font-bold text-foreground">Player Roster - {teamName}</h2>
-          <p className="text-xs text-muted-foreground mt-1">Add, edit, or remove players in this age group.</p>
+          <p className="text-xs text-muted-foreground mt-1">{adminMode ? "Add, edit, or remove players in this age group." : "Your squad's shirt numbers, positions and photos - add and edit players here."}</p>
         </div>
         {!showAdd && !editingId && (
           <button
