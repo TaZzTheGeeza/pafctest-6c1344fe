@@ -7,6 +7,8 @@ interface FetchOpts {
   budgetMs?: number;
   /** ms Firecrawl waits for dynamic content before returning the HTML. */
   waitFor?: number;
+  /** Firecrawl proxy mode, e.g. 'stealth' for pages that hang on the basic proxy. */
+  proxy?: string;
 }
 
 export async function fetchFaHtml(url: string, opts: FetchOpts = {}): Promise<string> {
@@ -39,8 +41,9 @@ export async function fetchFaHtml(url: string, opts: FetchOpts = {}): Promise<st
           formats: ["html"],
           onlyMainContent: false,
           waitFor: opts.waitFor ?? 2000,
+          ...(opts.proxy ? { proxy: opts.proxy, timeout: 60_000 } : {}),
         }),
-        signal: AbortSignal.timeout(Math.max(5_000, Math.min(remaining, 45_000))),
+        signal: AbortSignal.timeout(Math.max(5_000, Math.min(remaining, opts.proxy ? 70_000 : 45_000))),
       });
 
       const raw = await res.text();
