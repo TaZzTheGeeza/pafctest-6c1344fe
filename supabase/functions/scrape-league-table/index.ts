@@ -13,236 +13,187 @@ interface LeagueRow {
   won: number;
   drawn: number;
   lost: number;
+  goalDiff: number | null;
   points: number;
 }
 
-// Last good table per URL, reused while fresh and as a fallback when the FA site stalls.
-// Kept in the database so it survives cold starts and is shared by every visitor.
+// Cached standings are served instantly. When stale (or missing) the FA page is
+// fetched in the background with a long budget, so visitors never wait on the FA site.
 const FRESH_MS = 6 * 60 * 60 * 1000;
+const RETRY_MS = 10 * 60 * 1000; // don't hammer the FA site while a refresh is failing
+
+const json = (body: unknown, status = 200) =>
+  new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+
+const isAllowedFaUrl = (u: string) => {
+  try {
+    const p = new URL(u);
+    return p.protocol === 'https:' && p.hostname === 'fulltime.thefa.com';
+  } catch {
+    return false;
+  }
+};
+
+const decode = (s: string) =>
+  s.replace(/&amp;/g, '&').replace(/&#0?39;|&apos;|&rsquo;/g, "'").replace(/&quot;/g, '"').replace(/&nbsp;/g, ' ').trim();
+
+function parseTable(html: string): { divisionName: string; rows: LeagueRow[] } {
+  const titleMatch = html.match(/<title>\s*Table \| ([^|<]+)/);
+  const divisionName = titleMatch ? decode(titleMatch[1]) : 'League Table';
+  const tableMatch = html.match(/<table class="cell-dividers"[^>]*>([\s\S]*?)<\/table>/);
+  const rows: LeagueRow[] = [];
+  if (!tableMatch) return { divisionName, rows };
+
+  const rowRegex = /<tr[^>]*>([\s\S]*?)<\/tr>/g;
+  let rm;
+  while ((rm = rowRegex.exec(tableMatch[1])) !== null) {
+    const cells: string[] = [];
+    const cellRegex = /<td[^>]*>([\s\S]*?)<\/td>/g;
+    let cm;
+    while ((cm = cellRegex.exec(rm[1])) !== null) cells.push(decode(cm[1].replace(/<[^>]+>/g, '')));
+    const pos = parseInt(cells[0]);
+    if (cells.length < 7 || isNaN(pos)) continue;
+    // FA layout: Pos, Team, P, W, D, L, [F, A, GD,] Pts
+    const nums = cells.slice(2).map((c) => parseInt(c));
+    const points = nums[nums.length - 1] || 0;
+    const goalDiff = nums.length >= 8 ? nums[nums.length - 2] : null;
+    rows.push({
+      position: pos,
+      team: cells[1],
+      played: nums[0] || 0,
+      won: nums[1] || 0,
+      drawn: nums[2] || 0,
+      lost: nums[3] || 0,
+      goalDiff: Number.isFinite(goalDiff as number) ? goalDiff : null,
+      points,
+    });
+  }
+  return { divisionName, rows };
+}
+
+// Fallback: build the table from the division's published results when the
+// FA table page itself won't load (it often hangs behind the scraper).
+function standingsFromResults(html: string): LeagueRow[] {
+  const re = /<div class="home-team-col[\s\S]*?<div class="team-name">[\s\S]*?<a[^>]*>\s*([\s\S]*?)\s*<\/a>[\s\S]*?<div class="score-col">\s*([\s\S]*?)\s*<\/div>[\s\S]*?<div class="road-team-col[\s\S]*?<div class="team-name">[\s\S]*?<a[^>]*>\s*([\s\S]*?)\s*<\/a>/g;
+  const t = new Map<string, { p: number; w: number; d: number; l: number; f: number; a: number }>();
+  const get = (n: string) => { if (!t.has(n)) t.set(n, { p: 0, w: 0, d: 0, l: 0, f: 0, a: 0 }); return t.get(n)!; };
+  let m;
+  while ((m = re.exec(html)) !== null) {
+    const home = decode(m[1].replace(/<[^>]+>/g, ''));
+    const away = decode(m[3].replace(/<[^>]+>/g, ''));
+    const sc = m[2].replace(/<[^>]+>/g, '').match(/(\d+)\s*-\s*(\d+)/);
+    if (!sc) continue;
+    const hs = +sc[1], as = +sc[2];
+    const h = get(home), a = get(away);
+    h.p++; a.p++; h.f += hs; h.a += as; a.f += as; a.a += hs;
+    if (hs > as) { h.w++; a.l++; } else if (hs < as) { a.w++; h.l++; } else { h.d++; a.d++; }
+  }
+  return [...t.entries()]
+    .map(([team, s]) => ({ team, played: s.p, won: s.w, drawn: s.d, lost: s.l, goalDiff: s.f - s.a, points: s.w * 3 + s.d, gf: s.f }))
+    .sort((x, y) => y.points - x.points || (y.goalDiff ?? 0) - (x.goalDiff ?? 0) || y.gf - x.gf || x.team.localeCompare(y.team))
+    .map(({ gf: _gf, ...r }, i) => ({ position: i + 1, ...r }));
+}
 
 Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+  if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
 
-  // --- Auth gate: require any valid authenticated user ---
   const authHeader = req.headers.get('Authorization') || '';
-  if (!authHeader.startsWith('Bearer ')) {
-    return new Response(JSON.stringify({ success: false, error: 'Unauthorized' }), {
-      status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-  }
+  if (!authHeader.startsWith('Bearer ')) return json({ success: false, error: 'Unauthorized' }, 401);
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-  const anonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
-  const userClient = createClient(supabaseUrl, anonKey, { global: { headers: { Authorization: authHeader } } });
-  const token = authHeader.replace('Bearer ', '');
-  const { data: claims, error: claimsErr } = await userClient.auth.getClaims(token);
-  if (claimsErr || !claims?.claims?.sub) {
-    return new Response(JSON.stringify({ success: false, error: 'Invalid token' }), {
-      status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-  }
-
-  const isAllowedFaUrl = (u: string) => {
-    try {
-      const parsed = new URL(u);
-      return parsed.protocol === 'https:' && parsed.hostname === 'fulltime.thefa.com';
-    } catch {
-      return false;
-    }
-  };
-
-  const fetchFaPage = async (u: string): Promise<{ ok: true; html: string } | { ok: false; status: number; reason?: string }> => {
-    try {
-      // Routed through Firecrawl (same as fixtures) - the FA site 403s plain server requests.
-      // No waitFor: the table is server-rendered, so waiting only adds latency.
-      // Short budget: if the FA site (or the scraping service) is busy we fall back to the
-      // saved table rather than leaving the page spinning for minutes.
-      return { ok: true, html: await fetchFaHtml(u, { budgetMs: 20_000, waitFor: 0 }) };
-    } catch (e) {
-      const reason = e instanceof Error ? e.message : String(e);
-      console.warn(`FA fetch failed for ${u}: ${reason}`);
-      return { ok: false, status: 502, reason };
-    }
-  };
+  const userClient = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY')!, {
+    global: { headers: { Authorization: authHeader } },
+  });
+  const { data: claims, error: claimsErr } = await userClient.auth.getClaims(authHeader.replace('Bearer ', ''));
+  if (claimsErr || !claims?.claims?.sub) return json({ success: false, error: 'Invalid token' }, 401);
 
   try {
-    const { divisionSeason, tableUrl, fixtureUrl, discoverOnly } = await req.json();
-
-    if (!divisionSeason && !tableUrl && !fixtureUrl) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'divisionSeason, tableUrl or fixtureUrl is required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    const { fixtureUrl, force } = await req.json();
+    if (!fixtureUrl || !isAllowedFaUrl(fixtureUrl)) {
+      return json({ success: false, error: 'A https://fulltime.thefa.com fixtureUrl is required' }, 400);
     }
 
-    let resolvedTableUrl = tableUrl;
-
-    // Discover the division table from the team's fixture page - the same URL
-    // used for fixtures carries a link to its league table, so tables and
-    // fixtures always share one source.
-    if (!resolvedTableUrl && !divisionSeason && fixtureUrl) {
-      if (!isAllowedFaUrl(fixtureUrl)) {
-        return new Response(
-          JSON.stringify({ success: false, error: 'Only https://fulltime.thefa.com URLs are allowed' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-      console.log('Discovering league table from fixture page:', fixtureUrl);
-      const fixturePage = await fetchFaPage(fixtureUrl);
-      if (!fixturePage.ok) {
-        return new Response(
-          JSON.stringify({ success: false, error: `FA site returned ${fixturePage.status}${fixturePage.reason ? ` (${fixturePage.reason})` : ''}` }),
-          { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-      const tableLink = fixturePage.html.match(/href="([^"]*table\.html[^"]*)"/i);
-      if (!tableLink) {
-        return new Response(
-          JSON.stringify({ success: false, error: 'Could not find a league table link on the fixture page' }),
-          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-      resolvedTableUrl = tableLink[1]
-        .replace(/&amp;/g, '&')
-        .replace(/&#0?39;|&apos;/g, "'")
-        .replace(/&quot;/g, '"');
-      if (resolvedTableUrl.startsWith('/')) {
-        resolvedTableUrl = `https://fulltime.thefa.com${resolvedTableUrl}`;
-      }
-      console.log('Discovered table URL:', resolvedTableUrl);
-      if (discoverOnly) {
-        return new Response(
-          JSON.stringify({ success: true, tableUrl: resolvedTableUrl }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-    }
-
-    const url = resolvedTableUrl || `https://fulltime.thefa.com/table.html?divisionseason=${divisionSeason}`;
-
-    // SSRF guard - only allow scraping the FA Full-Time host over HTTPS.
-    try {
-      const parsed = new URL(url);
-      if (parsed.protocol !== 'https:' || parsed.hostname !== 'fulltime.thefa.com') {
-        return new Response(
-          JSON.stringify({ success: false, error: 'Only https://fulltime.thefa.com URLs are allowed' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-    } catch {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Invalid URL' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const serviceClient = createClient(supabaseUrl, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
-    const { data: savedRow } = await serviceClient
+    const admin = createClient(supabaseUrl, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+    // Cache is keyed by the team's fixture URL, so tables and fixtures share one source.
+    const cacheKey = `fixture:${fixtureUrl}`;
+    const { data: saved } = await admin
       .from('league_tables')
       .select('division_name, standings, updated_at')
-      .eq('table_url', url)
+      .eq('table_url', cacheKey)
       .maybeSingle();
 
-    const cached = savedRow
-      ? { divisionName: savedRow.division_name as string, standings: savedRow.standings as LeagueRow[], at: new Date(savedRow.updated_at as string).getTime() }
-      : null;
+    const standings = (saved?.standings as any) ?? null;
+    const rows: LeagueRow[] = Array.isArray(standings) ? standings : (standings?.rows ?? []);
+    const meta = Array.isArray(standings) ? {} : (standings?.meta ?? {});
+    const age = saved?.updated_at ? Date.now() - new Date(saved.updated_at).getTime() : Infinity;
+    const lastAttempt = meta.lastAttempt ? Date.now() - Number(meta.lastAttempt) : Infinity;
+    const needsRefresh = (age >= FRESH_MS || rows.length === 0 || force) && lastAttempt >= RETRY_MS;
 
-    if (cached && Date.now() - cached.at < FRESH_MS) {
-      return new Response(
-        JSON.stringify({ success: true, divisionName: cached.divisionName, standings: cached.standings, cached: true, updatedAt: savedRow!.updated_at }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    const refresh = async () => {
+      // Mark the attempt first so parallel visitors don't start duplicate scrapes.
+      await admin.from('league_tables').upsert({
+        table_url: cacheKey,
+        division_name: saved?.division_name ?? '',
+        standings: { rows, meta: { ...meta, lastAttempt: Date.now(), tableUrl: meta.tableUrl } },
+        updated_at: saved?.updated_at ?? new Date(0).toISOString(),
+      }, { onConflict: 'table_url' });
 
-    console.log('Scraping league table from:', url);
-
-    const tablePage = await fetchFaPage(url);
-    if (!tablePage.ok) {
-      if (cached) {
-        return new Response(
-          JSON.stringify({ success: true, divisionName: cached.divisionName, standings: cached.standings, cached: true, stale: true, updatedAt: new Date(cached.at).toISOString() }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+      let tableUrl: string | undefined = meta.tableUrl;
+      if (!tableUrl) {
+        const page = await fetchFaHtml(fixtureUrl, { budgetMs: 60_000, waitFor: 0 });
+        const link = page.match(/href="([^"]*table\.html[^"]*)"/i);
+        if (!link) throw new Error('No league table link on the fixture page');
+        tableUrl = decode(link[1]);
+        if (tableUrl.startsWith('/')) tableUrl = `https://fulltime.thefa.com${tableUrl}`;
       }
-      return new Response(
-        JSON.stringify({ success: false, error: 'The FA site is not responding right now - please try again shortly' }),
-        { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+      if (!isAllowedFaUrl(tableUrl)) throw new Error('Unexpected table URL');
 
-    const html = tablePage.html;
-
-    // Extract division name from title
-    const titleMatch = html.match(/<title>Table \| ([^|]+)/);
-    const divisionName = titleMatch ? titleMatch[1].trim() : 'League Table';
-
-    // Extract table data between <table class="cell-dividers"> and </table>
-    const tableMatch = html.match(/<table class="cell-dividers">([\s\S]*?)<\/table>/);
-    if (!tableMatch) {
-      if (cached) {
-        return new Response(
-          JSON.stringify({ success: true, divisionName: cached.divisionName, standings: cached.standings, cached: true, stale: true, updatedAt: new Date(cached.at).toISOString() }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+      let parsed: { divisionName: string; rows: LeagueRow[] } = { divisionName: 'League Table', rows: [] };
+      try {
+        parsed = parseTable(await fetchFaHtml(tableUrl, { budgetMs: 50_000, waitFor: 0 }));
+      } catch (e) {
+        console.warn('Table page failed, using division results:', e instanceof Error ? e.message : e);
       }
-      return new Response(
-        JSON.stringify({ success: false, error: 'Could not find league table on page' }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const tableHtml = tableMatch[1];
-
-    // Parse rows
-    const rows: LeagueRow[] = [];
-    const rowRegex = /<tr[^>]*>\s*([\s\S]*?)\s*<\/tr>/g;
-    let rowMatch;
-
-    while ((rowMatch = rowRegex.exec(tableHtml)) !== null) {
-      const rowContent = rowMatch[1];
-      const cellRegex = /<td[^>]*>\s*([\s\S]*?)\s*<\/td>/g;
-      const cells: string[] = [];
-      let cellMatch;
-
-      while ((cellMatch = cellRegex.exec(rowContent)) !== null) {
-        // Strip HTML tags and trim
-        const text = cellMatch[1].replace(/<[^>]+>/g, '').trim();
-        cells.push(text);
+      if (!parsed.rows.length) {
+        const u = new URL(tableUrl);
+        const q = new URLSearchParams({
+          selectedSeason: u.searchParams.get('selectedSeason') ?? '',
+          selectedFixtureGroupAgeGroup: u.searchParams.get('selectedFixtureGroupAgeGroup') ?? '',
+          selectedFixtureGroupKey: u.searchParams.get('selectedFixtureGroupKey') ?? '',
+          selectedDateCode: 'all', selectedRelatedFixtureOption: '2', itemsPerPage: '500',
+        });
+        const resultsHtml = await fetchFaHtml(`https://fulltime.thefa.com/results.html?${q}`, { budgetMs: 80_000, waitFor: 0 });
+        const title = resultsHtml.match(/<option[^>]*selected[^>]*value="1_[^"]*"[^>]*>([^<]+)</i);
+        parsed = { divisionName: title ? decode(title[1]) : (saved?.division_name || 'League Table'), rows: standingsFromResults(resultsHtml) };
       }
+      console.log(`Parsed ${parsed.rows.length} teams from ${parsed.divisionName}`);
+      if (!parsed.rows.length) throw new Error('No standings found on table page');
+      await admin.from('league_tables').upsert({
+        table_url: cacheKey,
+        division_name: parsed.divisionName,
+        standings: { rows: parsed.rows, meta: { tableUrl, lastAttempt: Date.now() } },
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'table_url' });
+    };
 
-      if (cells.length >= 6) {
-        const pos = parseInt(cells[0]);
-        if (!isNaN(pos)) {
-          rows.push({
-            position: pos,
-            team: cells[1],
-            played: parseInt(cells[2]) || 0,
-            won: parseInt(cells[3]) || 0,
-            drawn: parseInt(cells[4]) || 0,
-            lost: parseInt(cells[5]) || 0,
-            points: parseInt(cells[6]) || 0,
-          });
-        }
-      }
+    if (needsRefresh) {
+      // @ts-ignore EdgeRuntime is provided by the edge runtime
+      EdgeRuntime.waitUntil(refresh().catch(async (e) => {
+        console.warn('League table refresh failed:', e?.message ?? e);
+        await admin.from('league_tables').update({ standings: { rows, meta: { ...meta, lastAttempt: Date.now(), lastError: String(e?.message ?? e) } } }).eq('table_url', cacheKey);
+      }));
     }
 
-    console.log(`Parsed ${rows.length} teams from ${divisionName}`);
-    if (rows.length) {
-      await serviceClient
-        .from('league_tables')
-        .upsert({ table_url: url, division_name: divisionName, standings: rows, updated_at: new Date().toISOString() }, { onConflict: 'table_url' });
-    }
-
-    return new Response(
-      JSON.stringify({ success: true, divisionName, standings: rows }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return json({
+      success: true,
+      divisionName: saved?.division_name || null,
+      standings: rows,
+      tableUrl: meta.tableUrl ?? null,
+      updatedAt: rows.length ? saved?.updated_at : null,
+      refreshing: needsRefresh || (lastAttempt < 3 * 60 * 1000 && !meta.lastError),
+      failed: !needsRefresh && !!meta.lastError && rows.length === 0,
+    });
   } catch (error) {
-    console.error('Error scraping league table:', error);
-    return new Response(
-      JSON.stringify({ success: false, error: error instanceof Error ? error.message : 'Failed to scrape' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    console.error('Error loading league table:', error);
+    return json({ success: false, error: error instanceof Error ? error.message : 'Failed' }, 500);
   }
 });

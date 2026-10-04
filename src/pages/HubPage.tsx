@@ -7,7 +7,7 @@ import { TeamChat } from "@/components/hub/TeamChat";
 import { PaymentCenter } from "@/components/hub/PaymentCenter";
 import { NotificationCenter } from "@/components/hub/NotificationCenter";
 import { TeamMemberManager } from "@/components/hub/TeamMemberManager";
-import { MessageSquare, CreditCard, Bell, CalendarCheck, Users, Shield, ChevronDown, TrendingUp, UserPlus, User, FileText, ChevronRight, ChevronLeft, Video, Sparkles, Award, ClipboardList, MapPin, BarChart3, Shirt, BookOpen } from "lucide-react";
+import { MessageSquare, CreditCard, Bell, CalendarCheck, Users, Shield, ChevronDown, TrendingUp, UserPlus, User, FileText, ChevronRight, ChevronLeft, Video, Sparkles, Award, ClipboardList, MapPin, BarChart3, Shirt, BookOpen, Trophy } from "lucide-react";
 import { PlayerRosterManager } from "@/components/hub/PlayerRosterManager";
 import { AwardsVoting } from "@/components/hub/AwardsVoting";
 import { FixtureAvailability } from "@/components/hub/FixtureAvailability";
@@ -19,6 +19,7 @@ import { HubMeetingsEmbed } from "@/components/hub/HubMeetingsEmbed";
 import { TeamAccessRequest } from "@/components/hub/TeamAccessRequest";
 import PitchBookingsPanel from "@/components/hub/PitchBookingsPanel";
 import { HubMatchReports } from "@/components/hub/HubMatchReports";
+import { LeagueTable, hasLeagueTable } from "@/components/hub/LeagueTable";
 import { TeamStatsTable } from "@/components/TeamStatsTable";
 import { getAgeGroup } from "@/hooks/useTeamRoster";
 import { useAuth } from "@/contexts/AuthContext";
@@ -124,7 +125,7 @@ export default function HubPage() {
   useEffect(() => {
     const tab = searchParams.get("tab");
     const team = searchParams.get("team");
-    if (tab && tabs.some((t) => t.id === tab)) setActiveTab(tab);
+    if (tab && (tabs.some((t) => t.id === tab) || tab === "league")) setActiveTab(tab);
     if (team) setActiveTeam(team);
   }, [searchParams]);
 
@@ -240,7 +241,7 @@ export default function HubPage() {
   const activeTeamAge = activeTeam ? parseInt(activeTeam.match(/\d+/)?.[0] || "0", 10) : 0;
 
     const allTabs = [
-    ...tabs,
+    ...tabs.flatMap((t) => (t.id === "stats" && hasLeagueTable(activeTeam) ? [t, { id: "league", label: "League Table", icon: Trophy }] : [t])),
     ...((isAdmin || isCoach) ? [{ id: "pitch-bookings", label: "Pitch Bookings", icon: MapPin }] : []),
     ...((isAdmin || isCoach) ? [{ id: "members", label: "Members", icon: Users }] : []),
     ...((isAdmin || isCoach) ? [{ id: "roster", label: "Roster", icon: ClipboardList }] : []),
@@ -254,6 +255,7 @@ export default function HubPage() {
       {activeTab === "availability" && activeTeam && <FixtureAvailability teamSlug={activeTeam} />}
       {activeTab === "reports" && activeTeam && <HubMatchReports teamSlug={activeTeam} />}
       {activeTab === "stats" && activeTeam && <TeamStatsTable ageGroup={getAgeGroup(activeTeam)} />}
+      {activeTab === "league" && activeTeam && hasLeagueTable(activeTeam) && <LeagueTable teamSlug={activeTeam} />}
       {activeTab === "homework" && activeTeam && <HomeworkTab teamSlug={activeTeam} />}
       
       {activeTab === "attendance" && activeTeam && (isCoach || isAdmin) && <AttendanceStats teamSlug={activeTeam} />}
