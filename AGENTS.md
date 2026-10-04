@@ -1,0 +1,1 @@
+- League tables load via scrape-league-table: cached in league_tables keyed by the team's FA fixture URL and refreshed in the background (falls back to computing from division results) - the FA table page is too slow to fetch while a visitor waits.
