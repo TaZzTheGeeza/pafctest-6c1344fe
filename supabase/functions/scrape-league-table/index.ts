@@ -71,6 +71,29 @@ function parseTable(html: string): { divisionName: string; rows: LeagueRow[] } {
   return { divisionName, rows };
 }
 
+// Fallback: build the table from the division's published results when the
+// FA table page itself won't load (it often hangs behind the scraper).
+function standingsFromResults(html: string): LeagueRow[] {
+  const re = /<div class="home-team-col[\s\S]*?<div class="team-name">[\s\S]*?<a[^>]*>\s*([\s\S]*?)\s*<\/a>[\s\S]*?<div class="score-col">\s*([\s\S]*?)\s*<\/div>[\s\S]*?<div class="road-team-col[\s\S]*?<div class="team-name">[\s\S]*?<a[^>]*>\s*([\s\S]*?)\s*<\/a>/g;
+  const t = new Map<string, { p: number; w: number; d: number; l: number; f: number; a: number }>();
+  const get = (n: string) => { if (!t.has(n)) t.set(n, { p: 0, w: 0, d: 0, l: 0, f: 0, a: 0 }); return t.get(n)!; };
+  let m;
+  while ((m = re.exec(html)) !== null) {
+    const home = decode(m[1].replace(/<[^>]+>/g, ''));
+    const away = decode(m[3].replace(/<[^>]+>/g, ''));
+    const sc = m[2].replace(/<[^>]+>/g, '').match(/(\d+)\s*-\s*(\d+)/);
+    if (!sc) continue;
+    const hs = +sc[1], as = +sc[2];
+    const h = get(home), a = get(away);
+    h.p++; a.p++; h.f += hs; h.a += as; a.f += as; a.a += hs;
+    if (hs > as) { h.w++; a.l++; } else if (hs < as) { a.w++; h.l++; } else { h.d++; a.d++; }
+  }
+  return [...t.entries()]
+    .map(([team, s]) => ({ team, played: s.p, won: s.w, drawn: s.d, lost: s.l, goalDiff: s.f - s.a, points: s.w * 3 + s.d, gf: s.f }))
+    .sort((x, y) => y.points - x.points || (y.goalDiff ?? 0) - (x.goalDiff ?? 0) || y.gf - x.gf || x.team.localeCompare(y.team))
+    .map(({ gf: _gf, ...r }, i) => ({ position: i + 1, ...r }));
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
 
@@ -124,8 +147,24 @@ Deno.serve(async (req) => {
       }
       if (!isAllowedFaUrl(tableUrl)) throw new Error('Unexpected table URL');
 
-      const html = await fetchFaHtml(tableUrl, { budgetMs: 140_000, waitFor: 0 });
-      const parsed = parseTable(html);
+      let parsed: { divisionName: string; rows: LeagueRow[] } = { divisionName: 'League Table', rows: [] };
+      try {
+        parsed = parseTable(await fetchFaHtml(tableUrl, { budgetMs: 50_000, waitFor: 0 }));
+      } catch (e) {
+        console.warn('Table page failed, using division results:', e instanceof Error ? e.message : e);
+      }
+      if (!parsed.rows.length) {
+        const u = new URL(tableUrl);
+        const q = new URLSearchParams({
+          selectedSeason: u.searchParams.get('selectedSeason') ?? '',
+          selectedFixtureGroupAgeGroup: u.searchParams.get('selectedFixtureGroupAgeGroup') ?? '',
+          selectedFixtureGroupKey: u.searchParams.get('selectedFixtureGroupKey') ?? '',
+          selectedDateCode: 'all', selectedRelatedFixtureOption: '2', itemsPerPage: '500',
+        });
+        const resultsHtml = await fetchFaHtml(`https://fulltime.thefa.com/results.html?${q}`, { budgetMs: 80_000, waitFor: 0 });
+        const title = resultsHtml.match(/<option[^>]*selected[^>]*value="1_[^"]*"[^>]*>([^<]+)</i);
+        parsed = { divisionName: title ? decode(title[1]) : (saved?.division_name || 'League Table'), rows: standingsFromResults(resultsHtml) };
+      }
       console.log(`Parsed ${parsed.rows.length} teams from ${parsed.divisionName}`);
       if (!parsed.rows.length) throw new Error('No standings found on table page');
       await admin.from('league_tables').upsert({
