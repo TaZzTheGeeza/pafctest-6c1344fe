@@ -177,7 +177,10 @@ Deno.serve(async (req) => {
 
     if (needsRefresh) {
       // @ts-ignore EdgeRuntime is provided by the edge runtime
-      EdgeRuntime.waitUntil(refresh().catch((e) => console.warn('League table refresh failed:', e?.message ?? e)));
+      EdgeRuntime.waitUntil(refresh().catch(async (e) => {
+        console.warn('League table refresh failed:', e?.message ?? e);
+        await admin.from('league_tables').update({ standings: { rows, meta: { ...meta, lastAttempt: Date.now(), lastError: String(e?.message ?? e) } } }).eq('table_url', cacheKey);
+      }));
     }
 
     return json({
@@ -186,7 +189,8 @@ Deno.serve(async (req) => {
       standings: rows,
       tableUrl: meta.tableUrl ?? null,
       updatedAt: rows.length ? saved?.updated_at : null,
-      refreshing: needsRefresh || lastAttempt < 3 * 60 * 1000,
+      refreshing: needsRefresh || (lastAttempt < 3 * 60 * 1000 && !meta.lastError),
+      failed: !needsRefresh && !!meta.lastError && rows.length === 0,
     });
   } catch (error) {
     console.error('Error loading league table:', error);

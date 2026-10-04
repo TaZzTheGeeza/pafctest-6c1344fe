@@ -53,6 +53,7 @@ export function LeagueTable({ teamSlug }: { teamSlug: string }) {
         setLoading(false);
         return;
       }
+      if (data.failed) setError("FA Full-Time isn't letting us read this table right now. We'll keep trying in the background.");
       setRows(data.standings || []);
       setDivision(data.divisionName);
       setTableUrl(data.tableUrl);
