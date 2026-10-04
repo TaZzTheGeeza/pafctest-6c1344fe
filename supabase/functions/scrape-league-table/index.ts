@@ -20,7 +20,7 @@ interface LeagueRow {
 // Cached standings are served instantly. When stale (or missing) the FA page is
 // fetched in the background with a long budget, so visitors never wait on the FA site.
 const FRESH_MS = 6 * 60 * 60 * 1000;
-const RETRY_MS = 10 * 60 * 1000; // don't hammer the FA site while a refresh is failing
+const RETRY_MS = 4 * 60 * 1000; // don't hammer the FA site while a refresh is failing
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
@@ -107,14 +107,15 @@ Deno.serve(async (req) => {
   if (claimsErr || !claims?.claims?.sub) return json({ success: false, error: 'Invalid token' }, 401);
 
   try {
-    const { fixtureUrl, force } = await req.json();
+    const { fixtureUrl, tableUrl: givenTableUrl, force } = await req.json();
+    if (givenTableUrl && !isAllowedFaUrl(givenTableUrl)) return json({ success: false, error: 'Invalid tableUrl' }, 400);
     if (!fixtureUrl || !isAllowedFaUrl(fixtureUrl)) {
       return json({ success: false, error: 'A https://fulltime.thefa.com fixtureUrl is required' }, 400);
     }
 
     const admin = createClient(supabaseUrl, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
     // Cache is keyed by the team's fixture URL, so tables and fixtures share one source.
-    const cacheKey = `fixture:${fixtureUrl}`;
+    const cacheKey = givenTableUrl ? `table:${givenTableUrl}` : `fixture:${fixtureUrl}`;
     const { data: saved } = await admin
       .from('league_tables')
       .select('division_name, standings, updated_at')
@@ -137,7 +138,7 @@ Deno.serve(async (req) => {
         updated_at: saved?.updated_at ?? new Date(0).toISOString(),
       }, { onConflict: 'table_url' });
 
-      let tableUrl: string | undefined = meta.tableUrl;
+      let tableUrl: string | undefined = givenTableUrl || meta.tableUrl;
       if (!tableUrl) {
         const page = await fetchFaHtml(fixtureUrl, { budgetMs: 60_000, waitFor: 0 });
         const link = page.match(/href="([^"]*table\.html[^"]*)"/i);
@@ -149,7 +150,7 @@ Deno.serve(async (req) => {
 
       let parsed: { divisionName: string; rows: LeagueRow[] } = { divisionName: 'League Table', rows: [] };
       try {
-        parsed = parseTable(await fetchFaHtml(tableUrl, { budgetMs: 50_000, waitFor: 0 }));
+        parsed = parseTable(await fetchFaHtml(tableUrl, { budgetMs: 75_000, waitFor: 0, proxy: 'stealth' }));
       } catch (e) {
         console.warn('Table page failed, using division results:', e instanceof Error ? e.message : e);
       }
@@ -161,7 +162,7 @@ Deno.serve(async (req) => {
           selectedFixtureGroupKey: u.searchParams.get('selectedFixtureGroupKey') ?? '',
           selectedDateCode: 'all', selectedRelatedFixtureOption: '2', itemsPerPage: '500',
         });
-        const resultsHtml = await fetchFaHtml(`https://fulltime.thefa.com/results.html?${q}`, { budgetMs: 80_000, waitFor: 0 });
+        const resultsHtml = await fetchFaHtml(`https://fulltime.thefa.com/results.html?${q}`, { budgetMs: 75_000, waitFor: 0, proxy: 'stealth' });
         const title = resultsHtml.match(/<option[^>]*selected[^>]*value="1_[^"]*"[^>]*>([^<]+)</i);
         parsed = { divisionName: title ? decode(title[1]) : (saved?.division_name || 'League Table'), rows: standingsFromResults(resultsHtml) };
       }
@@ -187,7 +188,7 @@ Deno.serve(async (req) => {
       success: true,
       divisionName: saved?.division_name || null,
       standings: rows,
-      tableUrl: meta.tableUrl ?? null,
+      tableUrl: givenTableUrl || meta.tableUrl || null,
       updatedAt: rows.length ? saved?.updated_at : null,
       refreshing: needsRefresh || (lastAttempt < 3 * 60 * 1000 && !meta.lastError),
       failed: !needsRefresh && !!meta.lastError && rows.length === 0,
