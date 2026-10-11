@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { usePersistentState, clearPersistentDrafts } from "@/hooks/usePersistentState";
 import { Navigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Navbar } from "@/components/Navbar";
@@ -260,9 +261,11 @@ export function POTMForm({
   const matchDescription = embedded ? (lockedOpponent || "") : ownMatchDescription;
   const matchDate = embedded ? (lockedMatchDate || "") : ownMatchDate;
 
-  const [entries, setEntries] = useState<POTMEntry[]>([
-    { player_name: "", shirt_number: "", reason: "", photoFile: null, photoPreview: null, croppedBlob: null },
-  ]);
+  const [entries, setEntries] = usePersistentState<POTMEntry[]>(
+    `mr:potm:${embedded ? "report" : "solo"}`,
+    [{ player_name: "", shirt_number: "", reason: "", photoFile: null, photoPreview: null, croppedBlob: null }],
+    (list) => list.map((e) => ({ ...e, photoFile: null, photoPreview: null, croppedBlob: null })),
+  );
   const fileInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const teamSlug = AGE_GROUP_TO_SLUG[ageGroup] || "";
@@ -592,15 +595,15 @@ interface GoalAssistEntry { playerId: string; count: number; }
 export function MatchReportForm({ ageGroups }: { ageGroups: string[] }) {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [fixtureKey, setFixtureKey] = useState("");
-  const [matchDate, setMatchDate] = useState("");
-  const [ageGroup, setAgeGroup] = useState(ageGroups.length === 1 ? ageGroups[0] : "");
-  const [opponent, setOpponent] = useState("");
-  const [homeScore, setHomeScore] = useState("");
-  const [awayScore, setAwayScore] = useState("");
-  const [goalEntries, setGoalEntries] = useState<GoalAssistEntry[]>([]);
-  const [assistEntries, setAssistEntries] = useState<GoalAssistEntry[]>([]);
-  const [notes, setNotes] = useState("");
+  const [fixtureKey, setFixtureKey] = usePersistentState("mr:fixtureKey", "");
+  const [matchDate, setMatchDate] = usePersistentState("mr:matchDate", "");
+  const [ageGroup, setAgeGroup] = usePersistentState("mr:ageGroup", ageGroups.length === 1 ? ageGroups[0] : "");
+  const [opponent, setOpponent] = usePersistentState("mr:opponent", "");
+  const [homeScore, setHomeScore] = usePersistentState("mr:homeScore", "");
+  const [awayScore, setAwayScore] = usePersistentState("mr:awayScore", "");
+  const [goalEntries, setGoalEntries] = usePersistentState<GoalAssistEntry[]>("mr:goals", []);
+  const [assistEntries, setAssistEntries] = usePersistentState<GoalAssistEntry[]>("mr:assists", []);
+  const [notes, setNotes] = usePersistentState("mr:notes", "");
   const potmRef = useRef<POTMSaveHandle | null>(null);
 
 
@@ -716,6 +719,7 @@ export function MatchReportForm({ ageGroups }: { ageGroups: string[] }) {
           ? `Match report + ${potmCount} POTM award${potmCount > 1 ? "s" : ""} submitted!`
           : "Match report submitted!"
       );
+      clearPersistentDrafts("mr:");
       setSubmitted(true);
 
     } catch (err: any) {
