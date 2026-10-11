@@ -1,10 +1,9 @@
 import { useEffect, type CSSProperties } from "react";
 import { Ghost, Sparkles, CandyCane, Snowflake } from "lucide-react";
 import { useSeasonalTheme } from "@/hooks/useSeasonalTheme";
-import halloweenBorder from "@/assets/seasonal/halloween-border.png";
-import christmasBorder from "@/assets/seasonal/christmas-border.png";
 import halloweenGarland from "@/assets/seasonal/halloween-garland.png";
 import christmasGarland from "@/assets/seasonal/christmas-garland.png";
+
 
 function Bat() {
   return <svg viewBox="0 0 100 45" fill="currentColor"><path d="M50 18L44 8L43 18Q23 5 3 2Q10 17 8 29Q21 23 27 37Q36 29 44 39L50 45L56 39Q64 29 73 37Q79 23 92 29Q90 17 97 2Q77 5 57 18L56 8Z" /></svg>;
@@ -16,19 +15,17 @@ export function SeasonalTheme() {
     if (theme === "off") delete document.documentElement.dataset.season;
     else document.documentElement.dataset.season = theme;
     const root = document.documentElement;
-    root.style.setProperty("--season-border-art", `url("${theme === "halloween" ? halloweenBorder : christmasBorder}")`);
     root.style.setProperty("--season-garland-art", `url("${theme === "halloween" ? halloweenGarland : christmasGarland}")`);
     return () => {
       delete root.dataset.season;
-      root.style.removeProperty("--season-border-art");
       root.style.removeProperty("--season-garland-art");
+
     };
   }, [theme]);
 
   if (theme === "off") return null;
   return <div className={`seasonal-overlay seasonal-${theme}`} aria-hidden="true">
     <div className="seasonal-header-art"><img src={theme === "halloween" ? halloweenGarland : christmasGarland} alt="" width={1536} height={512} /></div>
-    <div className="seasonal-ground-art"><img src={theme === "halloween" ? halloweenBorder : christmasBorder} alt="" width={1536} height={512} /></div>
     {theme === "halloween" ? <>
       {Array.from({ length: 8 }, (_, i) => <div key={i} className={`seasonal-floater seasonal-floater-${i}`}>
         {i % 3 === 0 ? <Ghost /> : <Bat />}
