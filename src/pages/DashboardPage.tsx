@@ -26,6 +26,7 @@ import { TeamRequestsManager } from "@/components/dashboard/TeamRequestsManager"
 import { AdminNotificationComposer } from "@/components/dashboard/AdminNotificationComposer";
 import { OrdersTab } from "@/components/dashboard/OrdersTab";
 import { ShopProductsManager } from "@/components/dashboard/ShopProductsManager";
+import { SeasonalThemeSettings } from "@/components/dashboard/SeasonalThemeSettings";
 import { KitManager } from "@/components/dashboard/KitManager";
 import { ReportTracker } from "@/components/dashboard/ReportTracker";
 import { ClipboardCheck, Shirt, BookOpen } from "lucide-react";
@@ -660,6 +661,7 @@ export default function DashboardPage() {
               {/* Site Toggles - admin only */}
               {isAdmin && (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                  <SeasonalThemeSettings />
                   <div className="bg-card border border-border rounded-xl p-5 flex flex-col gap-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">

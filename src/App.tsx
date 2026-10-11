@@ -10,6 +10,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { usePresence } from "@/hooks/usePresence";
 import { useEffect } from "react";
 import { FootballBackground } from "@/components/FootballBackground";
+import { SeasonalTheme } from "@/components/SeasonalTheme";
 
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { RoleGate } from "@/components/RoleGate";
@@ -179,6 +180,7 @@ const App = () => (
     <TooltipProvider>
       <AuthProvider>
         <FootballBackground />
+        <SeasonalTheme />
         <Toaster />
         <Sonner />
         <AppContent />
