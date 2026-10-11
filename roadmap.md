@@ -1,6 +1,6 @@
 # Roadmap
 
-- [ ] Replace subtle seasonal icons with immersive artwork, animation and site-wide seasonal styling
+- [x] Replace subtle seasonal icons with immersive artwork, animation and site-wide seasonal styling
 
 - [x] Add admin Halloween and Christmas switches with site-wide seasonal styling
 
