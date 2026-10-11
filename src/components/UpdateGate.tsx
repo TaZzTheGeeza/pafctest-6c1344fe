@@ -1,3 +1,4 @@
+import { hasActiveDraft } from "@/hooks/usePersistentState";
 import { useEffect, useRef, useState } from "react";
 import { RefreshCw, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -67,6 +68,8 @@ async function getIndexFingerprint(): Promise<string | null> {
 }
 
 function isUserBusy(): boolean {
+  // Unsaved match report draft - never auto-refresh away from it
+  if (hasActiveDraft()) return true;
   // Open dialog / modal
   if (document.querySelector('[role="dialog"], [data-state="open"][role="alertdialog"]')) {
     return true;
