@@ -734,6 +734,7 @@ export function MatchReportForm({ ageGroups }: { ageGroups: string[] }) {
     setAgeGroup(ageGroups.length === 1 ? ageGroups[0] : "");
     setOpponent(""); setHomeScore(""); setAwayScore("");
     setGoalEntries([]); setAssistEntries([]); setNotes("");
+    clearPersistentDrafts("mr:");
   };
 
   if (submitted) {
