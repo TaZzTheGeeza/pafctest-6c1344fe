@@ -5,7 +5,7 @@ import halloweenGarland from "@/assets/seasonal/halloween-garland.png";
 import christmasGarland from "@/assets/seasonal/christmas-garland.png";
 
 
-function Bat() {
+export function Bat() {
   return <svg viewBox="0 0 100 45" fill="currentColor"><path d="M50 18L44 8L43 18Q23 5 3 2Q10 17 8 29Q21 23 27 37Q36 29 44 39L50 45L56 39Q64 29 73 37Q79 23 92 29Q90 17 97 2Q77 5 57 18L56 8Z" /></svg>;
 }
 
