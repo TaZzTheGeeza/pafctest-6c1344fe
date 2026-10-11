@@ -15,12 +15,11 @@ export function SeasonalTheme() {
     if (theme === "off") delete document.documentElement.dataset.season;
     else document.documentElement.dataset.season = theme;
     const root = document.documentElement;
-    root.style.setProperty("--season-border-art", `url("${theme === "halloween" ? halloweenBorder : christmasBorder}")`);
     root.style.setProperty("--season-garland-art", `url("${theme === "halloween" ? halloweenGarland : christmasGarland}")`);
     return () => {
       delete root.dataset.season;
-      root.style.removeProperty("--season-border-art");
       root.style.removeProperty("--season-garland-art");
+
     };
   }, [theme]);
 
