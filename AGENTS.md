@@ -1,1 +1,2 @@
 - Hub League Table tab (U12+) only links to each team's FA Full-Time table (LEAGUE_TABLE_URLS in LeagueTable.tsx) - the FA blocks automated reading of table pages, even via Firecrawl stealth.
+- Seasonal decoration uses one shared site_settings key and a global non-interactive overlay; mutually exclusive admin switches preserve club branding and avoid conflicting effects.
