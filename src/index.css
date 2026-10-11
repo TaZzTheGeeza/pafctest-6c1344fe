@@ -151,7 +151,6 @@
 :root[data-season] footer { position: relative; padding-top: 170px; }
 :root[data-season] footer::before { content: ""; position: absolute; inset: 0 0 auto; height: 160px; background-image: var(--season-garland-art); background-size: 100% auto; background-repeat: no-repeat; pointer-events: none; }
 :root[data-season] main > section:first-child { position: relative; }
-:root[data-season] main > section:first-child::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 280px; background-image: var(--season-border-art); background-size: 100% auto; background-position: bottom; background-repeat: no-repeat; pointer-events: none; z-index: 5; }
 .seasonal-overlay { position: fixed; inset: 0; z-index: 40; pointer-events: none; overflow: hidden; }
 .seasonal-header-art { position: absolute; left: 0; right: 0; top: 92px; height: 185px; }
 .seasonal-header-art img { width: 100%; height: auto; display: block; }
@@ -195,7 +194,6 @@
   .seasonal-lights span { width: 5px; height: 10px; }
   :root[data-season] footer { padding-top: 100px; }
   :root[data-season] footer::before { height: 90px; background-size: auto 90px; background-position: top center; }
-  :root[data-season] main > section:first-child::after { height: 140px; background-size: auto 140px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .seasonal-floater, .seasonal-weather span, .seasonal-lights span { animation: none; }
