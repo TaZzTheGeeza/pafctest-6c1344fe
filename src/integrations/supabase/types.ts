@@ -4104,6 +4104,16 @@ export type Database = {
       }
     }
     Functions: {
+      apply_match_report_stats: {
+        Args: {
+          _age_group: string
+          _assists: string
+          _goals: string
+          _match_date: string
+          _opponent: string
+        }
+        Returns: undefined
+      }
       can_claim_presentation_tickets: {
         Args: { _user_id: string }
         Returns: boolean
