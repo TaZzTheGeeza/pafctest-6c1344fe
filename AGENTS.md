@@ -1,2 +1,3 @@
 - Hub League Table tab (U12+) only links to each team's FA Full-Time table (LEAGUE_TABLE_URLS in LeagueTable.tsx) - the FA blocks automated reading of table pages, even via Firecrawl stealth.
+- FA scraping bypasses the provider page cache with maxAge: 0; the application cache alone controls freshness so newly published fixtures are not hidden by a second stale copy.
 - Seasonal themes use one shared site_settings key, semantic token overrides, transparent artwork and a non-interactive global overlay; page/footer scenery and mutually exclusive switches keep decoration consistent without altering content or blocking controls.
