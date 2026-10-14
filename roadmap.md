@@ -1,5 +1,7 @@
 # Roadmap
 
+- [x] Check fresh FA fixtures for every team and update all team fixture caches, excluding Jack Hunt training
+
 - [x] Replace subtle seasonal icons with immersive artwork, animation and site-wide seasonal styling
 
 - [x] Add admin Halloween and Christmas switches with site-wide seasonal styling
