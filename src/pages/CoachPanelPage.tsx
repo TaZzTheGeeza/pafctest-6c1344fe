@@ -381,6 +381,7 @@ export function POTMForm({
     try {
       const count = await savePotm();
       toast.success(`${count} POTM award${count > 1 ? "s" : ""} submitted!`);
+      if (!embedded) clearPersistentDrafts("mr:potm:solo");
       setSubmitted(true);
     } catch (err: any) {
       toast.error(err.message || "Failed to submit POTM");
