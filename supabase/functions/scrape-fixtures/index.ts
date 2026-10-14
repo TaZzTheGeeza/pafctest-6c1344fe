@@ -29,6 +29,11 @@ function decodeEntities(s: string): string {
     .trim();
 }
 
+const notTraining = (list: unknown): Fixture[] =>
+  ((list as Fixture[] | null) ?? []).filter(
+    (f) => !/jack\s*hunt/i.test(`${f.homeTeam} ${f.awayTeam} ${f.venue} ${f.competition}`),
+  );
+
 function parseFixturesPage(html: string): Fixture[] {
   const fixtures: Fixture[] = [];
 
@@ -68,6 +73,9 @@ function parseFixturesPage(html: string): Fixture[] {
       const venue = cells.length >= 2 ? cells[1] : '';
       const competition = cells.length >= 3 ? cells[2] : '';
 
+      // Anything involving Jack Hunt is a training session, not a match.
+      if (/jack\s*hunt/i.test(`${home} ${away} ${venue} ${competition}`)) continue;
+
       fixtures.push({
         date: dateTimeMatch[1].trim(),
         time: dateTimeMatch[2].trim(),
@@ -100,6 +108,8 @@ function parseResultsPage(html: string): Fixture[] {
     const scoreRaw = match[4].replace(/<[^>]+>/g, '').trim();
     const awayTeam = decodeEntities(match[5].replace(/<[^>]+>/g, ''));
     const competition = decodeEntities(match[6].replace(/<[^>]+>/g, ''));
+
+    if (/jack\s*hunt/i.test(`${homeTeam} ${awayTeam} ${competition}`)) continue;
 
     const scoreMatch = scoreRaw.match(/(\d+)\s*-\s*(\d+)/);
 
@@ -272,7 +282,7 @@ Deno.serve(async (req) => {
         );
       }
       return new Response(
-        JSON.stringify({ success: true, team, fixtures: cached.fixtures ?? [], results: cached.results ?? [], cached: true, stale }),
+        JSON.stringify({ success: true, team, fixtures: notTraining(cached.fixtures), results: notTraining(cached.results), cached: true, stale }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
