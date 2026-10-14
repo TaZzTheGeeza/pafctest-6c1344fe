@@ -40,6 +40,8 @@ export async function fetchFaHtml(url: string, opts: FetchOpts = {}): Promise<st
           url,
           formats: ["html"],
           onlyMainContent: false,
+          // Our database controls freshness; never reuse Firecrawl's older page copy.
+          maxAge: 0,
           waitFor: opts.waitFor ?? 2000,
           ...(opts.proxy ? { proxy: opts.proxy, timeout: 60_000 } : {}),
         }),
