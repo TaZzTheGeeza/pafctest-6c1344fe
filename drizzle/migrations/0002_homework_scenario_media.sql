@@ -1,0 +1,3 @@
+ALTER TABLE public.homework_questions ADD COLUMN IF NOT EXISTS scenario_id text, ADD COLUMN IF NOT EXISTS scenario_media jsonb NOT NULL DEFAULT '{}'::jsonb;
+COMMENT ON COLUMN public.homework_questions.scenario_id IS 'Built-in decision scenario; answer marking remains in protected homework_question_keys.';
+COMMENT ON COLUMN public.homework_questions.scenario_media IS 'Optional private scenario photo and outcome video storage paths.';

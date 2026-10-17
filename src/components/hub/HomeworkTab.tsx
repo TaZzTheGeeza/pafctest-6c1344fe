@@ -7,6 +7,9 @@ import { useToast } from "@/hooks/use-toast";
 import { uploadHomeworkMedia, getHomeworkMediaUrl } from "@/lib/homework";
 import { CLUB_TEAMS, normalizeClubTeamNames } from "@/lib/teamConfig";
 import AnswerSheet from "@/components/homework/AnswerSheet";
+import { Link } from "react-router-dom";
+import ScenarioPlayer from "@/components/homework/ScenarioPlayer";
+import { findScenario } from "@/lib/homeworkScenarios";
 import YouTubeEmbed from "@/components/homework/YouTubeEmbed";
 import {
   HomeworkAnswer, HomeworkQuestion, answerText, fetchAnswers, fetchQuestions, missingRequired, saveAnswers, scoreLabel,
@@ -334,6 +337,7 @@ export default function HomeworkTab({ teamSlug }: { teamSlug: string }) {
       </section>
 
       {/* Child selector */}
+      <Button asChild variant="outline"><Link to="/homework/scenarios">What would you do? Practice scenarios</Link></Button>
       {children.length > 1 && (
         <div className="flex flex-wrap gap-2">
           {children.map((c) => (
@@ -494,6 +498,8 @@ export default function HomeworkTab({ teamSlug }: { teamSlug: string }) {
                             </p>
                             {qs.map((q, qi) => {
                               const a = ans.find((x) => x.question_id === q.id);
+                              const scenario = findScenario(q.scenario_id);
+                              if (scenario) return <ScenarioPlayer key={q.id} scenario={scenario} media={q.scenario_media} firstAnswer={typeof a?.answer === "string" ? a.answer : undefined} />;
                               return (
                                 <p key={q.id} className="text-sm text-foreground flex gap-1">
                                   {a?.is_correct === true && <Check className="h-3.5 w-3.5 text-emerald-500 mt-0.5 shrink-0" />}

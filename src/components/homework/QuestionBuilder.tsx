@@ -1,5 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { HOMEWORK_SCENARIOS, scenarioDraft } from "@/lib/homeworkScenarios";
+import ScenarioMediaEditor from "@/components/homework/ScenarioMediaEditor";
 import { Plus, Trash2, ArrowUp, ArrowDown, ListChecks } from "lucide-react";
 import {
   QUESTION_TYPE_LABELS,
@@ -47,6 +49,14 @@ export default function QuestionBuilder({ drafts, onChange }: Props) {
 
   return (
     <div className="space-y-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-xs text-primary font-display uppercase">What would you do?</span>
+        <select aria-label="Add a scenario question" value="__choose__" className="bg-background border border-border rounded-sm px-2 py-2 text-xs max-w-full"
+          onChange={(e) => { const scenario = HOMEWORK_SCENARIOS.find((s) => s.id === e.target.value); if (scenario) onChange([...drafts, scenarioDraft(scenario)]); }}>
+          <option value="__choose__">Add attacking / defending scenario</option>
+          {HOMEWORK_SCENARIOS.map((s) => <option key={s.id} value={s.id}>{s.category}: {s.title}</option>)}
+        </select>
+      </div>
       <div className="flex items-center justify-between gap-2">
         <p className="text-xs font-display uppercase tracking-wider text-muted-foreground flex items-center gap-2">
           <ListChecks className="h-3.5 w-3.5 text-primary" /> Question sheet ({drafts.length})
@@ -75,6 +85,7 @@ export default function QuestionBuilder({ drafts, onChange }: Props) {
               <span className="text-[10px] font-display uppercase tracking-widest text-primary">Q{index + 1}</span>
               <select
                 value={d.question_type}
+                disabled={!!d.scenario_id}
                 onChange={(e) => changeType(index, e.target.value as QuestionType)}
                 className="bg-card border border-border rounded-md px-2 py-1 text-xs"
               >
@@ -108,6 +119,7 @@ export default function QuestionBuilder({ drafts, onChange }: Props) {
 
             <Input
               value={d.prompt}
+              disabled={!!d.scenario_id}
               onChange={(e) => update(index, { prompt: e.target.value })}
               placeholder="What do you want to ask?"
             />
@@ -119,11 +131,13 @@ export default function QuestionBuilder({ drafts, onChange }: Props) {
                     <input
                       type={multi ? "checkbox" : "radio"}
                       checked={d.correct.includes(opt) && !!opt.trim()}
+                      disabled={!!d.scenario_id}
                       onChange={() => opt.trim() && toggleCorrect(index, opt, multi)}
                       aria-label="Correct answer"
                     />
                     <Input
                       value={opt}
+                      disabled={!!d.scenario_id}
                       onChange={(e) => {
                         const oldValue = opt;
                         const options = d.options.map((o, i) => (i === oi ? e.target.value : o));
@@ -133,7 +147,7 @@ export default function QuestionBuilder({ drafts, onChange }: Props) {
                       placeholder={`Option ${oi + 1}`}
                       className="flex-1"
                     />
-                    {d.options.length > 2 && (
+                    {!d.scenario_id && d.options.length > 2 && (
                       <button
                         type="button"
                         className="p-1 text-muted-foreground hover:text-destructive"
@@ -150,7 +164,7 @@ export default function QuestionBuilder({ drafts, onChange }: Props) {
                     )}
                   </div>
                 ))}
-                {d.options.length < 6 && (
+                {!d.scenario_id && d.options.length < 6 && (
                   <Button type="button" size="sm" variant="ghost" onClick={() => update(index, { options: [...d.options, ""] })}>
                     <Plus className="h-3.5 w-3.5 mr-1" /> Add option
                   </Button>
@@ -187,6 +201,7 @@ export default function QuestionBuilder({ drafts, onChange }: Props) {
                 Tick the correct answer to mark it automatically, or leave it blank for an opinion question.
               </p>
             )}
+            {d.scenario_id && <ScenarioMediaEditor id={d.scenario_id} media={d.scenario_media || {}} onChange={(media) => update(index, { scenario_media: media })} />}
           </div>
         );
       })}

@@ -2,6 +2,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { HomeworkQuestion } from "@/lib/homeworkQuestions";
 import { ListChecks } from "lucide-react";
+import ScenarioPlayer from "@/components/homework/ScenarioPlayer";
+import { findScenario, retainFirstDecision } from "@/lib/homeworkScenarios";
 
 interface Props {
   questions: HomeworkQuestion[];
@@ -22,6 +24,8 @@ export default function AnswerSheet({ questions, answers, onChange }: Props) {
 
       {questions.map((q, index) => {
         const value = answers[q.id];
+        const scenario = findScenario(q.scenario_id);
+        if (scenario) return <ScenarioPlayer key={q.id} scenario={scenario} media={q.scenario_media} firstAnswer={typeof value === "string" ? value : undefined} onConfirm={(answer) => set(q.id, retainFirstDecision(value, answer))} />;
         return (
           <div key={q.id} className="space-y-2">
             <p className="text-sm font-medium text-foreground">

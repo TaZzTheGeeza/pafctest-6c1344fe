@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
+import { findScenario, scenarioDraft } from "@/lib/homeworkScenarios";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -21,7 +23,7 @@ import {
 const teamLabel = (slug: string) => CLUB_TEAMS.find((t) => t.slug === slug)?.name || slug;
 import {
   BookOpen, Loader2, Plus, Trash2, Heart, MessageSquare, Star, Pencil, ChevronDown, ChevronRight, Send, Video, ImageIcon,
-  Check, X, Share2, Link, Copy, Smartphone,
+  Check, X, Share2, Link as LinkIcon, Copy, Smartphone, ListChecks,
 } from "lucide-react";
 
 interface Task {
@@ -75,6 +77,7 @@ function startOfWeek(d = new Date()): string {
 }
 
 export default function HomeworkManager() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useAuth();
   const { toast } = useToast();
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -104,6 +107,15 @@ export default function HomeworkManager() {
   const [editQuestionDrafts, setEditQuestionDrafts] = useState<QuestionDraft[]>([]);
   const [questionsByTask, setQuestionsByTask] = useState<Record<string, HomeworkQuestion[]>>({});
   const [answersBySubmission, setAnswersBySubmission] = useState<Record<string, HomeworkAnswer[]>>({});
+
+  useEffect(() => {
+    const scenario = findScenario(searchParams.get("scenario"));
+    if (!scenario) return;
+    setTitle(`What would you do? ${scenario.title}`);
+    setDescription(scenario.situation);
+    setQuestionDrafts([scenarioDraft(scenario)]);
+    const next = new URLSearchParams(searchParams); next.delete("scenario"); setSearchParams(next, { replace: true });
+  }, [searchParams, setSearchParams]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -433,6 +445,7 @@ export default function HomeworkManager() {
 
   return (
     <div className="space-y-6">
+      <Button asChild variant="outline"><Link to="/homework/scenarios"><ListChecks /> What would you do? Scenario library</Link></Button>
       {/* Set new homework */}
       <section className="bg-card border-l-4 border-primary rounded-sm p-5">
         <h3 className="text-primary font-display uppercase text-lg mb-4 flex items-center gap-2">
@@ -582,7 +595,7 @@ export default function HomeworkManager() {
                           <MessageSquare className="h-4 w-4 mr-2" /> WhatsApp
                         </DropdownMenuItem>
                         <DropdownMenuItem onSelect={() => copyText(homeworkShare(task).link, "Link copied")}>
-                          <Link className="h-4 w-4 mr-2" /> Copy link
+                          <LinkIcon className="h-4 w-4 mr-2" /> Copy link
                         </DropdownMenuItem>
                         <DropdownMenuItem onSelect={() => copyText(homeworkShare(task).message, "Message copied")}>
                           <Copy className="h-4 w-4 mr-2" /> Copy message

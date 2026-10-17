@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import type { ScenarioMedia } from "@/lib/homeworkScenarios";
 
 export type QuestionType = "multiple_choice" | "multi_select" | "written" | "true_false" | "number";
 
@@ -18,6 +19,8 @@ export interface HomeworkQuestion {
   prompt: string;
   options: string[];
   required: boolean;
+  scenario_id?: string | null;
+  scenario_media?: ScenarioMedia;
 }
 
 /** Draft used by the coach builder - `id` is null until saved. */
@@ -28,6 +31,8 @@ export interface QuestionDraft {
   options: string[];
   required: boolean;
   correct: string[];
+  scenario_id?: string | null;
+  scenario_media?: ScenarioMedia;
 }
 
 export interface HomeworkAnswer {
@@ -58,6 +63,8 @@ function normaliseRow(row: any): HomeworkQuestion {
     prompt: row.prompt || "",
     options: Array.isArray(row.options) ? row.options.map((o: any) => String(o)) : [],
     required: !!row.required,
+    scenario_id: row.scenario_id || null,
+    scenario_media: row.scenario_media || {},
   };
 }
 
@@ -120,6 +127,8 @@ export async function fetchDrafts(taskId: string): Promise<QuestionDraft[]> {
     options: q.options.length ? q.options : needsOptions(q.question_type) ? ["", ""] : [],
     required: q.required,
     correct: keys[q.id] || [],
+    scenario_id: q.scenario_id,
+    scenario_media: q.scenario_media,
   }));
 }
 
@@ -164,6 +173,8 @@ export async function saveQuestions(taskId: string, drafts: QuestionDraft[]): Pr
       prompt: draft.prompt.trim(),
       options,
       required: draft.required,
+      scenario_id: draft.scenario_id || null,
+      scenario_media: JSON.parse(JSON.stringify(draft.scenario_media || {})),
     };
 
     let questionId = draft.id;
