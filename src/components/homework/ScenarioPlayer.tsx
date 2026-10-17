@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Check, Play, RotateCcw } from "lucide-react";
 import { HomeworkScenario, ScenarioMedia } from "@/lib/homeworkScenarios";
-import { scenarioVideos } from "@/lib/homeworkScenarioVideos";
+import { scenarioVideos, scenarioWebmVideos } from "@/lib/homeworkScenarioVideos";
 import { getHomeworkMediaUrl } from "@/lib/homework";
 
 interface Props {
@@ -39,6 +39,7 @@ export default function ScenarioPlayer({ scenario, firstAnswer, onConfirm, media
   const viewIndex = scenario.choices.findIndex((c) => c.label === viewed);
   const choice = scenario.choices[viewIndex];
   const video = viewed ? customVideos[viewed] || scenarioVideos[scenario.id]?.[viewIndex] : undefined;
+  const webm = viewed && !customVideos[viewed] ? scenarioWebmVideos[scenario.id]?.[viewIndex] : undefined;
   useEffect(() => { setVideoError(false); }, [video]);
 
   return <div className="space-y-4">
@@ -60,7 +61,10 @@ export default function ScenarioPlayer({ scenario, firstAnswer, onConfirm, media
     {confirmed && choice && <section className="border-t border-border pt-4 space-y-3" aria-live="polite">
       <p className="text-xs text-primary">{practice ? "First practice choice" : "First answer"}: {confirmed}</p>
       <h4 className="font-display text-lg">What could happen</h4>
-      {video && !videoError ? <video key={video} src={video} controls playsInline preload="metadata" aria-label={`${scenario.title} outcome ${String.fromCharCode(65 + viewIndex)}`} onError={() => setVideoError(true)} className="w-full aspect-video rounded-sm bg-muted" />
+      {video && !videoError ? <video key={video} controls playsInline preload="metadata" aria-label={`${scenario.title} outcome ${String.fromCharCode(65 + viewIndex)}`} onError={() => setVideoError(true)} className="w-full aspect-video rounded-sm bg-muted">
+        <source src={video} type={webm ? "video/mp4" : undefined} />
+        {webm && <source src={webm} type="video/webm" />}
+      </video>
         : <p className="text-xs text-muted-foreground">{videoError ? "This video could not load. The coaching explanation is below." : "Outcome video is being prepared. The coaching explanation is below."}</p>}
       <p className="text-sm leading-relaxed">{choice.outcome}</p>
       <p className="text-sm text-primary">{scenario.principle}</p>
