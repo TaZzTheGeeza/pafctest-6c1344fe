@@ -28,4 +28,15 @@ describe("scenario homework rules", () => {
     expect(draft.question_type).toBe("multiple_choice");
     expect(draft.correct).toEqual(["Draw the defender, then pass to your teammate"]);
   });
+  it.each([
+    ["attack-give-go", "Pass, then run beyond the defender for a return"],
+    ["attack-cutback", "Pull the ball back to your arriving teammate"],
+    ["defend-recovery", "Recover inside towards goal, then delay the attacker"],
+    ["defend-goal-side", "Stay goal-side, see both players and follow the run"],
+  ])("keeps the coaching answer key for %s", (id, answer) => {
+    const scenario = HOMEWORK_SCENARIOS.find((item) => item.id === id);
+    expect(scenario).toBeDefined();
+    if (!scenario) throw new Error(`Missing scenario: ${id}`);
+    expect(scenarioDraft(scenario).correct).toEqual([answer]);
+  });
 });
