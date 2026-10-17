@@ -3,6 +3,10 @@ import widthPhoto from "@/assets/homework/attack-width.jpg";
 import scanPhoto from "@/assets/homework/attack-scan.jpg";
 import widePhoto from "@/assets/homework/defend-wide.jpg";
 import coverPhoto from "@/assets/homework/defend-cover.jpg";
+import giveGoPhoto from "@/assets/homework/attack-give-go.jpg";
+import cutbackPhoto from "@/assets/homework/attack-cutback.jpg";
+import recoveryPhoto from "@/assets/homework/defend-recovery.jpg";
+import goalSidePhoto from "@/assets/homework/defend-goal-side.jpg";
 
 export interface ScenarioChoice { label: string; outcome: string }
 export interface HomeworkScenario {
@@ -66,6 +70,38 @@ export const HOMEWORK_SCENARIOS: HomeworkScenario[] = [
       { label: "Cover diagonally behind your teammate", outcome: "If the attacker beats the first defender, you are positioned to intercept or slow them down." },
       { label: "Chase the same attacker together", outcome: "Both defenders get drawn to the ball. A pass can release the other attacker into the space you left." },
       { label: "Stay far away and watch", outcome: "If your teammate is beaten, you are too far away to help and the attacker can progress." },
+    ] },
+  { id: "attack-give-go", category: "Attacking", title: "Pass and move", photo: giveGoPhoto,
+    situation: "You have the ball outside the box. A defender is closing you down. Your teammate is ahead on your right, with space behind the defender for you to run into.",
+    prompt: "What should you do after passing?", best: 0, principle: "A pass is not the end of your involvement. Move into useful space and offer a return pass, staying onside.",
+    choices: [
+      { label: "Pass, then run beyond the defender for a return", outcome: "Your run gives your teammate a forward option. A well-timed return pass can put you into the space behind the defender." },
+      { label: "Pass, then stand still", outcome: "Your teammate receives the ball but has no moving forward option. The defender has time to get back into position." },
+      { label: "Keep the ball and dribble towards the defender", outcome: "The defender can close the space and tackle you. Your available teammate never gets a chance to help." },
+    ] },
+  { id: "attack-cutback", category: "Attacking", title: "Find the cutback", photo: cutbackPhoto,
+    situation: "You are near the right byline with a tight shooting angle. The goalkeeper and defenders cover the near post. A teammate is arriving unmarked near the penalty spot.",
+    prompt: "Where is the clearest chance?", best: 1, principle: "Look up before playing the final ball. A cutback can find a teammate facing goal while defenders are looking towards their own goal.",
+    choices: [
+      { label: "Shoot towards the crowded near post", outcome: "The goalkeeper covers the tight angle and can save the shot. Your teammate's clearer shooting position goes unused." },
+      { label: "Pull the ball back to your arriving teammate", outcome: "The pass travels away from the crowded goalmouth. Your teammate meets it in space with a clearer view of goal." },
+      { label: "Lift a high cross into the marked goalmouth", outcome: "The defenders are already in position to challenge for the cross and can clear it before your team gets a shot." },
+    ] },
+  { id: "defend-recovery", category: "Defending", title: "Recover towards goal", photo: recoveryPhoto,
+    situation: "Your team has lost the ball. An attacker carries it towards goal with a teammate wide. You are the red defender behind play, and the central route to goal is open.",
+    prompt: "Where should your recovery run take you?", best: 1, principle: "React quickly when possession changes. Recover towards the dangerous space between the ball and your goal, then slow the attack under control.",
+    choices: [
+      { label: "Chase the ball directly from behind", outcome: "The attacker can stay ahead of you. Chasing their current position leaves the route to goal open." },
+      { label: "Recover inside towards goal, then delay the attacker", outcome: "Your diagonal run helps protect the central route. Getting into a balanced position can slow the attack and give teammates time to recover." },
+      { label: "Stop running and appeal for a foul", outcome: "If play continues, the attacker can carry on towards goal without you helping to protect it." },
+    ] },
+  { id: "defend-goal-side", category: "Defending", title: "Stay goal-side", photo: goalSidePhoto,
+    situation: "You are marking a runner near the box. A wide attacker has the ball and is preparing a pass. Your goal is behind you, so you need to track the runner as well as the ball.",
+    prompt: "How can you protect the space behind you?", best: 2, principle: "Stay between your opponent and goal. Adjust your body so you can see the ball and the runner, and move as they move.",
+    choices: [
+      { label: "Watch only the ball", outcome: "The runner can move behind you while you are looking away. The wide player can pass into the space they reach." },
+      { label: "Stand on the side of the runner furthest from goal", outcome: "The runner has a head start towards goal and can receive the pass closer to goal than you." },
+      { label: "Stay goal-side, see both players and follow the run", outcome: "You stay in position to challenge or intercept the pass, making it harder for the runner to receive behind you." },
     ] },
 ];
 

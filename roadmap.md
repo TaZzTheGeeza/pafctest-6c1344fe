@@ -1,5 +1,7 @@
 # Roadmap
 
+- [x] Add four more attacking/defending scenarios with twelve answer-specific videos and verify playback
+
 - [x] Add What Would You Do scenario library, attacking/defending questions and answer outcome videos
 - [x] Connect scenarios to team homework and verify first-answer submission and replay
 
