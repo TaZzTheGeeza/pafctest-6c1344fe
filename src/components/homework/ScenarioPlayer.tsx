@@ -61,7 +61,7 @@ export default function ScenarioPlayer({ scenario, firstAnswer, onConfirm, media
     {confirmed && choice && <section className="border-t border-border pt-4 space-y-3" aria-live="polite">
       <p className="text-xs text-primary">{practice ? "First practice choice" : "First answer"}: {confirmed}</p>
       <h4 className="font-display text-lg">What could happen</h4>
-      {video && !videoError ? <video key={video} controls playsInline preload="metadata" aria-label={`${scenario.title} outcome ${String.fromCharCode(65 + viewIndex)}`} onError={() => setVideoError(true)} className="w-full aspect-video rounded-sm bg-muted">
+      {video && !videoError ? <video key={video} controls playsInline preload="metadata" aria-label={`${scenario.title} outcome ${String.fromCharCode(65 + viewIndex)}`} onError={(event) => { if (event.target === event.currentTarget) setVideoError(true); }} className="w-full aspect-video rounded-sm bg-muted">
         <source src={video} type={webm ? "video/mp4" : undefined} />
         {webm && <source src={webm} type="video/webm" />}
       </video>
