@@ -131,6 +131,7 @@ export default function QuestionBuilder({ drafts, onChange }: Props) {
                     <input
                       type={multi ? "checkbox" : "radio"}
                       checked={d.correct.includes(opt) && !!opt.trim()}
+                      disabled={!!d.scenario_id}
                       onChange={() => opt.trim() && toggleCorrect(index, opt, multi)}
                       aria-label="Correct answer"
                     />
