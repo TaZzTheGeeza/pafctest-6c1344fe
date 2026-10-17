@@ -15,6 +15,13 @@
       "when": 1791734185121,
       "tag": "0001_fix_apply_stats_delete",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792216840765,
+      "tag": "0002_homework_scenario_media",
+      "breakpoints": true
     }
   ]
 }

@@ -810,6 +810,8 @@ export type Database = {
           prompt: string
           question_type: string
           required: boolean
+          scenario_id: string | null
+          scenario_media: Json
           task_id: string
           updated_at: string
         }
@@ -821,6 +823,8 @@ export type Database = {
           prompt: string
           question_type?: string
           required?: boolean
+          scenario_id?: string | null
+          scenario_media?: Json
           task_id: string
           updated_at?: string
         }
@@ -832,6 +836,8 @@ export type Database = {
           prompt?: string
           question_type?: string
           required?: boolean
+          scenario_id?: string | null
+          scenario_media?: Json
           task_id?: string
           updated_at?: string
         }
