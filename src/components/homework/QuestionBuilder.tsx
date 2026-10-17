@@ -119,6 +119,7 @@ export default function QuestionBuilder({ drafts, onChange }: Props) {
 
             <Input
               value={d.prompt}
+              disabled={!!d.scenario_id}
               onChange={(e) => update(index, { prompt: e.target.value })}
               placeholder="What do you want to ask?"
             />
@@ -145,7 +146,7 @@ export default function QuestionBuilder({ drafts, onChange }: Props) {
                       placeholder={`Option ${oi + 1}`}
                       className="flex-1"
                     />
-                    {d.options.length > 2 && (
+                    {!d.scenario_id && d.options.length > 2 && (
                       <button
                         type="button"
                         className="p-1 text-muted-foreground hover:text-destructive"
@@ -162,7 +163,7 @@ export default function QuestionBuilder({ drafts, onChange }: Props) {
                     )}
                   </div>
                 ))}
-                {d.options.length < 6 && (
+                {!d.scenario_id && d.options.length < 6 && (
                   <Button type="button" size="sm" variant="ghost" onClick={() => update(index, { options: [...d.options, ""] })}>
                     <Plus className="h-3.5 w-3.5 mr-1" /> Add option
                   </Button>
