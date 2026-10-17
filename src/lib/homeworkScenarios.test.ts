@@ -15,8 +15,8 @@ describe("scenario homework rules", () => {
     expect(scenarioDraft(HOMEWORK_SCENARIOS[0]).options).toHaveLength(3);
   });
   it("includes attacking and defensive questions", () => {
-    expect(HOMEWORK_SCENARIOS.filter((s) => s.category === "Attacking")).toHaveLength(3);
-    expect(HOMEWORK_SCENARIOS.filter((s) => s.category === "Defending")).toHaveLength(3);
+    expect(HOMEWORK_SCENARIOS.filter((s) => s.category === "Attacking")).toHaveLength(5);
+    expect(HOMEWORK_SCENARIOS.filter((s) => s.category === "Defending")).toHaveLength(5);
   });
   it("exploring an outcome cannot replace a confirmed first answer", () => {
     expect(retainFirstDecision("Dribble straight at the defender", "Shoot from distance")).toBe("Dribble straight at the defender");
