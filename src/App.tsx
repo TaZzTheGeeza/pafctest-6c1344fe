@@ -70,6 +70,7 @@ import PitchBookingsAdminPage from "./pages/PitchBookingsAdminPage.tsx";
 import LineupRevealPage from "./pages/LineupRevealPage.tsx";
 import TacticsRevealPage from "./pages/TacticsRevealPage.tsx";
 import NotFound from "./pages/NotFound.tsx";
+import ScenarioHomeworkPage from "./pages/ScenarioHomeworkPage";
 
 const queryClient = new QueryClient();
 
@@ -145,6 +146,7 @@ function AppContent() {
         <Route path="/results" element={<ResultsPage />} />
         <Route path="/potm-demo" element={<POTMDemoPage />} />
         <Route path="/hub" element={<HubPage />} />
+        <Route path="/homework/scenarios" element={<RoleGate requiredRole="authenticated"><ScenarioHomeworkPage /></RoleGate>} />
         <Route path="/install" element={<InstallPage />} />
         <Route path="/dashboard" element={<RoleGate requiredRole="coach"><DashboardPage /></RoleGate>} />
         <Route path="/admin" element={<RedirectWithQuery to="/dashboard" />} />
