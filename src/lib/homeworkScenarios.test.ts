@@ -1,7 +1,15 @@
 import { describe, it, expect } from "vitest";
 import { HOMEWORK_SCENARIOS, scenarioDraft, retainFirstDecision } from "./homeworkScenarios";
+import { scenarioVideos, scenarioWebmVideos } from "./homeworkScenarioVideos";
 
 describe("scenario homework rules", () => {
+  it("provides a distinct outcome video for every answer", () => {
+    for (const scenario of HOMEWORK_SCENARIOS) {
+      expect(scenarioVideos[scenario.id]).toHaveLength(scenario.choices.length);
+      expect(new Set(scenarioVideos[scenario.id]).size).toBe(scenario.choices.length);
+      expect(scenarioWebmVideos[scenario.id]).toHaveLength(scenario.choices.length);
+    }
+  });
   it("starts with the requested 2v1 attack and three choices", () => {
     expect(HOMEWORK_SCENARIOS[0].id).toBe("attack-2v1");
     expect(scenarioDraft(HOMEWORK_SCENARIOS[0]).options).toHaveLength(3);

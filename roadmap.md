@@ -1,6 +1,6 @@
 # Roadmap
 
-- [ ] Add What Would You Do scenario library, attacking/defending questions and answer outcome videos
+- [x] Add What Would You Do scenario library, attacking/defending questions and answer outcome videos
 - [x] Connect scenarios to team homework and verify first-answer submission and replay
 
 - [x] Check fresh FA fixtures for every team and update all team fixture caches, excluding Jack Hunt training
