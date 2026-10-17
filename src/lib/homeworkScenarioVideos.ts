@@ -1,3 +1,27 @@
+import extra0amp4 from "@/assets/homework/videos/attack-give-go-a.mp4.asset.json";
+import extra0awebm from "@/assets/homework/videos/attack-give-go-a.webm.asset.json";
+import extra0bmp4 from "@/assets/homework/videos/attack-give-go-b.mp4.asset.json";
+import extra0bwebm from "@/assets/homework/videos/attack-give-go-b.webm.asset.json";
+import extra0cmp4 from "@/assets/homework/videos/attack-give-go-c.mp4.asset.json";
+import extra0cwebm from "@/assets/homework/videos/attack-give-go-c.webm.asset.json";
+import extra1amp4 from "@/assets/homework/videos/attack-cutback-a.mp4.asset.json";
+import extra1awebm from "@/assets/homework/videos/attack-cutback-a.webm.asset.json";
+import extra1bmp4 from "@/assets/homework/videos/attack-cutback-b.mp4.asset.json";
+import extra1bwebm from "@/assets/homework/videos/attack-cutback-b.webm.asset.json";
+import extra1cmp4 from "@/assets/homework/videos/attack-cutback-c.mp4.asset.json";
+import extra1cwebm from "@/assets/homework/videos/attack-cutback-c.webm.asset.json";
+import extra2amp4 from "@/assets/homework/videos/defend-recovery-a.mp4.asset.json";
+import extra2awebm from "@/assets/homework/videos/defend-recovery-a.webm.asset.json";
+import extra2bmp4 from "@/assets/homework/videos/defend-recovery-b.mp4.asset.json";
+import extra2bwebm from "@/assets/homework/videos/defend-recovery-b.webm.asset.json";
+import extra2cmp4 from "@/assets/homework/videos/defend-recovery-c.mp4.asset.json";
+import extra2cwebm from "@/assets/homework/videos/defend-recovery-c.webm.asset.json";
+import extra3amp4 from "@/assets/homework/videos/defend-goal-side-a.mp4.asset.json";
+import extra3awebm from "@/assets/homework/videos/defend-goal-side-a.webm.asset.json";
+import extra3bmp4 from "@/assets/homework/videos/defend-goal-side-b.mp4.asset.json";
+import extra3bwebm from "@/assets/homework/videos/defend-goal-side-b.webm.asset.json";
+import extra3cmp4 from "@/assets/homework/videos/defend-goal-side-c.mp4.asset.json";
+import extra3cwebm from "@/assets/homework/videos/defend-goal-side-c.webm.asset.json";
 import attack2a from "@/assets/homework/videos/attack-2v1-a.mp4.asset.json";
 import attack2b from "@/assets/homework/videos/attack-2v1-b.mp4.asset.json";
 import attack2c from "@/assets/homework/videos/attack-2v1-c.mp4.asset.json";
@@ -18,6 +42,10 @@ import coverb from "@/assets/homework/videos/defend-cover-b.mp4.asset.json";
 import coverc from "@/assets/homework/videos/defend-cover-c.mp4.asset.json";
 
 export const scenarioVideos: Record<string, string[]> = {
+  "attack-give-go": [extra0amp4.url, extra0bmp4.url, extra0cmp4.url],
+  "attack-cutback": [extra1amp4.url, extra1bmp4.url, extra1cmp4.url],
+  "defend-recovery": [extra2amp4.url, extra2bmp4.url, extra2cmp4.url],
+  "defend-goal-side": [extra3amp4.url, extra3bmp4.url, extra3cmp4.url],
   "attack-2v1": [attack2a.url, attack2b.url, attack2c.url],
   "attack-width": [widtha.url, widthb.url, widthc.url],
   "attack-scan": [scana.url, scanb.url, scanc.url],
@@ -45,6 +73,10 @@ import coverbWebm from "@/assets/homework/videos/defend-cover-b.webm.asset.json"
 import covercWebm from "@/assets/homework/videos/defend-cover-c.webm.asset.json";
 
 export const scenarioWebmVideos: Record<string, string[]> = {
+  "attack-give-go": [extra0awebm.url, extra0bwebm.url, extra0cwebm.url],
+  "attack-cutback": [extra1awebm.url, extra1bwebm.url, extra1cwebm.url],
+  "defend-recovery": [extra2awebm.url, extra2bwebm.url, extra2cwebm.url],
+  "defend-goal-side": [extra3awebm.url, extra3bwebm.url, extra3cwebm.url],
   "attack-2v1": [attack2aWebm.url, attack2bWebm.url, attack2cWebm.url],
   "attack-width": [widthaWebm.url, widthbWebm.url, widthcWebm.url],
   "attack-scan": [scanaWebm.url, scanbWebm.url, scancWebm.url],
