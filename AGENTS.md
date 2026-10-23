@@ -3,3 +3,4 @@
 - Seasonal themes use one shared site_settings key, semantic token overrides, transparent artwork and a non-interactive global overlay; page/footer scenery and mutually exclusive switches keep decoration consistent without altering content or blocking controls.
 - Decision scenarios reuse homework questions and protected answer keys; a shared scenario player separates confirmed answers from outcome exploration so replay cannot overwrite a child's decision.
 - Included scenario videos use CDN asset pointers with MP4 and WebM sources; only video-element failures trigger the error state, allowing browsers to skip an unsupported source.
+- Password recovery is captured in AuthContext and retained per user for the browser tab; reset pages validate the user after session hydration and require the current password outside recovery.

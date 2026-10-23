@@ -14,6 +14,8 @@ interface AuthContextType {
   isPhotographer: boolean;
   rolesLoading: boolean;
   mustChangePassword: boolean;
+  isPasswordRecovery: boolean;
+  clearPasswordRecovery: () => void;
   clearMustChangePassword: () => void;
   signOut: () => Promise<void>;
 }
@@ -30,6 +32,8 @@ const AuthContext = createContext<AuthContextType>({
   isPhotographer: false,
   rolesLoading: true,
   mustChangePassword: false,
+  isPasswordRecovery: false,
+  clearPasswordRecovery: () => {},
   clearMustChangePassword: () => {},
   signOut: async () => {},
 });
@@ -48,9 +52,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isPhotographer, setIsPhotographer] = useState(false);
   const [rolesLoading, setRolesLoading] = useState(true);
   const [mustChangePassword, setMustChangePassword] = useState(false);
+  const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      // Capture recovery centrally: the client can consume the hash before the
+      // reset page mounts, so a page-only listener can miss this event.
+      if (event === "PASSWORD_RECOVERY" && session?.user) {
+        sessionStorage.setItem("pafc_password_recovery_user", session.user.id);
+        setIsPasswordRecovery(true);
+      } else if (event === "SIGNED_OUT") {
+        sessionStorage.removeItem("pafc_password_recovery_user");
+        setIsPasswordRecovery(false);
+      } else {
+        setIsPasswordRecovery(Boolean(session?.user && sessionStorage.getItem("pafc_password_recovery_user") === session.user.id));
+      }
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
@@ -138,9 +154,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const clearMustChangePassword = () => setMustChangePassword(false);
+  const clearPasswordRecovery = () => {
+    sessionStorage.removeItem("pafc_password_recovery_user");
+    setIsPasswordRecovery(false);
+  };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, isCoach, isPlayer, isAdmin, isTreasurer, isNewsEditor, isPhotographer, rolesLoading, mustChangePassword, clearMustChangePassword, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, isCoach, isPlayer, isAdmin, isTreasurer, isNewsEditor, isPhotographer, rolesLoading, mustChangePassword, clearMustChangePassword, isPasswordRecovery, clearPasswordRecovery, signOut }}>
       {children}
     </AuthContext.Provider>
   );
