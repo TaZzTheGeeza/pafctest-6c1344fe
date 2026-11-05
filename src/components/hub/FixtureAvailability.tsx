@@ -13,6 +13,7 @@ import { ReminderPreviewDialog } from "./ReminderPreviewDialog";
 import { CoachFixturePanel } from "@/components/CoachFixturePanel";
 import { useVenueAddresses } from "@/hooks/useVenueAddresses";
 import { CLUB_TEAMS } from "@/lib/teamConfig";
+import { DeleteFixtureButton } from "./DeleteFixtureButton";
 
 interface Props {
   teamSlug: string;
@@ -59,6 +60,7 @@ interface AvailabilityItem {
   opponent: string;
   isCustom: boolean;
   customEventId?: string;
+  fixture?: FAFixture;
 }
 
 function fixtureToItem(f: FAFixture): AvailabilityItem {
@@ -73,6 +75,7 @@ function fixtureToItem(f: FAFixture): AvailabilityItem {
     isHome,
     opponent,
     isCustom: false,
+    fixture: f,
   };
 }
 
@@ -732,6 +735,7 @@ export function FixtureAvailability({ teamSlug }: Props) {
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
+                {item.fixture && <DeleteFixtureButton teamSlug={teamSlug} fixture={item.fixture} />}
                 {getPublishedLineup(item) && (
                   <button
                     onClick={(e) => {

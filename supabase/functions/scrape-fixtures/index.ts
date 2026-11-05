@@ -1,5 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { fetchFaHtml } from "../_shared/faFetch.ts";
+import { isFixtureExcluded } from "../_shared/fixtureExclusions.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -179,6 +180,11 @@ Deno.serve(async (req) => {
 
     const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const admin = createClient(supabaseUrl, serviceKey);
+    const { data: exclusions, error: exclusionsError } = await admin.from('fa_fixture_exclusions')
+      .select('fixture_url, fixture_date, home_team, away_team').eq('fixture_url', fixtureUrl);
+    if (exclusionsError) throw exclusionsError;
+    const visibleFixtures = (list: unknown) => notTraining(list).filter((fixture) =>
+      !isFixtureExcluded(fixture, fixtureUrl, exclusions ?? []));
     const cacheKey = `${fixtureUrl}::${resultUrl ?? ''}`;
     const FRESH_MS = 1000 * 60 * 60 * 6; // 6 hours
 
@@ -282,7 +288,7 @@ Deno.serve(async (req) => {
         );
       }
       return new Response(
-        JSON.stringify({ success: true, team, fixtures: notTraining(cached.fixtures), results: notTraining(cached.results), cached: true, stale }),
+        JSON.stringify({ success: true, team, fixtures: visibleFixtures(cached.fixtures), results: notTraining(cached.results), cached: true, stale }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -291,7 +297,7 @@ Deno.serve(async (req) => {
     const { fixtures, results } = await refresh(30_000);
 
     return new Response(
-      JSON.stringify({ success: true, team, fixtures, results }),
+      JSON.stringify({ success: true, team, fixtures: visibleFixtures(fixtures), results }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 

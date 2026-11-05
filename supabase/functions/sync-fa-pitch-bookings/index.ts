@@ -1,5 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { fetchFaHtml } from "../_shared/faFetch.ts";
+import { isFixtureExcluded } from "../_shared/fixtureExclusions.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -173,6 +174,9 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const teams: TeamInput[] = Array.isArray(body?.teams) ? body.teams : [];
     const dryRun = Boolean(body?.dryRun);
+    const { data: exclusions, error: exclusionsError } = await admin.from("fa_fixture_exclusions")
+      .select("fixture_url, fixture_date, home_team, away_team");
+    if (exclusionsError) throw exclusionsError;
 
     // Manual booking mode: the admin picked pitches / times in the UI
     if (body?.action === "book" && Array.isArray(body?.items)) {
@@ -325,6 +329,7 @@ Deno.serve(async (req) => {
         continue; // U6 / U7 excluded from pitch bookings
       }
       for (const f of s.fixtures) {
+        if (isFixtureExcluded(f, s.t.fixtureUrl, exclusions ?? [])) continue;
         const isHome = f.homeTeam.includes(CLUB_NAME);
         if (!isHome) continue;
         const start = ukLocalToUtc(f.date, f.time);
