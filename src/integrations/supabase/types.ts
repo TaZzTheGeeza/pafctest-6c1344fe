@@ -525,6 +525,36 @@ export type Database = {
         }
         Relationships: []
       }
+      fa_fixture_exclusions: {
+        Row: {
+          away_team: string
+          created_at: string
+          created_by: string
+          fixture_date: string
+          fixture_url: string
+          home_team: string
+          id: string
+        }
+        Insert: {
+          away_team: string
+          created_at?: string
+          created_by?: string
+          fixture_date: string
+          fixture_url: string
+          home_team: string
+          id?: string
+        }
+        Update: {
+          away_team?: string
+          created_at?: string
+          created_by?: string
+          fixture_date?: string
+          fixture_url?: string
+          home_team?: string
+          id?: string
+        }
+        Relationships: []
+      }
       fa_fixture_overrides: {
         Row: {
           created_at: string
@@ -4145,6 +4175,10 @@ export type Database = {
         }[]
       }
       expire_pending_raffle_tickets: { Args: never; Returns: number }
+      filter_cancelled_fa_fixtures: {
+        Args: { _cache_key: string; _fixtures: Json }
+        Returns: Json
+      }
       get_approved_pitch_allocations: {
         Args: { _team_slug: string }
         Returns: {
