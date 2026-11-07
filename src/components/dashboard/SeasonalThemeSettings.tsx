@@ -13,7 +13,7 @@ export function SeasonalThemeSettings() {
   async function toggle(next: SeasonalTheme, checked: boolean) {
     try {
       await setTheme(checked ? next : "off");
-      toast.success(checked ? `${next === "halloween" ? "Halloween" : "Christmas"} theme enabled site-wide` : "Seasonal theme turned off");
+      toast.success(checked ? `${THEME_LABELS[next]} theme enabled site-wide` : "Seasonal theme turned off");
     } catch {
       toast.error("Couldn't save the seasonal theme. Please try again.");
     }
@@ -26,7 +26,8 @@ export function SeasonalThemeSettings() {
       </div>
       {error ? <div className="text-sm text-muted-foreground">Couldn't load themes. <Button variant="ghost" size="sm" onClick={() => refetch()}>Retry</Button></div> : (
         [{ key: "halloween" as const, label: "Halloween", icon: Ghost },
-          { key: "christmas" as const, label: "Christmas", icon: TreePine }].map(({ key, label, icon: Icon }) => (
+          { key: "christmas" as const, label: "Christmas", icon: TreePine },
+          { key: "remembrance" as const, label: "Remembrance Day", icon: Flower2 }].map(({ key, label, icon: Icon }) => (
           <div key={key} className="flex items-center justify-between gap-4">
             <label htmlFor={`theme-${key}`} className="flex items-center gap-3 cursor-pointer text-sm">
               <Icon className="h-5 w-5 text-primary" />{label}
@@ -36,7 +37,7 @@ export function SeasonalThemeSettings() {
           </div>
         ))
       )}
-      <p className="text-xs text-muted-foreground">{theme === "off" ? "Standard club theme" : `${theme === "halloween" ? "Halloween" : "Christmas"} active`}</p>
+      <p className="text-xs text-muted-foreground">{theme === "off" ? "Standard club theme" : `${THEME_LABELS[theme]} active`}</p>
     </section>
   );
 }
