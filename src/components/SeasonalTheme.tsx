@@ -1,8 +1,11 @@
 import { useEffect, type CSSProperties } from "react";
-import { Ghost, Sparkles, CandyCane, Snowflake } from "lucide-react";
+import { Ghost, Sparkles, CandyCane, Snowflake, Flower2 } from "lucide-react";
 import { useSeasonalTheme } from "@/hooks/useSeasonalTheme";
 import halloweenGarland from "@/assets/seasonal/halloween-garland.png";
 import christmasGarland from "@/assets/seasonal/christmas-garland.png";
+import remembranceGarland from "@/assets/seasonal/remembrance-garland.png";
+
+const GARLANDS = { halloween: halloweenGarland, christmas: christmasGarland, remembrance: remembranceGarland } as const;
 
 
 export function Bat() {
