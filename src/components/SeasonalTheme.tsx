@@ -18,7 +18,7 @@ export function SeasonalTheme() {
     if (theme === "off") delete document.documentElement.dataset.season;
     else document.documentElement.dataset.season = theme;
     const root = document.documentElement;
-    root.style.setProperty("--season-garland-art", `url("${theme === "halloween" ? halloweenGarland : christmasGarland}")`);
+    root.style.setProperty("--season-garland-art", `url("${GARLANDS[theme as keyof typeof GARLANDS] ?? christmasGarland}")`);
     return () => {
       delete root.dataset.season;
       root.style.removeProperty("--season-garland-art");
