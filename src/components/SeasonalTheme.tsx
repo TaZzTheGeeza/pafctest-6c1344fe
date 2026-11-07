@@ -45,7 +45,7 @@ export function SeasonalTheme() {
         {i % 3 === 0 ? <CandyCane /> : i % 3 === 1 ? <Snowflake /> : <Sparkles />}
       </div>)}
     </>}
-    <div className="seasonal-weather">{Array.from({ length: theme === "christmas" ? 64 : 24 }, (_, i) => <span key={i}
+    <div className="seasonal-weather">{Array.from({ length: theme === "christmas" ? 64 : theme === "remembrance" ? 32 : 24 }, (_, i) => <span key={i}
       style={{ "--particle-x": `${(i * 37 + 7) % 100}%`, "--particle-delay": `${-(i * 3.7) % 24}s`, "--particle-duration": `${14 + (i % 6) * 3}s`, "--particle-size": `${3 + i % 5}px` } as CSSProperties} />)}</div>
   </div>;
 }
