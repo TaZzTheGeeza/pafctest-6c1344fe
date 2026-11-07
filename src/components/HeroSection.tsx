@@ -6,11 +6,14 @@ import heroBg from "@/assets/hero-bg-player-replaced.jpg";
 import { usePresentationEnabled } from "@/hooks/usePresentationEnabled";
 import { useRegistrationOpen } from "@/hooks/useRegistrationOpen";
 import { useTournamentEnabled } from "@/hooks/useTournamentEnabled";
+import { useSeasonalTheme } from "@/hooks/useSeasonalTheme";
+import remembrancePoppy from "@/assets/seasonal/remembrance-poppy.png";
 
 export function HeroSection() {
   const { enabled: presentationEnabled } = usePresentationEnabled();
   const { open: registrationOpen } = useRegistrationOpen();
   const { enabled: tournamentEnabled } = useTournamentEnabled();
+  const { theme } = useSeasonalTheme();
   return (
     <section className="relative min-h-[90vh] flex items-end justify-center overflow-hidden">
       <div
@@ -26,6 +29,7 @@ export function HeroSection() {
           transition={{ duration: 0.8 }}
           className="flex flex-col items-center"
         >
+          {theme === "remembrance" && <img src={remembrancePoppy} alt="Remembrance poppy" width={512} height={512} className="remembrance-hero-poppy" />}
           <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold font-display mb-2 mt-8 tracking-tight">
             <span className="text-gold-gradient text-center">PETERBOROUGH</span>
             <br />
