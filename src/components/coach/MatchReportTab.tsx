@@ -204,18 +204,8 @@ export function MatchReportTab({
       // Save per-match player stats (goals, assists & saves)
       const playerMap = new Map<string, { goals: number; assists: number; saves: number }>();
 
-      for (const entry of goalEntries.filter(e => e.playerId)) {
-        const existing = playerMap.get(entry.playerId) || { goals: 0, assists: 0, saves: 0 };
-        existing.goals += entry.count;
-        playerMap.set(entry.playerId, existing);
-      }
-
-      for (const entry of assistEntries.filter(e => e.playerId)) {
-        const existing = playerMap.get(entry.playerId) || { goals: 0, assists: 0, saves: 0 };
-        existing.assists += entry.count;
-        playerMap.set(entry.playerId, existing);
-      }
-
+      // Goals & assists are written by the database from the report text
+      // (sync_match_report_stats), so only saves are recorded here.
       for (const entry of saveEntries.filter(e => e.playerId)) {
         const existing = playerMap.get(entry.playerId) || { goals: 0, assists: 0, saves: 0 };
         existing.saves += entry.count;
@@ -228,11 +218,7 @@ export function MatchReportTab({
           team_slug: teamSlug,
           match_date: matchDate,
           opponent,
-          goals: stats.goals,
-          assists: stats.assists,
           saves: stats.saves,
-          appeared: false,
-          potm: false,
         }));
 
         console.log("Saving match_player_stats:", matchStats);
