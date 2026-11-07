@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Trophy, ChevronRight, Smartphone, Sparkles, UserPlus } from "lucide-react";
-import heroBg from "@/assets/hero-bg.jpg";
+import heroBg from "@/assets/hero-bg-player-replaced.jpg";
 import { usePresentationEnabled } from "@/hooks/usePresentationEnabled";
 import { useRegistrationOpen } from "@/hooks/useRegistrationOpen";
 import { useTournamentEnabled } from "@/hooks/useTournamentEnabled";
