@@ -1,8 +1,11 @@
 import { useEffect, type CSSProperties } from "react";
-import { Ghost, Sparkles, CandyCane, Snowflake } from "lucide-react";
+import { Ghost, Sparkles, CandyCane, Snowflake, Flower2 } from "lucide-react";
 import { useSeasonalTheme } from "@/hooks/useSeasonalTheme";
 import halloweenGarland from "@/assets/seasonal/halloween-garland.png";
 import christmasGarland from "@/assets/seasonal/christmas-garland.png";
+import remembranceGarland from "@/assets/seasonal/remembrance-garland.png";
+
+const GARLANDS = { halloween: halloweenGarland, christmas: christmasGarland, remembrance: remembranceGarland } as const;
 
 
 export function Bat() {
@@ -15,7 +18,7 @@ export function SeasonalTheme() {
     if (theme === "off") delete document.documentElement.dataset.season;
     else document.documentElement.dataset.season = theme;
     const root = document.documentElement;
-    root.style.setProperty("--season-garland-art", `url("${theme === "halloween" ? halloweenGarland : christmasGarland}")`);
+    root.style.setProperty("--season-garland-art", `url("${GARLANDS[theme as keyof typeof GARLANDS] ?? christmasGarland}")`);
     return () => {
       delete root.dataset.season;
       root.style.removeProperty("--season-garland-art");
@@ -25,8 +28,12 @@ export function SeasonalTheme() {
 
   if (theme === "off") return null;
   return <div className={`seasonal-overlay seasonal-${theme}`} aria-hidden="true">
-    <div className="seasonal-header-art"><img src={theme === "halloween" ? halloweenGarland : christmasGarland} alt="" width={1536} height={512} /></div>
-    {theme === "halloween" ? <>
+    <div className="seasonal-header-art"><img src={GARLANDS[theme]} alt="" width={1536} height={512} /></div>
+    {theme === "remembrance" ? <>
+      {Array.from({ length: 8 }, (_, i) => <div key={i} className={`seasonal-floater seasonal-floater-${i}`}>
+        <Flower2 />
+      </div>)}
+    </> : theme === "halloween" ? <>
       {Array.from({ length: 8 }, (_, i) => <div key={i} className={`seasonal-floater seasonal-floater-${i}`}>
         {i % 3 === 0 ? <Ghost /> : <Bat />}
       </div>)}
@@ -38,7 +45,7 @@ export function SeasonalTheme() {
         {i % 3 === 0 ? <CandyCane /> : i % 3 === 1 ? <Snowflake /> : <Sparkles />}
       </div>)}
     </>}
-    <div className="seasonal-weather">{Array.from({ length: theme === "christmas" ? 64 : 24 }, (_, i) => <span key={i}
+    <div className="seasonal-weather">{Array.from({ length: theme === "christmas" ? 64 : theme === "remembrance" ? 32 : 24 }, (_, i) => <span key={i}
       style={{ "--particle-x": `${(i * 37 + 7) % 100}%`, "--particle-delay": `${-(i * 3.7) % 24}s`, "--particle-duration": `${14 + (i % 6) * 3}s`, "--particle-size": `${3 + i % 5}px` } as CSSProperties} />)}</div>
   </div>;
 }

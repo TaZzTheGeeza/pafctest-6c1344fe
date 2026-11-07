@@ -1,9 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-export type SeasonalTheme = "off" | "halloween" | "christmas";
+export type SeasonalTheme = "off" | "halloween" | "christmas" | "remembrance";
 export const parseSeasonalTheme = (value: unknown): SeasonalTheme =>
-  value === "halloween" || value === "christmas" ? value : "off";
+  value === "halloween" || value === "christmas" || value === "remembrance" ? value : "off";
 
 export function useSeasonalTheme() {
   const queryClient = useQueryClient();
