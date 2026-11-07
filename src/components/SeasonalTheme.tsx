@@ -28,8 +28,12 @@ export function SeasonalTheme() {
 
   if (theme === "off") return null;
   return <div className={`seasonal-overlay seasonal-${theme}`} aria-hidden="true">
-    <div className="seasonal-header-art"><img src={theme === "halloween" ? halloweenGarland : christmasGarland} alt="" width={1536} height={512} /></div>
-    {theme === "halloween" ? <>
+    <div className="seasonal-header-art"><img src={GARLANDS[theme]} alt="" width={1536} height={512} /></div>
+    {theme === "remembrance" ? <>
+      {Array.from({ length: 8 }, (_, i) => <div key={i} className={`seasonal-floater seasonal-floater-${i}`}>
+        <Flower2 />
+      </div>)}
+    </> : theme === "halloween" ? <>
       {Array.from({ length: 8 }, (_, i) => <div key={i} className={`seasonal-floater seasonal-floater-${i}`}>
         {i % 3 === 0 ? <Ghost /> : <Bat />}
       </div>)}
