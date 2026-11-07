@@ -1,4 +1,8 @@
-import { Ghost, TreePine, Loader2 } from "lucide-react";
+import { Ghost, TreePine, Flower2, Loader2 } from "lucide-react";
+
+const THEME_LABELS: Record<SeasonalTheme, string> = {
+  off: "Standard club", halloween: "Halloween", christmas: "Christmas", remembrance: "Remembrance Day",
+};
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { useSeasonalTheme, type SeasonalTheme } from "@/hooks/useSeasonalTheme";
