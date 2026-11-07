@@ -142,9 +142,6 @@ export const POTMTab = forwardRef<POTMHandle, POTMTabProps>(function POTMTab({
             match_date: awardDate,
             opponent,
             potm: true,
-            goals: 0,
-            assists: 0,
-            appeared: false,
           }, { onConflict: "player_stat_id,match_date,opponent" });
         if (statsError) throw statsError;
       }

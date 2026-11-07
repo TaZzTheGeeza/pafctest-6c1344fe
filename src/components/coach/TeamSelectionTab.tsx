@@ -121,9 +121,6 @@ export function TeamSelectionTab({
       match_date: matchDate,
       opponent,
       appeared: true,
-      goals: 0,
-      assists: 0,
-      potm: false,
     }));
     if (appearanceStats.length === 0) return;
     const { error } = await supabase

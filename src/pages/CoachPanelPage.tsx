@@ -678,35 +678,7 @@ export function MatchReportForm({ ageGroups }: { ageGroups: string[] }) {
         },
       });
 
-      const playerMap = new Map<string, { goals: number; assists: number }>();
-
-      for (const entry of goalEntries.filter((g) => g.playerId)) {
-        const existing = playerMap.get(entry.playerId) || { goals: 0, assists: 0 };
-        existing.goals += entry.count;
-        playerMap.set(entry.playerId, existing);
-      }
-
-      for (const entry of assistEntries.filter((a) => a.playerId)) {
-        const existing = playerMap.get(entry.playerId) || { goals: 0, assists: 0 };
-        existing.assists += entry.count;
-        playerMap.set(entry.playerId, existing);
-      }
-
-      if (playerMap.size > 0) {
-        const matchStats = Array.from(playerMap.entries()).map(([playerId, stats]) => ({
-          player_stat_id: playerId,
-          team_slug: slug,
-          match_date: normalizedMatchDate,
-          opponent: trimmedOpponent,
-          goals: stats.goals,
-          assists: stats.assists,
-        }));
-
-        const { error: statsError } = await supabase
-          .from("match_player_stats")
-          .upsert(matchStats, { onConflict: "player_stat_id,match_date,opponent" });
-        if (statsError) throw statsError;
-      }
+      // Goals & assists reach player stats via the database trigger on match_reports.
 
       let potmCount = 0;
       try {
