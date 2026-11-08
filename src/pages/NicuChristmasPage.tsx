@@ -13,8 +13,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { usePersistentState } from "@/hooks/usePersistentState";
 import { toast } from "sonner";
 import carePackage from "@/assets/nicu-care-package.jpg";
-import baubles from "@/assets/nicu-baubles.asset.json";
-import keyrings from "@/assets/nicu-keyrings.asset.json";
+import baubleSanta from "@/assets/nicu-bauble-santa.png.asset.json";
+import baubleWreath from "@/assets/nicu-bauble-wreath.png.asset.json";
+import keyrings from "@/assets/nicu-keyrings-new.png.asset.json";
 import hospital from "@/assets/nicu-hospital.asset.json";
 import poster from "@/assets/nicu-christmas-poster.asset.json";
 
