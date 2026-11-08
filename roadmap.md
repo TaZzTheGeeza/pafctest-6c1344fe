@@ -1,5 +1,7 @@
 # Roadmap
 
+- [ ] Build NICU Christmas donation page, wishlist, fundraising items and GoCardless payment flow; verify checkout and mobile layout
+
 - [x] Add admin-only fixture deletion that survives FA refreshes and verify the removal flow
 
 - [x] Add four more attacking/defending scenarios with twelve answer-specific videos and verify playback
