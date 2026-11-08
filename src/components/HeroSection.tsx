@@ -1,17 +1,15 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Trophy, ChevronRight, Smartphone, Sparkles, UserPlus, Heart } from "lucide-react";
+import { Trophy, ChevronRight, Smartphone, Sparkles, Heart } from "lucide-react";
 import heroBg from "@/assets/hero-bg-player-replaced.jpg";
 import { usePresentationEnabled } from "@/hooks/usePresentationEnabled";
-import { useRegistrationOpen } from "@/hooks/useRegistrationOpen";
 import { useTournamentEnabled } from "@/hooks/useTournamentEnabled";
 import { useSeasonalTheme } from "@/hooks/useSeasonalTheme";
 import remembrancePoppy from "@/assets/seasonal/remembrance-poppy.png";
 
 export function HeroSection() {
   const { enabled: presentationEnabled } = usePresentationEnabled();
-  const { open: registrationOpen } = useRegistrationOpen();
   const { enabled: tournamentEnabled } = useTournamentEnabled();
   const { theme } = useSeasonalTheme();
   return (
@@ -21,15 +19,6 @@ export function HeroSection() {
         style={{ backgroundImage: `url(${heroBg})`, backgroundPosition: 'center 15%' }}
       />
       <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/30 to-background/95" />
-
-      <div className="absolute top-32 inset-x-0 z-20 flex justify-center px-4">
-        <Button asChild size="lg" className="h-auto min-h-12 max-w-full whitespace-normal text-center font-display text-base shadow-lg">
-          <Link to="/nicu-christmas#give">
-            <Heart className="w-5 h-5 mr-2 shrink-0" />
-            Support our NICU Christmas collection
-          </Link>
-        </Button>
-      </div>
 
       <div className="relative z-10 container mx-auto px-4 text-center pb-16">
         <motion.div
@@ -46,18 +35,16 @@ export function HeroSection() {
           </h1>
           <p className="text-xs md:text-sm font-display text-primary tracking-[0.3em] mb-6">The Lions · Est. 2020</p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 flex-wrap">
-            {registrationOpen && (
               <Button
                 size="lg"
-                className="bg-gold-gradient text-primary-foreground font-display tracking-wider hover:opacity-90 transition-opacity shadow-[0_0_24px_hsl(var(--primary)/0.5)] animate-pulse hover:animate-none"
+                className="h-auto min-h-12 max-w-full whitespace-normal bg-gold-gradient text-primary-foreground font-display tracking-wider hover:opacity-90 transition-opacity shadow-[0_0_24px_hsl(var(--primary)/0.5)] animate-pulse hover:animate-none"
                 asChild
               >
-                <Link to="/register">
-                  <UserPlus className="w-5 h-5 mr-2" />
-                  Register for 2026/27
+                <Link to="/nicu-christmas#give">
+                  <Heart className="w-5 h-5 mr-2 shrink-0" />
+                  Support our NICU Christmas collection
                 </Link>
               </Button>
-            )}
             {tournamentEnabled && (
               <Button
                 size="lg"
