@@ -10,6 +10,7 @@ import clubLogo from "@/assets/club-logo.jpg";
 import wildcatsLogo from "@/assets/wildcats-logo.png";
 
 const communityItems = [
+  { label: "NICU Christmas Collection", path: "/nicu-christmas", icon: Heart, desc: "Support families this Christmas" },
   { label: "News", path: "/news", icon: Newspaper, desc: "Latest club updates" },
   { label: "Events & Calendar", path: "/events", icon: CalendarDays, desc: "Events & full schedule" },
   { label: "Gallery", path: "/gallery", icon: Image, desc: "Photos & media" },

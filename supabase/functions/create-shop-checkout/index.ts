@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { NICU_CAMPAIGN, validateNicuDonation } from "../_shared/nicuCollection.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -49,10 +50,12 @@ serve(async (req) => {
 
     const body = await req.json();
     const items: CartItem[] = body.items;
+    const isNicu = body.campaign === NICU_CAMPAIGN;
+    const donationPence = isNicu ? validateNicuDonation(body.donation_pence ?? 0) : 0;
     let buyerName: string = (body.buyer_name || "").trim();
     let buyerEmail: string = (body.buyer_email || "").trim().toLowerCase();
 
-    if (!Array.isArray(items) || items.length === 0) throw new Error("Your basket is empty");
+    if (!Array.isArray(items) || (items.length === 0 && donationPence === 0)) throw new Error("Choose an item or add a donation");
     if (items.length > 30) throw new Error("Too many items in one order");
 
     // Optional auth - prefill buyer details when signed in
@@ -79,7 +82,7 @@ serve(async (req) => {
     const productIds = [...new Set(items.map((i) => i.product_id))];
     const { data: products, error: prodErr } = await adminClient
       .from("shop_products")
-      .select("id, name, price_cents, sizes, requires_initials, active")
+      .select("id, name, price_cents, sizes, requires_initials, active, tags")
       .in("id", productIds);
     if (prodErr) throw prodErr;
     const productMap = new Map((products || []).map((p: any) => [p.id, p]));
@@ -89,8 +92,9 @@ serve(async (req) => {
     for (const item of items) {
       const product = productMap.get(item.product_id) as any;
       if (!product || !product.active) throw new Error("One of the items is no longer available");
-      const qty = Math.floor(Number(item.quantity));
-      if (!qty || qty < 1 || qty > 20) throw new Error("Invalid quantity");
+      if (isNicu && !product.tags?.includes(NICU_CAMPAIGN)) throw new Error("This item is not part of the NICU collection");
+      const qty = Number(item.quantity);
+      if (!Number.isSafeInteger(qty) || qty < 1 || qty > 20) throw new Error("Invalid quantity");
       const size = (item.size || "").trim() || null;
       if (product.sizes?.length > 0 && !size) throw new Error(`Please choose a size for ${product.name}`);
       if (size && product.sizes?.length > 0 && !product.sizes.includes(size)) {
@@ -109,7 +113,16 @@ serve(async (req) => {
       });
     }
 
-    const origin = req.headers.get("origin") || "https://www.pa-fc.uk";
+    if (donationPence > 0) {
+      totalPence += donationPence;
+      orderItems.push({ product_id: null, name: "NICU Christmas collection donation", size: null, initials: null, quantity: 1, price_cents: donationPence });
+    }
+
+    const requestedOrigin = req.headers.get("origin") || "https://www.pa-fc.uk";
+    const hostname = new URL(requestedOrigin).hostname;
+    if (!["www.pa-fc.uk", "pa-fc.uk", "pafc.lovable.app", "localhost"].includes(hostname) && !/^id-preview--c7af7566-8e05-4dbb-bbff-7d75c302c9e9\.lovable\.app$/.test(hostname)) throw new Error("Unknown checkout origin");
+    const origin = hostname === "localhost" ? "https://www.pa-fc.uk" : requestedOrigin;
+    if (!origin.startsWith("https://")) throw new Error("Bank checkout requires a secure site address");
 
     // Create pending order first so we have a stable ID
     const { data: order, error: orderErr } = await adminClient
@@ -134,13 +147,14 @@ serve(async (req) => {
     const brResponse = await gcPost("/billing_requests", {
       billing_requests: {
         payment_request: {
-          description: `PAFC Club Shop - ${itemSummary}`.slice(0, 255),
+          description: `${isNicu ? "PAFC NICU Christmas" : "PAFC Club Shop"} - ${itemSummary}`.slice(0, 255),
           amount: totalPence,
           currency: "GBP",
           scheme: "faster_payments",
           metadata: {
             kind: "shop_order",
             order_id: order.id,
+            ...(isNicu ? { campaign: NICU_CAMPAIGN } : {}),
           },
         },
       },
@@ -155,8 +169,8 @@ serve(async (req) => {
 
     const brfResponse = await gcPost("/billing_request_flows", {
       billing_request_flows: {
-        redirect_uri: `${origin}/shop/complete?order=${order.id}&br=${billingRequestId}`,
-        exit_uri: `${origin}/shop?cancelled=true`,
+        redirect_uri: `${origin}/${isNicu ? "nicu-christmas" : "shop/complete"}?order=${order.id}&br=${billingRequestId}`,
+        exit_uri: `${origin}/${isNicu ? "nicu-christmas" : "shop"}?cancelled=true`,
         prefilled_customer: {
           email: buyerEmail,
           given_name: buyerName.split(" ")[0] || buyerName,
