@@ -93,8 +93,8 @@ serve(async (req) => {
       const product = productMap.get(item.product_id) as any;
       if (!product || !product.active) throw new Error("One of the items is no longer available");
       if (isNicu && !product.tags?.includes(NICU_CAMPAIGN)) throw new Error("This item is not part of the NICU collection");
-      const qty = Math.floor(Number(item.quantity));
-      if (!qty || qty < 1 || qty > 20) throw new Error("Invalid quantity");
+      const qty = Number(item.quantity);
+      if (!Number.isSafeInteger(qty) || qty < 1 || qty > 20) throw new Error("Invalid quantity");
       const size = (item.size || "").trim() || null;
       if (product.sizes?.length > 0 && !size) throw new Error(`Please choose a size for ${product.name}`);
       if (size && product.sizes?.length > 0 && !product.sizes.includes(size)) {
@@ -118,9 +118,11 @@ serve(async (req) => {
       orderItems.push({ product_id: null, name: "NICU Christmas collection donation", size: null, initials: null, quantity: 1, price_cents: donationPence });
     }
 
-    const origin = req.headers.get("origin") || "https://www.pa-fc.uk";
-    const hostname = new URL(origin).hostname;
+    const requestedOrigin = req.headers.get("origin") || "https://www.pa-fc.uk";
+    const hostname = new URL(requestedOrigin).hostname;
     if (!["www.pa-fc.uk", "pa-fc.uk", "pafc.lovable.app", "localhost"].includes(hostname) && !/^id-preview--c7af7566-8e05-4dbb-bbff-7d75c302c9e9\.lovable\.app$/.test(hostname)) throw new Error("Unknown checkout origin");
+    const origin = hostname === "localhost" ? "https://www.pa-fc.uk" : requestedOrigin;
+    if (!origin.startsWith("https://")) throw new Error("Bank checkout requires a secure site address");
 
     // Create pending order first so we have a stable ID
     const { data: order, error: orderErr } = await adminClient

@@ -41,7 +41,7 @@ export default function NicuChristmasPage() {
   const [productError, setProductError] = useState(false);
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [quantities, setQuantities] = usePersistentState<Record<string, number>>("nicu-quantities", {});
-  const [donation, setDonation] = usePersistentState("nicu-donation", "10");
+  const [donation, setDonation] = usePersistentState("nicu-donation", "0");
   const [checkedItems, setCheckedItems] = usePersistentState<string[]>("nicu-wishlist", []);
   const [name, setName] = useState("");
   const [email, setEmail] = useState(user?.email ?? "");
@@ -171,7 +171,7 @@ export default function NicuChristmasPage() {
               <label htmlFor="donor-name" className="block text-sm mb-2">Your name</label><Input id="donor-name" autoComplete="name" required maxLength={100} value={name} onChange={e => setName(e.target.value)} className="mb-4" />
               <label htmlFor="donor-email" className="block text-sm mb-2">Email for your receipt</label><Input id="donor-email" type="email" autoComplete="email" required maxLength={254} value={email} onChange={e => setEmail(e.target.value)} className="mb-5" />
               <Button type="submit" size="lg" className="w-full" disabled={busy || total <= 0 || loadingProducts}>{busy ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Landmark className="h-4 w-4 mr-2" />}Pay £{(total / 100).toFixed(2)} by bank</Button>
-              <p className="text-xs text-muted-foreground mt-4 leading-relaxed">One-off payment through GoCardless Instant Bank Pay. No monthly payments. Baubles and keyrings are for collection at Jack Hunt School; please contact the club to arrange handover.</p>
+              <p className="text-xs text-muted-foreground mt-4 leading-relaxed">One-off payment through GoCardless Instant Bank Pay. No monthly payments. Please contact the club to arrange handover of your baubles or keyrings.</p>
               {!user && <p className="text-sm text-muted-foreground mt-4"><Link className="text-primary underline" to="/auth">Sign in</Link> to see this contribution in your orders, or continue as a guest.</p>}
             </div>
           </form>}
