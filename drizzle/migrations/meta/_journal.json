@@ -36,6 +36,13 @@
       "when": 1794169182061,
       "tag": "0004_add_donor_message_to_shop_orders",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1794169405635,
+      "tag": "0005_public_nicu_contributions",
+      "breakpoints": true
     }
   ]
 }
