@@ -6,3 +6,4 @@
 - Password recovery is captured in AuthContext and retained per user for the browser tab; reset pages validate the user after session hydration and require the current password outside recovery.
 - Cancelled FA fixtures use admin-only persistent exclusions, applied to cache writes and fixture delivery, so refreshing external data cannot restore them.
 - NICU collection contributions reuse native shop orders and Instant Bank Pay verification; the server validates campaign products and donation amounts so fundraising remains visible in the existing Orders view.
+- Public NICU contributions use a restricted read-only RPC over server-attributed paid campaign orders; anonymity is enforced before returning data, with no contact details, messages, or order identifiers exposed.

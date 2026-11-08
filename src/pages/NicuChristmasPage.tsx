@@ -19,6 +19,7 @@ import baubleWreath from "@/assets/nicu-bauble-wreath.png.asset.json";
 import keyrings from "@/assets/nicu-keyrings-new.png.asset.json";
 import hospital from "@/assets/nicu-hospital.asset.json";
 import poster from "@/assets/nicu-christmas-poster.asset.json";
+import { NicuContributions } from "@/components/NicuContributions";
 
 const CAMPAIGN = "nicu-christmas-2026";
 const wishlist = [
@@ -48,6 +49,7 @@ export default function NicuChristmasPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState(user?.email ?? "");
   const [message, setMessage] = useState("");
+  const [anonymous, setAnonymous] = useState(false);
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState<PaymentStatus>("checking");
   const [statusMessage, setStatusMessage] = useState("");
@@ -98,7 +100,7 @@ export default function NicuChristmasPage() {
     setBusy(true);
     try {
       const { data, error } = await supabase.functions.invoke("create-shop-checkout", { body: {
-        campaign: CAMPAIGN, donation_pence: donationPence, buyer_name: name.trim(), buyer_email: email.trim(), donor_message: message.trim(),
+        campaign: CAMPAIGN, donation_pence: donationPence, buyer_name: name.trim(), buyer_email: email.trim(), donor_message: message.trim(), donor_anonymous: anonymous,
         items: products.filter(p => (quantities[p.id] ?? 0) > 0).map(p => ({ product_id: p.id, quantity: quantities[p.id] })),
       } });
       if (error) {
@@ -177,6 +179,8 @@ export default function NicuChristmasPage() {
               <label htmlFor="donor-name" className="block text-sm mb-2">Your name</label><Input id="donor-name" autoComplete="name" required maxLength={100} value={name} onChange={e => setName(e.target.value)} className="mb-4" />
               <label htmlFor="donor-email" className="block text-sm mb-2">Email for your receipt</label><Input id="donor-email" type="email" autoComplete="email" required maxLength={254} value={email} onChange={e => setEmail(e.target.value)} className="mb-5" />
               <label htmlFor="donor-message" className="block text-sm mb-2">Add a message with your donation <span className="text-muted-foreground">(optional)</span></label><Textarea id="donor-message" maxLength={500} rows={3} placeholder="e.g. Thinking of the little ones and their families this Christmas" value={message} onChange={e => setMessage(e.target.value)} className="mb-5" />
+              <label className="flex items-center gap-3 mb-3 cursor-pointer"><Checkbox id="donor-anonymous" checked={anonymous} onCheckedChange={checked => setAnonymous(checked === true)} /><span className="text-sm">Show my contribution as Anonymous</span></label>
+              <p className="text-xs text-muted-foreground mb-5">Your {anonymous ? "contribution will appear as Anonymous" : "name and contribution amount will appear on this page"} once payment is confirmed. Your email and message stay private.</p>
               <Button type="submit" size="lg" className="w-full" disabled={busy || total <= 0 || loadingProducts}>{busy ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Landmark className="h-4 w-4 mr-2" />}Pay £{(total / 100).toFixed(2)} by bank</Button>
               <p className="text-xs text-muted-foreground mt-4 leading-relaxed">One-off payment through GoCardless Instant Bank Pay. No monthly payments. Please contact the club to arrange handover of your baubles or keyrings.</p>
               {!user && <p className="text-sm text-muted-foreground mt-4"><Link className="text-primary underline" to="/auth">Sign in</Link> to see this contribution in your orders, or continue as a guest.</p>}
@@ -184,6 +188,7 @@ export default function NicuChristmasPage() {
           </form>}
         </div>
       </section>
+      <NicuContributions />
       <section id="wishlist" className="container mx-auto px-5 py-16 scroll-mt-32">
         <p className="text-primary text-sm mb-3">Prefer to donate items?</p><h2 className="text-3xl md:text-4xl mb-4">The Christmas collection wishlist</h2><p className="text-muted-foreground mb-8">Choose something to bring along to Jack Hunt School.</p>
         <div className="grid md:grid-cols-2 gap-12">{wishlist.map(group => <div key={group.title}><h3 className="text-2xl mb-5 flex gap-3 items-center"><group.icon className="h-6 w-6 text-primary" />{group.title}</h3><ul>{group.items.map(item => <li key={item} className="border-b border-border py-3"><label className="flex items-center gap-3 cursor-pointer"><Checkbox checked={checkedItems.includes(item)} onCheckedChange={checked => setCheckedItems(checked ? [...checkedItems, item] : checkedItems.filter(i => i !== item))} /><span>{item}</span>{checkedItems.includes(item) && <Check className="h-4 w-4 text-primary ml-auto" />}</label></li>)}</ul></div>)}</div>

@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
-import { NICU_CAMPAIGN, validateNicuDonation } from "../_shared/nicuCollection.ts";
+import { NICU_CAMPAIGN, nicuAnonymousPreference, validateNicuDonation } from "../_shared/nicuCollection.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -136,6 +136,8 @@ serve(async (req) => {
         total_cents: totalPence,
         status: "pending",
         donor_message: donorMessage,
+        campaign: isNicu ? NICU_CAMPAIGN : null,
+        donor_anonymous: isNicu ? nicuAnonymousPreference(body.donor_anonymous) : true,
       })
       .select("id")
       .single();
