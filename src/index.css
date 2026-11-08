@@ -205,3 +205,12 @@
   .seasonal-floater, .seasonal-weather span, .seasonal-lights span { animation: none; }
   .seasonal-weather { display: none; }
 }
+
+.nicu-page { --primary: 42 65% 62%; --primary-foreground: 0 0% 7%; letter-spacing: 0; }
+.nicu-page h1, .nicu-page h2, .nicu-page h3 { letter-spacing: 0; }
+.nicu-hero { min-height: 540px; }
+.nicu-hero-shade { background: linear-gradient(90deg, hsl(var(--background) / .98) 0%, hsl(var(--background) / .8) 35%, hsl(var(--background) / .06) 75%); }
+@media (max-width: 640px) {
+  .nicu-hero { min-height: 520px; }
+  .nicu-hero-shade { background: hsl(var(--background) / .72); }
+}

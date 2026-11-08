@@ -18,6 +18,7 @@ import Index from "./pages/Index.tsx";
 import ShopPage from "./pages/Shop.tsx";
 import ShopCheckoutPage from "./pages/ShopCheckoutPage.tsx";
 import ShopCompletePage from "./pages/ShopCompletePage.tsx";
+import NicuChristmasPage from "./pages/NicuChristmasPage";
 import TeamsPage from "./pages/TeamsPage.tsx";
 import WhatsOnPage from "./pages/WhatsOnPage.tsx";
 import NewsPage from "./pages/NewsPage.tsx";
@@ -114,6 +115,7 @@ function AppContent() {
         <Route path="/shop" element={<ShopPage />} />
         <Route path="/shop/checkout" element={<ShopCheckoutPage />} />
         <Route path="/shop/complete" element={<ShopCompletePage />} />
+        <Route path="/nicu-christmas" element={<NicuChristmasPage />} />
         <Route path="/teams" element={<TeamsPage />} />
         <Route path="/teams/:teamSlug" element={<TeamsPage />} />
         <Route path="/whats-on" element={<WhatsOnPage />} />

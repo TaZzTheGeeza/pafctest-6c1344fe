@@ -5,3 +5,4 @@
 - Included scenario videos use CDN asset pointers with MP4 and WebM sources; only video-element failures trigger the error state, allowing browsers to skip an unsupported source.
 - Password recovery is captured in AuthContext and retained per user for the browser tab; reset pages validate the user after session hydration and require the current password outside recovery.
 - Cancelled FA fixtures use admin-only persistent exclusions, applied to cache writes and fixture delivery, so refreshing external data cannot restore them.
+- NICU collection contributions reuse native shop orders and Instant Bank Pay verification; the server validates campaign products and donation amounts so fundraising remains visible in the existing Orders view.
