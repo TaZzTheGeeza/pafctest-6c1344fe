@@ -147,6 +147,7 @@ export default function NicuChristmasPage() {
         <div><p className="text-primary text-sm mb-3">From our club, with love</p><h2 className="font-display text-3xl md:text-4xl mb-5">Small gifts. A meaningful difference.</h2><p className="text-muted-foreground leading-relaxed">For the fourth year, PAFC is supporting the Peterborough Neonatal Intensive Care Unit (NICU), a cause close to many families within our club. Together, we're collecting Christmas care packages so each cot side has a gift on Christmas morning, along with supplies for the parents' kitchen.</p></div>
         <figure><img src={hospital.url} width={430} height={270} loading="lazy" className="w-full aspect-[3/2] object-cover rounded-lg" alt="The NICU Christmas collection team from the original appeal poster" /><figcaption className="text-xs text-muted-foreground mt-3">Our NICU collection, pictured on this year's poster.</figcaption></figure>
       </section>
+      <NicuContributions />
       <section id="give" className="bg-card py-16 scroll-mt-32">
         <div className="container mx-auto px-5">
           <div className="mb-9"><p className="text-primary text-sm mb-3">Give a little Christmas kindness</p><h2 className="text-3xl md:text-4xl">Donate or buy a PAFC gift</h2><p className="text-muted-foreground mt-4 max-w-2xl">All money raised from baubles, keyrings and donations goes towards providing items for the NICU collection.</p></div>
@@ -188,7 +189,6 @@ export default function NicuChristmasPage() {
           </form>}
         </div>
       </section>
-      <NicuContributions />
       <section id="wishlist" className="container mx-auto px-5 py-16 scroll-mt-32">
         <p className="text-primary text-sm mb-3">Prefer to donate items?</p><h2 className="text-3xl md:text-4xl mb-4">The Christmas collection wishlist</h2><p className="text-muted-foreground mb-8">Choose something to bring along to Jack Hunt School.</p>
         <div className="grid md:grid-cols-2 gap-12">{wishlist.map(group => <div key={group.title}><h3 className="text-2xl mb-5 flex gap-3 items-center"><group.icon className="h-6 w-6 text-primary" />{group.title}</h3><ul>{group.items.map(item => <li key={item} className="border-b border-border py-3"><label className="flex items-center gap-3 cursor-pointer"><Checkbox checked={checkedItems.includes(item)} onCheckedChange={checked => setCheckedItems(checked ? [...checkedItems, item] : checkedItems.filter(i => i !== item))} /><span>{item}</span>{checkedItems.includes(item) && <Check className="h-4 w-4 text-primary ml-auto" />}</label></li>)}</ul></div>)}</div>
