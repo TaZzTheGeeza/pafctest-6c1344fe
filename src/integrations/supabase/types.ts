@@ -2988,8 +2988,10 @@ export type Database = {
       shop_orders: {
         Row: {
           admin_overrides: Json
+          campaign: string | null
           created_at: string
           customer_name: string
+          donor_anonymous: boolean
           donor_message: string | null
           email: string
           gocardless_billing_request_id: string | null
@@ -3004,8 +3006,10 @@ export type Database = {
         }
         Insert: {
           admin_overrides?: Json
+          campaign?: string | null
           created_at?: string
           customer_name: string
+          donor_anonymous?: boolean
           donor_message?: string | null
           email: string
           gocardless_billing_request_id?: string | null
@@ -3020,8 +3024,10 @@ export type Database = {
         }
         Update: {
           admin_overrides?: Json
+          campaign?: string | null
           created_at?: string
           customer_name?: string
+          donor_anonymous?: boolean
           donor_message?: string | null
           email?: string
           gocardless_billing_request_id?: string | null
@@ -4192,6 +4198,16 @@ export type Database = {
           pitch_name: string
           pitch_number: number
           start_time: string
+        }[]
+      }
+      get_nicu_contributions: {
+        Args: { _offset?: number }
+        Returns: {
+          amount_cents: number
+          contributed_at: string
+          contribution_count: number
+          display_name: string
+          total_cents: number
         }[]
       }
       get_safe_profile: {

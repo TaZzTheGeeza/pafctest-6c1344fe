@@ -1,5 +1,7 @@
 # Roadmap
 
+- [x] Add public paid NICU contributions and anonymous giving; verified public response privacy, unpaid/unrelated exclusions, totals and desktop/mobile display using temporary records (no real payment made)
+
 - [x] Build NICU Christmas donation page, wishlist, fundraising items and GoCardless payment flow; verified live checkout handoff and mobile layout (no real payment made)
 
 - [x] Add admin-only fixture deletion that survives FA refreshes and verify the removal flow
