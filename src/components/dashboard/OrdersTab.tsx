@@ -57,6 +57,7 @@ interface ShopifyOrder {
   currency: string;
   line_items: LineItem[];
   admin_overrides?: Record<string, LineItemOverride> | null;
+  donor_message?: string | null;
   progress_status?: ProgressStatus | null;
   cancelled_at: string | null;
   shopify_created_at: string;
