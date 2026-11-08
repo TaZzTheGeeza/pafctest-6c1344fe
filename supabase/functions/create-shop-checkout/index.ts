@@ -135,6 +135,7 @@ serve(async (req) => {
         items: orderItems,
         total_cents: totalPence,
         status: "pending",
+        donor_message: donorMessage,
       })
       .select("id")
       .single();

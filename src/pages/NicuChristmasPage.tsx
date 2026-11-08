@@ -46,6 +46,7 @@ export default function NicuChristmasPage() {
   const [checkedItems, setCheckedItems] = usePersistentState<string[]>("nicu-wishlist", []);
   const [name, setName] = useState("");
   const [email, setEmail] = useState(user?.email ?? "");
+  const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState<PaymentStatus>("checking");
   const [statusMessage, setStatusMessage] = useState("");
