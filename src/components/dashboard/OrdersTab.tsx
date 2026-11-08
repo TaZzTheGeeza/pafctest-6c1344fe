@@ -247,6 +247,7 @@ export function OrdersTab() {
             properties: it.initials ? [{ name: "Initials", value: it.initials }] : [],
           })),
           admin_overrides: o.admin_overrides,
+          donor_message: o.donor_message,
           progress_status: o.progress_status,
           cancelled_at: o.status === "cancelled" ? o.updated_at : null,
           shopify_created_at: o.created_at,
@@ -703,6 +704,15 @@ export function OrdersTab() {
                         <p className="text-xs text-muted-foreground mt-2">
                           Customer email: <span className="text-foreground">{order.email}</span>
                         </p>
+                      )}
+
+                      {order.donor_message && (
+                        <div className="mt-3 rounded-lg bg-primary/5 border border-primary/20 p-3">
+                          <p className="text-[10px] font-display tracking-wider uppercase text-primary flex items-center gap-1.5 mb-1.5">
+                            <MessageSquareHeart className="h-3.5 w-3.5" /> Message with donation
+                          </p>
+                          <p className="text-sm text-foreground">{order.donor_message}</p>
+                        </div>
                       )}
 
                       {(() => {
