@@ -17,7 +17,7 @@ import carePackage from "@/assets/nicu-care-package.jpg";
 import baubleSanta from "@/assets/nicu-bauble-santa.png.asset.json";
 import baubleWreath from "@/assets/nicu-bauble-wreath.png.asset.json";
 import keyrings from "@/assets/nicu-keyrings-new.png.asset.json";
-import hospital from "@/assets/nicu-hospital.asset.json";
+import hospital from "@/assets/nicu-christmas-collection-team.png.asset.json";
 import poster from "@/assets/nicu-christmas-poster.asset.json";
 import { NicuContributions } from "@/components/NicuContributions";
 
