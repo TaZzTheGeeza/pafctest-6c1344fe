@@ -54,6 +54,7 @@ serve(async (req) => {
     const donationPence = isNicu ? validateNicuDonation(body.donation_pence ?? 0) : 0;
     let buyerName: string = (body.buyer_name || "").trim();
     let buyerEmail: string = (body.buyer_email || "").trim().toLowerCase();
+    const donorMessage = isNicu ? String(body.donor_message || "").trim().slice(0, 500) || null : null;
 
     if (!Array.isArray(items) || (items.length === 0 && donationPence === 0)) throw new Error("Choose an item or add a donation");
     if (items.length > 30) throw new Error("Too many items in one order");
@@ -134,6 +135,7 @@ serve(async (req) => {
         items: orderItems,
         total_cents: totalPence,
         status: "pending",
+        donor_message: donorMessage,
       })
       .select("id")
       .single();

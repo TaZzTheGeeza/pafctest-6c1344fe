@@ -2990,6 +2990,7 @@ export type Database = {
           admin_overrides: Json
           created_at: string
           customer_name: string
+          donor_message: string | null
           email: string
           gocardless_billing_request_id: string | null
           gocardless_payment_id: string | null
@@ -3005,6 +3006,7 @@ export type Database = {
           admin_overrides?: Json
           created_at?: string
           customer_name: string
+          donor_message?: string | null
           email: string
           gocardless_billing_request_id?: string | null
           gocardless_payment_id?: string | null
@@ -3020,6 +3022,7 @@ export type Database = {
           admin_overrides?: Json
           created_at?: string
           customer_name?: string
+          donor_message?: string | null
           email?: string
           gocardless_billing_request_id?: string | null
           gocardless_payment_id?: string | null

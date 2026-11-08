@@ -4,6 +4,7 @@ import { Check, CheckCircle2, Coffee, Gift, Heart, Landmark, Loader2, MapPin, Me
 import { FunctionsHttpError } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -46,6 +47,7 @@ export default function NicuChristmasPage() {
   const [checkedItems, setCheckedItems] = usePersistentState<string[]>("nicu-wishlist", []);
   const [name, setName] = useState("");
   const [email, setEmail] = useState(user?.email ?? "");
+  const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState<PaymentStatus>("checking");
   const [statusMessage, setStatusMessage] = useState("");
@@ -96,7 +98,7 @@ export default function NicuChristmasPage() {
     setBusy(true);
     try {
       const { data, error } = await supabase.functions.invoke("create-shop-checkout", { body: {
-        campaign: CAMPAIGN, donation_pence: donationPence, buyer_name: name.trim(), buyer_email: email.trim(),
+        campaign: CAMPAIGN, donation_pence: donationPence, buyer_name: name.trim(), buyer_email: email.trim(), donor_message: message.trim(),
         items: products.filter(p => (quantities[p.id] ?? 0) > 0).map(p => ({ product_id: p.id, quantity: quantities[p.id] })),
       } });
       if (error) {
@@ -174,6 +176,7 @@ export default function NicuChristmasPage() {
               <div className="border-y border-border py-4 mb-6 flex justify-between font-display text-2xl"><span>Total</span><span className="text-primary">£{(total / 100).toFixed(2)}</span></div>
               <label htmlFor="donor-name" className="block text-sm mb-2">Your name</label><Input id="donor-name" autoComplete="name" required maxLength={100} value={name} onChange={e => setName(e.target.value)} className="mb-4" />
               <label htmlFor="donor-email" className="block text-sm mb-2">Email for your receipt</label><Input id="donor-email" type="email" autoComplete="email" required maxLength={254} value={email} onChange={e => setEmail(e.target.value)} className="mb-5" />
+              <label htmlFor="donor-message" className="block text-sm mb-2">Add a message with your donation <span className="text-muted-foreground">(optional)</span></label><Textarea id="donor-message" maxLength={500} rows={3} placeholder="e.g. Thinking of the little ones and their families this Christmas" value={message} onChange={e => setMessage(e.target.value)} className="mb-5" />
               <Button type="submit" size="lg" className="w-full" disabled={busy || total <= 0 || loadingProducts}>{busy ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Landmark className="h-4 w-4 mr-2" />}Pay £{(total / 100).toFixed(2)} by bank</Button>
               <p className="text-xs text-muted-foreground mt-4 leading-relaxed">One-off payment through GoCardless Instant Bank Pay. No monthly payments. Please contact the club to arrange handover of your baubles or keyrings.</p>
               {!user && <p className="text-sm text-muted-foreground mt-4"><Link className="text-primary underline" to="/auth">Sign in</Link> to see this contribution in your orders, or continue as a guest.</p>}
