@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Trophy, ChevronRight, Smartphone, Sparkles, UserPlus } from "lucide-react";
+import { Trophy, ChevronRight, Smartphone, Sparkles, UserPlus, Heart } from "lucide-react";
 import heroBg from "@/assets/hero-bg-player-replaced.jpg";
 import { usePresentationEnabled } from "@/hooks/usePresentationEnabled";
 import { useRegistrationOpen } from "@/hooks/useRegistrationOpen";
@@ -21,6 +21,15 @@ export function HeroSection() {
         style={{ backgroundImage: `url(${heroBg})`, backgroundPosition: 'center 15%' }}
       />
       <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/30 to-background/95" />
+
+      <div className="absolute top-32 inset-x-0 z-20 flex justify-center px-4">
+        <Button asChild size="lg" className="h-auto min-h-12 max-w-full whitespace-normal text-center font-display text-base shadow-lg">
+          <Link to="/nicu-christmas#give">
+            <Heart className="w-5 h-5 mr-2 shrink-0" />
+            Support our NICU Christmas collection
+          </Link>
+        </Button>
+      </div>
 
       <div className="relative z-10 container mx-auto px-4 text-center pb-16">
         <motion.div
