@@ -159,7 +159,10 @@ export default function NicuChristmasPage() {
             <div>
               {loadingProducts ? <Loader2 className="h-6 w-6 animate-spin" /> : productError ? <p role="alert">Gift items could not load. You can still make a money donation below.</p> : products.length === 0 ? <p>Gift items are currently unavailable. Money donations are welcome.</p> : <div className="grid sm:grid-cols-2 gap-6">
                 {products.map(p => <article key={p.id} className="bg-background rounded-lg overflow-hidden">
-                  <img src={(p.price_cents === 500 ? baubles : keyrings).url} width={280} height={180} alt={p.name} loading="lazy" className="w-full aspect-[4/3] object-contain bg-secondary" />
+                  {p.price_cents === 500 ? <div className="grid grid-cols-2 gap-1 bg-secondary">
+                    <img src={baubleSanta.url} width={280} height={360} alt="PAFC Christmas bauble with the lion in a Santa hat" loading="lazy" className="w-full aspect-[3/4] object-cover" />
+                    <img src={baubleWreath.url} width={280} height={360} alt="PAFC Christmas bauble with the club crest and festive wreath" loading="lazy" className="w-full aspect-[3/4] object-cover" />
+                  </div> : <img src={keyrings.url} width={280} height={180} alt="PAFC keyrings for mums, dads and football families" loading="lazy" className="w-full aspect-[4/3] object-cover bg-secondary" />}
                   <div className="p-5"><h3 className="text-lg mb-2">{p.name}</h3><p className="font-display text-3xl text-primary mb-5">£{(p.price_cents / 100).toFixed(2)}</p><Quantity name={p.name} value={quantities[p.id] ?? 0} onChange={value => setQuantities({ ...quantities, [p.id]: value })} /></div>
                 </article>)}
               </div>}
