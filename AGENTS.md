@@ -7,3 +7,4 @@
 - Cancelled FA fixtures use admin-only persistent exclusions, applied to cache writes and fixture delivery, so refreshing external data cannot restore them.
 - NICU collection contributions reuse native shop orders and Instant Bank Pay verification; the server validates campaign products and donation amounts so fundraising remains visible in the existing Orders view.
 - Public NICU contributions use a restricted read-only RPC over server-attributed paid campaign orders; anonymity is enforced before returning data, with no contact details, messages, or order identifiers exposed.
+- Hub fitness uses a versioned 20m protocol and completed-shuttle counts (not decimal scores); Web Audio drives both bleeps and timing, interrupted tests pause, and per-user/team recovery queues retain unsaved results. Team-scoped coach permissions and child-linked RLS protect fitness history.

@@ -1,0 +1,4 @@
+REVOKE ALL ON public.fitness_sessions,public.fitness_results FROM anon;
+REVOKE ALL ON FUNCTION public.get_fitness_roster(text),public.can_manage_fitness(text),public.can_view_fitness_player(uuid),public.can_write_fitness_result(uuid,uuid) FROM anon;
+REVOKE ALL ON FUNCTION public.get_fitness_roster(text),public.can_manage_fitness(text),public.can_view_fitness_player(uuid),public.can_write_fitness_result(uuid,uuid) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.get_fitness_roster(text),public.can_manage_fitness(text),public.can_view_fitness_player(uuid),public.can_write_fitness_result(uuid,uuid) TO authenticated,service_role;

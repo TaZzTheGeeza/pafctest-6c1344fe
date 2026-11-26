@@ -1,5 +1,7 @@
 # Roadmap
 
+- [x] Add Hub Fitness: 20m bleep test, registered squad dropout recording and private weekly progress; verified timed scoring, undo, recovery, saved history and mobile improvement with temporary tests removed. Physical Bluetooth playback and a separate family account remain unverified.
+
 - [x] Add public paid NICU contributions and anonymous giving; verified public response privacy, unpaid/unrelated exclusions, totals and desktop/mobile display using temporary records (no real payment made)
 
 - [x] Build NICU Christmas donation page, wishlist, fundraising items and GoCardless payment flow; verified live checkout handoff and mobile layout (no real payment made)

@@ -12,6 +12,7 @@ import { PlayerRosterManager } from "@/components/hub/PlayerRosterManager";
 import { AwardsVoting } from "@/components/hub/AwardsVoting";
 import { FixtureAvailability } from "@/components/hub/FixtureAvailability";
 import HomeworkTab from "@/components/hub/HomeworkTab";
+import FitnessTab from "@/components/hub/FitnessTab";
 
 import { AttendanceStats } from "@/components/hub/AttendanceStats";
 import { GuardianManager } from "@/components/hub/GuardianManager";
@@ -39,6 +40,7 @@ const tabs = [
   { id: "availability", label: "Fixtures & Events", icon: CalendarCheck },
   { id: "reports", label: "Match Reports", icon: ClipboardList },
   { id: "stats", label: "Stats", icon: BarChart3 },
+  { id: "fitness", label: "Fitness", icon: TrendingUp },
   { id: "homework", label: "Homework", icon: BookOpen },
   
   { id: "attendance", label: "Attendance", icon: TrendingUp },
@@ -257,6 +259,7 @@ export default function HubPage() {
       {activeTab === "stats" && activeTeam && <TeamStatsTable ageGroup={getAgeGroup(activeTeam)} />}
       {activeTab === "league" && activeTeam && hasLeagueTable(activeTeam) && <LeagueTable teamSlug={activeTeam} />}
       {activeTab === "homework" && activeTeam && <HomeworkTab teamSlug={activeTeam} />}
+      {activeTab === "fitness" && activeTeam && <FitnessTab key={activeTeam} teamSlug={activeTeam} />}
       
       {activeTab === "attendance" && activeTeam && (isCoach || isAdmin) && <AttendanceStats teamSlug={activeTeam} />}
       {activeTab === "guardian" && activeTeam && <GuardianManager teamSlug={activeTeam} teamName={activeTeamName || ""} />}

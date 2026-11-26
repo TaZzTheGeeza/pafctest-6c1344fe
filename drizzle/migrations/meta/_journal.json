@@ -43,6 +43,27 @@
       "when": 1794169405635,
       "tag": "0005_public_nicu_contributions",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1795711581674,
+      "tag": "0006_team_fitness_bleep_tests",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1795711746603,
+      "tag": "0007_fitness_registration_team_matching",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1795712015972,
+      "tag": "0008_fitness_explicit_private_grants",
+      "breakpoints": true
     }
   ]
 }

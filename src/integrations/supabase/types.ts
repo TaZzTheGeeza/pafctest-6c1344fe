@@ -594,6 +594,75 @@ export type Database = {
         }
         Relationships: []
       }
+      fitness_results: {
+        Row: {
+          completed_shuttles: number
+          id: string
+          player_id: string
+          recorded_at: string
+          session_id: string
+        }
+        Insert: {
+          completed_shuttles: number
+          id?: string
+          player_id: string
+          recorded_at?: string
+          session_id: string
+        }
+        Update: {
+          completed_shuttles?: number
+          id?: string
+          player_id?: string
+          recorded_at?: string
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fitness_results_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "player_registrations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fitness_results_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "fitness_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fitness_sessions: {
+        Row: {
+          created_by: string
+          finished_at: string | null
+          id: string
+          protocol: string
+          started_at: string
+          status: string
+          team_slug: string
+        }
+        Insert: {
+          created_by?: string
+          finished_at?: string | null
+          id?: string
+          protocol?: string
+          started_at?: string
+          status?: string
+          team_slug: string
+        }
+        Update: {
+          created_by?: string
+          finished_at?: string | null
+          id?: string
+          protocol?: string
+          started_at?: string
+          status?: string
+          team_slug?: string
+        }
+        Relationships: []
+      }
       fixture_availability: {
         Row: {
           created_at: string
@@ -4163,6 +4232,12 @@ export type Database = {
         Args: { _user_id: string }
         Returns: boolean
       }
+      can_manage_fitness: { Args: { _team: string }; Returns: boolean }
+      can_view_fitness_player: { Args: { _player: string }; Returns: boolean }
+      can_write_fitness_result: {
+        Args: { _player: string; _session: string }
+        Returns: boolean
+      }
       canonical_age_group: { Args: { _value: string }; Returns: string }
       canonical_team_slug: { Args: { _slug: string }; Returns: string }
       check_pitch_conflict: {
@@ -4198,6 +4273,13 @@ export type Database = {
           pitch_name: string
           pitch_number: number
           start_time: string
+        }[]
+      }
+      get_fitness_roster: {
+        Args: { _team: string }
+        Returns: {
+          child_name: string
+          id: string
         }[]
       }
       get_nicu_contributions: {
