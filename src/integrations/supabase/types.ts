@@ -4233,6 +4233,8 @@ export type Database = {
         Returns: boolean
       }
       can_manage_fitness: { Args: { _team: string }; Returns: boolean }
+      can_read_homework_file: { Args: { _path: string }; Returns: boolean }
+      can_read_team_homework: { Args: { _team: string }; Returns: boolean }
       can_view_fitness_player: { Args: { _player: string }; Returns: boolean }
       can_write_fitness_result: {
         Args: { _player: string; _session: string }

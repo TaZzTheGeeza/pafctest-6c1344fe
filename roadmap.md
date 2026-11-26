@@ -1,5 +1,8 @@
 # Roadmap
 
+- [ ] Verify match-report stats warning against live triggers; fix only if confirmed
+- [ ] Tighten six selected homework, role and homework-file access findings; verify intended access and update selected finding statuses
+
 - [x] Add Hub Fitness: 20m bleep test, registered squad dropout recording and private weekly progress; verified timed scoring, undo, recovery, saved history and mobile improvement with temporary tests removed. Physical Bluetooth playback and a separate family account remain unverified.
 
 - [x] Add public paid NICU contributions and anonymous giving; verified public response privacy, unpaid/unrelated exclusions, totals and desktop/mobile display using temporary records (no real payment made)

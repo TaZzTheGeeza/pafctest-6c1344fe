@@ -1,0 +1,12 @@
+CREATE OR REPLACE FUNCTION public.can_read_team_homework(_team text) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path=public AS $$ SELECT auth.uid() IS NOT NULL AND (public.has_role(auth.uid(),'admin') OR public.has_role(auth.uid(),'coach') OR EXISTS(SELECT 1 FROM public.team_members m WHERE m.user_id=auth.uid() AND public.canonical_team_slug(m.team_slug)=public.canonical_team_slug(_team)) OR EXISTS(SELECT 1 FROM public.guardians g WHERE g.parent_user_id=auth.uid() AND g.status IN ('active','approved','linked') AND public.canonical_team_slug(g.team_slug)=public.canonical_team_slug(_team))); $$;
+REVOKE ALL ON FUNCTION public.can_read_team_homework(text) FROM PUBLIC,anon;
+GRANT EXECUTE ON FUNCTION public.can_read_team_homework(text) TO authenticated,service_role;
+ALTER POLICY "Authenticated can view homework tasks" ON public.homework_tasks USING (public.can_read_team_homework(team_slug));
+ALTER POLICY "Members can read homework questions" ON public.homework_questions USING (EXISTS(SELECT 1 FROM public.homework_tasks t WHERE t.id=task_id AND public.can_read_team_homework(t.team_slug)));
+ALTER POLICY "Authenticated can view homework stars" ON public.homework_stars USING (public.can_read_team_homework(team_slug));
+ALTER POLICY "Authenticated users can read permissions" ON public.role_permissions USING (public.has_role(auth.uid(),'admin') OR public.has_role(auth.uid(),role));
+ALTER POLICY "Anyone can view roles" ON public.custom_roles TO authenticated USING (public.has_role(auth.uid(),'admin') OR public.has_role(auth.uid(),'coach') OR public.has_role(auth.uid(),name));
+CREATE OR REPLACE FUNCTION public.can_read_homework_file(_path text) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path=public AS $$ SELECT auth.uid() IS NOT NULL AND (public.has_role(auth.uid(),'admin') OR EXISTS(SELECT 1 FROM public.homework_tasks t WHERE t.drill_media_path=_path AND public.can_read_team_homework(t.team_slug)) OR EXISTS(SELECT 1 FROM public.homework_submissions s JOIN public.homework_tasks t ON t.id=s.task_id WHERE s.proof_path=_path AND (s.user_id=auth.uid() OR public.can_manage_fitness(t.team_slug)))); $$;
+REVOKE ALL ON FUNCTION public.can_read_homework_file(text) FROM PUBLIC,anon;
+GRANT EXECUTE ON FUNCTION public.can_read_homework_file(text) TO authenticated,service_role;
+ALTER POLICY "Owners and team coaches view homework media" ON storage.objects USING (bucket_id='homework-proof' AND ((storage.foldername(name))[1]=auth.uid()::text OR public.can_read_homework_file(name)));
